@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+
+  "name": "TabMan",
+  "description": "A simpler, better tab manager",
+  "version": "0.1",
+
+  "browser_action": {
+    "default_icon": "glyphicons_154_more_windows.png",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "tabs"
+  ]
+}
