@@ -117,9 +117,18 @@
 */
   
   function renderWindowTabs( headerId, windowTitle, tabs ) {
-    var windowItem = makeElem( 'h3', windowTitle );
-    windowItem.classList.add('nowrap');
-    windowItem.classList.add('singlerow');
+    var windowItem = makeElem( 'div' );
+    windowItem.classList.add('windowInfo');
+
+    var windowHeader = makeElem( 'div' );
+    windowHeader.classList.add( 'windowHeader' );
+
+    var windowTitleItem = makeElem( 'h3', windowTitle );
+    windowTitleItem.classList.add('nowrap');
+    windowTitleItem.classList.add('singlerow');
+    windowTitleItem.classList.add('windowTitle');
+    windowHeader.appendChild( windowTitleItem );
+
     var tabListItem = makeElem('div');
     tabListItem.classList.add('tablist');
     for( var i = 0; i < tabs.length; i++ ) {
@@ -144,9 +153,11 @@
 
       tabListItem.appendChild( tabItem );
     }
+    windowItem.appendChild( windowHeader ); 
+    windowItem.appendChild( tabListItem );
+
     var winHeader= document.getElementById( headerId );
     insertAfter( winHeader, windowItem );
-    insertAfter( windowItem, tabListItem );
   }
 
   function renderManagedList( managedWindows ) {

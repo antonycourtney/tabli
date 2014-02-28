@@ -6,10 +6,12 @@ body {  background: white;
      }
  h1, h2, h3 {font-family: sans-serif;}
  h1 { font-size: 16px; }
- h2 {   font-size: 14px; 
-        text-decoration: underline;
+ h2 {   font-size: 16px; 
+        margin-top: 12px;
+        margin-bottom: 2px;
+        // text-decoration: underline;
     }
- h3 { font-size: 12px;  margin-top: 8px; margin-bottom: 2px } 
+ h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px } 
  hr {margin-top: 0in; padding: 0px}
  ul {margin-top: .05in; padding-left: 20px;}
  span { display: inline-block;
@@ -26,5 +28,20 @@ body {  background: white;
       }
 .singlerow { max-height: 20px; }
 .tablist { margin-left: 4px; }
-.tabinfo { line-height: 20px; vertical-align: middle; }
+.tabinfo { line-height: 20px; 
+           vertical-align: middle; 
+           background-color: #fafafa
+        }
 .favicon { width: 16px; height: 16px; margin-right: 3px; }
+.windowInfo { border: 1px solid #eaeaea; 
+              margin-bottom: 8px;
+              // max-width: 310px;
+            }
+.windowTitle { background-color: #ebe9eb;
+            margin: 0;
+            padding-top: 3px;
+            padding-bottom: 4px;
+        }
+body {
+    // width: 320px;
+}
