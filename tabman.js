@@ -70,12 +70,6 @@
       referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
   }
 
-  function makeElem( tag, txt ) {
-    var item = document.createElement( tag );
-    if( txt )
-      item.appendChild( document.createTextNode(txt) );
-    return item;
-  };
 
 /*
   function updateWindowList() {
@@ -115,41 +109,54 @@
     }
     // chrome.windows.getAll( {populate: true}, buildWindowLists );
 */
+  function makeElem( tag, options ) {
+    var item = document.createElement( tag );
+    if( options ) {
+      var txt = options.text;
+      if( txt )
+        item.appendChild( document.createTextNode(txt) );
+      var classes = options.classes;
+      if( classes ) {
+        for ( var i = 0; i < classes.length; i++ ) {
+          item.classList.add( classes[ i ] );
+        }
+      }
+      var parent = options.parent;
+      if( parent ) {
+        parent.appendChild( item );
+      }
+    }
+
+    return item;
+  };
   
   function renderWindowTabs( headerId, windowTitle, tabs ) {
-    var windowItem = makeElem( 'div' );
-    windowItem.classList.add('windowInfo');
+    var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
 
-    var windowHeader = makeElem( 'div' );
-    windowHeader.classList.add( 'windowHeader' );
+    var windowHeader = makeElem( 'div', { classes: [ "windowHeader" ] } );
 
-    var windowTitleItem = makeElem( 'h3', windowTitle );
-    windowTitleItem.classList.add('nowrap');
-    windowTitleItem.classList.add('singlerow');
-    windowTitleItem.classList.add('windowTitle');
-    windowHeader.appendChild( windowTitleItem );
+    var windowTitleItem = makeElem( 'h3', 
+      { text: windowTitle, 
+        classes: [ "nowrap", "singlerow", "windowTitle" ],
+        parent: windowHeader 
+      });
 
-    var tabListItem = makeElem('div');
-    tabListItem.classList.add('tablist');
+    var tabListItem = makeElem('div', { classes: [ "tablist" ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
 
-      var tabItem = makeElem( 'div' );  
-      tabItem.classList.add('singlerow');
-      tabItem.classList.add('nowrap');
-      tabItem.classList.add('tabinfo');
-
+      var tabItem = makeElem( 'div', 
+        { classes: [ "singlerow", "nowrap", "tabinfo" ] } );
       if( tab.favIconUrl ) {
-        var tabFavIcon = makeElem('img');
+        var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
         tabFavIcon.setAttribute('src',tab.favIconUrl);
-        tabFavIcon.classList.add('favicon');
-        tabItem.appendChild(tabFavIcon);        
       }
 
-      var titleItem = makeElem( 'span', tab.title );
-      titleItem.classList.add('nowrap');
-      titleItem.classList.add('singlerow');
-      tabItem.appendChild( titleItem );
+      var titleItem = makeElem( 'span', 
+        { text: tab.title,
+          classes: [ "nowrap", "singlerow" ],
+          parent: tabItem
+        });
 
       tabListItem.appendChild( tabItem );
     }
