@@ -33,7 +33,6 @@
   };
 
 
-
   // This function creates a new anchor element and uses location
   // properties (inherent) to get the desired URL data. Some String
   // operations are used (to normalize results across browsers).
@@ -125,22 +124,41 @@
       if( parent ) {
         parent.appendChild( item );
       }
+      var attrs = options.attributes;
+      if( attrs ) {
+        for( var attr in attrs ) {
+          if( !attrs.hasOwnProperty( attr ) )
+            continue;
+          item.setAttribute( attr, attrs[attr] );
+        }
+      }
     }
 
     return item;
   };
   
-  function renderWindowTabs( headerId, windowTitle, tabs ) {
+  function renderWindow( managed, windowTitle, tabs ) {
+    var headerId = managed ? 'managedWindows' : 'unmanagedWindows';
     var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
 
     var windowHeader = makeElem( 'div', { classes: [ "windowHeader" ] } );
 
-    var windowTitleItem = makeElem( 'h3', 
+    var windowTitleItem = makeElem( 'span', 
       { text: windowTitle, 
         classes: [ "nowrap", "singlerow", "windowTitle" ],
         parent: windowHeader 
       });
 
+    if( !managed ) {
+      var windowManageButton = makeElem( 'button', 
+        { classes: [ "manage" ],
+          attributes: { 'title': "Manage as Subject Window" },
+          parent: windowHeader 
+        });
+      windowManageButton.onclick = function() {
+        console.log( "Manage window '" + windowTitle + "'" );
+      }
+    }
     var tabListItem = makeElem('div', { classes: [ "tablist" ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
@@ -149,7 +167,7 @@
         { classes: [ "singlerow", "nowrap", "tabinfo" ] } );
       if( tab.favIconUrl ) {
         var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
-        tabFavIcon.setAttribute('src',tab.favIconUrl);
+        tabFavIcon.setAttribute( 'src', tab.favIconUrl );
       }
 
       var titleItem = makeElem( 'span', 
@@ -174,7 +192,7 @@
         continue;
       var sc = subjectConfig[ subject ];
 
-      renderWindowTabs( 'managedWindows', subject, sc.tabs );
+      renderWindow( true, subject, sc.tabs );
     }
   }
 
@@ -192,7 +210,7 @@
         }
       }
       
-      renderWindowTabs( 'unmanagedWindows', windowTitle, tabs );
+      renderWindow( false, windowTitle, tabs );
     }          
   }
 
@@ -202,7 +220,7 @@
       var managedWindows = subjectConfig; // for now
       var unmanagedWindows = windowList;  // for now
 
-      renderManagedList( managedWindows );
+      // renderManagedList( managedWindows );
       renderUnmanagedList( unmanagedWindows );
     } );
   }

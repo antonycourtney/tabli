@@ -37,11 +37,25 @@ body {  background: white;
               margin-bottom: 8px;
               // max-width: 310px;
             }
-.windowTitle { background-color: #ebe9eb;
+.windowHeader { background-color: #ebe9eb;
             margin: 0;
             padding-top: 3px;
             padding-bottom: 4px;
         }
+.windowTitle {
+    font-weight: bold;
+}
+button {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    width: 16px;
+    height: 16px;
+}
+button.manage {
+    background: url("../images/rounded-big-circle-3-01.png");
+}
 body {
     // width: 320px;
 }
