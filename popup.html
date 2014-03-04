@@ -3,7 +3,11 @@
   <head>
     <title>TabMan Popup</title>
     <link rel="stylesheet" href="css/tabman.css" type="text/css"/>
-    <script src="lib/jquery-1.7.min.js"></script>
+    <!-- <script src="lib/jquery-1.7.min.js"></script> -->
+    <link rel="stylesheet" href="css/ui-lightness/jquery-ui-1.10.4.custom.css" />
+    <script src="lib/jquery-1.10.2.js"></script>
+    <script src="lib/jquery-ui-1.10.4.custom.min.js"></script> 
+
     <script src="tabman.js"></script>
   </head>
   <body>
@@ -15,6 +19,16 @@
     <h2>Other Windows</h2>
     <hr></hr>
   </div>
+
+  <div id="manage-dialog" title="Create Managed Window">
+    <form>
+    <fieldset>
+      <label for="subject">Subject</label>
+      <input type="text" name="subject" id="subject" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+  </div>
+
   </body>
 </html>
 
