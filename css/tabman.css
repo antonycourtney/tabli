@@ -1,6 +1,6 @@
 body {  background: white;
         font-family: sans-serif;
-        max-width: 350px;
+        // max-width: 400px;
         // overflow-x: hidden;  
         font-size:12px;      
      }
@@ -17,7 +17,7 @@ body {  background: white;
  span.windowList { display: inline-block;
         line-height: 14px;
         height: 14px;
-        width:280px;
+        width:325px;
       }
  A:link {text-decoration: none} 
  A:visited {text-decoration: none}
