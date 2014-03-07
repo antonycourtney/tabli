@@ -2,7 +2,8 @@ body {  background: white;
         font-family: sans-serif;
         // max-width: 400px;
         // overflow-x: hidden;  
-        font-size:12px;      
+        font-size:12px;
+        cursor: default;      
      }
  h1, h2, h3 {font-family: sans-serif;}
  h1 { font-size: 16px; }
@@ -35,18 +36,32 @@ body {  background: white;
 .tabinfo { 
            background-color: #fafafa
         }
+.tabinfo:hover {
+  background-color: #dadada
+}
 .favicon { width: 16px; height: 16px; margin-right: 3px; }
-.windowInfo { border: 1px solid #eaeaea; 
+.windowInfo { border: 1px solid #bababa;
+              border-radius: 3px; 
               margin-bottom: 8px;
               // max-width: 310px;
             }
+.windowInfo:hover {
+  // border: 1px solid #0224d2;
+  // -webkit-box-shadow: 0px 0px 8px #0224d2;
+  // -moz-box-shadow: 0px 0px 8px #0224d2;
+  box-shadow: 0px 0px 5px 2px #7472ff;
+}
 .windowHeader { background-color: #ebe9eb;
             // line-height: 20px; 
             // vertical-align: middle;     
             // margin: 0;
             // padding-top: 3px;
             // padding-bottom: 3px;
+            border-bottom: 1px solid #bababa
         }
+.windowHeader:hover {
+  background-color: #cacaca
+}
 .windowTitle {
     font-weight: bold;
 }

@@ -40,7 +40,11 @@
    * initialize a tab window from a chrome Window
    */
   function makeTabWindow( chromeWindow ) {
-    var ret = { managed: false, chromeWindow: chromeWindow, _managedTitle: "" };
+    var ret = { managed: false, 
+                _managedTitle: "",
+                chromeWindow: chromeWindow,  
+                open: true,
+              };
     ret.getTitle = getTabWindowTitle;
     return ret;
   }
@@ -52,6 +56,10 @@
    *   - array of all tab Windows
    */
   function syncWindowList( chromeWindowList ) {
+    // To GC any closed windows:
+    for ( var i = 0; i < tabWindows.length; i++ ) {
+      tabWindows[i].open = false;
+    }
     for ( var i = 0; i < chromeWindowList.length; i++ ) {
       var chromeWindow = chromeWindowList[ i ];
       var tabWindow = windowIdMap[ chromeWindow.id ];
@@ -64,6 +72,16 @@
         console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
         // Set chromeWindow to current snapshot of tab contents:
         tabWindow.chromeWindow = chromeWindow;
+        tabWindow.open = true;
+      }
+    }
+    // GC any closed windows:
+    for ( var i = 0; i < tabWindows.length; i++ ) {
+      tabWindow = tabWindows[ i ];
+      if( !( tabWindow.open ) ) {
+        console.log( "syncWindowList: detected closed window id: ", chromeWindow.id );
+        delete windowIdMap[ tabWindow.chromeWindow.id ];
+        delete tabWindow[ i ];
       }
     }
 
