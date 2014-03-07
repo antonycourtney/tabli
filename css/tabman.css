@@ -59,9 +59,14 @@ button.header-button {
     width: 16px;
     height: 16px;
 }
-
+span.activeTab {
+  font-weight: bold;
+}
 button.manage {
-    background: url("../images/rounded-big-circle-3-01.png");
+    background: url("../images/interface-89.png");
+}
+button.unmanage {
+    background: url("../images/interface-90.png");
 }
 
 // From jQuery UI modal-form-custom example:

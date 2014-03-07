@@ -117,9 +117,19 @@
     var managed = tabWindow.managed;
     var windowTitle = tabWindow.getTitle();
     var tabs = tabWindow.chromeWindow.tabs;
+    var windowId = tabWindow.chromeWindow.id;
 
     var headerId = managed ? 'managedWindows' : 'unmanagedWindows';
     var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
+
+    function makeTabClickHandler( windowId, tabId ) {
+      function handler() {
+        console.log( "clicked on tab for tab id ", tabId );
+        chrome.tabs.update( tabId, { active: true } );
+        chrome.windows.update( windowId, { focused: true } );        
+      };
+      return handler;
+    }
 
     var windowHeader = makeElem( 'div', 
       { classes: [ "nowrap", "singlerow", "oneRowContainer", "windowHeader" ] } );
@@ -129,11 +139,22 @@
         classes: [ "windowList", "nowrap", "singlerow", "windowTitle" ],
         parent: windowHeader 
       });
+    windowTitleItem.onclick = function() {
+      console.log( "clicked on window '", windowTitle, "'" );
+      chrome.windows.update( windowId, { focused: true } );
+    };
 
-    if( !managed ) {
+    if( managed ) {
+      var windowManageButton = makeElem( 'button', 
+        { classes: [ "unmanage", "header-button" ],
+          attributes: { 'title': "Stop Managing Window" },
+          parent: windowHeader 
+        });
+      // TODO: click handler:
+    } else {
       var windowManageButton = makeElem( 'button', 
         { classes: [ "manage", "header-button" ],
-          attributes: { 'title': "Manage as Subject Window" },
+          attributes: { 'title': "Create Managed Window" },
           parent: windowHeader 
         });
       windowManageButton.onclick = function() {
@@ -159,12 +180,16 @@
         tabFavIcon.setAttribute( 'src', tab.favIconUrl );
       }
 
+      var tabTitleClasses = [ "windowList", "nowrap", "singlerow" ];
+      if( tab.active ) {
+        tabTitleClasses.push( "activeTab" );
+      }
       var titleItem = makeElem( 'span', 
         { text: tab.title,
-          classes: [ "windowList", "nowrap", "singlerow" ],
+          classes: tabTitleClasses,
           parent: tabItem
         });
-
+      titleItem.onclick = makeTabClickHandler( windowId, tab.id );
       tabListItem.appendChild( tabItem );
     }
     windowItem.appendChild( windowHeader ); 
