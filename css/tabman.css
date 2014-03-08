@@ -1,28 +1,35 @@
+* {
+  box-sizing: border-box;
+}
 body {  background: white;
-        font-family: sans-serif;
-        // max-width: 400px;
-        // overflow-x: hidden;  
-        font-size:12px;
-        cursor: default;      
-     }
- h1, h2, h3 {font-family: sans-serif;}
- h1 { font-size: 16px; }
- h2 {   font-size: 16px; 
-        margin-top: 12px;
-        margin-bottom: 2px;
-        // text-decoration: underline;
+      font-family: sans-serif;
+      width: 350px;
+      // max-width: 400px;
+      // overflow-x: hidden;  
+      font-size:12px;
+      cursor: default;      
+   }
+h1, h2, h3 {font-family: sans-serif;}
+h1 { font-size: 16px; }
+h2 {   font-size: 16px; 
+      margin-top: 12px;
+      margin-bottom: 2px;
+      // text-decoration: underline;
+  }
+h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px } 
+hr {margin-top: 0in; padding: 0px}
+ul {margin-top: .05in; padding-left: 20px;}
+span.windowList { display: inline-block;
+      line-height: 14px;
+      height: 14px;
+      width:315px;
     }
- h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px } 
- hr {margin-top: 0in; padding: 0px}
- ul {margin-top: .05in; padding-left: 20px;}
- span.windowList { display: inline-block;
-        line-height: 14px;
-        height: 14px;
-        width:325px;
-      }
- A:link {text-decoration: none} 
- A:visited {text-decoration: none}
- A:hover {text-decoration: none}
+.tabinfo span {
+  width: 280px;
+}
+A:link {text-decoration: none} 
+A:visited {text-decoration: none}
+A:hover {text-decoration: none}
 .nowrap { overflow: hidden; 
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -43,7 +50,7 @@ body {  background: white;
 .windowInfo { border: 1px solid #bababa;
               border-radius: 3px; 
               margin-bottom: 8px;
-              // max-width: 310px;
+              max-width: 345px;
             }
 .windowInfo:hover {
   // border: 1px solid #0224d2;
@@ -57,7 +64,9 @@ body {  background: white;
             // margin: 0;
             // padding-top: 3px;
             // padding-bottom: 3px;
-            border-bottom: 1px solid #bababa
+            border-bottom: 1px solid #bababa;
+            padding-left: 3px;
+            padding-right: 3px;
         }
 .windowHeader:hover {
   background-color: #cacaca

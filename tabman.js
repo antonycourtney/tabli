@@ -58,7 +58,9 @@
   function syncWindowList( chromeWindowList ) {
     // To GC any closed windows:
     for ( var i = 0; i < tabWindows.length; i++ ) {
-      tabWindows[i].open = false;
+      var tabWindow = tabWindows[ i ];
+      if( tabWindow )
+        tabWindow.open = false;
     }
     for ( var i = 0; i < chromeWindowList.length; i++ ) {
       var chromeWindow = chromeWindowList[ i ];
@@ -78,10 +80,10 @@
     // GC any closed windows:
     for ( var i = 0; i < tabWindows.length; i++ ) {
       tabWindow = tabWindows[ i ];
-      if( !( tabWindow.open ) ) {
+      if( tabWindow && !( tabWindow.open ) ) {
         console.log( "syncWindowList: detected closed window id: ", chromeWindow.id );
         delete windowIdMap[ tabWindow.chromeWindow.id ];
-        delete tabWindow[ i ];
+        delete tabWindows[ i ];
       }
     }
 

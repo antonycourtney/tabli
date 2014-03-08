@@ -207,7 +207,9 @@
       var tabWindows = bgw.tabMan.syncWindowList( windowList );
       console.log( "tabWindows:", tabWindows );
       for ( var i = 0; i < tabWindows.length; i++ ) {
-        renderTabWindow( tabWindows[ i ] );
+        var tabWindow = tabWindows[ i ];
+        if( tabWindow )
+          renderTabWindow( tabWindow );
       }
     } );
   }
