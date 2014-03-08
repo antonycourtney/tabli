@@ -67,6 +67,7 @@ A:hover {text-decoration: none}
             border-bottom: 1px solid #bababa;
             padding-left: 3px;
             padding-right: 3px;
+            margin-bottom: 3px;
         }
 .windowHeader:hover {
   background-color: #cacaca

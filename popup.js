@@ -9,7 +9,11 @@
   var bgw = chrome.extension.getBackgroundPage();
 
   function insertAfter(referenceNode, newNode) {
-      referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+  }
+
+  function refreshPopup() {
+    window.location.href="popup.html";
   }
 
 /*
@@ -72,6 +76,7 @@
                 var windowTitle = subjField.val();
                 bgw.tabMan.manageWindow( tabWindow, { title: windowTitle } );
                 $( this ).dialog( "close" );
+                refreshPopup();
               }
             },
             Cancel: function() {
@@ -150,7 +155,10 @@
           attributes: { 'title': "Stop Managing Window" },
           parent: windowHeader 
         });
-      // TODO: click handler:
+      windowManageButton.onclick = function() {
+        tabWindow.managed = false;
+        refreshPopup();
+      }
     } else {
       var windowManageButton = makeElem( 'button', 
         { classes: [ "manage", "header-button" ],
