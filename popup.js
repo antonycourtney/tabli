@@ -118,11 +118,21 @@
     return item;
   };
   
+  function restoreBookmarkWindow( tabWindow ) {
+    var urls = [];
+    var tabs = tabWindow.getTabItems();
+    var urls = tabs.map( function (item) { return item.url; } );
+    function cf( chromeWindow ) {
+      tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
+    }
+    chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+  }
+
   function renderTabWindow( tabWindow ) {
-    var managed = tabWindow.managed;
+    var managed = tabWindow.isManaged();
     var windowTitle = tabWindow.getTitle();
-    var tabs = tabWindow.chromeWindow.tabs;
-    var windowId = tabWindow.chromeWindow.id;
+    var tabs = tabWindow.getTabItems();
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 
     var headerId = managed ? 'managedWindows' : 'unmanagedWindows';
     var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
@@ -130,8 +140,14 @@
     function makeTabClickHandler( windowId, tabId ) {
       function handler() {
         console.log( "clicked on tab for tab id ", tabId );
-        chrome.tabs.update( tabId, { active: true } );
-        chrome.windows.update( windowId, { focused: true } );        
+        if( tabWindow.open ) {
+          chrome.tabs.update( tabId, { active: true } );
+          chrome.windows.update( windowId, { focused: true } );
+        } else {
+          // need to open it!
+          // TODO: 
+          restoreBookmarkWindow( tabWindow );
+        }        
       };
       return handler;
     }
@@ -139,34 +155,36 @@
     var windowHeader = makeElem( 'div', 
       { classes: [ "nowrap", "singlerow", "oneRowContainer", "windowHeader" ] } );
 
+    var openClass = tabWindow.open ? "open" : "closed";
+
     var windowTitleItem = makeElem( 'span', 
       { text: windowTitle, 
-        classes: [ "windowList", "nowrap", "singlerow", "windowTitle" ],
+        classes: [ "windowList", "nowrap", "singlerow", "windowTitle", openClass ],
         parent: windowHeader 
       });
     windowTitleItem.onclick = function() {
       console.log( "clicked on window '", windowTitle, "'" );
-      chrome.windows.update( windowId, { focused: true } );
-    };
-
-    if( managed ) {
-      var windowManageButton = makeElem( 'button', 
-        { classes: [ "unmanage", "header-button" ],
-          attributes: { 'title': "Stop Managing Window" },
-          parent: windowHeader 
-        });
-      windowManageButton.onclick = function() {
-        tabWindow.managed = false;
-        refreshPopup();
+      if( tabWindow.open ) {
+        chrome.windows.update( windowId, { focused: true } );
+      } else {
+        // need to open it!
+        restoreBookmarkWindow( tabWindow );
       }
-    } else {
-      var windowManageButton = makeElem( 'button', 
-        { classes: [ "manage", "header-button" ],
-          attributes: { 'title': "Create Managed Window" },
-          parent: windowHeader 
-        });
-      windowManageButton.onclick = function() {
-        console.log( "Manage window '" + windowTitle + "'" );
+    };
+    var windowCheckItem = makeElem( 'input',
+        { classes: [ "header-button" ],
+          parent: windowHeader,
+          attributes: { 'type': 'checkbox',
+                        'title': 'Managed Window' }
+        } );
+    if( managed ) {
+      windowCheckItem.checked = true;
+    }
+    windowCheckItem.onchange = function() {
+      console.log( "window Check for '", windowTitle, "'" );
+      console.log( "state:", windowCheckItem.checked );
+      if( windowCheckItem.checked ) {
+        // unmanaged --> managed:
         var dlg = $("#manage-dialog" );
         var subjField = $( "#subject" );
         subjField.val( windowTitle );
@@ -174,9 +192,13 @@
           subjField[0].setSelectionRange( 0, windowTitle.length );
         }, 0 );
         dlg.data( "tabWindow", tabWindow );
-        dlg.dialog( "open" );        
+        dlg.dialog( "open" );         
+      } else {
+        bgw.tabMan.unmanageWindow( tabWindow );
+        refreshPopup();        
       }
     }
+
     var tabListItem = makeElem('div', { classes: [ "tablist" ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
@@ -188,7 +210,7 @@
         tabFavIcon.setAttribute( 'src', tab.favIconUrl );
       }
 
-      var tabTitleClasses = [ "windowList", "nowrap", "singlerow" ];
+      var tabTitleClasses = [ "windowList", "nowrap", "singlerow", openClass ];
       if( tab.active ) {
         tabTitleClasses.push( "activeTab" );
       }
@@ -210,7 +232,11 @@
   function renderPopup() {
     initManageDialog();
     console.log( "background page:", bgw );
-    chrome.windows.getAll( {populate: true}, function( windowList ) {
+    chrome.bookmarks.getTree( function ( tree ) {
+      console.log( "Bookmarks tree: ", tree );
+    });
+
+    function syncAndRender( windowList ) {
       console.log( "in windows.getAll callback:", windowList );
       var tabWindows = bgw.tabMan.syncWindowList( windowList );
       console.log( "tabWindows:", tabWindows );
@@ -219,7 +245,24 @@
         if( tabWindow )
           renderTabWindow( tabWindow );
       }
-    } );
+    }
+
+    // wrapper to log exceptions
+    function logWrap( f ) {
+      function wf() {
+        try {
+          var ret = f.apply( this, arguments );
+        } catch( e ) {
+          console.error( "logWrap: caught exception invoking function: " );
+          console.error( e.stack );
+          throw e;
+        }
+        return ret;
+      }
+      return wf;
+    }
+
+    chrome.windows.getAll( {populate: true}, logWrap( syncAndRender ) );
   }
 })(jQuery);
 

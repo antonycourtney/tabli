@@ -10,7 +10,7 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "tabs"
+    "tabs", "bookmarks"
   ],
   "background": {
     "scripts": ["lib/jquery-1.10.2.js", "lib/jquery-ui-1.10.4.custom.min.js", "tabman.js"]
