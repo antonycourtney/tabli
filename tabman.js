@@ -6,6 +6,7 @@
       syncWindowList: syncWindowList,
       manageWindow: manageWindow,
       unmanageWindow: unmanageWindow,
+      restoreBookmarkWindow: restoreBookmarkWindow
     }
   });
 
@@ -19,6 +20,17 @@
   var archiveFolderId = null;
   var archiveFolderTitle = "_Archive";
 
+  function restoreBookmarkWindow( tabWindow ) {
+    var urls = [];
+    var tabs = tabWindow.getTabItems();
+    var urls = tabs.map( function (item) { return item.url; } );
+    function cf( chromeWindow ) {
+      tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
+      tabWindow.open = true;
+      windowIdMap[ chromeWindow.id ] = tabWindow;      
+    }
+    chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+  }
 
  /*
   * begin managing the specified tab window

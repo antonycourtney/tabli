@@ -118,15 +118,6 @@
     return item;
   };
   
-  function restoreBookmarkWindow( tabWindow ) {
-    var urls = [];
-    var tabs = tabWindow.getTabItems();
-    var urls = tabs.map( function (item) { return item.url; } );
-    function cf( chromeWindow ) {
-      tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
-    }
-    chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
-  }
 
   function renderTabWindow( tabWindow ) {
     var managed = tabWindow.isManaged();
@@ -144,9 +135,7 @@
           chrome.tabs.update( tabId, { active: true } );
           chrome.windows.update( windowId, { focused: true } );
         } else {
-          // need to open it!
-          // TODO: 
-          restoreBookmarkWindow( tabWindow );
+          bgw.tabMan.restoreBookmarkWindow( tabWindow );
         }        
       };
       return handler;
@@ -168,7 +157,7 @@
         chrome.windows.update( windowId, { focused: true } );
       } else {
         // need to open it!
-        restoreBookmarkWindow( tabWindow );
+        bgw.tabMan.restoreBookmarkWindow( tabWindow );
       }
     };
     var windowCheckItem = makeElem( 'input',
