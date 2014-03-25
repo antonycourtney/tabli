@@ -28,7 +28,7 @@ span.closed {
   color: #979ca0;
 }
 .tabinfo span {
-  width: 280px;
+  width: 295px;
 }
 A:link {text-decoration: none} 
 A:visited {text-decoration: none}
@@ -87,16 +87,32 @@ button.header-button {
     width: 16px;
     height: 16px;
 }
+button.show-on-hover {
+  visibility: hidden;
+}
+button.hover {
+  visibility: visible;
+}
 span.activeTab {
   font-weight: bold;
 }
+button.close {
+    color: red;
+    background: url("../images/interface-80.png");
+}
+/*
+button.close:hover {
+    background: url("../images/interface-94.png");  
+}
+*/
+/*
 button.manage {
     background: url("../images/interface-89.png");
 }
 button.unmanage {
     background: url("../images/interface-90.png");
 }
-
+*/
 // From jQuery UI modal-form-custom example:
 label, input { display:block; }
 input.text { margin-bottom:12px; width:95%; padding: .4em; }

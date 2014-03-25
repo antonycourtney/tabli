@@ -118,6 +118,14 @@
     return item;
   };
   
+  function mkChangeClassHandler( element, addClassName, removeClassName ) {
+    return function() {
+      if ( addClassName )
+        element.classList.add( addClassName );
+      if ( removeClassName )
+        element.classList.remove( removeClassName );
+    };
+  }
 
   function renderTabWindow( tabWindow, current ) {
     var managed = tabWindow.isManaged();
@@ -140,6 +148,15 @@
       };
       return handler;
     }
+
+    function makeTabCloseHandler( tabElement, windowId, tabId ) {
+      function handler() {
+        chrome.tabs.remove( tabId );
+        tabListItem.removeChild( tabElement );
+      }
+      return handler;
+    }
+
 
     var windowHeader = makeElem( 'div', 
       { classes: [ "nowrap", "singlerow", "oneRowContainer", "windowHeader" ] } );
@@ -209,6 +226,18 @@
           parent: tabItem
         });
       titleItem.onclick = makeTabClickHandler( windowId, tab.id );
+
+      var closeButton = makeElem( 'button',
+        { classes: [ "header-button", "close", "show-on-hover" ],
+          parent: tabItem,
+        });
+
+      // roll our onw hover events because we don't want to bother with cons'ing element ids.
+      tabItem.addEventListener( "mouseover", mkChangeClassHandler( closeButton, 'hover', 'show-on-hover' ) );
+      tabItem.addEventListener( "mouseout", mkChangeClassHandler( closeButton, 'show-on-hover', 'hover' ) );
+
+      closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
+
       tabListItem.appendChild( tabItem );
     }
     windowItem.appendChild( windowHeader ); 
