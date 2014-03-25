@@ -119,13 +119,13 @@
   };
   
 
-  function renderTabWindow( tabWindow ) {
+  function renderTabWindow( tabWindow, current ) {
     var managed = tabWindow.isManaged();
     var windowTitle = tabWindow.getTitle();
     var tabs = tabWindow.getTabItems();
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 
-    var headerId = managed ? 'managedWindows' : 'unmanagedWindows';
+    var headerId = current ? 'currentWindow' : ( managed ? 'managedWindows' : 'unmanagedWindows' );
     var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
 
     function makeTabClickHandler( windowId, tabId ) {
@@ -226,14 +226,18 @@
     });
 
     function syncAndRender( windowList ) {
-      console.log( "in windows.getAll callback:", windowList );
-      var tabWindows = bgw.tabMan.syncWindowList( windowList );
-      console.log( "tabWindows:", tabWindows );
-      for ( var i = 0; i < tabWindows.length; i++ ) {
-        var tabWindow = tabWindows[ i ];
-        if( tabWindow )
-          renderTabWindow( tabWindow );
-      }
+      chrome.windows.getCurrent( null, function ( currentWindow ) {
+        console.log( "in windows.getCurrent callback:", windowList, currentWindow );
+        var tabWindows = bgw.tabMan.syncWindowList( windowList );
+        console.log( "tabWindows:", tabWindows );
+        for ( var i = 0; i < tabWindows.length; i++ ) {
+          var tabWindow = tabWindows[ i ];
+          if( tabWindow ) {
+            var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
+            renderTabWindow( tabWindow, isCurrent );
+          }
+        }
+      } );
     }
 
     // wrapper to log exceptions
