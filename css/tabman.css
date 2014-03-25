@@ -83,7 +83,7 @@ button.header-button {
     border: none;
     background-color: transparent;
     background-repeat: no-repeat;
-    padding: 2px;
+    margin-right: 3px;
     width: 16px;
     height: 16px;
 }
@@ -105,14 +105,12 @@ button.close:hover {
     background: url("../images/interface-94.png");  
 }
 */
-/*
-button.manage {
-    background: url("../images/interface-89.png");
+button.unmanaged {
+    background: url("../images/vote-7.png");
 }
-button.unmanage {
-    background: url("../images/interface-90.png");
+button.managed {
+    background: url("../images/vote-6.png");
 }
-*/
 // From jQuery UI modal-form-custom example:
 label, input { display:block; }
 input.text { margin-bottom:12px; width:95%; padding: .4em; }

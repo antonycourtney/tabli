@@ -171,6 +171,41 @@
 
     var openClass = tabWindow.open ? "open" : "closed";
 
+    var windowCheckItem = makeElem( 'button',
+        { classes: [ "header-button" ],
+          parent: windowHeader,
+          attributes: { 'type': 'checkbox',
+                        'title': 'Managed Window' }
+        } );
+    if( managed ) {
+      windowCheckItem.classList.add( "managed" );
+    } else {
+      windowCheckItem.classList.add( "unmanaged" );
+      windowCheckItem.classList.add( "show-on-hover" );
+      windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
+      windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
+    }
+
+    windowCheckItem.onclick = function() {
+      console.log( "toggle manage for '", windowTitle, "'" );
+      var checked = windowCheckItem.classList.contains( "unmanaged" ); // current unmanaged, so action is "checked"
+      console.log( "state:", checked );
+      if( checked ) {
+        // unmanaged --> managed:
+        var dlg = $("#manage-dialog" );
+        var subjField = $( "#subject" );
+        subjField.val( windowTitle );
+        window.setTimeout( function() {
+          subjField[0].setSelectionRange( 0, windowTitle.length );
+        }, 0 );
+        dlg.data( "tabWindow", tabWindow );
+        dlg.dialog( "open" );
+      } else {
+        bgw.tabMan.unmanageWindow( tabWindow );
+        refreshPopup();        
+      }
+    }
+
     var windowTitleItem = makeElem( 'span', 
       { text: windowTitle, 
         classes: [ "windowList", "nowrap", "singlerow", "windowTitle", openClass ],
@@ -185,33 +220,6 @@
         bgw.tabMan.restoreBookmarkWindow( tabWindow );
       }
     };
-    var windowCheckItem = makeElem( 'input',
-        { classes: [ "header-button" ],
-          parent: windowHeader,
-          attributes: { 'type': 'checkbox',
-                        'title': 'Managed Window' }
-        } );
-    if( managed ) {
-      windowCheckItem.checked = true;
-    }
-    windowCheckItem.onchange = function() {
-      console.log( "window Check for '", windowTitle, "'" );
-      console.log( "state:", windowCheckItem.checked );
-      if( windowCheckItem.checked ) {
-        // unmanaged --> managed:
-        var dlg = $("#manage-dialog" );
-        var subjField = $( "#subject" );
-        subjField.val( windowTitle );
-        window.setTimeout( function() {
-          subjField[0].setSelectionRange( 0, windowTitle.length );
-        }, 0 );
-        dlg.data( "tabWindow", tabWindow );
-        dlg.dialog( "open" );         
-      } else {
-        bgw.tabMan.unmanageWindow( tabWindow );
-        refreshPopup();        
-      }
-    }
 
     if ( tabWindow.open ) {
       var windowCloseButton = makeElem( 'button',
@@ -259,7 +267,7 @@
 
         closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
       }
-      
+
       tabListItem.appendChild( tabItem );
     }
     windowItem.appendChild( windowHeader ); 
