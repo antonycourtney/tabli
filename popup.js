@@ -211,10 +211,9 @@
 
       var tabItem = makeElem( 'div', 
         { classes: [ "singlerow", "nowrap", "oneRowContainer", "tabinfo" ] } );
-      if( tab.favIconUrl ) {
-        var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
+      var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
+      if ( tab.favIconUrl )
         tabFavIcon.setAttribute( 'src', tab.favIconUrl );
-      }
 
       var tabTitleClasses = [ "windowList", "nowrap", "singlerow", openClass ];
       if( tab.active ) {
