@@ -22,13 +22,13 @@ ul {margin-top: .05in; padding-left: 20px;}
 span.windowList { display: inline-block;
       line-height: 14px;
       height: 14px;
-      width:315px;
+      width:305px;
     }
 span.closed {
   color: #979ca0;
 }
 .tabinfo span {
-  width: 295px;
+  width: 305px;
 }
 A:link {text-decoration: none} 
 A:visited {text-decoration: none}

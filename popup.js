@@ -157,6 +157,14 @@
       return handler;
     }
 
+    function windowCloseHandler() {
+      chrome.windows.remove( windowId, function() {
+        tabWindow.open = false;
+        if ( !managed ) {
+          winHeader.parentNode.removeChild( windowItem );
+        }
+      });
+    }
 
     var windowHeader = makeElem( 'div', 
       { classes: [ "nowrap", "singlerow", "oneRowContainer", "windowHeader" ] } );
@@ -205,6 +213,19 @@
       }
     }
 
+    if ( tabWindow.open ) {
+      var windowCloseButton = makeElem( 'button',
+        { classes: [ "header-button", "close", "show-on-hover" ],
+          parent: windowHeader,
+        });
+
+      // roll our onw hover events because we don't want to bother with cons'ing element ids.
+      windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCloseButton, 'hover', 'show-on-hover' ) );
+      windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCloseButton, 'show-on-hover', 'hover' ) );
+
+      windowCloseButton.onclick = windowCloseHandler;
+    }
+
     var tabListItem = makeElem('div', { classes: [ "tablist" ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
@@ -226,17 +247,19 @@
         });
       titleItem.onclick = makeTabClickHandler( windowId, tab.id );
 
-      var closeButton = makeElem( 'button',
-        { classes: [ "header-button", "close", "show-on-hover" ],
-          parent: tabItem,
-        });
+      if ( tabWindow.open ) {
+        var closeButton = makeElem( 'button',
+          { classes: [ "header-button", "close", "show-on-hover" ],
+            parent: tabItem,
+          });
 
-      // roll our onw hover events because we don't want to bother with cons'ing element ids.
-      tabItem.addEventListener( "mouseover", mkChangeClassHandler( closeButton, 'hover', 'show-on-hover' ) );
-      tabItem.addEventListener( "mouseout", mkChangeClassHandler( closeButton, 'show-on-hover', 'hover' ) );
+        // roll our onw hover events because we don't want to bother with cons'ing element ids.
+        tabItem.addEventListener( "mouseover", mkChangeClassHandler( closeButton, 'hover', 'show-on-hover' ) );
+        tabItem.addEventListener( "mouseout", mkChangeClassHandler( closeButton, 'show-on-hover', 'hover' ) );
 
-      closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
-
+        closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
+      }
+      
       tabListItem.appendChild( tabItem );
     }
     windowItem.appendChild( windowHeader ); 
