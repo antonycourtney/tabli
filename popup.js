@@ -172,18 +172,14 @@
     var openClass = tabWindow.open ? "open" : "closed";
 
     var windowCheckItem = makeElem( 'button',
-        { classes: [ "header-button" ],
-          parent: windowHeader,
-          attributes: { 'type': 'checkbox',
-                        'title': 'Managed Window' }
-        } );
+        { classes: [ "header-button" ], parent: windowHeader } );
     if( managed ) {
       windowCheckItem.classList.add( "managed" );
     } else {
       windowCheckItem.classList.add( "unmanaged" );
-      windowCheckItem.classList.add( "show-on-hover" );
-      windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
-      windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
+      // windowCheckItem.classList.add( "show-on-hover" );
+      // windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
+      // windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
     }
 
     windowCheckItem.onclick = function() {
@@ -240,6 +236,25 @@
 
       var tabItem = makeElem( 'div', 
         { classes: [ "singlerow", "nowrap", "oneRowContainer", "tabinfo" ] } );
+
+      if ( managed ) {
+        var tabCheckItem = makeElem( 'button',
+            { classes: [ "header-button" ],
+              parent: tabItem,
+            } );
+
+        // TODO: conditional -- actual bookmarks only
+        tabCheckItem.classList.add( "managed" );
+
+        // tabCheckItem.classList.add( "unmanaged" );
+        // tabCheckItem.classList.add( "show-on-hover" );
+        // windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
+        // windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
+      }
+
+
+
+
       var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
       if ( tab.favIconUrl )
         tabFavIcon.setAttribute( 'src', tab.favIconUrl );
