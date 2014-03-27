@@ -165,6 +165,8 @@
         if ( !managed ) {
           winHeader.parentNode.removeChild( windowItem );
         }
+        if ( !current ) // don't refresh popup if this window is going away
+          refreshPopup();
       });
     }
 
@@ -223,6 +225,7 @@
       var windowCloseButton = makeElem( 'button',
         { classes: [ "header-button", "close", "show-on-hover" ],
           parent: windowHeader,
+          attributes: { title: "Close Window" }
         });
 
       // roll our onw hover events because we don't want to bother with cons'ing element ids.
@@ -279,6 +282,7 @@
         var closeButton = makeElem( 'button',
           { classes: [ "header-button", "close", "show-on-hover" ],
             parent: tabItem,
+            attributes: { title: "Close Tab" }
           });
 
         // roll our onw hover events because we don't want to bother with cons'ing element ids.

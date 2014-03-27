@@ -110,6 +110,7 @@ button.unmanaged {
 }
 button.managed {
     background: url("../images/vote-6.png");
+    -webkit-filter: grayscale(50%);
 }
 // From jQuery UI modal-form-custom example:
 label, input { display:block; }
