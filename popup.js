@@ -175,34 +175,45 @@
 
     var openClass = tabWindow.open ? "open" : "closed";
 
-    var windowCheckItem = makeElem( 'button',
-        { classes: [ "header-button" ], parent: windowHeader } );
-    if( managed ) {
-      windowCheckItem.classList.add( "managed" );
-    } else {
-      windowCheckItem.classList.add( "unmanaged" );
-      // windowCheckItem.classList.add( "show-on-hover" );
-      // windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
-      // windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
-    }
+    // We want to use a lighter, icon-based checkmark for the checked state, so this
+    // is a little involved...
 
-    windowCheckItem.onclick = function() {
-      console.log( "toggle manage for '", windowTitle, "'" );
-      var checked = windowCheckItem.classList.contains( "unmanaged" ); // current unmanaged, so action is "checked"
-      console.log( "state:", checked );
-      if( checked ) {
-        // unmanaged --> managed:
-        var dlg = $("#manage-dialog" );
-        var subjField = $( "#subject" );
-        subjField.val( windowTitle );
-        window.setTimeout( function() {
-          subjField[0].setSelectionRange( 0, windowTitle.length );
-        }, 0 );
-        dlg.data( "tabWindow", tabWindow );
-        dlg.dialog( "open" );
-      } else {
+    var windowCheckItem;
+    if( managed ) {
+      windowCheckItem =  makeElem( 'button',
+        { classes: [ "header-button", "window-managed" ],
+          parent: windowHeader,
+          attributes: { title: "Managed Window (click to stop managing)"}
+        } );  
+      windowCheckItem.onclick = function() {
+        // managed --> unmanaged:
+        // TODO: confirmation dialog
         bgw.tabMan.unmanageWindow( tabWindow );
-        refreshPopup();        
+        refreshPopup();                
+      };
+    } else {
+      windowCheckItem = makeElem( 'input',
+        { classes: [ "header-button", "show-on-hover" ], parent: windowHeader,
+          attributes: { type: "checkbox", title: "Click to bookmark tabs and manage window" }
+        } );
+      windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
+      windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
+      windowCheckItem.onchange = function() {
+        console.log( "toggle manage for '", windowTitle, "'" );
+        var checked = windowCheckItem.checked;
+        console.log( "state:", checked );
+        if( checked ) {
+          // unmanaged --> managed:
+          var dlg = $("#manage-dialog" );
+          var subjField = $( "#subject" );
+          subjField.val( windowTitle );
+          window.setTimeout( function() {
+            subjField[0].setSelectionRange( 0, windowTitle.length );
+          }, 0 );
+          dlg.data( "tabWindow", tabWindow );
+          dlg.dialog( "open" );
+        } else {
+        }
       }
     }
 
@@ -254,7 +265,7 @@
 
         // TODO: conditional -- actual bookmarks only
         if (tab.bookmarked ) {
-          tabCheckItem.classList.add( "managed" );
+          tabCheckItem.classList.add( "tab-managed" );
         } else {
           tabCheckItem.classList.add( "unmanaged" );
           tabCheckItem.classList.add( "show-on-hover" );

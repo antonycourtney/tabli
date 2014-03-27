@@ -87,10 +87,15 @@ button.header-button {
     width: 16px;
     height: 16px;
 }
-button.show-on-hover {
+input[type='checkbox'].header-button {
+  margin-top: 4px;
+  vertical-align: top;
+  // margin-bottom:3px;
+}
+.show-on-hover {
   visibility: hidden;
 }
-button.hover {
+.hover {
   visibility: visible;
 }
 span.activeTab {
@@ -100,17 +105,22 @@ button.close {
     color: red;
     background: url("../images/interface-80.png");
 }
-/*
 button.close:hover {
     background: url("../images/interface-94.png");  
 }
-*/
 button.unmanaged {
-    background: url("../images/vote-7.png");
+    -webkit-mask-image: url("../images/Keyboard-9.png");
+    background-color: #7472ff;
 }
-button.managed {
-    background: url("../images/vote-6.png");
-    -webkit-filter: grayscale(50%);
+button.tab-managed {
+    -webkit-mask-image: url("../images/status-9.png");
+    // background-color: #606060;
+    background-color: #7472ff;
+}
+button.window-managed {
+    -webkit-mask-image: url("../images/status-9.png");
+    // background-color: #606060;
+    background-color: #7472ff;
 }
 // From jQuery UI modal-form-custom example:
 label, input { display:block; }
