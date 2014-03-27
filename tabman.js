@@ -34,17 +34,15 @@
 
  /*
   * begin managing the specified tab window
+  *
   */
   function manageWindow( tabWindow, opts ) {
-    tabWindow._managed = true;
-    tabWindow._managedTitle = opts.title;
-
     // and write out a Bookmarks folder for this newly managed window:
     if( !tabmanFolderId ) {
       alert( "Could not save bookmarks -- no tab manager folder" );
     }
     var windowFolder = { parentId: tabmanFolderId,
-                         title: tabWindow._managedTitle,
+                         title: opts.title,
                        };
     chrome.bookmarks.create( windowFolder, function( windowFolderNode ) {
       console.log( "succesfully created bookmarks folder ", windowFolderNode );
@@ -58,7 +56,20 @@
           console.log( "succesfully bookmarked tab ", tabNode );
         });
       }
-      tabWindow.bookmarkFolder = windowFolderNode;
+      // Now do an explicit get of subtree to get node populated with children
+      chrome.bookmarks.getSubTree( windowFolderNode.id, function ( folderNodes ) {
+        var fullFolderNode = folderNodes[ 0 ];
+        tabWindow.bookmarkFolder = fullFolderNode;
+
+        // Note: Only now do we actually change the state to managed!
+        // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
+        // or have no children because of the asynchrony of creating bookmarks.
+        // There might still be a race condition here since
+        // the bookmarks for children may not have been created yet.
+        // Haven't seen evidence of this so far.
+        tabWindow._managed = true;
+        tabWindow._managedTitle = opts.title;
+      } );
     } );
   }
 
@@ -70,7 +81,7 @@
       alert( "could not move managed window folder to archive -- no archive folder" );
       return;
     }
-    chrome.bookmarks.move( tabWindow.bookmarkFolderId, { parentId: archiveFolderId } );
+    chrome.bookmarks.move( tabWindow.bookmarkFolder.id, { parentId: archiveFolderId } );
     tabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
   }
 
@@ -103,12 +114,52 @@
 
     // Get a set of tab-like items for rendering
     getTabItems: function() {
+
+      function makeBookmarkedTabItem( bm ) {
+        var ret = Object.create( bm );
+        ret.bookmarked = true;
+        ret.open = false;
+
+        return ret;
+      };
+
+      function makeOpenTabItem( urlMap, ot ) {
+        var ret = Object.create( ot );
+        ret.bookmarked = false;
+        ret.open = true;
+        urlMap[ ot.url ] = ret;
+
+        return ret;
+      };
+
       var tabs;
-      if( this.open ) {
-        tabs = this.chromeWindow.tabs;
+
+      if( this.isManaged() ) {
+        // try to match the open tabs as closely as possible by starting there:
+
+        var urlMap = {};
+
+        if( this.open ) {
+          tabs = this.chromeWindow.tabs.map( function ( ot ) { return makeOpenTabItem( urlMap, ot); } );
+
+          var closedBookmarks = [];
+          for ( var i = 0; i < this.bookmarkFolder.children.length; i++ ) {
+            var bm = this.bookmarkFolder.children[ i ];
+            var obm = urlMap[ bm.url ];
+            if ( obm ) {
+              obm.bookmarked = true;
+            } else {
+              closedBookmarks.push( makeBookmarkedTabItem( bm ) );
+            }
+          }
+          tabs = closedBookmarks.concat( tabs );
+        } else {
+          tabs = this.bookmarkFolder.children.map( makeBookmarkedTabItem );
+        }
       } else {
-        tabs = this.bookmarkFolder.children;
+        tabs = this.chromeWindow.tabs;
       }
+
       return tabs;
     }
   };
@@ -166,7 +217,7 @@
         tabWindow = makeChromeTabWindow( chromeWindow );
         addTabWindow( tabWindow );
       } else {
-        console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+        // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
         // Set chromeWindow to current snapshot of tab contents:
         tabWindow.chromeWindow = chromeWindow;
         tabWindow.open = true;
@@ -176,8 +227,11 @@
     for ( var i = 0; i < tabWindows.length; i++ ) {
       tabWindow = tabWindows[ i ];
       if( tabWindow && !( tabWindow._managed ) && !( tabWindow.open ) ) {
-        console.log( "syncWindowList: detected closed window id: ", tabWindow.chromeWindow.id );
-        delete windowIdMap[ tabWindow.chromeWindow.id ];
+        console.log( "syncWindowList: detected closed window: ", tabWindow );
+        // if user un-bookmarked a non-open folder window, won't have an id or a folder:
+        var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+        if ( windowId ) 
+          delete windowIdMap[ tabWindow.chromeWindow.id ];
         delete tabWindows[ i ];
       }
     }
@@ -195,6 +249,11 @@
     for( var i = 0; i < tabManFolder.children.length; i++ ) {
       var windowFolder = tabManFolder.children[ i ];
       if( windowFolder.title[0] === "_" ) {
+        continue;
+      }
+      var fc = windowFolder.children;
+      if ( !fc ) {
+        console.log( "Found bookmarks folder with no children, skipping: ", fc );
         continue;
       }
       loadWindow( windowFolder );

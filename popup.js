@@ -133,6 +133,8 @@
     var tabs = tabWindow.getTabItems();
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 
+    // console.log( "renderTabWindow: title: ", windowTitle, ", tabWindow: ", tabWindow );
+    // console.log( "tabs:", tabs );
     var headerId = current ? 'currentWindow' : ( managed ? 'managedWindows' : 'unmanagedWindows' );
     var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
 
@@ -233,33 +235,36 @@
     var tabListItem = makeElem('div', { classes: [ "tablist" ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
+      var tabOpenClass = openClass;
 
       var tabItem = makeElem( 'div', 
         { classes: [ "singlerow", "nowrap", "oneRowContainer", "tabinfo" ] } );
 
       if ( managed ) {
+        if( !tab.open )
+          tabOpenClass = "closed";
+
         var tabCheckItem = makeElem( 'button',
             { classes: [ "header-button" ],
               parent: tabItem,
             } );
 
         // TODO: conditional -- actual bookmarks only
-        tabCheckItem.classList.add( "managed" );
-
-        // tabCheckItem.classList.add( "unmanaged" );
-        // tabCheckItem.classList.add( "show-on-hover" );
-        // windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
-        // windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
+        if (tab.bookmarked ) {
+          tabCheckItem.classList.add( "managed" );
+        } else {
+          tabCheckItem.classList.add( "unmanaged" );
+          tabCheckItem.classList.add( "show-on-hover" );
+          tabItem.addEventListener( "mouseover", mkChangeClassHandler( tabCheckItem, 'hover', 'show-on-hover' ) );
+          tabItem.addEventListener( "mouseout", mkChangeClassHandler( tabCheckItem, 'show-on-hover', 'hover' ) );
+        }
       }
-
-
-
 
       var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
       if ( tab.favIconUrl )
         tabFavIcon.setAttribute( 'src', tab.favIconUrl );
 
-      var tabTitleClasses = [ "windowList", "nowrap", "singlerow", openClass ];
+      var tabTitleClasses = [ "windowList", "nowrap", "singlerow", tabOpenClass ];
       if( tab.active ) {
         tabTitleClasses.push( "activeTab" );
       }
@@ -302,13 +307,13 @@
     function syncAndRender( windowList ) {
       chrome.windows.getCurrent( null, function ( currentWindow ) {
         console.log( "in windows.getCurrent callback:", windowList, currentWindow );
-        var tabWindows = bgw.tabMan.syncWindowList( windowList );
+        var tabWindows = logWrap( bgw.tabMan.syncWindowList )( windowList );
         console.log( "tabWindows:", tabWindows );
         for ( var i = 0; i < tabWindows.length; i++ ) {
           var tabWindow = tabWindows[ i ];
           if( tabWindow ) {
             var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
-            renderTabWindow( tabWindow, isCurrent );
+            logWrap( function() { renderTabWindow( tabWindow, isCurrent ); } )();
           }
         }
       } );
