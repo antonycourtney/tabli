@@ -16,7 +16,7 @@ The Subjective Tab Manager is my attempt to improve window and tab management in
 
 ![Screenshot of Subjective Tab Manager Popup](screenshots/Subjective-screenshot.png "Subjective Tab Manager screenshot")
 
-The popup provides an at a glance view of all open windows and tabs.  The popup can be used to quickly scroll through all open windows and tabs and switch to or close any open window or tab with a single click.  The Subjective tab managers also supports saving and restoring sets of tabs ( "Bookmarked Windows" ).
+The popup can be used to quickly scroll through all open windows and tabs and switch to or close any open window or tab with a single click.  The Subjective Tab Manager also supports saving and restoring sets of tabs ( "Bookmarked Windows" ).
 
 ## Installation
 
@@ -46,9 +46,11 @@ Here is a quick summary of the main components in the Subjective Tab Manager int
 
 3. Clicking on the close icon in the upper right of a window header will close that window and all its tabs. A close icon will also appear when rolling over individual tabs within a window summary.  Clicking the close icon for an individual tab will close that tab.
 
-4. Clicking the checkbox in the upper left corner of a window will toggle whether or not that window is *Bookmarked*.  When a window is first bookmarked, you will be presented with a dialog to give the window a meaningful name.  The current open tabs will all be bookmarked along with the window, and the window will then appear in the list of Bookmarked Windows.  The blue check mark next to an individual tab indicates whether or not the particular tab is bookmarked.  Clicking the checkbox will add or remove a bookmark for that tab.
+4. Clicking the checkbox in the upper left corner of a window summary of a window that hasn't yet been bookmarked will *bookmark* that window and all its tabs. Bookmarking a window saves all of the currently open tabs in that window to a folder that you name using Chrome's existing bookmarks facility, and associates that folder with the window. This makes it easy to restore a bookmarked window and all of its tabs in a later browsing session, or to revert a bookmarked window back to its original state.
+The blue check mark next to an individual tab within a window summary indicates whether or not the particular tab is bookmarked.  Clicking the checkbox next to a tab will add or remove a bookmark for that tab.
+If a window has been bookmarked, clicking on the bookmark checkbox for the window will remove the bookmark folder for the window and all its tabs.
 
-5. Clicking the "Revert" button on a bookmarked window will discard the current state of a window and revert back to the set of explicitly bookmarked tabs. This is useful when bookmarked windows are used for organizing reference documentation, and the window state drifts considerably while researching a particular issue.
+5. Clicking the "Revert" button on a bookmarked window will discard the current state of a window and revert back to the set of explicitly bookmarked tabs. This is useful when bookmarked windows are used for organizing reference documentation and the window state drifts substantially over a browsing session.
 
 ### Getting Started and Best Practice
 
