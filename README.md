@@ -6,7 +6,7 @@
 
 Google Chrome is an excellent web browser but has limited features for managing windows and tabs. Specifically:
 
-  * The top-level **Window** menu displays only the title text of the current active tab for a window. This is often not sufficient to identify a particular target window.  For example, users often have a window dedicated to their web-based mail client (such as GMail).  Clicking on a link in a GMail message will open the link in a new tab, resulting in an entry in the Window menu that makes no mention of GMail.
+  * The top-level **Window** menu displays only the title text of the current active tab for a window. This is often not sufficient to identify a particular target window.  For example, users often have a window dedicated to their web-based mail client (such as GMail).  But clicking on a link in a GMail message will open the link in a new tab, resulting in an entry in the **Window** menu that makes no mention of GMail.
 
   * As the number of tabs open in a window increases, the title text on each tab header is truncated to the point of illegibility. This makes it difficult to find a specific tab of desired content or to efficiently close unwanted tabs.
 
@@ -22,7 +22,7 @@ The popup provides an at a glance view of all open windows and tabs.  The popup 
 
 To install the alpha release of Subjective Tab Manager do the following:
 
-1. Download the packed extension file from [http://www.antonycourtney.com/downloads/tabman.crx](http://www.antonycourtney.com/downloads/tabman.crx) and save it to your computer.
+1. Download the packed extension file **tabman.crx** and save it to your computer.  ( *Subjective Tab Manager is currently in limited alpha release. Please email me directly if you are interested in being an alpha tester and I'll send you a download link.* )
 
 2. Click the Chrome menu icon (the "Cheeseburger" icon with 3 horizontal lines) on the browser toolbar.
 
@@ -78,7 +78,7 @@ Subjective Tab Manager is still very much a work-in-progress.  Some of the featu
 
 ### Related Work
 
-Subjective Tab Manager was inspired by a similar Chrome Extension called [Project Tab Manager](https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia?hl=en), and the design grew out of my experiences using that extension.  The main differences are that Subjective Tab Manager provides features for browsing and managing all open windows and tabs ( not just bookmarked ones ), and offers facilities for identifying how a bookmarked window has drifted from its original state and efficiently reverting to the bookmarked state.
+Subjective Tab Manager was inspired by a similar Chrome Extension called [Project Tab Manager](https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia?hl=en), and the design grew out of my experiences using that extension.  The main differences are that Subjective Tab Manager provides features for browsing and managing all open windows and tabs ( not just bookmarked ones ), and offers facilities for identifying how a bookmarked window has drifted from its original state and efficiently reverting to that original state.
 
 ## Feedback
 
