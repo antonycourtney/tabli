@@ -16,46 +16,6 @@
     window.location.href="popup.html";
   }
 
-/*
-  function updateWindowList() {
-    var subjectWindowList = [];
-    var unmanagedWindowList = [];
-
-    var subjectWindows = {};
-    var subjectMatchers = [];
-
-    function init() {
-      var subject;
-      for ( subject in subjectConfig ) {
-        if ( !subjectConfig.hasOwnProperty( subject ) ) 
-          continue;
-        var sc = subjectConfig[ subject ];
-        var pat = sc.urlHostSuffix.replace(".", "\\.") + "$";
-        var re = new RegExp( pat );
-        var sw = { subject: subject, config: sc };
-        subjectWindowList.push( sw );
-        subjectMatchers.push( { urlRE: re, subjectWindow: sw } );
-      }
-    }
-
-
-
-    function buildWindowLists( windowList ) {
-      console.log( "tabMan.buildWindowLists ", windowList );
-      for ( var i = 0; i < windowList.length; i++ ) {
-        var win = windowList[i];
-        var tabs = win.tabs;
-        for ( var j = 0; j < tabs.length; j++ ) {
-          var tab = tabs[j];
-          var sw = findSubjectByURL( tab.url );
-
-        }
-      }
-    }
-    // chrome.windows.getAll( {populate: true}, buildWindowLists );
-*/
-
-
   function initManageDialog() {
     var subject = $("#subject"),
         allFields = $( [] ).add( subject );
@@ -387,7 +347,6 @@
 
     var panelContent = $("#" + windowPanelId + " .expandable-panel-content");
     var contentHeight = panelContent.css('height');
-    console.log( "content height for ", windowPanelId, ": ", contentHeight );
     if ( !window.open ) {
       panelContent.css('margin-top',"-" + contentHeight );
     }
@@ -416,7 +375,8 @@
 
     function syncAndRender( windowList ) {
       chrome.windows.getCurrent( null, function ( currentWindow ) {
-        console.log( "in windows.getCurrent callback:", windowList, currentWindow );
+        console.log( "in windows.getCurrent:" );
+        console.log( "Chrome Windows: ", windowList );
         var tabWindows = logWrap( bgw.tabMan.syncWindowList )( windowList );
         tabWindows.sort( windowCmpFn );
         console.log( "tabWindows:", tabWindows );
@@ -450,10 +410,4 @@
   }
 })(jQuery);
 
-/*
-document.addEventListener('DOMContentLoaded', function () {
-  tabMan.renderPopup();
-});
-
-*/
 $(document).bind('ready', tabMan.renderPopup );
