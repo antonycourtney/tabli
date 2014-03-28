@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Subjective Tab Manager",
-  "description": "A window and tab manager for Google Chrome",
+  "description": "Improved window and tab management for Chrome",
   "version": "0.6",
 
   "browser_action": {
@@ -17,7 +17,7 @@
   },
   "icons": {
     "16": "images/glyphicons_154_more_windows.png",
-    "48": "images/glyphicons_154_more_windows.png",
-    "128": "images/glyphicons_154_more_windows.png"
+    "48": "images/Multimedia-12-48.png",
+    "128": "images/Multimedia-12-128.png"
   }
 }

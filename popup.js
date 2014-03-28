@@ -150,8 +150,6 @@
         if ( !managed ) {
           winHeader.parentNode.removeChild( windowItem );
         }
-        if ( !current ) // don't refresh popup if this window is going away
-          refreshPopup();
       });
     }
 
