@@ -92,6 +92,14 @@
     bookmarkFolder: null,  
     open: false,
   
+    reloadBookmarkFolder: function() {
+      var tabWindow = this;
+      chrome.bookmarks.getSubTree( this.bookmarkFolder.id, function ( folderNodes ) {
+        var fullFolderNode = folderNodes[ 0 ];
+        tabWindow.bookmarkFolder = fullFolderNode;
+      } );
+    },
+
     getTitle:  function() {
       if( this._managed ) {
         return this.bookmarkFolder.title;
@@ -119,7 +127,7 @@
         var ret = Object.create( bm );
         ret.bookmarked = true;
         ret.open = false;
-
+        ret.bookmark = bm;
         return ret;
       };
 
@@ -148,6 +156,7 @@
             var obm = urlMap[ bm.url ];
             if ( obm ) {
               obm.bookmarked = true;
+              obm.bookmark = bm;
             } else {
               closedBookmarks.push( makeBookmarkedTabItem( bm ) );
             }

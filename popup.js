@@ -159,6 +159,30 @@
       return handler;
     }
 
+    function makeTabRemoveBookmarkHandler( tab ) {
+      function handler() {
+        console.log( "about to remove bookmark for tab: ", tab );
+        chrome.bookmarks.remove( tab.bookmark.id, function () {
+          console.log( "succesfully removed bookmark" );
+          tabWindow.reloadBookmarkFolder();
+          refreshPopup();
+        } );
+      }
+      return handler;
+    }
+
+    function makeTabAddBookmarkHandler( tab ) {
+      function handler() {
+        var tabMark = { parentId: tabWindow.bookmarkFolder.id, title: tab.title, url: tab.url };
+        chrome.bookmarks.create( tabMark, function( tabNode ) { 
+          console.log( "Successfully added bookmark for tab ',", tab.title, "'" );
+          tabWindow.reloadBookmarkFolder();
+          refreshPopup();
+        } );
+      }
+      return handler;
+    }
+
     function windowCloseHandler() {
       chrome.windows.remove( windowId, function() {
         tabWindow.open = false;
@@ -183,7 +207,7 @@
       windowCheckItem =  makeElem( 'button',
         { classes: [ "header-button", "window-managed" ],
           parent: windowHeader,
-          attributes: { title: "Managed Window (click to stop managing)"}
+          attributes: { title: "Stop managing this window"}
         } );  
       windowCheckItem.onclick = function() {
         // managed --> unmanaged:
@@ -194,7 +218,7 @@
     } else {
       windowCheckItem = makeElem( 'input',
         { classes: [ "header-button", "show-on-hover" ], parent: windowHeader,
-          attributes: { type: "checkbox", title: "Click to bookmark tabs and manage window" }
+          attributes: { type: "checkbox", title: "Bookmark this window (all tabs)" }
         } );
       windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
       windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
@@ -212,7 +236,6 @@
           }, 0 );
           dlg.data( "tabWindow", tabWindow );
           dlg.dialog( "open" );
-        } else {
         }
       }
     }
@@ -258,19 +281,23 @@
         if( !tab.open )
           tabOpenClass = "closed";
 
-        var tabCheckItem = makeElem( 'button',
-            { classes: [ "header-button" ],
-              parent: tabItem,
-            } );
+        var tabCheckItem;
 
-        // TODO: conditional -- actual bookmarks only
         if (tab.bookmarked ) {
-          tabCheckItem.classList.add( "tab-managed" );
+          tabCheckItem = makeElem( 'button',
+            { classes: [ "header-button", "tab-managed" ],
+              parent: tabItem,
+              attributes: { title: "Remove bookmark for this tab"}
+            } );
+          tabCheckItem.onclick = makeTabRemoveBookmarkHandler( tab );
         } else {
-          tabCheckItem.classList.add( "unmanaged" );
-          tabCheckItem.classList.add( "show-on-hover" );
+          tabCheckItem = makeElem( 'input',
+            { classes: [ "header-button", "show-on-hover" ], parent: tabItem,
+              attributes: { type: "checkbox", title: "Bookmark this tab" }
+            } );
           tabItem.addEventListener( "mouseover", mkChangeClassHandler( tabCheckItem, 'hover', 'show-on-hover' ) );
           tabItem.addEventListener( "mouseout", mkChangeClassHandler( tabCheckItem, 'show-on-hover', 'hover' ) );
+          tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
         }
       }
 
@@ -312,6 +339,20 @@
     insertAfter( winHeader, windowItem );
   }
 
+
+  function windowCmpFn( tabWindowA, tabWindowB ) {
+    // open windows first:
+    if ( tabWindowA.open != tabWindowB.open ) {
+      if ( tabWindowA.open )
+        return 1;
+      else
+        return -1;
+    }
+    var tA = tabWindowA.getTitle();
+    var tB = tabWindowB.getTitle();
+    return tB.localeCompare( tA );
+  }
+
   function renderPopup() {
     initManageDialog();
     console.log( "background page:", bgw );
@@ -323,6 +364,7 @@
       chrome.windows.getCurrent( null, function ( currentWindow ) {
         console.log( "in windows.getCurrent callback:", windowList, currentWindow );
         var tabWindows = logWrap( bgw.tabMan.syncWindowList )( windowList );
+        tabWindows.sort( windowCmpFn );
         console.log( "tabWindows:", tabWindows );
         for ( var i = 0; i < tabWindows.length; i++ ) {
           var tabWindow = tabWindows[ i ];
