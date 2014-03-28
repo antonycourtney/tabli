@@ -10,9 +10,12 @@
     }
   });
 
+  var CONTEXT_MENU_ID = 99;
+
+  var contextMenuCreated = false;
+
   var windowIdMap = {};
   var tabWindows = [];
-
 
   var tabmanFolderId = null;
   var tabmanFolderTitle = "Subjective Tab Manager";
@@ -339,6 +342,17 @@
     });
   }
 
-  initBookmarks();
+  function initContextMenu() {
+    var sendToMenuItem = { type: "normal",
+                       id: CONTEXT_MENU_ID,
+                       title: "Open Link in Existing Window",
+                       contexts: [ "link" ]
+                      };
+    chrome.contextMenus.create( sendToMenuItem, function() {
+      contextMenuCreated = true;
+    });
+  }
 
+  initBookmarks();
+  // initContextMenu(); -- someday.  Maybe not in first release
 })(jQuery);
