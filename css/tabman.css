@@ -22,7 +22,7 @@ ul {margin-top: .05in; padding-left: 20px;}
 span.windowList { display: inline-block;
       line-height: 14px;
       height: 14px;
-      width:285px;
+      width:245px;
     }
 span.closed {
   color: #979ca0;
@@ -38,14 +38,15 @@ A:hover {text-decoration: none}
           white-space: nowrap;
       }
 .singlerow { max-height: 24px;  }
-.tablist, .ui-accordion-content { margin-left: 4px; }
+.tablist, .ui-accordion-content { margin-left: 0px; }
 .oneRowContainer {
     line-height: 24px; 
     vertical-align: middle;     
 }
 .tabinfo { 
-           background-color: #fafafa
-        }
+   border-left: 4px;
+   background-color: #fafafa
+}
 .tabinfo:hover {
   background-color: #dadada
 }
@@ -80,7 +81,7 @@ A:hover {text-decoration: none}
 .windowTitle {
     font-weight: bold;
 }
-button.header-button {
+.header-button {
     outline: none;
     border: none;
     background-color: transparent;
@@ -90,7 +91,9 @@ button.header-button {
     height: 16px;
 }
 input[type='checkbox'].header-button {
-  margin-top: 4px;
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
   vertical-align: top;
   // margin-bottom:3px;
 }
@@ -103,8 +106,20 @@ input[type='checkbox'].header-button {
 span.activeTab {
   font-weight: bold;
 }
+button.revert-window {
+    -webkit-mask-image: url("../images/chevron-double-mix-1-01.png");
+    // background-color: #606060;
+    background-color: #7472ff;  
+    margin-right: 20px;  
+}
+div.revert-spacer {
+  display: inline-block;
+  margin-right: 20px;  
+}
+div.header-button {
+  display: inline-block;
+}
 button.close {
-    color: red;
     background: url("../images/interface-80.png");
 }
 button.close:hover {

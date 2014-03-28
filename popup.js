@@ -249,13 +249,14 @@
         } ); 
     windowExpandButton.onclick = function() {
       console.log( "Got click on expander" );
-      var obj = $("#" + windowPanelId + " .expandable-panel");
+      var obj = $("#" + windowPanelId + " .expandable-panel-content");
       if (windowExpandButton.classList.contains( "window-expand" ) ) {
         obj.animate({'margin-top':0}, 500 );
         windowExpandButton.classList.remove( "window-expand" );
         windowExpandButton.classList.add( "window-contract" );
       } else {
-        obj.animate({'margin-top':"-999px"}, 500 );
+        var ht = parseInt( contentHeight );
+        obj.animate({'margin-top':"-" + (ht + 30) + "px" }, 500 );
         windowExpandButton.classList.remove( "window-contract" );        
         windowExpandButton.classList.add( "window-expand" );
       }
@@ -277,13 +278,31 @@
     };
 
     if ( tabWindow.open ) {
+      if ( managed ) {
+        var windowRevertButton = makeElem( 'button',
+          { classes: [ "header-button", "revert-spacer", "revert-window", "show-on-hover" ],
+            parent: windowHeader,
+            attributes: { title: "Revert to Bookmarked Tabs (and close others)" }
+          });
+        windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowRevertButton, 'hover', 'show-on-hover' ) );
+        windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowRevertButton, 'show-on-hover', 'hover' ) );
+        windowRevertButton.onclick = function () {
+          bgw.tabMan.revertWindow( tabWindow );
+        }
+      } else {
+        var revertSpacer = makeElem( 'div',
+          { classes: [ "header-button", "revert-spacer" ],
+            parent: windowHeader
+          } );
+      }
+
       var windowCloseButton = makeElem( 'button',
         { classes: [ "header-button", "close", "show-on-hover" ],
           parent: windowHeader,
           attributes: { title: "Close Window" }
         });
 
-      // roll our onw hover events because we don't want to bother with cons'ing element ids.
+      // roll our own hover events because we don't want to bother with cons'ing element ids.
       windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCloseButton, 'hover', 'show-on-hover' ) );
       windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCloseButton, 'show-on-hover', 'hover' ) );
 
@@ -291,7 +310,7 @@
     }
 
     var expandableContentClass = tabWindow.open ? "expandable-panel-content-open" : "expandable-panel-content-closed";
-    var tabListItem = makeElem('div', { classes: [ "tablist", "expandable-panel", expandableContentClass ] } );
+    var tabListItem = makeElem('div', { classes: [ "tablist", "expandable-panel-content", expandableContentClass ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
       var tabOpenClass = openClass;
@@ -321,6 +340,12 @@
           tabItem.addEventListener( "mouseout", mkChangeClassHandler( tabCheckItem, 'show-on-hover', 'hover' ) );
           tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
         }
+      } else {
+        var tabCheckSpacer = makeElem( 'div',
+          { classes: [ "header-button" ],
+            parent: tabItem
+          } );
+
       }
 
       var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
@@ -359,6 +384,13 @@
 
     var winHeader= document.getElementById( headerId );
     insertAfter( winHeader, windowItem );
+
+    var panelContent = $("#" + windowPanelId + " .expandable-panel-content");
+    var contentHeight = panelContent.css('height');
+    console.log( "content height for ", windowPanelId, ": ", contentHeight );
+    if ( !window.open ) {
+      panelContent.css('margin-top',"-" + contentHeight );
+    }
   }
 
 

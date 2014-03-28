@@ -6,7 +6,8 @@
       syncWindowList: syncWindowList,
       manageWindow: manageWindow,
       unmanageWindow: unmanageWindow,
-      restoreBookmarkWindow: restoreBookmarkWindow
+      restoreBookmarkWindow: restoreBookmarkWindow,
+      revertWindow: revertWindow
     }
   });
 
@@ -33,6 +34,39 @@
       windowIdMap[ chromeWindow.id ] = tabWindow;      
     }
     chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+  }
+
+  function revertWindow( tabWindow ) {
+    var bmUrlMap = {};
+
+    var bookmarks = tabWindow.bookmarkFolder.children;
+
+    bookmarks.map( function( bm ) { bmUrlMap[ bm.url ] = bm; } );
+
+    // now let's go through each open tab, and keep only those that are bookmarked...
+    var openUrlMap = {};
+
+    var tabs = tabWindow.chromeWindow.tabs;
+
+    for ( var i = 0; i < tabs.length; i++ ) {
+      var tab = tabs[ i ];
+      if ( bmUrlMap[ tab.url ] ) {
+        openUrlMap[ tab.url ] = tab;
+      } else {
+        // not bookmarked, close it...
+        chrome.tabs.remove( tab.id );
+      }
+    }
+
+    for ( i = 0; i < bookmarks.length; i++ ) {
+      var bm = bookmarks[ i ];
+      if ( openUrlMap[ bm.url ] )
+        continue;
+
+      // need to open it:
+      var tabInfo = { windowId: tabWindow.chromeWindow.id, url: bm.url };
+      chrome.tabs.create( tabInfo );
+    }
   }
 
  /*
