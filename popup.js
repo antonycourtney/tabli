@@ -282,12 +282,12 @@
         var windowRevertButton = makeElem( 'button',
           { classes: [ "header-button", "revert-spacer", "revert-window", "show-on-hover" ],
             parent: windowHeader,
-            attributes: { title: "Revert to Bookmarked Tabs (and close others)" }
+            attributes: { title: "Revert to bookmarked tabs" }
           });
         windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowRevertButton, 'hover', 'show-on-hover' ) );
         windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowRevertButton, 'show-on-hover', 'hover' ) );
         windowRevertButton.onclick = function () {
-          bgw.tabMan.revertWindow( tabWindow );
+          bgw.tabMan.revertWindow( tabWindow, refreshPopup );
         }
       } else {
         var revertSpacer = makeElem( 'div',

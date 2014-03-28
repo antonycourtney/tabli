@@ -24,49 +24,42 @@
   var archiveFolderId = null;
   var archiveFolderTitle = "_Archive";
 
-  function restoreBookmarkWindow( tabWindow ) {
+  function restoreBookmarkWindow( tabWindow, callback ) {
     var urls = [];
     var tabs = tabWindow.getTabItems();
     var urls = tabs.map( function (item) { return item.url; } );
     function cf( chromeWindow ) {
       tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
       tabWindow.open = true;
-      windowIdMap[ chromeWindow.id ] = tabWindow;      
+      windowIdMap[ chromeWindow.id ] = tabWindow;    
+      if ( callback )
+        callback();  
     }
     chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
   }
 
-  function revertWindow( tabWindow ) {
-    var bmUrlMap = {};
-
-    var bookmarks = tabWindow.bookmarkFolder.children;
-
-    bookmarks.map( function( bm ) { bmUrlMap[ bm.url ] = bm; } );
-
-    // now let's go through each open tab, and keep only those that are bookmarked...
-    var openUrlMap = {};
-
+  function revertWindow( tabWindow, callback ) {
     var tabs = tabWindow.chromeWindow.tabs;
+    var currentTabIds = tabs.map( function ( t ) { return t.id; } );
 
-    for ( var i = 0; i < tabs.length; i++ ) {
-      var tab = tabs[ i ];
-      if ( bmUrlMap[ tab.url ] ) {
-        openUrlMap[ tab.url ] = tab;
-      } else {
-        // not bookmarked, close it...
-        chrome.tabs.remove( tab.id );
-      }
-    }
-
-    for ( i = 0; i < bookmarks.length; i++ ) {
-      var bm = bookmarks[ i ];
-      if ( openUrlMap[ bm.url ] )
-        continue;
-
+    // re-open bookmarks:
+    var urls = tabWindow.bookmarkFolder.children.map( function (bm) { return bm.url; } );
+    for ( var i = 0; i < urls.length; i++ ) {
       // need to open it:
-      var tabInfo = { windowId: tabWindow.chromeWindow.id, url: bm.url };
+      var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[ i ] };
       chrome.tabs.create( tabInfo );
-    }
+    };        
+
+    // blow away all the existing tabs:
+    chrome.tabs.remove( currentTabIds, function() {
+      var windowId = tabWindow.chromeWindow.id;
+      tabWindow.chromeWindow = null;
+      // refresh window details:
+      chrome.windows.get( windowId, { populate: true }, function ( chromeWindow ) {
+        tabWindow.chromeWindow = chromeWindow;
+        callback();
+      });
+    });
   }
 
  /*
