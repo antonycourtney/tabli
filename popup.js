@@ -127,7 +127,7 @@
     };
   }
 
-  function renderTabWindow( tabWindow, current ) {
+  function renderTabWindow( tabWindow, current, windowPanelId ) {
     var managed = tabWindow.isManaged();
     var windowTitle = tabWindow.getTitle();
     var tabs = tabWindow.getTabItems();
@@ -136,7 +136,8 @@
     // console.log( "renderTabWindow: title: ", windowTitle, ", tabWindow: ", tabWindow );
     // console.log( "tabs:", tabs );
     var headerId = current ? 'currentWindow' : ( managed ? 'managedWindows' : 'unmanagedWindows' );
-    var windowItem = makeElem( 'div', { classes: [ "windowInfo" ] } );
+    var windowItem = makeElem( 'div', { classes: [ "windowInfo", "expandable-panel" ], 
+      attributes: { id: windowPanelId } } );
 
     function makeTabClickHandler( windowId, tabId ) {
       function handler() {
@@ -218,7 +219,7 @@
     } else {
       windowCheckItem = makeElem( 'input',
         { classes: [ "header-button", "show-on-hover" ], parent: windowHeader,
-          attributes: { type: "checkbox", title: "Bookmark this window (all tabs)" }
+          attributes: { type: "checkbox", title: "Bookmark this window (and all its tabs)" }
         } );
       windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
       windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
@@ -239,6 +240,26 @@
         }
       }
     }
+
+    var expandButtonClass = tabWindow.open ? "window-contract" : "window-expand";
+    var windowExpandButton = makeElem( 'button',
+        { classes: [ "header-button", "expander", expandButtonClass ],
+          parent: windowHeader,
+          attributes: { title: "Expand window contents"}
+        } ); 
+    windowExpandButton.onclick = function() {
+      console.log( "Got click on expander" );
+      var obj = $("#" + windowPanelId + " .expandable-panel");
+      if (windowExpandButton.classList.contains( "window-expand" ) ) {
+        obj.animate({'margin-top':0}, 500 );
+        windowExpandButton.classList.remove( "window-expand" );
+        windowExpandButton.classList.add( "window-contract" );
+      } else {
+        obj.animate({'margin-top':"-999px"}, 500 );
+        windowExpandButton.classList.remove( "window-contract" );        
+        windowExpandButton.classList.add( "window-expand" );
+      }
+    };
 
     var windowTitleItem = makeElem( 'span', 
       { text: windowTitle, 
@@ -269,7 +290,8 @@
       windowCloseButton.onclick = windowCloseHandler;
     }
 
-    var tabListItem = makeElem('div', { classes: [ "tablist" ] } );
+    var expandableContentClass = tabWindow.open ? "expandable-panel-content-open" : "expandable-panel-content-closed";
+    var tabListItem = makeElem('div', { classes: [ "tablist", "expandable-panel", expandableContentClass ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
       var tabOpenClass = openClass;
@@ -368,9 +390,10 @@
         console.log( "tabWindows:", tabWindows );
         for ( var i = 0; i < tabWindows.length; i++ ) {
           var tabWindow = tabWindows[ i ];
+          var id = "tabWindow" + i;
           if( tabWindow ) {
             var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
-            logWrap( function() { renderTabWindow( tabWindow, isCurrent ); } )();
+            logWrap( function() { renderTabWindow( tabWindow, isCurrent, id ); } )();
           }
         }
       } );

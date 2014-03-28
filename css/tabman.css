@@ -22,7 +22,7 @@ ul {margin-top: .05in; padding-left: 20px;}
 span.windowList { display: inline-block;
       line-height: 14px;
       height: 14px;
-      width:305px;
+      width:285px;
     }
 span.closed {
   color: #979ca0;
@@ -38,7 +38,7 @@ A:hover {text-decoration: none}
           white-space: nowrap;
       }
 .singlerow { max-height: 24px;  }
-.tablist { margin-left: 4px; }
+.tablist, .ui-accordion-content { margin-left: 4px; }
 .oneRowContainer {
     line-height: 24px; 
     vertical-align: middle;     
@@ -50,7 +50,8 @@ A:hover {text-decoration: none}
   background-color: #dadada
 }
 .favicon { width: 16px; height: 16px; margin-right: 3px; }
-.windowInfo { border: 1px solid #bababa;
+.windowInfo { 
+              border: 1px solid #bababa;
               border-radius: 3px; 
               margin-bottom: 8px;
               max-width: 345px;
@@ -61,7 +62,8 @@ A:hover {text-decoration: none}
   // -moz-box-shadow: 0px 0px 8px #0224d2;
   box-shadow: 0px 0px 5px 2px #7472ff;
 }
-.windowHeader { background-color: #ebe9eb;
+.windowHeader {
+            background-color: #ebe9eb;
             // line-height: 20px; 
             // vertical-align: middle;     
             // margin: 0;
@@ -122,9 +124,31 @@ button.window-managed {
     // background-color: #606060;
     background-color: #7472ff;
 }
+button.window-expand {
+    -webkit-mask-image: url("../images/triangle-small-4-01.png");
+    background-color: #606060;  
+}
+button.window-contract {
+    -webkit-mask-image: url("../images/triangle-small-1-01.png");
+    background-color: #606060;  
+}
+
 // From jQuery UI modal-form-custom example:
 label, input { display:block; }
 input.text { margin-bottom:12px; width:95%; padding: .4em; }
 fieldset { padding:0; border:0; margin-top:25px; }
 .ui-dialog .ui-state-error { padding: .3em; }
 .validateTips { border: 1px solid transparent; padding: 0.3em; }
+
+.expandable-panel {
+    width:100%;
+    position:relative;
+    min-height:25px;
+    overflow:hidden;
+} 
+.expandable-panel-content-closed {
+  margin-top: -999px;
+}
+.expandable-panel-content-open {
+  margin-top: 0px;  
+}
