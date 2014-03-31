@@ -87,6 +87,15 @@
     };
   }
 
+  /* 
+   * Show the target element when hovering on the subject element
+   */
+   function showWhenHoverOn( target, subject ) {
+    target.classList.add( 'show-on-hover' );
+    subject.addEventListener( "mouseover", mkChangeClassHandler( target, 'hover', 'show-on-hover' ) );
+    subject.addEventListener( "mouseout", mkChangeClassHandler( target, 'show-on-hover', 'hover' ) );
+  }
+
   function renderTabWindow( tabWindow, current, windowPanelId ) {
     var managed = tabWindow.isManaged();
     var windowTitle = tabWindow.getTitle();
@@ -176,11 +185,10 @@
       };
     } else {
       windowCheckItem = makeElem( 'input',
-        { classes: [ "header-button", "show-on-hover" ], parent: windowHeader,
+        { classes: [ "header-button" ], parent: windowHeader,
           attributes: { type: "checkbox", title: "Bookmark this window (and all its tabs)" }
         } );
-      windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCheckItem, 'hover', 'show-on-hover' ) );
-      windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCheckItem, 'show-on-hover', 'hover' ) );
+      showWhenHoverOn( windowCheckItem, windowHeader );
       windowCheckItem.onchange = function() {
         console.log( "toggle manage for '", windowTitle, "'" );
         var checked = windowCheckItem.checked;
@@ -238,12 +246,11 @@
     if ( tabWindow.open ) {
       if ( managed ) {
         var windowRevertButton = makeElem( 'button',
-          { classes: [ "header-button", "revert-spacer", "revert-window", "show-on-hover" ],
+          { classes: [ "header-button", "revert-spacer", "revert-window" ],
             parent: windowHeader,
             attributes: { title: "Revert to bookmarked tabs" }
           });
-        windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowRevertButton, 'hover', 'show-on-hover' ) );
-        windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowRevertButton, 'show-on-hover', 'hover' ) );
+        showWhenHoverOn( windowRevertButton, windowHeader );
         windowRevertButton.onclick = function () {
           bgw.tabMan.revertWindow( tabWindow, refreshPopup );
         }
@@ -255,14 +262,12 @@
       }
 
       var windowCloseButton = makeElem( 'button',
-        { classes: [ "header-button", "close", "show-on-hover" ],
+        { classes: [ "header-button", "close" ],
           parent: windowHeader,
           attributes: { title: "Close Window" }
         });
 
-      // roll our own hover events because we don't want to bother with cons'ing element ids.
-      windowHeader.addEventListener( "mouseover", mkChangeClassHandler( windowCloseButton, 'hover', 'show-on-hover' ) );
-      windowHeader.addEventListener( "mouseout", mkChangeClassHandler( windowCloseButton, 'show-on-hover', 'hover' ) );
+      showWhenHoverOn( windowCloseButton, windowHeader );
 
       windowCloseButton.onclick = windowCloseHandler;
     }
@@ -291,11 +296,10 @@
           tabCheckItem.onclick = makeTabRemoveBookmarkHandler( tab );
         } else {
           tabCheckItem = makeElem( 'input',
-            { classes: [ "header-button", "show-on-hover" ], parent: tabItem,
+            { classes: [ "header-button" ], parent: tabItem,
               attributes: { type: "checkbox", title: "Bookmark this tab" }
             } );
-          tabItem.addEventListener( "mouseover", mkChangeClassHandler( tabCheckItem, 'hover', 'show-on-hover' ) );
-          tabItem.addEventListener( "mouseout", mkChangeClassHandler( tabCheckItem, 'show-on-hover', 'hover' ) );
+          showWhenHoverOn( tabCheckItem, tabItem );
           tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
         }
       } else {
@@ -323,14 +327,12 @@
 
       if ( tabWindow.open ) {
         var closeButton = makeElem( 'button',
-          { classes: [ "header-button", "close", "show-on-hover" ],
+          { classes: [ "header-button", "close" ],
             parent: tabItem,
             attributes: { title: "Close Tab" }
           });
 
-        // roll our onw hover events because we don't want to bother with cons'ing element ids.
-        tabItem.addEventListener( "mouseover", mkChangeClassHandler( closeButton, 'hover', 'show-on-hover' ) );
-        tabItem.addEventListener( "mouseout", mkChangeClassHandler( closeButton, 'show-on-hover', 'hover' ) );
+        showWhenHoverOn( closeButton, tabItem );
 
         closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
       }
