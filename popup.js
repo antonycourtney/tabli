@@ -96,62 +96,11 @@
     subject.addEventListener( "mouseout", mkChangeClassHandler( target, 'show-on-hover', 'hover' ) );
   }
 
-  function renderTabWindow( tabWindow, current, windowPanelId ) {
+ 
+  function renderTabWindowHeader( tabWindow, current, windowPanelId ) {
     var managed = tabWindow.isManaged();
     var windowTitle = tabWindow.getTitle();
-    var tabs = tabWindow.getTabItems();
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-
-    // console.log( "renderTabWindow: title: ", windowTitle, ", tabWindow: ", tabWindow );
-    // console.log( "tabs:", tabs );
-    var headerId = current ? 'currentWindow' : ( managed ? 'managedWindows' : 'unmanagedWindows' );
-    var windowItem = makeElem( 'div', { classes: [ "windowInfo", "expandable-panel" ], 
-      attributes: { id: windowPanelId } } );
-
-    function makeTabClickHandler( windowId, tabId ) {
-      function handler() {
-        console.log( "clicked on tab for tab id ", tabId );
-        if( tabWindow.open ) {
-          chrome.tabs.update( tabId, { active: true } );
-          chrome.windows.update( windowId, { focused: true } );
-        } else {
-          bgw.tabMan.restoreBookmarkWindow( tabWindow );
-        }        
-      };
-      return handler;
-    }
-
-    function makeTabCloseHandler( tabElement, windowId, tabId ) {
-      function handler() {
-        chrome.tabs.remove( tabId );
-        tabListItem.removeChild( tabElement );
-      }
-      return handler;
-    }
-
-    function makeTabRemoveBookmarkHandler( tab ) {
-      function handler() {
-        console.log( "about to remove bookmark for tab: ", tab );
-        chrome.bookmarks.remove( tab.bookmark.id, function () {
-          console.log( "succesfully removed bookmark" );
-          tabWindow.reloadBookmarkFolder();
-          refreshPopup();
-        } );
-      }
-      return handler;
-    }
-
-    function makeTabAddBookmarkHandler( tab ) {
-      function handler() {
-        var tabMark = { parentId: tabWindow.bookmarkFolder.id, title: tab.title, url: tab.url };
-        chrome.bookmarks.create( tabMark, function( tabNode ) { 
-          console.log( "Successfully added bookmark for tab ',", tab.title, "'" );
-          tabWindow.reloadBookmarkFolder();
-          refreshPopup();
-        } );
-      }
-      return handler;
-    }
 
     function windowCloseHandler() {
       chrome.windows.remove( windowId, function() {
@@ -260,90 +209,160 @@
             parent: windowHeader
           } );
       }
-
       var windowCloseButton = makeElem( 'button',
         { classes: [ "header-button", "close" ],
           parent: windowHeader,
           attributes: { title: "Close Window" }
         });
-
       showWhenHoverOn( windowCloseButton, windowHeader );
-
       windowCloseButton.onclick = windowCloseHandler;
     }
+
+    return windowHeader;
+  }
+
+  function renderTabItem( tabWindow, tab ) {
+    var managed = tabWindow.isManaged();
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+
+    function makeTabClickHandler( windowId, tabId ) {
+      function handler() {
+        console.log( "clicked on tab for tab id ", tabId );
+        if( tabWindow.open ) {
+          chrome.tabs.update( tabId, { active: true } );
+          chrome.windows.update( windowId, { focused: true } );
+        } else {
+          bgw.tabMan.restoreBookmarkWindow( tabWindow );
+        }        
+      };
+      return handler;
+    }
+
+    function makeTabCloseHandler( tabElement, windowId, tabId ) {
+      function handler() {
+        chrome.tabs.remove( tabId );
+        tabListItem.removeChild( tabElement );
+      }
+      return handler;
+    }
+
+    function makeTabRemoveBookmarkHandler( tab ) {
+      function handler() {
+        console.log( "about to remove bookmark for tab: ", tab );
+        chrome.bookmarks.remove( tab.bookmark.id, function () {
+          console.log( "succesfully removed bookmark" );
+          tabWindow.reloadBookmarkFolder();
+          refreshPopup();
+        } );
+      }
+      return handler;
+    }
+
+    function makeTabAddBookmarkHandler( tab ) {
+      function handler() {
+        var tabMark = { parentId: tabWindow.bookmarkFolder.id, title: tab.title, url: tab.url };
+        chrome.bookmarks.create( tabMark, function( tabNode ) { 
+          console.log( "Successfully added bookmark for tab ',", tab.title, "'" );
+          tabWindow.reloadBookmarkFolder();
+          refreshPopup();
+        } );
+      }
+      return handler;
+    }
+
+    var openClass = tabWindow.open ? "open" : "closed";
+    var tabOpenClass = openClass;
+    var tabItem = makeElem( 'div', 
+      { classes: [ "singlerow", "nowrap", "oneRowContainer", "tabinfo" ] } );
+
+    if ( managed ) {
+      if( !tab.open )
+        tabOpenClass = "closed";
+
+      var tabCheckItem;
+
+      if (tab.bookmarked ) {
+        tabCheckItem = makeElem( 'button',
+          { classes: [ "header-button", "tab-managed" ],
+            parent: tabItem,
+            attributes: { title: "Remove bookmark for this tab"}
+          } );
+        tabCheckItem.onclick = makeTabRemoveBookmarkHandler( tab );
+      } else {
+        tabCheckItem = makeElem( 'input',
+          { classes: [ "header-button" ], parent: tabItem,
+            attributes: { type: "checkbox", title: "Bookmark this tab" }
+          } );
+        showWhenHoverOn( tabCheckItem, tabItem );
+        tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
+      }
+    } else {
+      var tabCheckSpacer = makeElem( 'div',
+        { classes: [ "header-button" ],
+          parent: tabItem
+        } );
+
+    }
+
+    var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
+    if ( tab.favIconUrl )
+      tabFavIcon.setAttribute( 'src', tab.favIconUrl );
+
+    var tabTitleClasses = [ "windowList", "nowrap", "singlerow", tabOpenClass ];
+    if( tab.active ) {
+      tabTitleClasses.push( "activeTab" );
+    }
+    var titleItem = makeElem( 'span', 
+      { text: tab.title,
+        classes: tabTitleClasses,
+        parent: tabItem
+      });
+    titleItem.onclick = makeTabClickHandler( windowId, tab.id );
+
+    if ( tabWindow.open ) {
+      var closeButton = makeElem( 'button',
+        { classes: [ "header-button", "close" ],
+          parent: tabItem,
+          attributes: { title: "Close Tab" }
+        });
+
+      showWhenHoverOn( closeButton, tabItem );
+
+      closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
+    }
+
+    return tabItem;
+  }
+
+  function renderTabWindow( tabWindow, current, windowPanelId ) {
+    var managed = tabWindow.isManaged();
+    var windowTitle = tabWindow.getTitle();
+    var tabs = tabWindow.getTabItems();
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+
+    // console.log( "renderTabWindow: title: ", windowTitle, ", tabWindow: ", tabWindow );
+    // console.log( "tabs:", tabs );
+    var groupHeaderId = current ? 'currentWindow' : ( managed ? 'managedWindows' : 'unmanagedWindows' );
+    var windowItem = makeElem( 'div', { classes: [ "windowInfo", "expandable-panel" ], 
+      attributes: { id: windowPanelId } } );
+
+
+    var windowHeader = renderTabWindowHeader( tabWindow, current, windowPanelId );
 
     var expandableContentClass = tabWindow.open ? "expandable-panel-content-open" : "expandable-panel-content-closed";
     var tabListItem = makeElem('div', { classes: [ "tablist", "expandable-panel-content", expandableContentClass ] } );
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
-      var tabOpenClass = openClass;
 
-      var tabItem = makeElem( 'div', 
-        { classes: [ "singlerow", "nowrap", "oneRowContainer", "tabinfo" ] } );
-
-      if ( managed ) {
-        if( !tab.open )
-          tabOpenClass = "closed";
-
-        var tabCheckItem;
-
-        if (tab.bookmarked ) {
-          tabCheckItem = makeElem( 'button',
-            { classes: [ "header-button", "tab-managed" ],
-              parent: tabItem,
-              attributes: { title: "Remove bookmark for this tab"}
-            } );
-          tabCheckItem.onclick = makeTabRemoveBookmarkHandler( tab );
-        } else {
-          tabCheckItem = makeElem( 'input',
-            { classes: [ "header-button" ], parent: tabItem,
-              attributes: { type: "checkbox", title: "Bookmark this tab" }
-            } );
-          showWhenHoverOn( tabCheckItem, tabItem );
-          tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
-        }
-      } else {
-        var tabCheckSpacer = makeElem( 'div',
-          { classes: [ "header-button" ],
-            parent: tabItem
-          } );
-
-      }
-
-      var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
-      if ( tab.favIconUrl )
-        tabFavIcon.setAttribute( 'src', tab.favIconUrl );
-
-      var tabTitleClasses = [ "windowList", "nowrap", "singlerow", tabOpenClass ];
-      if( tab.active ) {
-        tabTitleClasses.push( "activeTab" );
-      }
-      var titleItem = makeElem( 'span', 
-        { text: tab.title,
-          classes: tabTitleClasses,
-          parent: tabItem
-        });
-      titleItem.onclick = makeTabClickHandler( windowId, tab.id );
-
-      if ( tabWindow.open ) {
-        var closeButton = makeElem( 'button',
-          { classes: [ "header-button", "close" ],
-            parent: tabItem,
-            attributes: { title: "Close Tab" }
-          });
-
-        showWhenHoverOn( closeButton, tabItem );
-
-        closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
-      }
+      var tabItem = renderTabItem( tabWindow, tab );
 
       tabListItem.appendChild( tabItem );
     }
     windowItem.appendChild( windowHeader ); 
     windowItem.appendChild( tabListItem );
 
-    var winHeader= document.getElementById( headerId );
-    insertAfter( winHeader, windowItem );
+    var winGroupHeader= document.getElementById( groupHeaderId );
+    insertAfter( winGroupHeader, windowItem );
 
     var panelContent = $("#" + windowPanelId + " .expandable-panel-content");
     var contentHeight = panelContent.css('height');
