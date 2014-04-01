@@ -140,11 +140,11 @@ button.window-managed {
     // background-color: #606060;
     background-color: #7472ff;
 }
-button.window-expand {
+.window-expand {
     -webkit-mask-image: url("../images/triangle-small-4-01.png");
     background-color: #606060;  
 }
-button.window-contract {
+.window-contract {
     -webkit-mask-image: url("../images/triangle-small-1-01.png");
     background-color: #606060;  
 }

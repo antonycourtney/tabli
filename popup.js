@@ -106,7 +106,9 @@
       chrome.windows.remove( windowId, function() {
         tabWindow.open = false;
         if ( !managed ) {
-          winHeader.parentNode.removeChild( windowItem );
+          var windowElem = windowHeader.parentNode;
+          var windowParent = windowElem.parentNode;
+          windowParent.removeChild( windowElem );
         }
       });
     }
@@ -166,12 +168,15 @@
       console.log( "Got click on expander" );
       var obj = $("#" + windowPanelId + " .expandable-panel-content");
       if (windowExpandButton.classList.contains( "window-expand" ) ) {
-        obj.animate({'margin-top':0}, 500 );
+        // obj.animate({'margin-top':0}, 500 );
+        obj.css('margin-top',"0px" );
         windowExpandButton.classList.remove( "window-expand" );
         windowExpandButton.classList.add( "window-contract" );
       } else {
-        var ht = parseInt( contentHeight );
-        obj.animate({'margin-top':"-" + (ht + 30) + "px" }, 500 );
+        // var ht = parseInt( contentHeight );
+        var ht = 500;
+        //obj.animate({'margin-top':"-" + (ht + 30) + "px" }, 500 );
+        obj.css('margin-top',"-500px");
         windowExpandButton.classList.remove( "window-contract" );        
         windowExpandButton.classList.add( "window-expand" );
       }
@@ -347,7 +352,7 @@
       attributes: { id: windowPanelId } } );
 
 
-    var windowHeader = renderTabWindowHeader( tabWindow, current, windowPanelId );
+    var windowHeader = renderTabWindowHeader( tabWindow, current, windowPanelId, windowItem );
 
     var expandableContentClass = tabWindow.open ? "expandable-panel-content-open" : "expandable-panel-content-closed";
     var tabListItem = makeElem('div', { classes: [ "tablist", "expandable-panel-content", expandableContentClass ] } );
@@ -365,9 +370,9 @@
     insertAfter( winGroupHeader, windowItem );
 
     var panelContent = $("#" + windowPanelId + " .expandable-panel-content");
-    var contentHeight = panelContent.css('height');
+    // var contentHeight = panelContent.css('height');
     if ( !window.open ) {
-      panelContent.css('margin-top',"-" + contentHeight );
+      panelContent.css('margin-top',"-500px" );
     }
   }
 
