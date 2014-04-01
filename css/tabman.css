@@ -90,6 +90,9 @@ button.popup-top {
   background-color: #ebe9eb;
   border: 1px solid #bababa;
 }
+div.top-controls {
+  margin-bottom: 6px;
+}
 span.top-button-label {
   // margin-top: 0px;
   padding-top: 2px;

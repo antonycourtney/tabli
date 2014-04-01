@@ -179,7 +179,6 @@
 
         if( this.open ) {
           tabs = this.chromeWindow.tabs.map( function ( ot ) { return makeOpenTabItem( urlMap, ot); } );
-
           var closedBookmarks = [];
           for ( var i = 0; i < this.bookmarkFolder.children.length; i++ ) {
             var bm = this.bookmarkFolder.children[ i ];
