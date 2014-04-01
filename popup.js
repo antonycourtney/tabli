@@ -246,7 +246,7 @@
     function makeTabCloseHandler( tabElement, windowId, tabId ) {
       function handler() {
         chrome.tabs.remove( tabId );
-        tabListItem.removeChild( tabElement );
+        tabElement.parentNode.removeChild( tabElement );
       }
       return handler;
     }

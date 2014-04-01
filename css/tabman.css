@@ -38,7 +38,7 @@ A:hover {text-decoration: none}
           text-overflow: ellipsis;
           white-space: nowrap;
       }
-.singlerow { max-height: 22px;  }
+.singlerow { max-height: 20px;  }
 .tablist, .ui-accordion-content { margin-left: 0px; }
 .oneRowContainer {
     line-height: 22px; 
