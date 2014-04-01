@@ -186,7 +186,7 @@ fieldset { padding:0; border:0; margin-top:25px; }
 .expandable-panel {
     width:100%;
     position:relative;
-    min-height:25px;
+    min-height:20px;
     overflow:hidden;
 } 
 .expandable-panel-content-closed {
