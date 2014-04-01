@@ -158,7 +158,7 @@
       }
     }
 
-    var expandButtonClass = tabWindow.open ? "window-contract" : "window-expand";
+    var expandButtonClass = tabWindow.open ? "window-collapse" : "window-expand";
     var windowExpandButton = makeElem( 'button',
         { classes: [ "header-button", "expander", expandButtonClass ],
           parent: windowHeader,
@@ -171,13 +171,13 @@
         // obj.animate({'margin-top':0}, 500 );
         obj.css('margin-top',"0px" );
         windowExpandButton.classList.remove( "window-expand" );
-        windowExpandButton.classList.add( "window-contract" );
+        windowExpandButton.classList.add( "window-collapse" );
       } else {
         // var ht = parseInt( contentHeight );
         var ht = 500;
         //obj.animate({'margin-top':"-" + (ht + 30) + "px" }, 500 );
         obj.css('margin-top',"-500px");
-        windowExpandButton.classList.remove( "window-contract" );        
+        windowExpandButton.classList.remove( "window-collapse" );        
         windowExpandButton.classList.add( "window-expand" );
       }
     };
@@ -376,6 +376,37 @@
     }
   }
 
+  /*
+   * initialize global expand / collapse all toggle button
+   */
+   function initExpandToggle() {
+    var toggleElem = $('#expandToggle');
+    toggleElem.click( function() {
+      /* 
+       * Okay, this is where HTML really shows itself as a terrible programming model.
+       * We use the presence of the class name to squirrel away the state of the
+       * toggle button, and then we manipulate the expand / collapse state of every
+       * button and also apply the manipulation needed to expand / collapse every
+       * expandable panel, instead of just asking each panel to expand or collapse itself.
+       */
+      var iconElem = $( this ).find( '.top-button-icon' );
+      var collapse = iconElem.hasClass( 'window-collapse' );
+      iconElem.toggleClass('window-collapse').toggleClass('window-expand');
+
+      var expandButtons = $( '.expander' );
+      var expandPanels = $( '.expandable-panel-content' );
+      if ( collapse ) {
+        // collapse all windows
+        expandButtons.removeClass('window-collapse').addClass('window-expand');
+        expandPanels.css('margin-top', '-500px' );
+      } else {
+        // expand all windows
+        expandButtons.addClass('window-collapse').removeClass('window-expand');
+        expandPanels.css('margin-top', '0px' );
+      }
+    });
+   }
+
 
   function windowCmpFn( tabWindowA, tabWindowB ) {
     // open windows first:
@@ -412,6 +443,7 @@
             logWrap( function() { renderTabWindow( tabWindow, isCurrent, id ); } )();
           }
         }
+        initExpandToggle();
       } );
     }
 

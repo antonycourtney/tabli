@@ -82,6 +82,31 @@ A:hover {text-decoration: none}
 .windowTitle {
     font-weight: bold;
 }
+button.popup-top {
+  padding-top: 3px;
+  padding-left: 1px;
+  padding-bottom: 1px;
+  padding-right: 4px;
+  background-color: #ebe9eb;
+  border: 1px solid #bababa;
+}
+span.top-button-label {
+  // margin-top: 0px;
+  padding-top: 2px;
+  vertical-align: top;
+}
+.top-button-icon {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    margin-right: 0px;
+    width: 14px;
+    height: 14px;
+}
+div.top-button-icon {
+  display: inline-block;
+}
 .header-button {
     outline: none;
     border: none;
@@ -144,7 +169,7 @@ button.window-managed {
     -webkit-mask-image: url("../images/triangle-small-4-01.png");
     background-color: #606060;  
 }
-.window-contract {
+.window-collapse {
     -webkit-mask-image: url("../images/triangle-small-1-01.png");
     background-color: #606060;  
 }
