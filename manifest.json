@@ -3,7 +3,7 @@
 
   "name": "Subjective Tab Manager",
   "description": "Improved window and tab management for Chrome",
-  "version": "0.6",
+  "version": "0.7",
 
   "browser_action": {
     "default_icon": "images/glyphicons_154_more_windows.png",
