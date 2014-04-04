@@ -226,16 +226,30 @@
     return windowHeader;
   }
 
-  function renderTabItem( tabWindow, tab ) {
+  function renderTabItem( tabWindow, tab, tabIndex ) {
     var managed = tabWindow.isManaged();
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 
-    function makeTabClickHandler( windowId, tabId ) {
+    function makeTabClickHandler( windowId, tabId, isClosed ) {
       function handler() {
         console.log( "clicked on tab for tab id ", tabId );
         if( tabWindow.open ) {
-          chrome.tabs.update( tabId, { active: true } );
-          chrome.windows.update( windowId, { focused: true } );
+          if ( !isClosed ) {
+            chrome.tabs.update( tabId, { active: true } );
+            chrome.windows.update( windowId, { focused: true } );
+          } else {
+            // restore this bookmarked tab:
+            var createOpts = {
+              windowId: tabWindow.chromeWindow.id, 
+              url: tab.url,
+              index: tabIndex,
+              active: true
+            };
+            chrome.tabs.create( createOpts, function () {
+              titleItem.classList.remove("closed");
+              titleIem.classList.add("open");  
+            });
+          }
         } else {
           bgw.tabMan.restoreBookmarkWindow( tabWindow );
         }        
@@ -322,7 +336,7 @@
         classes: tabTitleClasses,
         parent: tabItem
       });
-    titleItem.onclick = makeTabClickHandler( windowId, tab.id );
+    titleItem.onclick = makeTabClickHandler( windowId, tab.id, tabOpenClass === "closed" );
 
     if ( tabWindow.open ) {
       var closeButton = makeElem( 'button',
@@ -359,7 +373,7 @@
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
 
-      var tabItem = renderTabItem( tabWindow, tab );
+      var tabItem = renderTabItem( tabWindow, tab, i );
 
       tabListItem.appendChild( tabItem );
     }
