@@ -190,7 +190,37 @@
               closedBookmarks.push( makeBookmarkedTabItem( bm ) );
             }
           }
-          tabs = closedBookmarks.concat( tabs );
+
+          /*
+           * So it's actually not possible to come up with a perfect ordering here, since we
+           * want to preserve both bookmark order (whether open or closed) and order of
+           * currently open tabs.
+           * As a compromise, we'll present bookmarked, opened tabs for as long as they
+           * match the bookmark ordering, then we'll inject the closed bookmarks, then
+           * everything else.
+           */
+          var outTabs = [];
+          var openTabs = tabs.slice();
+          var bookmarks = this.bookmarkFolder.children.slice();
+
+          while ( openTabs.length > 0 ) {
+            var tab = openTabs.shift();
+            var bm = bookmarks.shift();
+            if ( tab.bookmarked && bm.url === tab.url) {
+              outTabs.push( tab );
+              tab = null;
+              bm = null;
+              break;
+            }
+          }
+          // we hit a non-matching tab, now inject closed bookmarks:
+          outTabs = outTabs.concat( closedBookmarks );
+          if (tab) {
+            outTabs.push(tab);
+          }
+          // and inject the remaining tabs:
+          outTabs = outTabs.concat( openTabs );
+          tabs = outTabs;
         } else {
           tabs = this.bookmarkFolder.children.map( makeBookmarkedTabItem );
         }
