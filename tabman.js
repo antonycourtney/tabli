@@ -25,17 +25,39 @@
   var archiveFolderTitle = "_Archive";
 
   function restoreBookmarkWindow( tabWindow, callback ) {
-    var urls = [];
-    var tabs = tabWindow.getTabItems();
-    var urls = tabs.map( function (item) { return item.url; } );
-    function cf( chromeWindow ) {
-      tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
-      tabWindow.open = true;
-      windowIdMap[ chromeWindow.id ] = tabWindow;    
-      if ( callback )
-        callback();  
-    }
-    chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+    chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
+      var urls = [];
+      var tabs = tabWindow.getTabItems();
+      var urls = tabs.map( function (item) { return item.url; } );
+      function cf( chromeWindow ) {
+        tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
+        tabWindow.open = true;
+        windowIdMap[ chromeWindow.id ] = tabWindow;    
+        if ( callback )
+          callback();  
+      }
+      console.log( "current chrome window: ", currentChromeWindow );
+      if ((currentChromeWindow.tabs.length===1) &&
+          (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
+        console.log("found new window -- replacing contents");
+        var origTabId = currentChromeWindow.tabs[0].id;
+        // new window -- replace contents with urls:
+        for ( var i = 0; i < urls.length; i++ ) {
+          // First use our existing tab:
+          if (i==0) {
+            chrome.tabs.update( origTabId, { url: urls[i] } );
+          } else {
+            var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
+            chrome.tabs.create( tabInfo );
+          }
+        };
+        // And now invoke cf with this chrome window:
+        cf( currentChromeWindow );        
+      } else {
+        // normal case -- create a new window for these urls:
+        chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+      }
+    } );
   }
 
   function revertWindow( tabWindow, callback ) {

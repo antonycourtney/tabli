@@ -194,6 +194,7 @@
       } else {
         // need to open it!
         bgw.tabMan.restoreBookmarkWindow( tabWindow );
+        refreshPopup();
       }
     };
 
@@ -252,6 +253,7 @@
           }
         } else {
           bgw.tabMan.restoreBookmarkWindow( tabWindow );
+          refreshPopup();
         }        
       };
       return handler;
