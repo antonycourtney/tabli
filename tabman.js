@@ -225,13 +225,14 @@
           var openTabs = tabs.slice();
           var bookmarks = this.bookmarkFolder.children.slice();
 
-          while ( openTabs.length > 0 ) {
+          while ( openTabs.length > 0 && bookmarks.length > 0) {
             var tab = openTabs.shift();
             var bm = bookmarks.shift();
             if ( tab.bookmarked && bm.url === tab.url) {
               outTabs.push( tab );
               tab = null;
               bm = null;
+            } else {
               break;
             }
           }
