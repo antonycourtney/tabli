@@ -1,0 +1,20 @@
+{
+  "name": "tabman",
+  "version": "0.7.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antonycourtney/tabman.git"
+  },
+  "main": "tabman.js",
+  "dependencies": {
+    "gulp": "^3.8.10",
+    "gulp-clean": "^0.3.1",
+    "gulp-react": "^2.0.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-util": "^3.0.1",
+    "jquery": "^2.1.2",
+    "jsx-loader": "^0.12.2",
+    "react": "^0.12.1",
+    "webpack": "^1.4.13"
+  }
+}
