@@ -1,6 +1,118 @@
+/** @jsx React.DOM */
 var $ = require('jquery');
 
+var _ = require('underscore');
+
+var React = require('react');
+
 var bgw = chrome.extension.getBackgroundPage();
+
+var R_WindowHeader = React.createClass({
+  render: function() {
+    var tabWindow = this.props.tabWindow;
+    var managed = tabWindow.isManaged();
+    var windowTitle = tabWindow.getTitle();
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+
+    var windowCheckItem;
+
+    if( managed ) {
+      windowCheckItem =  <button className="header-button window-managed" title="Stop managing this window" />;
+      // TODO: callbacks!
+    } else {
+      windowCheckItem = <input className="header-button" type="checkbox" title="Bookmark this window (and all its tabs)" />;
+    }
+
+    var windowTitle = tabWindow.getTitle();   
+    var openClass = tabWindow.open ? "open" : "closed";
+    var titleClass = "windowList nowrap singlerow windowTitle " + openClass;
+
+    return (
+      <div className="nowrap singlerow oneRowContainer windowHeader">
+        {windowCheckItem}
+        <span className={titleClass}>{windowTitle}</span>
+      </div>
+      );
+  }
+});
+
+var R_TabItem = React.createClass({
+  render: function() {
+    var tabTitle = this.props.tab.title;
+    return (
+      <div className="singlerow nowrap oneRowContainer tabinfo">
+        <span className="windowList nowrap singlerow">{tabTitle}</span>
+      </div>);
+  }
+
+});
+
+var R_TabWindow = React.createClass({
+  renderTabItems: function(tabs) {
+    var items = [];
+    for (var i = 0; i < tabs.length; i++ ) {
+      var id = "tabItem-" + i;
+      var tabItem = <R_TabItem tab={tabs[i]} key={id} />;
+      items.push(tabItem);
+    };
+    return items;
+  },
+
+  render: function () {
+    var tabWindow = this.props.tabWindow;
+    var tabs = tabWindow.getTabItems();
+    var tabItems = this.renderTabItems(tabs);
+    var windowHeader = <R_WindowHeader tabWindow={tabWindow} />;
+    return (
+      <div className="windowInfo expandable-panel">
+        {windowHeader}
+        {tabItems}
+      </div>
+      );
+  }
+});
+
+/*
+ * top-level element for all tab windows
+ */
+var R_TabWindowList = React.createClass({
+  render: function() {
+    var currentWindowElem = [];
+    var managedWindows = [];
+    var unmanagedWindows = [];
+
+    var currentWindow = this.props.currentWindow;
+    var tabWindows = this.props.tabWindows;
+    for (var i=0; i < tabWindows.length; i++) {
+      var tabWindow = tabWindows[i];
+      var id = "tabWindow" + i;
+      if (tabWindow) {
+          var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
+          var isManaged = tabWindow.isManaged();
+
+          var windowElem = <R_TabWindow tabWindow={tabWindow} key={id} />;
+          if (isCurrent) {
+            currentWindowElem = windowElem;
+          } else if (isManaged) {
+            managedWindows.push(windowElem);
+          } else {
+            unmanagedWindows.push(windowElem);
+          }
+      }
+    }
+
+    return (
+      <div>
+        <hr/>
+        {currentWindowElem}
+        <hr/>
+        {managedWindows}
+        <hr/>
+        {unmanagedWindows}
+      </div>
+    );    
+  }
+}); 
 
 function insertAfter(referenceNode, newNode) {
   referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
@@ -433,6 +545,13 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
   return tB.localeCompare( tA );
 }
 
+function renderReact(tabWindows,currentWindow) {
+  React.render(
+    <R_TabWindowList tabWindows={tabWindows} currentWindow={currentWindow} />,
+    document.getElementById('windowList-region')
+  );
+}
+
 function renderPopup() {
   initManageDialog();
   console.log( "background page:", bgw );
@@ -447,7 +566,7 @@ function renderPopup() {
       var tabWindows = logWrap( bgw.tabMan.syncWindowList )( windowList );
       tabWindows.sort( windowCmpFn );
       console.log( "tabWindows:", tabWindows );
-      console.log( "as JSON:\n", JSON.stringify( tabWindows ) );
+      /*
       for ( var i = 0; i < tabWindows.length; i++ ) {
         var tabWindow = tabWindows[ i ];
         var id = "tabWindow" + i;
@@ -456,6 +575,11 @@ function renderPopup() {
           logWrap( function() { renderTabWindow( tabWindow, isCurrent, id ); } )();
         }
       }
+      */
+      if (tabWindows.length > 0) {
+        logWrap( renderReact )( tabWindows, currentWindow );
+      }
+
       initExpandToggle();
     } );
   }
