@@ -56,6 +56,21 @@
 	
 	var bgw = chrome.extension.getBackgroundPage();
 	
+	// expand / contract button for a window
+	var R_ExpanderButton = React.createClass({displayName: "R_ExpanderButton",
+	  handleClicked: function() {
+	    var nextState = !this.props.expanded;
+	    this.props.onClick(nextState);
+	  },
+	  render: function() {
+	    var expandClass = this.props.expanded ? "window-collapse" : "window-expand";
+	    var buttonClass = "header-button expander " + expandClass;
+	    return (
+	      React.createElement("button", {className: buttonClass, onClick: this.handleClicked})
+	      );    
+	  } 
+	});
+	
 	var R_WindowHeader = React.createClass({displayName: "R_WindowHeader",
 	  getInitialState: function() {
 	    return { "hovering": false }
@@ -94,6 +109,7 @@
 	      React.createElement("div", {className: "nowrap singlerow oneRowContainer windowHeader", 
 	          onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut}, 
 	        windowCheckItem, 
+	        React.createElement(R_ExpanderButton, {expanded: this.props.expanded, onClick: this.props.onExpand}), 
 	        React.createElement("span", {className: titleClass}, windowTitle)
 	      )
 	      );
@@ -154,6 +170,10 @@
 	});
 	
 	var R_TabWindow = React.createClass({displayName: "R_TabWindow",
+	  getInitialState: function() {
+	    return ({expanded: true})
+	  },
+	
 	  renderTabItems: function(tabWindow,tabs) {
 	    var items = [];
 	    for (var i = 0; i < tabs.length; i++ ) {
@@ -161,14 +181,24 @@
 	      var tabItem = React.createElement(R_TabItem, {tabWindow: tabWindow, tab: tabs[i], key: id});
 	      items.push(tabItem);
 	    };
-	    return items;
+	
+	    var expandableContentClass = this.state.expanded ? "expandable-panel-content-open" : "expandable-panel-content-closed";
+	    var tabListClasses="tablist expandable-panel-content " + expandableContentClass;
+	    return (
+	      React.createElement("div", {className: tabListClasses}, 
+	        items
+	      ));
+	  },
+	
+	  handleExpand: function(expand) {
+	    this.setState({expanded: expand});
 	  },
 	
 	  render: function () {
 	    var tabWindow = this.props.tabWindow;
 	    var tabs = tabWindow.getTabItems();
 	    var tabItems = this.renderTabItems(tabWindow,tabs);
-	    var windowHeader = React.createElement(R_WindowHeader, {tabWindow: tabWindow});
+	    var windowHeader = React.createElement(R_WindowHeader, {tabWindow: tabWindow, expanded: this.state.expanded, onExpand: this.handleExpand});
 	    return (
 	      React.createElement("div", {className: "windowInfo expandable-panel"}, 
 	        windowHeader, 
