@@ -150,6 +150,7 @@ div.header-button {
 }
 button.close {
     background: url("../images/interface-80.png");
+    float: right;
 }
 button.close:hover {
     background: url("../images/interface-94.png");  

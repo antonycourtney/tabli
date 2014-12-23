@@ -90,13 +90,14 @@
 	    var windowTitle = tabWindow.getTitle();
 	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 	
+	    var hoverClass = this.state.hovering ? "hover" : "show-on-hover";
+	
 	    var windowCheckItem;
 	
 	    if( managed ) {
 	      windowCheckItem =  React.createElement("button", {className: "header-button window-managed", title: "Stop managing this window"});
 	      // TODO: callbacks!
 	    } else {
-	      var hoverClass = this.state.hovering ? "hover" : "show-on-hover";
 	      var checkClass = "header-button " + hoverClass;
 	      windowCheckItem = React.createElement("input", {className: checkClass, type: "checkbox", title: "Bookmark this window (and all its tabs)"});
 	    }
@@ -105,12 +106,17 @@
 	    var openClass = tabWindow.open ? "open" : "closed";
 	    var titleClass = "windowList nowrap singlerow windowTitle " + openClass;
 	
+	    var closeClass = "header-button close " + hoverClass;
+	    var closeButton = React.createElement("button", {className: closeClass, title: "Close Window", onClick: this.props.onClose});
+	
 	    return (
 	      React.createElement("div", {className: "nowrap singlerow oneRowContainer windowHeader", 
-	          onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut}, 
+	          onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut, 
+	          onClick: this.props.onOpen}, 
 	        windowCheckItem, 
 	        React.createElement(R_ExpanderButton, {expanded: this.props.expanded, onClick: this.props.onExpand}), 
-	        React.createElement("span", {className: titleClass}, windowTitle)
+	        React.createElement("span", {className: titleClass}, windowTitle), 
+	        closeButton
 	      )
 	      );
 	  }
@@ -171,7 +177,30 @@
 	
 	var R_TabWindow = React.createClass({displayName: "R_TabWindow",
 	  getInitialState: function() {
-	    return ({expanded: true})
+	    // TODO: just use tabWindow.open, don't keep our own state.
+	    return ({expanded: this.props.tabWindow.open})
+	  },
+	
+	  handleOpen: function() {
+	    console.log("handleOpen");
+	    var tabWindow = this.props.tabWindow;
+	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	    if (tabWindow.open) {
+	      chrome.windows.update( windowId, { focused: true } );
+	    } else {
+	      // need to open it!
+	      bgw.tabMan.restoreBookmarkWindow( tabWindow );      
+	    }
+	  },
+	
+	  handleClose: function(event) {
+	    console.log("handleClose");
+	    var tabWindow = this.props.tabWindow;
+	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	    chrome.windows.remove( windowId, function() {
+	      tabWindow.open = false;
+	    });
+	    event.stopPropagation();
 	  },
 	
 	  renderTabItems: function(tabWindow,tabs) {
@@ -198,7 +227,13 @@
 	    var tabWindow = this.props.tabWindow;
 	    var tabs = tabWindow.getTabItems();
 	    var tabItems = this.renderTabItems(tabWindow,tabs);
-	    var windowHeader = React.createElement(R_WindowHeader, {tabWindow: tabWindow, expanded: this.state.expanded, onExpand: this.handleExpand});
+	    var windowHeader = 
+	      React.createElement(R_WindowHeader, {tabWindow: tabWindow, 
+	          expanded: this.state.expanded, 
+	          onExpand: this.handleExpand, 
+	          onOpen: this.handleOpen, 
+	          onClose: this.handleClose}
+	        );
 	    return (
 	      React.createElement("div", {className: "windowInfo expandable-panel"}, 
 	        windowHeader, 
