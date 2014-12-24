@@ -1,19 +1,24 @@
 
 $ = require('jquery');
 
+var Fluxxor = require('fluxxor');
+var constants = require('./constants.js');
+var actions = require('./actions.js');
+var TabWindowStore = require('./tabWindowStore.js');
+
 'use strict';
 var CONTEXT_MENU_ID = 99;
 
 var contextMenuCreated = false;
-
-var windowIdMap = {};
-var tabWindows = [];
 
 var tabmanFolderId = null;
 var tabmanFolderTitle = "Subjective Tab Manager";
 
 var archiveFolderId = null;
 var archiveFolderTitle = "_Archive";
+
+var flux = null; // flux instance
+var winStore = null;  // TabWindowStore instance
 
 function restoreBookmarkWindow( tabWindow, callback ) {
   chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
@@ -267,17 +272,6 @@ function makeFolderTabWindow( bookmarkFolder ) {
   return ret;
 }
 
- /*
-  * add a new Tab window to global maps:
-  */
- function addTabWindow( tabWindow ) {
-    var chromeWindow = tabWindow.chromeWindow;
-    if( chromeWindow ) {
-      windowIdMap[ chromeWindow.id ] = tabWindow;
-    }
-    tabWindows.push( tabWindow );     
- }
-
 /**
  * synchronize windows from chrome.windows.getAll with internal map of
  * managed and unmanaged tab windows
@@ -285,6 +279,8 @@ function makeFolderTabWindow( bookmarkFolder ) {
  *   - array of all tab Windows
  */
 function syncWindowList( chromeWindowList ) {
+  var tabWindows = winStore.getAll();
+
   // To GC any closed windows:
   for ( var i = 0; i < tabWindows.length; i++ ) {
     var tabWindow = tabWindows[ i ];
@@ -293,11 +289,11 @@ function syncWindowList( chromeWindowList ) {
   }
   for ( var i = 0; i < chromeWindowList.length; i++ ) {
     var chromeWindow = chromeWindowList[ i ];
-    var tabWindow = windowIdMap[ chromeWindow.id ];
+    var tabWindow = winStore.getTabWindowByChromeId(chromeWindow.id);
     if( !tabWindow ) {
       console.log( "syncWindowList: new window id: ", chromeWindow.id );
       tabWindow = makeChromeTabWindow( chromeWindow );
-      addTabWindow( tabWindow );
+      flux.actions.addTabWindow( tabWindow );
     } else {
       // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
       // Set chromeWindow to current snapshot of tab contents:
@@ -310,22 +306,16 @@ function syncWindowList( chromeWindowList ) {
     tabWindow = tabWindows[ i ];
     if( tabWindow && !( tabWindow._managed ) && !( tabWindow.open ) ) {
       console.log( "syncWindowList: detected closed window: ", tabWindow );
-      // if user un-bookmarked a non-open folder window, won't have an id or a folder:
-      var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-      if ( windowId ) 
-        delete windowIdMap[ tabWindow.chromeWindow.id ];
-      delete tabWindows[ i ];
+      flux.actions.removeTabWindow(tabWindow);
     }
   }
-
-  return tabWindows;
 }   
 
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows( tabManFolder ) {
   function loadWindow( winFolder ) {
     var folderWindow = makeFolderTabWindow( winFolder );
-    addTabWindow( folderWindow );
+    flux.actions.addTabWindow( folderWindow );
   }
 
   for( var i = 0; i < tabManFolder.children.length; i++ ) {
@@ -423,6 +413,28 @@ function initContextMenu() {
   });
 }
 
+function main() {
+  console.log("tabman: main");
+  var stores = {
+    TabWindowStore: new TabWindowStore()
+  };
+
+  flux = new Fluxxor.Flux(stores, actions);
+  winStore = stores.TabWindowStore;
+  flux.on("dispatch", function(type, payload) {
+      if (console && console.log) {
+          console.log("[Dispatch]", type, payload);
+      }
+  });
+
+  initBookmarks();
+
+  window.tabMan.flux = flux;
+  window.tabMan.winStore = winStore; 
+  console.log("tabman: main complete.");
+}
+
+
 // Function export, Chrome-extension style:
 window.tabMan = {
   parseURL: parseURL,
@@ -433,4 +445,4 @@ window.tabMan = {
   revertWindow: revertWindow
 };
 
-initBookmarks();
+main();

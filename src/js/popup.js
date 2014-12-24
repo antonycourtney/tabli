@@ -5,6 +5,14 @@ var _ = require('underscore');
 
 var React = require('react');
 
+var Fluxxor = require('fluxxor');
+var constants = require('./constants.js');
+var actions = require('./actions.js');
+var TabWindowStore = require('./tabWindowStore.js');
+
+var FluxMixin = Fluxxor.FluxMixin(React),
+    StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
 var bgw = chrome.extension.getBackgroundPage();
 
 // expand / contract button for a window
@@ -142,6 +150,7 @@ var R_TabWindow = React.createClass({
       // need to open it!
       bgw.tabMan.restoreBookmarkWindow( tabWindow );      
     }
+    // TODO: update Flux!
   },
 
   handleClose: function(event) {
@@ -151,6 +160,7 @@ var R_TabWindow = React.createClass({
     chrome.windows.remove( windowId, function() {
       tabWindow.open = false;
     });
+    bgw.tabMan.flux.actions.removeTabWindow(tabWindow);
     event.stopPropagation();
   },
 
@@ -198,13 +208,28 @@ var R_TabWindow = React.createClass({
  * top-level element for all tab windows
  */
 var R_TabWindowList = React.createClass({
+  mixins: [FluxMixin, StoreWatchMixin("TabWindowStore")],
+
+  getInitialState: function() {
+    return {};
+  },
+
+  getStateFromFlux: function() {
+    var store = bgw.tabMan.winStore;
+
+    return {
+      tabWindows: store.getAll()
+    };
+  },
+
   render: function() {
+    console.log("TabWindowList: render");
     var currentWindowElem = [];
     var managedWindows = [];
     var unmanagedWindows = [];
 
     var currentWindow = this.props.currentWindow;
-    var tabWindows = this.props.tabWindows;
+    var tabWindows = this.state.tabWindows;
     for (var i=0; i < tabWindows.length; i++) {
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
@@ -669,7 +694,7 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
 
 function renderReact(tabWindows,currentWindow) {
   React.render(
-    <R_TabWindowList tabWindows={tabWindows} currentWindow={currentWindow} />,
+    <R_TabWindowList flux={bgw.tabMan.flux} currentWindow={currentWindow} />,
     document.getElementById('windowList-region')
   );
 }
@@ -685,7 +710,9 @@ function renderPopup() {
     chrome.windows.getCurrent( null, function ( currentWindow ) {
       console.log( "in windows.getCurrent:" );
       console.log( "Chrome Windows: ", windowList );
-      var tabWindows = logWrap( bgw.tabMan.syncWindowList )( windowList );
+      logWrap( bgw.tabMan.syncWindowList )( windowList );
+      console.log("After syncWindowList");
+      var tabWindows = bgw.tabMan.winStore.getAll();
       tabWindows.sort( windowCmpFn );
       console.log( "tabWindows:", tabWindows );
       /*

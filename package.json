@@ -7,6 +7,7 @@
   },
   "main": "tabman.js",
   "dependencies": {
+    "fluxxor": "^1.5.1",
     "gulp": "^3.8.10",
     "gulp-clean": "^0.3.1",
     "gulp-react": "^2.0.0",
