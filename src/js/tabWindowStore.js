@@ -34,11 +34,18 @@ function removeTabWindow(tabWindow) {
         delete windowIdMap[ windowId ];
 }
 
+function attachChromeWindow(tabWindow,chromeWindow) {
+    tabWindow.chromeWindow = chromeWindow;
+    tabWindow.open = true;
+    windowIdMap[ chromeWindow.id ] = tabWindow;        
+}
+
 var TabWindowStore = Fluxxor.createStore({
     initialize: function() {
         this.bindActions(
             constants.ADD_TAB_WINDOW, this.onAddTabWindow,
-            constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow
+            constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
+            constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
         );
     },
 
@@ -49,6 +56,11 @@ var TabWindowStore = Fluxxor.createStore({
 
     onRemoveTabWindow: function(payload) {
         removeTabWindow(payload.tabWindow);
+        this.emit("change");
+    },
+
+    onAttachChromeWindow: function(payload) {
+        attachChromeWindow(payload.tabWindow,payload.chromeWindow);
         this.emit("change");
     },
 

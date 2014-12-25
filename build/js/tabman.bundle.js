@@ -75,9 +75,7 @@
 	    var tabs = tabWindow.getTabItems();
 	    var urls = tabs.map( function (item) { return item.url; } );
 	    function cf( chromeWindow ) {
-	      tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
-	      tabWindow.open = true;
-	      windowIdMap[ chromeWindow.id ] = tabWindow;    
+	      flux.actions.attachChromeWindow(tabWindow,chromeWindow);
 	      if ( callback )
 	        callback();  
 	    }
@@ -9872,7 +9870,8 @@
 	
 	var constants = {
 	    ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
-	    REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW"
+	    ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
+	    REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
 	};
 	
 	module.exports = constants;
@@ -9902,6 +9901,12 @@
 	        var payload = { tabWindow: tabWindow };
 	        this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
 	    },
+	
+	    // associate a Chrome window with a given tabWindow:
+	    attachChromeWindow: function(tabWindow,chromeWindow) {
+	        var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
+	        this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
+	    }
 	};
 	
 	module.exports = actions;
@@ -9949,11 +9954,18 @@
 	        delete windowIdMap[ windowId ];
 	}
 	
+	function attachChromeWindow(tabWindow,chromeWindow) {
+	    tabWindow.chromeWindow = chromeWindow;
+	    tabWindow.open = true;
+	    windowIdMap[ chromeWindow.id ] = tabWindow;        
+	}
+	
 	var TabWindowStore = Fluxxor.createStore({
 	    initialize: function() {
 	        this.bindActions(
 	            constants.ADD_TAB_WINDOW, this.onAddTabWindow,
-	            constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow
+	            constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
+	            constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
 	        );
 	    },
 	
@@ -9964,6 +9976,11 @@
 	
 	    onRemoveTabWindow: function(payload) {
 	        removeTabWindow(payload.tabWindow);
+	        this.emit("change");
+	    },
+	
+	    onAttachChromeWindow: function(payload) {
+	        attachChromeWindow(payload.tabWindow,payload.chromeWindow);
 	        this.emit("change");
 	    },
 	

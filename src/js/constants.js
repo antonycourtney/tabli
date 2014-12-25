@@ -5,7 +5,8 @@
 
 var constants = {
     ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
-    REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW"
+    ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
+    REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
 };
 
 module.exports = constants;

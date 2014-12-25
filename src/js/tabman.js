@@ -26,9 +26,7 @@ function restoreBookmarkWindow( tabWindow, callback ) {
     var tabs = tabWindow.getTabItems();
     var urls = tabs.map( function (item) { return item.url; } );
     function cf( chromeWindow ) {
-      tabWindow.chromeWindow = chromeWindow;  // TODO: hide in an attach member fn
-      tabWindow.open = true;
-      windowIdMap[ chromeWindow.id ] = tabWindow;    
+      flux.actions.attachChromeWindow(tabWindow,chromeWindow);
       if ( callback )
         callback();  
     }
