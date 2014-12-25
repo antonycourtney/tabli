@@ -732,13 +732,13 @@
 	  // open windows first:
 	  if ( tabWindowA.open != tabWindowB.open ) {
 	    if ( tabWindowA.open )
-	      return 1;
-	    else
 	      return -1;
+	    else
+	      return 1;
 	  }
 	  var tA = tabWindowA.getTitle();
 	  var tB = tabWindowB.getTitle();
-	  return tB.localeCompare( tA );
+	  return tA.localeCompare( tB );
 	}
 	
 	function renderReact(tabWindows,currentWindow) {
