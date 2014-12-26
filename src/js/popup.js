@@ -17,17 +17,19 @@ var bgw = chrome.extension.getBackgroundPage();
 
 // expand / contract button for a window
 var R_ExpanderButton = React.createClass({
-  handleClicked: function() {
+  handleClicked: function(event) {
     var nextState = !this.props.expanded;
     this.props.onClick(nextState);
+    event.stopPropagation();
   },
   render: function() {
     var expandClass = this.props.expanded ? "window-collapse" : "window-expand";
     var buttonClass = "header-button expander " + expandClass;
-    return (
-      <button className={buttonClass} onClick={this.handleClicked} />
-      );    
-  } 
+    return ( 
+      <button className={buttonClass}
+              onClick={this.handleClicked} />
+  );
+  }
 });
 
 var R_WindowHeader = React.createClass({
@@ -68,6 +70,8 @@ var R_WindowHeader = React.createClass({
     var closeClass = "header-button close " + hoverClass;
     var closeButton = <button className={closeClass} title="Close Window" onClick={this.props.onClose} />;
 
+    console.log("WindowHeader: ", windowTitle, openClass, managed, this.props.expanded);
+
     return (
       <div className="nowrap singlerow oneRowContainer windowHeader"
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
@@ -77,7 +81,7 @@ var R_WindowHeader = React.createClass({
         <span className={titleClass}>{windowTitle}</span>
         {closeButton}
       </div>
-      );
+    );
   }
 });
 
@@ -136,32 +140,31 @@ var R_TabItem = React.createClass({
 
 var R_TabWindow = React.createClass({
   getInitialState: function() {
-    // TODO: just use tabWindow.open, don't keep our own state.
-    return ({expanded: this.props.tabWindow.open})
+    // Note:  We initialize this with null rather than false so that it will follow
+    // open / closed state of window
+    return ({expanded: null});
   },
 
   handleOpen: function() {
     console.log("handleOpen");
-    var tabWindow = this.props.tabWindow;
-    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-    if (tabWindow.open) {
-      chrome.windows.update( windowId, { focused: true } );
-    } else {
-      // need to open it!
-      bgw.tabMan.restoreBookmarkWindow( tabWindow );      
-    }
-    // TODO: update Flux!
+    bgw.tabMan.flux.actions.openTabWindow(this.props.tabWindow);
   },
 
   handleClose: function(event) {
     console.log("handleClose");
-    var tabWindow = this.props.tabWindow;
-    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-    chrome.windows.remove( windowId, function() {
-      tabWindow.open = false;
-    });
-    bgw.tabMan.flux.actions.removeTabWindow(tabWindow);
+    bgw.tabMan.flux.actions.closeTabWindow(this.props.tabWindow);
     event.stopPropagation();
+  },
+
+  /* expanded state follows window open/closed state unless it is 
+   * explicitly set interactively by the user
+   */
+  getExpandedState: function() {
+    if (this.state.expanded === null) {
+      return this.props.tabWindow.open;
+    } else {
+      return this.state.expanded;
+    }
   },
 
   renderTabItems: function(tabWindow,tabs) {
@@ -172,7 +175,8 @@ var R_TabWindow = React.createClass({
       items.push(tabItem);
     };
 
-    var expandableContentClass = this.state.expanded ? "expandable-panel-content-open" : "expandable-panel-content-closed";
+    var expanded = this.getExpandedState();
+    var expandableContentClass = expanded ? "expandable-panel-content-open" : "expandable-panel-content-closed";
     var tabListClasses="tablist expandable-panel-content " + expandableContentClass;
     return (
       <div className={tabListClasses}>
@@ -188,9 +192,10 @@ var R_TabWindow = React.createClass({
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.getTabItems();
     var tabItems = this.renderTabItems(tabWindow,tabs);
+    var expanded = this.getExpandedState();
     var windowHeader = 
       <R_WindowHeader tabWindow={tabWindow} 
-          expanded={this.state.expanded} 
+          expanded={expanded} 
           onExpand={this.handleExpand} 
           onOpen={this.handleOpen}
           onClose={this.handleClose}

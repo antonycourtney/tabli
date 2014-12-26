@@ -69,39 +69,6 @@
 	var flux = null; // flux instance
 	var winStore = null;  // TabWindowStore instance
 	
-	function restoreBookmarkWindow( tabWindow, callback ) {
-	  chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
-	    var urls = [];
-	    var tabs = tabWindow.getTabItems();
-	    var urls = tabs.map( function (item) { return item.url; } );
-	    function cf( chromeWindow ) {
-	      flux.actions.attachChromeWindow(tabWindow,chromeWindow);
-	      if ( callback )
-	        callback();  
-	    }
-	    console.log( "current chrome window: ", currentChromeWindow );
-	    if ((currentChromeWindow.tabs.length===1) &&
-	        (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
-	      console.log("found new window -- replacing contents");
-	      var origTabId = currentChromeWindow.tabs[0].id;
-	      // new window -- replace contents with urls:
-	      for ( var i = 0; i < urls.length; i++ ) {
-	        // First use our existing tab:
-	        if (i==0) {
-	          chrome.tabs.update( origTabId, { url: urls[i] } );
-	        } else {
-	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
-	          chrome.tabs.create( tabInfo );
-	        }
-	      };
-	      // And now invoke cf with this chrome window:
-	      cf( currentChromeWindow );        
-	    } else {
-	      // normal case -- create a new window for these urls:
-	      chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
-	    }
-	  } );
-	}
 	
 	function revertWindow( tabWindow, callback ) {
 	  var tabs = tabWindow.chromeWindow.tabs;
@@ -488,7 +455,6 @@
 	  syncWindowList: syncWindowList,
 	  manageWindow: manageWindow,
 	  unmanageWindow: unmanageWindow,
-	  restoreBookmarkWindow: restoreBookmarkWindow,
 	  revertWindow: revertWindow
 	};
 	
@@ -9869,9 +9835,11 @@
 	'use strict';
 	
 	var constants = {
-	    ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
-	    ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
-	    REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
+	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
+	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
+	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
 	};
 	
 	module.exports = constants;
@@ -9891,22 +9859,31 @@
 	var constants = __webpack_require__(/*! ./constants.js */ 150);
 	
 	var actions = {
+	  addTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
+	  },
 	
-	    addTabWindow: function(tabWindow) {
-	        var payload = { tabWindow: tabWindow };
-	        this.dispatch(constants.ADD_TAB_WINDOW, payload);
-	    },
+	  closeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+	  },
 	
-	    removeTabWindow: function(tabWindow) {
-	        var payload = { tabWindow: tabWindow };
-	        this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
-	    },
+	  removeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
+	  },
 	
-	    // associate a Chrome window with a given tabWindow:
-	    attachChromeWindow: function(tabWindow,chromeWindow) {
-	        var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
-	        this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
-	    }
+	  openTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
+	  },
+	
+	  // associate a Chrome window with a given tabWindow:
+	  attachChromeWindow: function(tabWindow,chromeWindow) {
+	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
+	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
+	  }
 	};
 	
 	module.exports = actions;
@@ -9921,77 +9898,154 @@
 	/*
 	 * A Flux store for TabWindows
 	 */
-	var Fluxxor = __webpack_require__(/*! fluxxor */ 153);
-	var constants = __webpack_require__(/*! ./constants.js */ 150);
+	 var Fluxxor = __webpack_require__(/*! fluxxor */ 153);
+	 var constants = __webpack_require__(/*! ./constants.js */ 150);
 	
-	var windowIdMap = {};
-	var tabWindows = [];
+	 var windowIdMap = {};
+	 var tabWindows = [];
+	
+	
+	 var bgw = chrome.extension.getBackgroundPage();
 	
 	/*
 	 * add a new Tab window to global maps:
 	 */
 	function addTabWindow( tabWindow ) {
-	    var chromeWindow = tabWindow.chromeWindow;
-	    if( chromeWindow ) {
-	      windowIdMap[ chromeWindow.id ] = tabWindow;
-	    }
-	    tabWindows.push( tabWindow );     
-	 }
+	  var chromeWindow = tabWindow.chromeWindow;
+	  if( chromeWindow ) {
+	    windowIdMap[ chromeWindow.id ] = tabWindow;
+	  }
+	  tabWindows.push( tabWindow );     
+	}
 	
 	function removeTabWindow(tabWindow) {
-	    // could keep an inverse map instead of doing a linear search...
-	    for (var i = 0; i < tabWindows.length; i++) {
-	        if (tabWindows[i]===tabWindow)
-	            break;
+	  // could keep an inverse map instead of doing a linear search...
+	  for (var i = 0; i < tabWindows.length; i++) {
+	    if (tabWindows[i]===tabWindow)
+	      break;
+	  }
+	  if (i < tabWindows.length) {
+	    delete tabWindows[ i ];
+	  } else {
+	    console.log("removeTabWindow: request to remove window not in collection", tabWindow);
+	  }
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  if ( windowId ) 
+	    delete windowIdMap[ windowId ];
+	}
+	
+	function closeTabWindow(tabWindow) {
+	  console.log("closeTabWindow: ", tabWindow);
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  chrome.windows.remove( windowId, function() {
+	    tabWindow.open = false;
+	  });
+	  removeTabWindow(tabWindow);
+	}
+	
+	function restoreBookmarkWindow( tabWindow, callback ) {
+	  chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
+	    var urls = [];
+	    var tabs = tabWindow.getTabItems();
+	    var urls = tabs.map( function (item) { return item.url; } );
+	    function cf( chromeWindow ) {
+	      console.log("restoreBookmarkWindow: cf");
+	      attachChromeWindow(tabWindow,chromeWindow);
+	      if ( callback ) {
+	        console.log("restoreBookmarkWindow: invoking callback");
+	        callback();  
+	      }
 	    }
-	    if (i < tabWindows.length) {
-	        delete tabWindows[ i ];
+	    console.log( "current chrome window: ", currentChromeWindow );
+	    if ((currentChromeWindow.tabs.length===1) &&
+	        (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
+	      console.log("found new window -- replacing contents");
+	      var origTabId = currentChromeWindow.tabs[0].id;
+	      // new window -- replace contents with urls:
+	      for ( var i = 0; i < urls.length; i++ ) {
+	        // First use our existing tab:
+	        if (i==0) {
+	          chrome.tabs.update( origTabId, { url: urls[i] } );
+	        } else {
+	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
+	          chrome.tabs.create( tabInfo );
+	        }
+	      };
+	      // And now invoke cf with this chrome window:
+	      cf( currentChromeWindow );        
 	    } else {
-	        console.log("removeTabWindow: request to remove window not in collection", tabWindow);
+	      // normal case -- create a new window for these urls:
+	      chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
 	    }
-	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	    if ( windowId ) 
-	        delete windowIdMap[ windowId ];
+	  });
+	}
+	
+	function openTabWindow(tabWindow,callback) {
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  if (tabWindow.open) {
+	    // existing window -- just transfer focus
+	    chrome.windows.update( windowId, { focused: true } );
+	  } else {
+	    // bookmarked window -- need to open it!
+	    restoreBookmarkWindow( tabWindow, callback );      
+	  }    
 	}
 	
 	function attachChromeWindow(tabWindow,chromeWindow) {
-	    tabWindow.chromeWindow = chromeWindow;
-	    tabWindow.open = true;
-	    windowIdMap[ chromeWindow.id ] = tabWindow;        
+	  console.log("attachChromeWindow");
+	  tabWindow.chromeWindow = chromeWindow;
+	  tabWindow.open = true;
+	  windowIdMap[ chromeWindow.id ] = tabWindow;
+	  console.log("attachChromeWindow: complete.");
 	}
 	
 	var TabWindowStore = Fluxxor.createStore({
-	    initialize: function() {
-	        this.bindActions(
-	            constants.ADD_TAB_WINDOW, this.onAddTabWindow,
-	            constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
-	            constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
-	        );
-	    },
+	  initialize: function() {
+	    this.bindActions(
+	      constants.ADD_TAB_WINDOW, this.onAddTabWindow,
+	      constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
+	      constants.OPEN_TAB_WINDOW, this.onOpenTabWindow,
+	      constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
+	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
+	      );
+	  },
 	
-	    onAddTabWindow: function(payload) {
-	        addTabWindow(payload.tabWindow);
-	        this.emit("change");
-	    },
+	  onAddTabWindow: function(payload) {
+	    addTabWindow(payload.tabWindow);
+	    this.emit("change");
+	  },
 	
-	    onRemoveTabWindow: function(payload) {
-	        removeTabWindow(payload.tabWindow);
-	        this.emit("change");
-	    },
+	  onCloseTabWindow: function(payload) {
+	    closeTabWindow(payload.tabWindow);
+	    this.emit("change");
+	  },
 	
-	    onAttachChromeWindow: function(payload) {
-	        attachChromeWindow(payload.tabWindow,payload.chromeWindow);
-	        this.emit("change");
-	    },
+	  onOpenTabWindow: function(payload) {
+	    var self = this;
+	    openTabWindow(payload.tabWindow, function () {
+	      console.log("openTabWindow: complete");
+	      self.emit("change");
+	    });
+	  },
 	
-	    getAll: function() {
-	        return tabWindows;
-	    },
+	  onRemoveTabWindow: function(payload) {
+	    removeTabWindow(payload.tabWindow);
+	    this.emit("change");
+	  },
 	
-	    // returns a tabWindow or undefined
-	    getTabWindowByChromeId: function(chromeId) {
-	        return windowIdMap[chromeId];
-	    }
+	  onAttachChromeWindow: function(payload) {
+	    attachChromeWindow(payload.tabWindow,payload.chromeWindow);
+	    this.emit("change");
+	  },
+	
+	  getAll: function() {
+	    return tabWindows;
+	  },
+	
+	  // returns a tabWindow or undefined
+	  getTabWindowByChromeId: function(chromeId) {
+	    return windowIdMap[chromeId];
+	  }
 	});
 	
 	module.exports = TabWindowStore;
