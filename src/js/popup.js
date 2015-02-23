@@ -34,7 +34,24 @@ var styles = {
     paddingLeft: 3,
     paddingRight: 3,
     marginBottom: 3
-  }    
+  },
+  windowExpand: {
+    webkitMaskImage: 'url("../images/triangle-small-4-01.png")',
+    backgroundColor: '#606060'
+  },
+  windowCollapse: {
+    webkitMaskImage: 'url("../images/triangle-small-1-01.png")',
+    backgroundColor: '#606060',
+  },
+  headerButton: {
+    outline: 'none',
+    border: 'none',
+    backgroundColor: 'transparent',
+    backgroundRepeat: 'no-repeat',
+    marginRight: 3,
+    width: 16,
+    height: 16
+  }  
 }
 
 function m() {
@@ -57,10 +74,10 @@ var R_ExpanderButton = React.createClass({
     event.stopPropagation();
   },
   render: function() {
-    var expandClass = this.props.expanded ? "window-collapse" : "window-expand";
-    var buttonClass = "header-button expander " + expandClass;
+    var expandStyle = this.props.expanded ? styles.windowCollapse : styles.windowExpand;
+    var buttonStyle = m(styles.headerButton,styles.expander,expandStyle);
     return ( 
-      <button className={buttonClass}
+      <button style={buttonStyle}
               onClick={this.handleClicked} />
   );
   }
