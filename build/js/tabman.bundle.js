@@ -48,12 +48,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	$ = __webpack_require__(/*! jquery */ 3);
+	$ = __webpack_require__(/*! jquery */ 5);
 	
-	var Fluxxor = __webpack_require__(/*! fluxxor */ 153);
-	var constants = __webpack_require__(/*! ./constants.js */ 150);
-	var actions = __webpack_require__(/*! ./actions.js */ 151);
-	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 152);
+	var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
+	var constants = __webpack_require__(/*! ./constants.js */ 2);
+	var actions = __webpack_require__(/*! ./actions.js */ 3);
+	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 1);
 	
 	'use strict';
 	var CONTEXT_MENU_ID = 99;
@@ -461,9 +461,272 @@
 	main();
 
 /***/ },
-/* 1 */,
-/* 2 */,
+/* 1 */
+/*!**********************************!*\
+  !*** ./src/js/tabWindowStore.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * A Flux store for TabWindows
+	 */
+	 var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
+	 var constants = __webpack_require__(/*! ./constants.js */ 2);
+	
+	 var windowIdMap = {};
+	 var tabWindows = [];
+	
+	 var bgw = chrome.extension.getBackgroundPage();
+	
+	/*
+	 * add a new Tab window to global maps:
+	 */
+	function addTabWindow( tabWindow ) {
+	  var chromeWindow = tabWindow.chromeWindow;
+	  if( chromeWindow ) {
+	    windowIdMap[ chromeWindow.id ] = tabWindow;
+	  }
+	  tabWindows.push( tabWindow );     
+	}
+	
+	function removeTabWindow(tabWindow) {
+	  // could keep an inverse map instead of doing a linear search...
+	  for (var i = 0; i < tabWindows.length; i++) {
+	    if (tabWindows[i]===tabWindow)
+	      break;
+	  }
+	  if (i < tabWindows.length) {
+	    delete tabWindows[ i ];
+	  } else {
+	    console.log("removeTabWindow: request to remove window not in collection", tabWindow);
+	  }
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  if ( windowId ) 
+	    delete windowIdMap[ windowId ];
+	}
+	
+	function closeTabWindow(tabWindow, cb) {
+	  console.log("closeTabWindow: ", tabWindow);
+	  if (!tabWindow.open) {
+	    console.log("closeTabWindow: request to close non-open window, ignoring...");
+	    return;
+	  }
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  chrome.windows.remove( windowId, function() {
+	    tabWindow.open = false;
+	    delete windowIdMap[ windowId ];
+	    if (!tabWindow.isManaged()) {
+	      console.log("unmanaged window -- removing");
+	      removeTabWindow(tabWindow);
+	    }
+	    cb();    
+	  });
+	}
+	
+	function restoreBookmarkWindow( tabWindow, callback ) {
+	  chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
+	    var urls = [];
+	    var tabs = tabWindow.getTabItems();
+	    var urls = tabs.map( function (item) { return item.url; } );
+	    function cf( chromeWindow ) {
+	      console.log("restoreBookmarkWindow: cf");
+	      attachChromeWindow(tabWindow,chromeWindow);
+	      if ( callback ) {
+	        console.log("restoreBookmarkWindow: invoking callback");
+	        callback();  
+	      }
+	    }
+	    console.log( "current chrome window: ", currentChromeWindow );
+	    if ((currentChromeWindow.tabs.length===1) &&
+	        (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
+	      console.log("found new window -- replacing contents");
+	      var origTabId = currentChromeWindow.tabs[0].id;
+	      // new window -- replace contents with urls:
+	      for ( var i = 0; i < urls.length; i++ ) {
+	        // First use our existing tab:
+	        if (i==0) {
+	          chrome.tabs.update( origTabId, { url: urls[i] } );
+	        } else {
+	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
+	          chrome.tabs.create( tabInfo );
+	        }
+	      };
+	      // And now invoke cf with this chrome window:
+	      cf( currentChromeWindow );        
+	    } else {
+	      // normal case -- create a new window for these urls:
+	      chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+	    }
+	  });
+	}
+	
+	function openTabWindow(tabWindow,callback) {
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  if (tabWindow.open) {
+	    // existing window -- just transfer focus
+	    chrome.windows.update( windowId, { focused: true } );
+	  } else {
+	    // bookmarked window -- need to open it!
+	    restoreBookmarkWindow( tabWindow, callback );      
+	  }    
+	}
+	
+	function attachChromeWindow(tabWindow,chromeWindow) {
+	  console.log("attachChromeWindow");
+	  tabWindow.chromeWindow = chromeWindow;
+	  tabWindow.open = true;
+	  windowIdMap[ chromeWindow.id ] = tabWindow;
+	  console.log("attachChromeWindow: complete.");
+	}
+	
+	var TabWindowStore = Fluxxor.createStore({
+	  initialize: function() {
+	    this.bindActions(
+	      constants.ADD_TAB_WINDOW, this.onAddTabWindow,
+	      constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
+	      constants.OPEN_TAB_WINDOW, this.onOpenTabWindow,
+	      constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
+	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
+	      );
+	  },
+	
+	  onAddTabWindow: function(payload) {
+	    addTabWindow(payload.tabWindow);
+	    this.emit("change");
+	  },
+	
+	  onCloseTabWindow: function(payload) {
+	    var self = this;
+	    closeTabWindow(payload.tabWindow, function () {
+	        self.emit("change");      
+	      });
+	  },
+	
+	  onOpenTabWindow: function(payload) {
+	    var self = this;
+	    openTabWindow(payload.tabWindow, function () {
+	      console.log("openTabWindow: complete");
+	      self.emit("change");
+	    });
+	  },
+	
+	  onRemoveTabWindow: function(payload) {
+	    removeTabWindow(payload.tabWindow);
+	    this.emit("change");
+	  },
+	
+	  onAttachChromeWindow: function(payload) {
+	    attachChromeWindow(payload.tabWindow,payload.chromeWindow);
+	    this.emit("change");
+	  },
+	
+	  getAll: function() {
+	    return tabWindows;
+	  },
+	
+	  // returns a tabWindow or undefined
+	  getTabWindowByChromeId: function(chromeId) {
+	    return windowIdMap[chromeId];
+	  }
+	});
+	
+	module.exports = TabWindowStore;
+
+/***/ },
+/* 2 */
+/*!*****************************!*\
+  !*** ./src/js/constants.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * constants for managing tab window Flux store
+	 */
+	'use strict';
+	
+	var constants = {
+	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
+	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
+	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
+	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
+	};
+	
+	module.exports = constants;
+
+/***/ },
 /* 3 */
+/*!***************************!*\
+  !*** ./src/js/actions.js ***!
+  \***************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * actions that can be sent to Flux store
+	 */
+	'use strict';
+	
+	var constants = __webpack_require__(/*! ./constants.js */ 2);
+	
+	var actions = {
+	  addTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
+	  },
+	
+	  closeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+	  },
+	
+	  removeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
+	  },
+	
+	  openTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
+	  },
+	
+	  // associate a Chrome window with a given tabWindow:
+	  attachChromeWindow: function(tabWindow,chromeWindow) {
+	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
+	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
+	  }
+	};
+	
+	module.exports = actions;
+
+/***/ },
+/* 4 */
+/*!****************************!*\
+  !*** ./~/fluxxor/index.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var Dispatcher = __webpack_require__(/*! ./lib/dispatcher */ 9),
+	    Flux = __webpack_require__(/*! ./lib/flux */ 10),
+	    FluxMixin = __webpack_require__(/*! ./lib/flux_mixin */ 11),
+	    FluxChildMixin = __webpack_require__(/*! ./lib/flux_child_mixin */ 12),
+	    StoreWatchMixin = __webpack_require__(/*! ./lib/store_watch_mixin */ 13),
+	    createStore = __webpack_require__(/*! ./lib/create_store */ 14);
+	
+	var Fluxxor = {
+	  Dispatcher: Dispatcher,
+	  Flux: Flux,
+	  FluxMixin: FluxMixin,
+	  FluxChildMixin: FluxChildMixin,
+	  StoreWatchMixin: StoreWatchMixin,
+	  createStore: createStore,
+	  version: __webpack_require__(/*! ./version */ 8)
+	};
+	
+	module.exports = Fluxxor;
+
+
+/***/ },
+/* 5 */
 /*!*********************************!*\
   !*** ./~/jquery/dist/jquery.js ***!
   \*********************************/
@@ -9677,408 +9940,9 @@
 
 
 /***/ },
-/* 4 */,
-/* 5 */,
 /* 6 */,
 /* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */,
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */,
-/* 19 */,
-/* 20 */,
-/* 21 */,
-/* 22 */,
-/* 23 */,
-/* 24 */,
-/* 25 */,
-/* 26 */,
-/* 27 */,
-/* 28 */,
-/* 29 */,
-/* 30 */,
-/* 31 */,
-/* 32 */,
-/* 33 */,
-/* 34 */,
-/* 35 */,
-/* 36 */,
-/* 37 */,
-/* 38 */,
-/* 39 */,
-/* 40 */,
-/* 41 */,
-/* 42 */,
-/* 43 */,
-/* 44 */,
-/* 45 */,
-/* 46 */,
-/* 47 */,
-/* 48 */,
-/* 49 */,
-/* 50 */,
-/* 51 */,
-/* 52 */,
-/* 53 */,
-/* 54 */,
-/* 55 */,
-/* 56 */,
-/* 57 */,
-/* 58 */,
-/* 59 */,
-/* 60 */,
-/* 61 */,
-/* 62 */,
-/* 63 */,
-/* 64 */,
-/* 65 */,
-/* 66 */,
-/* 67 */,
-/* 68 */,
-/* 69 */,
-/* 70 */,
-/* 71 */,
-/* 72 */,
-/* 73 */,
-/* 74 */,
-/* 75 */,
-/* 76 */,
-/* 77 */,
-/* 78 */,
-/* 79 */,
-/* 80 */,
-/* 81 */,
-/* 82 */,
-/* 83 */,
-/* 84 */,
-/* 85 */,
-/* 86 */,
-/* 87 */,
-/* 88 */,
-/* 89 */,
-/* 90 */,
-/* 91 */,
-/* 92 */,
-/* 93 */,
-/* 94 */,
-/* 95 */,
-/* 96 */,
-/* 97 */,
-/* 98 */,
-/* 99 */,
-/* 100 */,
-/* 101 */,
-/* 102 */,
-/* 103 */,
-/* 104 */,
-/* 105 */,
-/* 106 */,
-/* 107 */,
-/* 108 */,
-/* 109 */,
-/* 110 */,
-/* 111 */,
-/* 112 */,
-/* 113 */,
-/* 114 */,
-/* 115 */,
-/* 116 */,
-/* 117 */,
-/* 118 */,
-/* 119 */,
-/* 120 */,
-/* 121 */,
-/* 122 */,
-/* 123 */,
-/* 124 */,
-/* 125 */,
-/* 126 */,
-/* 127 */,
-/* 128 */,
-/* 129 */,
-/* 130 */,
-/* 131 */,
-/* 132 */,
-/* 133 */,
-/* 134 */,
-/* 135 */,
-/* 136 */,
-/* 137 */,
-/* 138 */,
-/* 139 */,
-/* 140 */,
-/* 141 */,
-/* 142 */,
-/* 143 */,
-/* 144 */,
-/* 145 */,
-/* 146 */,
-/* 147 */,
-/* 148 */,
-/* 149 */,
-/* 150 */
-/*!*****************************!*\
-  !*** ./src/js/constants.js ***!
-  \*****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * constants for managing tab window Flux store
-	 */
-	'use strict';
-	
-	var constants = {
-	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
-	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
-	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
-	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
-	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
-	};
-	
-	module.exports = constants;
-
-/***/ },
-/* 151 */
-/*!***************************!*\
-  !*** ./src/js/actions.js ***!
-  \***************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * actions that can be sent to Flux store
-	 */
-	'use strict';
-	
-	var constants = __webpack_require__(/*! ./constants.js */ 150);
-	
-	var actions = {
-	  addTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
-	  },
-	
-	  closeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
-	  },
-	
-	  removeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
-	  },
-	
-	  openTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
-	  },
-	
-	  // associate a Chrome window with a given tabWindow:
-	  attachChromeWindow: function(tabWindow,chromeWindow) {
-	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
-	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
-	  }
-	};
-	
-	module.exports = actions;
-
-/***/ },
-/* 152 */
-/*!**********************************!*\
-  !*** ./src/js/tabWindowStore.js ***!
-  \**********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * A Flux store for TabWindows
-	 */
-	 var Fluxxor = __webpack_require__(/*! fluxxor */ 153);
-	 var constants = __webpack_require__(/*! ./constants.js */ 150);
-	
-	 var windowIdMap = {};
-	 var tabWindows = [];
-	
-	
-	 var bgw = chrome.extension.getBackgroundPage();
-	
-	/*
-	 * add a new Tab window to global maps:
-	 */
-	function addTabWindow( tabWindow ) {
-	  var chromeWindow = tabWindow.chromeWindow;
-	  if( chromeWindow ) {
-	    windowIdMap[ chromeWindow.id ] = tabWindow;
-	  }
-	  tabWindows.push( tabWindow );     
-	}
-	
-	function removeTabWindow(tabWindow) {
-	  // could keep an inverse map instead of doing a linear search...
-	  for (var i = 0; i < tabWindows.length; i++) {
-	    if (tabWindows[i]===tabWindow)
-	      break;
-	  }
-	  if (i < tabWindows.length) {
-	    delete tabWindows[ i ];
-	  } else {
-	    console.log("removeTabWindow: request to remove window not in collection", tabWindow);
-	  }
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  if ( windowId ) 
-	    delete windowIdMap[ windowId ];
-	}
-	
-	function closeTabWindow(tabWindow) {
-	  console.log("closeTabWindow: ", tabWindow);
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  chrome.windows.remove( windowId, function() {
-	    tabWindow.open = false;
-	  });
-	  removeTabWindow(tabWindow);
-	}
-	
-	function restoreBookmarkWindow( tabWindow, callback ) {
-	  chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
-	    var urls = [];
-	    var tabs = tabWindow.getTabItems();
-	    var urls = tabs.map( function (item) { return item.url; } );
-	    function cf( chromeWindow ) {
-	      console.log("restoreBookmarkWindow: cf");
-	      attachChromeWindow(tabWindow,chromeWindow);
-	      if ( callback ) {
-	        console.log("restoreBookmarkWindow: invoking callback");
-	        callback();  
-	      }
-	    }
-	    console.log( "current chrome window: ", currentChromeWindow );
-	    if ((currentChromeWindow.tabs.length===1) &&
-	        (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
-	      console.log("found new window -- replacing contents");
-	      var origTabId = currentChromeWindow.tabs[0].id;
-	      // new window -- replace contents with urls:
-	      for ( var i = 0; i < urls.length; i++ ) {
-	        // First use our existing tab:
-	        if (i==0) {
-	          chrome.tabs.update( origTabId, { url: urls[i] } );
-	        } else {
-	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
-	          chrome.tabs.create( tabInfo );
-	        }
-	      };
-	      // And now invoke cf with this chrome window:
-	      cf( currentChromeWindow );        
-	    } else {
-	      // normal case -- create a new window for these urls:
-	      chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
-	    }
-	  });
-	}
-	
-	function openTabWindow(tabWindow,callback) {
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  if (tabWindow.open) {
-	    // existing window -- just transfer focus
-	    chrome.windows.update( windowId, { focused: true } );
-	  } else {
-	    // bookmarked window -- need to open it!
-	    restoreBookmarkWindow( tabWindow, callback );      
-	  }    
-	}
-	
-	function attachChromeWindow(tabWindow,chromeWindow) {
-	  console.log("attachChromeWindow");
-	  tabWindow.chromeWindow = chromeWindow;
-	  tabWindow.open = true;
-	  windowIdMap[ chromeWindow.id ] = tabWindow;
-	  console.log("attachChromeWindow: complete.");
-	}
-	
-	var TabWindowStore = Fluxxor.createStore({
-	  initialize: function() {
-	    this.bindActions(
-	      constants.ADD_TAB_WINDOW, this.onAddTabWindow,
-	      constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
-	      constants.OPEN_TAB_WINDOW, this.onOpenTabWindow,
-	      constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
-	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
-	      );
-	  },
-	
-	  onAddTabWindow: function(payload) {
-	    addTabWindow(payload.tabWindow);
-	    this.emit("change");
-	  },
-	
-	  onCloseTabWindow: function(payload) {
-	    closeTabWindow(payload.tabWindow);
-	    this.emit("change");
-	  },
-	
-	  onOpenTabWindow: function(payload) {
-	    var self = this;
-	    openTabWindow(payload.tabWindow, function () {
-	      console.log("openTabWindow: complete");
-	      self.emit("change");
-	    });
-	  },
-	
-	  onRemoveTabWindow: function(payload) {
-	    removeTabWindow(payload.tabWindow);
-	    this.emit("change");
-	  },
-	
-	  onAttachChromeWindow: function(payload) {
-	    attachChromeWindow(payload.tabWindow,payload.chromeWindow);
-	    this.emit("change");
-	  },
-	
-	  getAll: function() {
-	    return tabWindows;
-	  },
-	
-	  // returns a tabWindow or undefined
-	  getTabWindowByChromeId: function(chromeId) {
-	    return windowIdMap[chromeId];
-	  }
-	});
-	
-	module.exports = TabWindowStore;
-
-/***/ },
-/* 153 */
-/*!****************************!*\
-  !*** ./~/fluxxor/index.js ***!
-  \****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var Dispatcher = __webpack_require__(/*! ./lib/dispatcher */ 155),
-	    Flux = __webpack_require__(/*! ./lib/flux */ 156),
-	    FluxMixin = __webpack_require__(/*! ./lib/flux_mixin */ 157),
-	    FluxChildMixin = __webpack_require__(/*! ./lib/flux_child_mixin */ 158),
-	    StoreWatchMixin = __webpack_require__(/*! ./lib/store_watch_mixin */ 159),
-	    createStore = __webpack_require__(/*! ./lib/create_store */ 160);
-	
-	var Fluxxor = {
-	  Dispatcher: Dispatcher,
-	  Flux: Flux,
-	  FluxMixin: FluxMixin,
-	  FluxChildMixin: FluxChildMixin,
-	  StoreWatchMixin: StoreWatchMixin,
-	  createStore: createStore,
-	  version: __webpack_require__(/*! ./version */ 154)
-	};
-	
-	module.exports = Fluxxor;
-
-
-/***/ },
-/* 154 */
+/* 8 */
 /*!******************************!*\
   !*** ./~/fluxxor/version.js ***!
   \******************************/
@@ -10087,22 +9951,22 @@
 	module.exports = "1.5.1"
 
 /***/ },
-/* 155 */
+/* 9 */
 /*!*************************************!*\
   !*** ./~/fluxxor/lib/dispatcher.js ***!
   \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _clone = __webpack_require__(/*! lodash-node/modern/objects/clone */ 166),
-	    _mapValues = __webpack_require__(/*! lodash-node/modern/objects/mapValues */ 165),
-	    _forOwn = __webpack_require__(/*! lodash-node/modern/objects/forOwn */ 167),
-	    _intersection = __webpack_require__(/*! lodash-node/modern/arrays/intersection */ 172),
-	    _keys = __webpack_require__(/*! lodash-node/modern/objects/keys */ 168),
-	    _map = __webpack_require__(/*! lodash-node/modern/collections/map */ 174),
-	    _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 175),
-	    _size = __webpack_require__(/*! lodash-node/modern/collections/size */ 176),
-	    _findKey = __webpack_require__(/*! lodash-node/modern/objects/findKey */ 169),
-	    _uniq = __webpack_require__(/*! lodash-node/modern/arrays/uniq */ 173);
+	var _clone = __webpack_require__(/*! lodash-node/modern/objects/clone */ 50),
+	    _mapValues = __webpack_require__(/*! lodash-node/modern/objects/mapValues */ 51),
+	    _forOwn = __webpack_require__(/*! lodash-node/modern/objects/forOwn */ 52),
+	    _intersection = __webpack_require__(/*! lodash-node/modern/arrays/intersection */ 55),
+	    _keys = __webpack_require__(/*! lodash-node/modern/objects/keys */ 53),
+	    _map = __webpack_require__(/*! lodash-node/modern/collections/map */ 46),
+	    _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44),
+	    _size = __webpack_require__(/*! lodash-node/modern/collections/size */ 47),
+	    _findKey = __webpack_require__(/*! lodash-node/modern/objects/findKey */ 54),
+	    _uniq = __webpack_require__(/*! lodash-node/modern/arrays/uniq */ 56);
 	
 	var Dispatcher = function(stores) {
 	  this.stores = {};
@@ -10240,21 +10104,21 @@
 
 
 /***/ },
-/* 156 */
+/* 10 */
 /*!*******************************!*\
   !*** ./~/fluxxor/lib/flux.js ***!
   \*******************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 162),
-	    inherits = __webpack_require__(/*! inherits */ 164),
-	    objectPath = __webpack_require__(/*! object-path */ 163),
-	    _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 175),
-	    _reduce = __webpack_require__(/*! lodash-node/modern/collections/reduce */ 177),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 170),
-	    _isString = __webpack_require__(/*! lodash-node/modern/objects/isString */ 171);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17),
+	    inherits = __webpack_require__(/*! inherits */ 43),
+	    objectPath = __webpack_require__(/*! object-path */ 18),
+	    _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44),
+	    _reduce = __webpack_require__(/*! lodash-node/modern/collections/reduce */ 45),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 48),
+	    _isString = __webpack_require__(/*! lodash-node/modern/objects/isString */ 49);
 	
-	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 155);
+	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 9);
 	
 	var findLeaves = function(obj, path, callback) {
 	  path = path || [];
@@ -10368,7 +10232,7 @@
 
 
 /***/ },
-/* 157 */
+/* 11 */
 /*!*************************************!*\
   !*** ./~/fluxxor/lib/flux_mixin.js ***!
   \*************************************/
@@ -10412,7 +10276,7 @@
 
 
 /***/ },
-/* 158 */
+/* 12 */
 /*!*******************************************!*\
   !*** ./~/fluxxor/lib/flux_child_mixin.js ***!
   \*******************************************/
@@ -10448,13 +10312,13 @@
 
 
 /***/ },
-/* 159 */
+/* 13 */
 /*!********************************************!*\
   !*** ./~/fluxxor/lib/store_watch_mixin.js ***!
   \********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 175);
+	var _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44);
 	
 	var StoreWatchMixin = function() {
 	  var storeNames = Array.prototype.slice.call(arguments);
@@ -10495,16 +10359,16 @@
 
 
 /***/ },
-/* 160 */
+/* 14 */
 /*!***************************************!*\
   !*** ./~/fluxxor/lib/create_store.js ***!
   \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 175),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 170),
-	    Store = __webpack_require__(/*! ./store */ 161),
-	    inherits = __webpack_require__(/*! inherits */ 164);
+	var _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 48),
+	    Store = __webpack_require__(/*! ./store */ 16),
+	    inherits = __webpack_require__(/*! inherits */ 43);
 	
 	var RESERVED_KEYS = ["flux", "waitFor"];
 	
@@ -10544,16 +10408,17 @@
 
 
 /***/ },
-/* 161 */
+/* 15 */,
+/* 16 */
 /*!********************************!*\
   !*** ./~/fluxxor/lib/store.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 162),
-	    inherits = __webpack_require__(/*! inherits */ 164),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 170),
-	    _isObject = __webpack_require__(/*! lodash-node/modern/objects/isObject */ 178);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17),
+	    inherits = __webpack_require__(/*! inherits */ 43),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 48),
+	    _isObject = __webpack_require__(/*! lodash-node/modern/objects/isObject */ 57);
 	
 	function Store(dispatcher) {
 	  this.dispatcher = dispatcher;
@@ -10623,7 +10488,7 @@
 
 
 /***/ },
-/* 162 */
+/* 17 */
 /*!********************************************!*\
   !*** ./~/fluxxor/~/eventemitter3/index.js ***!
   \********************************************/
@@ -10861,7 +10726,7 @@
 
 
 /***/ },
-/* 163 */
+/* 18 */
 /*!******************************************!*\
   !*** ./~/fluxxor/~/object-path/index.js ***!
   \******************************************/
@@ -11110,7 +10975,31 @@
 	});
 
 /***/ },
-/* 164 */
+/* 19 */,
+/* 20 */,
+/* 21 */,
+/* 22 */,
+/* 23 */,
+/* 24 */,
+/* 25 */,
+/* 26 */,
+/* 27 */,
+/* 28 */,
+/* 29 */,
+/* 30 */,
+/* 31 */,
+/* 32 */,
+/* 33 */,
+/* 34 */,
+/* 35 */,
+/* 36 */,
+/* 37 */,
+/* 38 */,
+/* 39 */,
+/* 40 */,
+/* 41 */,
+/* 42 */,
+/* 43 */
 /*!**************************************************!*\
   !*** ./~/fluxxor/~/inherits/inherits_browser.js ***!
   \**************************************************/
@@ -11142,10 +11031,10 @@
 
 
 /***/ },
-/* 165 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/mapValues.js ***!
-  \*************************************************************/
+/* 44 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collections/forEach.js ***!
+  \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -11156,14 +11045,153 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 184),
-	    forOwn = __webpack_require__(/*! ./forOwn */ 167);
+	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
+	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52);
 	
 	/**
-	 * Creates an object with the same keys as `object` and values generated by
-	 * running each own enumerable property of `object` through the callback.
-	 * The callback is bound to `thisArg` and invoked with three arguments;
-	 * (value, key, object).
+	 * Iterates over elements of a collection, executing the callback for each
+	 * element. The callback is bound to `thisArg` and invoked with three arguments;
+	 * (value, index|key, collection). Callbacks may exit iteration early by
+	 * explicitly returning `false`.
+	 *
+	 * Note: As with other "Collections" methods, objects with a `length` property
+	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+	 * may be used for object iteration.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @alias each
+	 * @category Collections
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} [callback=identity] The function called per iteration.
+	 * @param {*} [thisArg] The `this` binding of `callback`.
+	 * @returns {Array|Object|string} Returns `collection`.
+	 * @example
+	 *
+	 * _([1, 2, 3]).forEach(function(num) { console.log(num); }).join(',');
+	 * // => logs each number and returns '1,2,3'
+	 *
+	 * _.forEach({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { console.log(num); });
+	 * // => logs each number and returns the object (property order is not guaranteed across environments)
+	 */
+	function forEach(collection, callback, thisArg) {
+	  var index = -1,
+	      length = collection ? collection.length : 0;
+	
+	  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+	  if (typeof length == 'number') {
+	    while (++index < length) {
+	      if (callback(collection[index], index, collection) === false) {
+	        break;
+	      }
+	    }
+	  } else {
+	    forOwn(collection, callback);
+	  }
+	  return collection;
+	}
+	
+	module.exports = forEach;
+
+
+/***/ },
+/* 45 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collections/reduce.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
+	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52);
+	
+	/**
+	 * Reduces a collection to a value which is the accumulated result of running
+	 * each element in the collection through the callback, where each successive
+	 * callback execution consumes the return value of the previous execution. If
+	 * `accumulator` is not provided the first element of the collection will be
+	 * used as the initial `accumulator` value. The callback is bound to `thisArg`
+	 * and invoked with four arguments; (accumulator, value, index|key, collection).
+	 *
+	 * @static
+	 * @memberOf _
+	 * @alias foldl, inject
+	 * @category Collections
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} [callback=identity] The function called per iteration.
+	 * @param {*} [accumulator] Initial value of the accumulator.
+	 * @param {*} [thisArg] The `this` binding of `callback`.
+	 * @returns {*} Returns the accumulated value.
+	 * @example
+	 *
+	 * var sum = _.reduce([1, 2, 3], function(sum, num) {
+	 *   return sum + num;
+	 * });
+	 * // => 6
+	 *
+	 * var mapped = _.reduce({ 'a': 1, 'b': 2, 'c': 3 }, function(result, num, key) {
+	 *   result[key] = num * 3;
+	 *   return result;
+	 * }, {});
+	 * // => { 'a': 3, 'b': 6, 'c': 9 }
+	 */
+	function reduce(collection, callback, accumulator, thisArg) {
+	  if (!collection) return accumulator;
+	  var noaccum = arguments.length < 3;
+	  callback = createCallback(callback, thisArg, 4);
+	
+	  var index = -1,
+	      length = collection.length;
+	
+	  if (typeof length == 'number') {
+	    if (noaccum) {
+	      accumulator = collection[++index];
+	    }
+	    while (++index < length) {
+	      accumulator = callback(accumulator, collection[index], index, collection);
+	    }
+	  } else {
+	    forOwn(collection, function(value, index, collection) {
+	      accumulator = noaccum
+	        ? (noaccum = false, value)
+	        : callback(accumulator, value, index, collection)
+	    });
+	  }
+	  return accumulator;
+	}
+	
+	module.exports = reduce;
+
+
+/***/ },
+/* 46 */
+/*!***********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collections/map.js ***!
+  \***********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
+	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52);
+	
+	/**
+	 * Creates an array of values by running each element in the collection
+	 * through the callback. The callback is bound to `thisArg` and invoked with
+	 * three arguments; (value, index|key, collection).
 	 *
 	 * If a property name is provided for `callback` the created "_.pluck" style
 	 * callback will return the property value of the given element.
@@ -11174,42 +11202,182 @@
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Objects
-	 * @param {Object} object The object to iterate over.
+	 * @alias collect
+	 * @category Collections
+	 * @param {Array|Object|string} collection The collection to iterate over.
 	 * @param {Function|Object|string} [callback=identity] The function called
 	 *  per iteration. If a property name or object is provided it will be used
 	 *  to create a "_.pluck" or "_.where" style callback, respectively.
 	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array} Returns a new object with values of the results of each `callback` execution.
+	 * @returns {Array} Returns a new array of the results of each `callback` execution.
 	 * @example
 	 *
-	 * _.mapValues({ 'a': 1, 'b': 2, 'c': 3} , function(num) { return num * 3; });
-	 * // => { 'a': 3, 'b': 6, 'c': 9 }
+	 * _.map([1, 2, 3], function(num) { return num * 3; });
+	 * // => [3, 6, 9]
 	 *
-	 * var characters = {
-	 *   'fred': { 'name': 'fred', 'age': 40 },
-	 *   'pebbles': { 'name': 'pebbles', 'age': 1 }
-	 * };
+	 * _.map({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { return num * 3; });
+	 * // => [3, 6, 9] (property order is not guaranteed across environments)
+	 *
+	 * var characters = [
+	 *   { 'name': 'barney', 'age': 36 },
+	 *   { 'name': 'fred',   'age': 40 }
+	 * ];
 	 *
 	 * // using "_.pluck" callback shorthand
-	 * _.mapValues(characters, 'age');
-	 * // => { 'fred': 40, 'pebbles': 1 }
+	 * _.map(characters, 'name');
+	 * // => ['barney', 'fred']
 	 */
-	function mapValues(object, callback, thisArg) {
-	  var result = {};
-	  callback = createCallback(callback, thisArg, 3);
+	function map(collection, callback, thisArg) {
+	  var index = -1,
+	      length = collection ? collection.length : 0;
 	
-	  forOwn(object, function(value, key, object) {
-	    result[key] = callback(value, key, object);
-	  });
+	  callback = createCallback(callback, thisArg, 3);
+	  if (typeof length == 'number') {
+	    var result = Array(length);
+	    while (++index < length) {
+	      result[index] = callback(collection[index], index, collection);
+	    }
+	  } else {
+	    result = [];
+	    forOwn(collection, function(value, key, collection) {
+	      result[++index] = callback(value, key, collection);
+	    });
+	  }
 	  return result;
 	}
 	
-	module.exports = mapValues;
+	module.exports = map;
 
 
 /***/ },
-/* 166 */
+/* 47 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collections/size.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var keys = __webpack_require__(/*! ../objects/keys */ 53);
+	
+	/**
+	 * Gets the size of the `collection` by returning `collection.length` for arrays
+	 * and array-like objects or the number of own enumerable properties for objects.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Collections
+	 * @param {Array|Object|string} collection The collection to inspect.
+	 * @returns {number} Returns `collection.length` or number of own enumerable properties.
+	 * @example
+	 *
+	 * _.size([1, 2]);
+	 * // => 2
+	 *
+	 * _.size({ 'one': 1, 'two': 2, 'three': 3 });
+	 * // => 3
+	 *
+	 * _.size('pebbles');
+	 * // => 7
+	 */
+	function size(collection) {
+	  var length = collection ? collection.length : 0;
+	  return typeof length == 'number' ? length : keys(collection).length;
+	}
+	
+	module.exports = size;
+
+
+/***/ },
+/* 48 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/objects/isFunction.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/**
+	 * Checks if `value` is a function.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Objects
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if the `value` is a function, else `false`.
+	 * @example
+	 *
+	 * _.isFunction(_);
+	 * // => true
+	 */
+	function isFunction(value) {
+	  return typeof value == 'function';
+	}
+	
+	module.exports = isFunction;
+
+
+/***/ },
+/* 49 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/objects/isString.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/** `Object#toString` result shortcuts */
+	var stringClass = '[object String]';
+	
+	/** Used for native method references */
+	var objectProto = Object.prototype;
+	
+	/** Used to resolve the internal [[Class]] of values */
+	var toString = objectProto.toString;
+	
+	/**
+	 * Checks if `value` is a string.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Objects
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if the `value` is a string, else `false`.
+	 * @example
+	 *
+	 * _.isString('fred');
+	 * // => true
+	 */
+	function isString(value) {
+	  return typeof value == 'string' ||
+	    value && typeof value == 'object' && toString.call(value) == stringClass || false;
+	}
+	
+	module.exports = isString;
+
+
+/***/ },
+/* 50 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/clone.js ***!
   \*********************************************************/
@@ -11223,8 +11391,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseClone = __webpack_require__(/*! ../internals/baseClone */ 179),
-	    baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 180);
+	var baseClone = __webpack_require__(/*! ../internals/baseClone */ 118),
+	    baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117);
 	
 	/**
 	 * Creates a clone of `value`. If `isDeep` is `true` nested objects will also
@@ -11281,7 +11449,74 @@
 
 
 /***/ },
-/* 167 */
+/* 51 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/objects/mapValues.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
+	    forOwn = __webpack_require__(/*! ./forOwn */ 52);
+	
+	/**
+	 * Creates an object with the same keys as `object` and values generated by
+	 * running each own enumerable property of `object` through the callback.
+	 * The callback is bound to `thisArg` and invoked with three arguments;
+	 * (value, key, object).
+	 *
+	 * If a property name is provided for `callback` the created "_.pluck" style
+	 * callback will return the property value of the given element.
+	 *
+	 * If an object is provided for `callback` the created "_.where" style callback
+	 * will return `true` for elements that have the properties of the given object,
+	 * else `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Objects
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function|Object|string} [callback=identity] The function called
+	 *  per iteration. If a property name or object is provided it will be used
+	 *  to create a "_.pluck" or "_.where" style callback, respectively.
+	 * @param {*} [thisArg] The `this` binding of `callback`.
+	 * @returns {Array} Returns a new object with values of the results of each `callback` execution.
+	 * @example
+	 *
+	 * _.mapValues({ 'a': 1, 'b': 2, 'c': 3} , function(num) { return num * 3; });
+	 * // => { 'a': 3, 'b': 6, 'c': 9 }
+	 *
+	 * var characters = {
+	 *   'fred': { 'name': 'fred', 'age': 40 },
+	 *   'pebbles': { 'name': 'pebbles', 'age': 1 }
+	 * };
+	 *
+	 * // using "_.pluck" callback shorthand
+	 * _.mapValues(characters, 'age');
+	 * // => { 'fred': 40, 'pebbles': 1 }
+	 */
+	function mapValues(object, callback, thisArg) {
+	  var result = {};
+	  callback = createCallback(callback, thisArg, 3);
+	
+	  forOwn(object, function(value, key, object) {
+	    result[key] = callback(value, key, object);
+	  });
+	  return result;
+	}
+	
+	module.exports = mapValues;
+
+
+/***/ },
+/* 52 */
 /*!**********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/forOwn.js ***!
   \**********************************************************/
@@ -11295,9 +11530,9 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 180),
-	    keys = __webpack_require__(/*! ./keys */ 168),
-	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 181);
+	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
+	    keys = __webpack_require__(/*! ./keys */ 53),
+	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
 	
 	/**
 	 * Iterates over own enumerable properties of an object, executing the callback
@@ -11340,7 +11575,7 @@
 
 
 /***/ },
-/* 168 */
+/* 53 */
 /*!********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/keys.js ***!
   \********************************************************/
@@ -11354,9 +11589,9 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var isNative = __webpack_require__(/*! ../internals/isNative */ 182),
-	    isObject = __webpack_require__(/*! ./isObject */ 178),
-	    shimKeys = __webpack_require__(/*! ../internals/shimKeys */ 183);
+	var isNative = __webpack_require__(/*! ../internals/isNative */ 119),
+	    isObject = __webpack_require__(/*! ./isObject */ 57),
+	    shimKeys = __webpack_require__(/*! ../internals/shimKeys */ 120);
 	
 	/* Native method shortcuts for methods with the same name as other `lodash` methods */
 	var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
@@ -11385,7 +11620,7 @@
 
 
 /***/ },
-/* 169 */
+/* 54 */
 /*!***********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/findKey.js ***!
   \***********************************************************/
@@ -11399,8 +11634,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 184),
-	    forOwn = __webpack_require__(/*! ./forOwn */ 167);
+	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
+	    forOwn = __webpack_require__(/*! ./forOwn */ 52);
 	
 	/**
 	 * This method is like `_.findIndex` except that it returns the key of the
@@ -11459,89 +11694,7 @@
 
 
 /***/ },
-/* 170 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isFunction.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/**
-	 * Checks if `value` is a function.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Objects
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is a function, else `false`.
-	 * @example
-	 *
-	 * _.isFunction(_);
-	 * // => true
-	 */
-	function isFunction(value) {
-	  return typeof value == 'function';
-	}
-	
-	module.exports = isFunction;
-
-
-/***/ },
-/* 171 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isString.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** `Object#toString` result shortcuts */
-	var stringClass = '[object String]';
-	
-	/** Used for native method references */
-	var objectProto = Object.prototype;
-	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is a string.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Objects
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is a string, else `false`.
-	 * @example
-	 *
-	 * _.isString('fred');
-	 * // => true
-	 */
-	function isString(value) {
-	  return typeof value == 'string' ||
-	    value && typeof value == 'object' && toString.call(value) == stringClass || false;
-	}
-	
-	module.exports = isString;
-
-
-/***/ },
-/* 172 */
+/* 55 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/arrays/intersection.js ***!
   \***************************************************************/
@@ -11555,15 +11708,15 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseIndexOf = __webpack_require__(/*! ../internals/baseIndexOf */ 187),
-	    cacheIndexOf = __webpack_require__(/*! ../internals/cacheIndexOf */ 188),
-	    createCache = __webpack_require__(/*! ../internals/createCache */ 189),
-	    getArray = __webpack_require__(/*! ../internals/getArray */ 190),
-	    isArguments = __webpack_require__(/*! ../objects/isArguments */ 185),
-	    isArray = __webpack_require__(/*! ../objects/isArray */ 186),
-	    largeArraySize = __webpack_require__(/*! ../internals/largeArraySize */ 191),
-	    releaseArray = __webpack_require__(/*! ../internals/releaseArray */ 192),
-	    releaseObject = __webpack_require__(/*! ../internals/releaseObject */ 193);
+	var baseIndexOf = __webpack_require__(/*! ../internals/baseIndexOf */ 125),
+	    cacheIndexOf = __webpack_require__(/*! ../internals/cacheIndexOf */ 126),
+	    createCache = __webpack_require__(/*! ../internals/createCache */ 127),
+	    getArray = __webpack_require__(/*! ../internals/getArray */ 128),
+	    isArguments = __webpack_require__(/*! ../objects/isArguments */ 123),
+	    isArray = __webpack_require__(/*! ../objects/isArray */ 124),
+	    largeArraySize = __webpack_require__(/*! ../internals/largeArraySize */ 129),
+	    releaseArray = __webpack_require__(/*! ../internals/releaseArray */ 130),
+	    releaseObject = __webpack_require__(/*! ../internals/releaseObject */ 131);
 	
 	/**
 	 * Creates an array of unique values present in all provided arrays using
@@ -11633,7 +11786,7 @@
 
 
 /***/ },
-/* 173 */
+/* 56 */
 /*!*******************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/arrays/uniq.js ***!
   \*******************************************************/
@@ -11647,8 +11800,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseUniq = __webpack_require__(/*! ../internals/baseUniq */ 194),
-	    createCallback = __webpack_require__(/*! ../functions/createCallback */ 184);
+	var baseUniq = __webpack_require__(/*! ../internals/baseUniq */ 132),
+	    createCallback = __webpack_require__(/*! ../functions/createCallback */ 122);
 	
 	/**
 	 * Creates a duplicate-value-free version of an array using strict equality
@@ -11711,271 +11864,7 @@
 
 
 /***/ },
-/* 174 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/map.js ***!
-  \***********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 184),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 167);
-	
-	/**
-	 * Creates an array of values by running each element in the collection
-	 * through the callback. The callback is bound to `thisArg` and invoked with
-	 * three arguments; (value, index|key, collection).
-	 *
-	 * If a property name is provided for `callback` the created "_.pluck" style
-	 * callback will return the property value of the given element.
-	 *
-	 * If an object is provided for `callback` the created "_.where" style callback
-	 * will return `true` for elements that have the properties of the given object,
-	 * else `false`.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias collect
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function|Object|string} [callback=identity] The function called
-	 *  per iteration. If a property name or object is provided it will be used
-	 *  to create a "_.pluck" or "_.where" style callback, respectively.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array} Returns a new array of the results of each `callback` execution.
-	 * @example
-	 *
-	 * _.map([1, 2, 3], function(num) { return num * 3; });
-	 * // => [3, 6, 9]
-	 *
-	 * _.map({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { return num * 3; });
-	 * // => [3, 6, 9] (property order is not guaranteed across environments)
-	 *
-	 * var characters = [
-	 *   { 'name': 'barney', 'age': 36 },
-	 *   { 'name': 'fred',   'age': 40 }
-	 * ];
-	 *
-	 * // using "_.pluck" callback shorthand
-	 * _.map(characters, 'name');
-	 * // => ['barney', 'fred']
-	 */
-	function map(collection, callback, thisArg) {
-	  var index = -1,
-	      length = collection ? collection.length : 0;
-	
-	  callback = createCallback(callback, thisArg, 3);
-	  if (typeof length == 'number') {
-	    var result = Array(length);
-	    while (++index < length) {
-	      result[index] = callback(collection[index], index, collection);
-	    }
-	  } else {
-	    result = [];
-	    forOwn(collection, function(value, key, collection) {
-	      result[++index] = callback(value, key, collection);
-	    });
-	  }
-	  return result;
-	}
-	
-	module.exports = map;
-
-
-/***/ },
-/* 175 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/forEach.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 180),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 167);
-	
-	/**
-	 * Iterates over elements of a collection, executing the callback for each
-	 * element. The callback is bound to `thisArg` and invoked with three arguments;
-	 * (value, index|key, collection). Callbacks may exit iteration early by
-	 * explicitly returning `false`.
-	 *
-	 * Note: As with other "Collections" methods, objects with a `length` property
-	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
-	 * may be used for object iteration.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias each
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [callback=identity] The function called per iteration.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array|Object|string} Returns `collection`.
-	 * @example
-	 *
-	 * _([1, 2, 3]).forEach(function(num) { console.log(num); }).join(',');
-	 * // => logs each number and returns '1,2,3'
-	 *
-	 * _.forEach({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { console.log(num); });
-	 * // => logs each number and returns the object (property order is not guaranteed across environments)
-	 */
-	function forEach(collection, callback, thisArg) {
-	  var index = -1,
-	      length = collection ? collection.length : 0;
-	
-	  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-	  if (typeof length == 'number') {
-	    while (++index < length) {
-	      if (callback(collection[index], index, collection) === false) {
-	        break;
-	      }
-	    }
-	  } else {
-	    forOwn(collection, callback);
-	  }
-	  return collection;
-	}
-	
-	module.exports = forEach;
-
-
-/***/ },
-/* 176 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/size.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var keys = __webpack_require__(/*! ../objects/keys */ 168);
-	
-	/**
-	 * Gets the size of the `collection` by returning `collection.length` for arrays
-	 * and array-like objects or the number of own enumerable properties for objects.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to inspect.
-	 * @returns {number} Returns `collection.length` or number of own enumerable properties.
-	 * @example
-	 *
-	 * _.size([1, 2]);
-	 * // => 2
-	 *
-	 * _.size({ 'one': 1, 'two': 2, 'three': 3 });
-	 * // => 3
-	 *
-	 * _.size('pebbles');
-	 * // => 7
-	 */
-	function size(collection) {
-	  var length = collection ? collection.length : 0;
-	  return typeof length == 'number' ? length : keys(collection).length;
-	}
-	
-	module.exports = size;
-
-
-/***/ },
-/* 177 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/reduce.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 184),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 167);
-	
-	/**
-	 * Reduces a collection to a value which is the accumulated result of running
-	 * each element in the collection through the callback, where each successive
-	 * callback execution consumes the return value of the previous execution. If
-	 * `accumulator` is not provided the first element of the collection will be
-	 * used as the initial `accumulator` value. The callback is bound to `thisArg`
-	 * and invoked with four arguments; (accumulator, value, index|key, collection).
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias foldl, inject
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [callback=identity] The function called per iteration.
-	 * @param {*} [accumulator] Initial value of the accumulator.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {*} Returns the accumulated value.
-	 * @example
-	 *
-	 * var sum = _.reduce([1, 2, 3], function(sum, num) {
-	 *   return sum + num;
-	 * });
-	 * // => 6
-	 *
-	 * var mapped = _.reduce({ 'a': 1, 'b': 2, 'c': 3 }, function(result, num, key) {
-	 *   result[key] = num * 3;
-	 *   return result;
-	 * }, {});
-	 * // => { 'a': 3, 'b': 6, 'c': 9 }
-	 */
-	function reduce(collection, callback, accumulator, thisArg) {
-	  if (!collection) return accumulator;
-	  var noaccum = arguments.length < 3;
-	  callback = createCallback(callback, thisArg, 4);
-	
-	  var index = -1,
-	      length = collection.length;
-	
-	  if (typeof length == 'number') {
-	    if (noaccum) {
-	      accumulator = collection[++index];
-	    }
-	    while (++index < length) {
-	      accumulator = callback(accumulator, collection[index], index, collection);
-	    }
-	  } else {
-	    forOwn(collection, function(value, index, collection) {
-	      accumulator = noaccum
-	        ? (noaccum = false, value)
-	        : callback(accumulator, value, index, collection)
-	    });
-	  }
-	  return accumulator;
-	}
-	
-	module.exports = reduce;
-
-
-/***/ },
-/* 178 */
+/* 57 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/isObject.js ***!
   \************************************************************/
@@ -11989,7 +11878,7 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 181);
+	var objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
 	
 	/**
 	 * Checks if `value` is the language type of Object.
@@ -12023,7 +11912,155 @@
 
 
 /***/ },
-/* 179 */
+/* 58 */,
+/* 59 */,
+/* 60 */,
+/* 61 */,
+/* 62 */,
+/* 63 */,
+/* 64 */,
+/* 65 */,
+/* 66 */,
+/* 67 */,
+/* 68 */,
+/* 69 */,
+/* 70 */,
+/* 71 */,
+/* 72 */,
+/* 73 */,
+/* 74 */,
+/* 75 */,
+/* 76 */,
+/* 77 */,
+/* 78 */,
+/* 79 */,
+/* 80 */,
+/* 81 */,
+/* 82 */,
+/* 83 */,
+/* 84 */,
+/* 85 */,
+/* 86 */,
+/* 87 */,
+/* 88 */,
+/* 89 */,
+/* 90 */,
+/* 91 */,
+/* 92 */,
+/* 93 */,
+/* 94 */,
+/* 95 */,
+/* 96 */,
+/* 97 */,
+/* 98 */,
+/* 99 */,
+/* 100 */,
+/* 101 */,
+/* 102 */,
+/* 103 */,
+/* 104 */,
+/* 105 */,
+/* 106 */,
+/* 107 */,
+/* 108 */,
+/* 109 */,
+/* 110 */,
+/* 111 */,
+/* 112 */,
+/* 113 */,
+/* 114 */,
+/* 115 */,
+/* 116 */,
+/* 117 */
+/*!************************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreateCallback.js ***!
+  \************************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var bind = __webpack_require__(/*! ../functions/bind */ 178),
+	    identity = __webpack_require__(/*! ../utilities/identity */ 190),
+	    setBindData = __webpack_require__(/*! ./setBindData */ 179),
+	    support = __webpack_require__(/*! ../support */ 180);
+	
+	/** Used to detected named functions */
+	var reFuncName = /^\s*function[ \n\r\t]+\w/;
+	
+	/** Used to detect functions containing a `this` reference */
+	var reThis = /\bthis\b/;
+	
+	/** Native method shortcuts */
+	var fnToString = Function.prototype.toString;
+	
+	/**
+	 * The base implementation of `_.createCallback` without support for creating
+	 * "_.pluck" or "_.where" style callbacks.
+	 *
+	 * @private
+	 * @param {*} [func=identity] The value to convert to a callback.
+	 * @param {*} [thisArg] The `this` binding of the created callback.
+	 * @param {number} [argCount] The number of arguments the callback accepts.
+	 * @returns {Function} Returns a callback function.
+	 */
+	function baseCreateCallback(func, thisArg, argCount) {
+	  if (typeof func != 'function') {
+	    return identity;
+	  }
+	  // exit early for no `thisArg` or already bound by `Function#bind`
+	  if (typeof thisArg == 'undefined' || !('prototype' in func)) {
+	    return func;
+	  }
+	  var bindData = func.__bindData__;
+	  if (typeof bindData == 'undefined') {
+	    if (support.funcNames) {
+	      bindData = !func.name;
+	    }
+	    bindData = bindData || !support.funcDecomp;
+	    if (!bindData) {
+	      var source = fnToString.call(func);
+	      if (!support.funcNames) {
+	        bindData = !reFuncName.test(source);
+	      }
+	      if (!bindData) {
+	        // checks if `func` references the `this` keyword and stores the result
+	        bindData = reThis.test(source);
+	        setBindData(func, bindData);
+	      }
+	    }
+	  }
+	  // exit early if there are no `this` references or `func` is bound
+	  if (bindData === false || (bindData !== true && bindData[1] & 1)) {
+	    return func;
+	  }
+	  switch (argCount) {
+	    case 1: return function(value) {
+	      return func.call(thisArg, value);
+	    };
+	    case 2: return function(a, b) {
+	      return func.call(thisArg, a, b);
+	    };
+	    case 3: return function(value, index, collection) {
+	      return func.call(thisArg, value, index, collection);
+	    };
+	    case 4: return function(accumulator, value, index, collection) {
+	      return func.call(thisArg, accumulator, value, index, collection);
+	    };
+	  }
+	  return bind(func, thisArg);
+	}
+	
+	module.exports = baseCreateCallback;
+
+
+/***/ },
+/* 118 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseClone.js ***!
   \***************************************************************/
@@ -12037,14 +12074,14 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var assign = __webpack_require__(/*! ../objects/assign */ 198),
-	    forEach = __webpack_require__(/*! ../collections/forEach */ 175),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 167),
-	    getArray = __webpack_require__(/*! ./getArray */ 190),
-	    isArray = __webpack_require__(/*! ../objects/isArray */ 186),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 178),
-	    releaseArray = __webpack_require__(/*! ./releaseArray */ 192),
-	    slice = __webpack_require__(/*! ./slice */ 199);
+	var assign = __webpack_require__(/*! ../objects/assign */ 181),
+	    forEach = __webpack_require__(/*! ../collections/forEach */ 44),
+	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52),
+	    getArray = __webpack_require__(/*! ./getArray */ 128),
+	    isArray = __webpack_require__(/*! ../objects/isArray */ 124),
+	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
+	    releaseArray = __webpack_require__(/*! ./releaseArray */ 130),
+	    slice = __webpack_require__(/*! ./slice */ 182);
 	
 	/** Used to match regexp flags from their coerced string values */
 	var reFlags = /\w*$/;
@@ -12184,125 +12221,7 @@
 
 
 /***/ },
-/* 180 */
-/*!************************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreateCallback.js ***!
-  \************************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var bind = __webpack_require__(/*! ../functions/bind */ 195),
-	    identity = __webpack_require__(/*! ../utilities/identity */ 207),
-	    setBindData = __webpack_require__(/*! ./setBindData */ 196),
-	    support = __webpack_require__(/*! ../support */ 197);
-	
-	/** Used to detected named functions */
-	var reFuncName = /^\s*function[ \n\r\t]+\w/;
-	
-	/** Used to detect functions containing a `this` reference */
-	var reThis = /\bthis\b/;
-	
-	/** Native method shortcuts */
-	var fnToString = Function.prototype.toString;
-	
-	/**
-	 * The base implementation of `_.createCallback` without support for creating
-	 * "_.pluck" or "_.where" style callbacks.
-	 *
-	 * @private
-	 * @param {*} [func=identity] The value to convert to a callback.
-	 * @param {*} [thisArg] The `this` binding of the created callback.
-	 * @param {number} [argCount] The number of arguments the callback accepts.
-	 * @returns {Function} Returns a callback function.
-	 */
-	function baseCreateCallback(func, thisArg, argCount) {
-	  if (typeof func != 'function') {
-	    return identity;
-	  }
-	  // exit early for no `thisArg` or already bound by `Function#bind`
-	  if (typeof thisArg == 'undefined' || !('prototype' in func)) {
-	    return func;
-	  }
-	  var bindData = func.__bindData__;
-	  if (typeof bindData == 'undefined') {
-	    if (support.funcNames) {
-	      bindData = !func.name;
-	    }
-	    bindData = bindData || !support.funcDecomp;
-	    if (!bindData) {
-	      var source = fnToString.call(func);
-	      if (!support.funcNames) {
-	        bindData = !reFuncName.test(source);
-	      }
-	      if (!bindData) {
-	        // checks if `func` references the `this` keyword and stores the result
-	        bindData = reThis.test(source);
-	        setBindData(func, bindData);
-	      }
-	    }
-	  }
-	  // exit early if there are no `this` references or `func` is bound
-	  if (bindData === false || (bindData !== true && bindData[1] & 1)) {
-	    return func;
-	  }
-	  switch (argCount) {
-	    case 1: return function(value) {
-	      return func.call(thisArg, value);
-	    };
-	    case 2: return function(a, b) {
-	      return func.call(thisArg, a, b);
-	    };
-	    case 3: return function(value, index, collection) {
-	      return func.call(thisArg, value, index, collection);
-	    };
-	    case 4: return function(accumulator, value, index, collection) {
-	      return func.call(thisArg, accumulator, value, index, collection);
-	    };
-	  }
-	  return bind(func, thisArg);
-	}
-	
-	module.exports = baseCreateCallback;
-
-
-/***/ },
-/* 181 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/objectTypes.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to determine if values are of the language type Object */
-	var objectTypes = {
-	  'boolean': false,
-	  'function': true,
-	  'object': true,
-	  'number': false,
-	  'string': false,
-	  'undefined': false
-	};
-	
-	module.exports = objectTypes;
-
-
-/***/ },
-/* 182 */
+/* 119 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/isNative.js ***!
   \**************************************************************/
@@ -12345,7 +12264,7 @@
 
 
 /***/ },
-/* 183 */
+/* 120 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/shimKeys.js ***!
   \**************************************************************/
@@ -12359,7 +12278,7 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var objectTypes = __webpack_require__(/*! ./objectTypes */ 181);
+	var objectTypes = __webpack_require__(/*! ./objectTypes */ 121);
 	
 	/** Used for native method references */
 	var objectProto = Object.prototype;
@@ -12392,7 +12311,36 @@
 
 
 /***/ },
-/* 184 */
+/* 121 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/objectTypes.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/** Used to determine if values are of the language type Object */
+	var objectTypes = {
+	  'boolean': false,
+	  'function': true,
+	  'object': true,
+	  'number': false,
+	  'string': false,
+	  'undefined': false
+	};
+	
+	module.exports = objectTypes;
+
+
+/***/ },
+/* 122 */
 /*!********************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/functions/createCallback.js ***!
   \********************************************************************/
@@ -12406,11 +12354,11 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 180),
-	    baseIsEqual = __webpack_require__(/*! ../internals/baseIsEqual */ 200),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 178),
-	    keys = __webpack_require__(/*! ../objects/keys */ 168),
-	    property = __webpack_require__(/*! ../utilities/property */ 208);
+	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
+	    baseIsEqual = __webpack_require__(/*! ../internals/baseIsEqual */ 189),
+	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
+	    keys = __webpack_require__(/*! ../objects/keys */ 53),
+	    property = __webpack_require__(/*! ../utilities/property */ 191);
 	
 	/**
 	 * Produces a callback bound to an optional `thisArg`. If `func` is a property
@@ -12482,7 +12430,7 @@
 
 
 /***/ },
-/* 185 */
+/* 123 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/isArguments.js ***!
   \***************************************************************/
@@ -12531,7 +12479,7 @@
 
 
 /***/ },
-/* 186 */
+/* 124 */
 /*!***********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/isArray.js ***!
   \***********************************************************/
@@ -12545,7 +12493,7 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var isNative = __webpack_require__(/*! ../internals/isNative */ 182);
+	var isNative = __webpack_require__(/*! ../internals/isNative */ 119);
 	
 	/** `Object#toString` result shortcuts */
 	var arrayClass = '[object Array]';
@@ -12585,7 +12533,7 @@
 
 
 /***/ },
-/* 187 */
+/* 125 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseIndexOf.js ***!
   \*****************************************************************/
@@ -12626,7 +12574,7 @@
 
 
 /***/ },
-/* 188 */
+/* 126 */
 /*!******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/cacheIndexOf.js ***!
   \******************************************************************/
@@ -12640,8 +12588,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 187),
-	    keyPrefix = __webpack_require__(/*! ./keyPrefix */ 201);
+	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 125),
+	    keyPrefix = __webpack_require__(/*! ./keyPrefix */ 188);
 	
 	/**
 	 * An implementation of `_.contains` for cache objects that mimics the return
@@ -12674,7 +12622,7 @@
 
 
 /***/ },
-/* 189 */
+/* 127 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/createCache.js ***!
   \*****************************************************************/
@@ -12688,9 +12636,9 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var cachePush = __webpack_require__(/*! ./cachePush */ 202),
-	    getObject = __webpack_require__(/*! ./getObject */ 203),
-	    releaseObject = __webpack_require__(/*! ./releaseObject */ 193);
+	var cachePush = __webpack_require__(/*! ./cachePush */ 183),
+	    getObject = __webpack_require__(/*! ./getObject */ 184),
+	    releaseObject = __webpack_require__(/*! ./releaseObject */ 131);
 	
 	/**
 	 * Creates a cache object to optimize linear searches of large arrays.
@@ -12728,7 +12676,7 @@
 
 
 /***/ },
-/* 190 */
+/* 128 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/getArray.js ***!
   \**************************************************************/
@@ -12742,7 +12690,7 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var arrayPool = __webpack_require__(/*! ./arrayPool */ 204);
+	var arrayPool = __webpack_require__(/*! ./arrayPool */ 185);
 	
 	/**
 	 * Gets an array from the array pool or creates a new one if the pool is empty.
@@ -12758,7 +12706,7 @@
 
 
 /***/ },
-/* 191 */
+/* 129 */
 /*!********************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/largeArraySize.js ***!
   \********************************************************************/
@@ -12780,7 +12728,7 @@
 
 
 /***/ },
-/* 192 */
+/* 130 */
 /*!******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/releaseArray.js ***!
   \******************************************************************/
@@ -12794,8 +12742,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var arrayPool = __webpack_require__(/*! ./arrayPool */ 204),
-	    maxPoolSize = __webpack_require__(/*! ./maxPoolSize */ 205);
+	var arrayPool = __webpack_require__(/*! ./arrayPool */ 185),
+	    maxPoolSize = __webpack_require__(/*! ./maxPoolSize */ 186);
 	
 	/**
 	 * Releases the given array back to the array pool.
@@ -12814,7 +12762,7 @@
 
 
 /***/ },
-/* 193 */
+/* 131 */
 /*!*******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/releaseObject.js ***!
   \*******************************************************************/
@@ -12828,8 +12776,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var maxPoolSize = __webpack_require__(/*! ./maxPoolSize */ 205),
-	    objectPool = __webpack_require__(/*! ./objectPool */ 206);
+	var maxPoolSize = __webpack_require__(/*! ./maxPoolSize */ 186),
+	    objectPool = __webpack_require__(/*! ./objectPool */ 187);
 	
 	/**
 	 * Releases the given object back to the object pool.
@@ -12852,7 +12800,7 @@
 
 
 /***/ },
-/* 194 */
+/* 132 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseUniq.js ***!
   \**************************************************************/
@@ -12866,13 +12814,13 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 187),
-	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 188),
-	    createCache = __webpack_require__(/*! ./createCache */ 189),
-	    getArray = __webpack_require__(/*! ./getArray */ 190),
-	    largeArraySize = __webpack_require__(/*! ./largeArraySize */ 191),
-	    releaseArray = __webpack_require__(/*! ./releaseArray */ 192),
-	    releaseObject = __webpack_require__(/*! ./releaseObject */ 193);
+	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 125),
+	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 126),
+	    createCache = __webpack_require__(/*! ./createCache */ 127),
+	    getArray = __webpack_require__(/*! ./getArray */ 128),
+	    largeArraySize = __webpack_require__(/*! ./largeArraySize */ 129),
+	    releaseArray = __webpack_require__(/*! ./releaseArray */ 130),
+	    releaseObject = __webpack_require__(/*! ./releaseObject */ 131);
 	
 	/**
 	 * The base implementation of `_.uniq` without support for callback shorthands
@@ -12925,7 +12873,52 @@
 
 
 /***/ },
-/* 195 */
+/* 133 */,
+/* 134 */,
+/* 135 */,
+/* 136 */,
+/* 137 */,
+/* 138 */,
+/* 139 */,
+/* 140 */,
+/* 141 */,
+/* 142 */,
+/* 143 */,
+/* 144 */,
+/* 145 */,
+/* 146 */,
+/* 147 */,
+/* 148 */,
+/* 149 */,
+/* 150 */,
+/* 151 */,
+/* 152 */,
+/* 153 */,
+/* 154 */,
+/* 155 */,
+/* 156 */,
+/* 157 */,
+/* 158 */,
+/* 159 */,
+/* 160 */,
+/* 161 */,
+/* 162 */,
+/* 163 */,
+/* 164 */,
+/* 165 */,
+/* 166 */,
+/* 167 */,
+/* 168 */,
+/* 169 */,
+/* 170 */,
+/* 171 */,
+/* 172 */,
+/* 173 */,
+/* 174 */,
+/* 175 */,
+/* 176 */,
+/* 177 */,
+/* 178 */
 /*!**********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/functions/bind.js ***!
   \**********************************************************/
@@ -12939,8 +12932,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var createWrapper = __webpack_require__(/*! ../internals/createWrapper */ 209),
-	    slice = __webpack_require__(/*! ../internals/slice */ 199);
+	var createWrapper = __webpack_require__(/*! ../internals/createWrapper */ 203),
+	    slice = __webpack_require__(/*! ../internals/slice */ 182);
 	
 	/**
 	 * Creates a function that, when called, invokes `func` with the `this`
@@ -12974,7 +12967,7 @@
 
 
 /***/ },
-/* 196 */
+/* 179 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/setBindData.js ***!
   \*****************************************************************/
@@ -12988,8 +12981,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var isNative = __webpack_require__(/*! ./isNative */ 182),
-	    noop = __webpack_require__(/*! ../utilities/noop */ 210);
+	var isNative = __webpack_require__(/*! ./isNative */ 119),
+	    noop = __webpack_require__(/*! ../utilities/noop */ 204);
 	
 	/** Used as the property descriptor for `__bindData__` */
 	var descriptor = {
@@ -13026,7 +13019,7 @@
 
 
 /***/ },
-/* 197 */
+/* 180 */
 /*!***************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/support.js ***!
   \***************************************************/
@@ -13040,7 +13033,7 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var isNative = __webpack_require__(/*! ./internals/isNative */ 182);
+	var isNative = __webpack_require__(/*! ./internals/isNative */ 119);
 	
 	/** Used to detect functions containing a `this` reference */
 	var reThis = /\bthis\b/;
@@ -13076,7 +13069,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 198 */
+/* 181 */
 /*!**********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/assign.js ***!
   \**********************************************************/
@@ -13090,9 +13083,9 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 180),
-	    keys = __webpack_require__(/*! ./keys */ 168),
-	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 181);
+	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
+	    keys = __webpack_require__(/*! ./keys */ 53),
+	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
 	
 	/**
 	 * Assigns own enumerable properties of source object(s) to the destination
@@ -13155,7 +13148,7 @@
 
 
 /***/ },
-/* 199 */
+/* 182 */
 /*!***********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/slice.js ***!
   \***********************************************************/
@@ -13202,7 +13195,186 @@
 
 
 /***/ },
-/* 200 */
+/* 183 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/cachePush.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var keyPrefix = __webpack_require__(/*! ./keyPrefix */ 188);
+	
+	/**
+	 * Adds a given value to the corresponding cache object.
+	 *
+	 * @private
+	 * @param {*} value The value to add to the cache.
+	 */
+	function cachePush(value) {
+	  var cache = this.cache,
+	      type = typeof value;
+	
+	  if (type == 'boolean' || value == null) {
+	    cache[value] = true;
+	  } else {
+	    if (type != 'number' && type != 'string') {
+	      type = 'object';
+	    }
+	    var key = type == 'number' ? value : keyPrefix + value,
+	        typeCache = cache[type] || (cache[type] = {});
+	
+	    if (type == 'object') {
+	      (typeCache[key] || (typeCache[key] = [])).push(value);
+	    } else {
+	      typeCache[key] = true;
+	    }
+	  }
+	}
+	
+	module.exports = cachePush;
+
+
+/***/ },
+/* 184 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/getObject.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	var objectPool = __webpack_require__(/*! ./objectPool */ 187);
+	
+	/**
+	 * Gets an object from the object pool or creates a new one if the pool is empty.
+	 *
+	 * @private
+	 * @returns {Object} The object from the pool.
+	 */
+	function getObject() {
+	  return objectPool.pop() || {
+	    'array': null,
+	    'cache': null,
+	    'criteria': null,
+	    'false': false,
+	    'index': 0,
+	    'null': false,
+	    'number': null,
+	    'object': null,
+	    'push': null,
+	    'string': null,
+	    'true': false,
+	    'undefined': false,
+	    'value': null
+	  };
+	}
+	
+	module.exports = getObject;
+
+
+/***/ },
+/* 185 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/arrayPool.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/** Used to pool arrays and objects used internally */
+	var arrayPool = [];
+	
+	module.exports = arrayPool;
+
+
+/***/ },
+/* 186 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/maxPoolSize.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/** Used as the max size of the `arrayPool` and `objectPool` */
+	var maxPoolSize = 40;
+	
+	module.exports = maxPoolSize;
+
+
+/***/ },
+/* 187 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/objectPool.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/** Used to pool arrays and objects used internally */
+	var objectPool = [];
+	
+	module.exports = objectPool;
+
+
+/***/ },
+/* 188 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internals/keyPrefix.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+	 * Build: `lodash modularize modern exports="node" -o ./modern/`
+	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	 * Available under MIT license <http://lodash.com/license>
+	 */
+	
+	/** Used to prefix keys to avoid issues with `__proto__` and properties on `Object.prototype` */
+	var keyPrefix = +new Date + '';
+	
+	module.exports = keyPrefix;
+
+
+/***/ },
+/* 189 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseIsEqual.js ***!
   \*****************************************************************/
@@ -13216,11 +13388,11 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var forIn = __webpack_require__(/*! ../objects/forIn */ 211),
-	    getArray = __webpack_require__(/*! ./getArray */ 190),
-	    isFunction = __webpack_require__(/*! ../objects/isFunction */ 170),
-	    objectTypes = __webpack_require__(/*! ./objectTypes */ 181),
-	    releaseArray = __webpack_require__(/*! ./releaseArray */ 192);
+	var forIn = __webpack_require__(/*! ../objects/forIn */ 205),
+	    getArray = __webpack_require__(/*! ./getArray */ 128),
+	    isFunction = __webpack_require__(/*! ../objects/isFunction */ 48),
+	    objectTypes = __webpack_require__(/*! ./objectTypes */ 121),
+	    releaseArray = __webpack_require__(/*! ./releaseArray */ 130);
 	
 	/** `Object#toString` result shortcuts */
 	var argsClass = '[object Arguments]',
@@ -13420,186 +13592,7 @@
 
 
 /***/ },
-/* 201 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/keyPrefix.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to prefix keys to avoid issues with `__proto__` and properties on `Object.prototype` */
-	var keyPrefix = +new Date + '';
-	
-	module.exports = keyPrefix;
-
-
-/***/ },
-/* 202 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/cachePush.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var keyPrefix = __webpack_require__(/*! ./keyPrefix */ 201);
-	
-	/**
-	 * Adds a given value to the corresponding cache object.
-	 *
-	 * @private
-	 * @param {*} value The value to add to the cache.
-	 */
-	function cachePush(value) {
-	  var cache = this.cache,
-	      type = typeof value;
-	
-	  if (type == 'boolean' || value == null) {
-	    cache[value] = true;
-	  } else {
-	    if (type != 'number' && type != 'string') {
-	      type = 'object';
-	    }
-	    var key = type == 'number' ? value : keyPrefix + value,
-	        typeCache = cache[type] || (cache[type] = {});
-	
-	    if (type == 'object') {
-	      (typeCache[key] || (typeCache[key] = [])).push(value);
-	    } else {
-	      typeCache[key] = true;
-	    }
-	  }
-	}
-	
-	module.exports = cachePush;
-
-
-/***/ },
-/* 203 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/getObject.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var objectPool = __webpack_require__(/*! ./objectPool */ 206);
-	
-	/**
-	 * Gets an object from the object pool or creates a new one if the pool is empty.
-	 *
-	 * @private
-	 * @returns {Object} The object from the pool.
-	 */
-	function getObject() {
-	  return objectPool.pop() || {
-	    'array': null,
-	    'cache': null,
-	    'criteria': null,
-	    'false': false,
-	    'index': 0,
-	    'null': false,
-	    'number': null,
-	    'object': null,
-	    'push': null,
-	    'string': null,
-	    'true': false,
-	    'undefined': false,
-	    'value': null
-	  };
-	}
-	
-	module.exports = getObject;
-
-
-/***/ },
-/* 204 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/arrayPool.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to pool arrays and objects used internally */
-	var arrayPool = [];
-	
-	module.exports = arrayPool;
-
-
-/***/ },
-/* 205 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/maxPoolSize.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used as the max size of the `arrayPool` and `objectPool` */
-	var maxPoolSize = 40;
-	
-	module.exports = maxPoolSize;
-
-
-/***/ },
-/* 206 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/objectPool.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to pool arrays and objects used internally */
-	var objectPool = [];
-	
-	module.exports = objectPool;
-
-
-/***/ },
-/* 207 */
+/* 190 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/utilities/identity.js ***!
   \**************************************************************/
@@ -13636,7 +13629,7 @@
 
 
 /***/ },
-/* 208 */
+/* 191 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/utilities/property.js ***!
   \**************************************************************/
@@ -13685,7 +13678,18 @@
 
 
 /***/ },
-/* 209 */
+/* 192 */,
+/* 193 */,
+/* 194 */,
+/* 195 */,
+/* 196 */,
+/* 197 */,
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */,
+/* 202 */,
+/* 203 */
 /*!*******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/createWrapper.js ***!
   \*******************************************************************/
@@ -13699,10 +13703,10 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseBind = __webpack_require__(/*! ./baseBind */ 212),
-	    baseCreateWrapper = __webpack_require__(/*! ./baseCreateWrapper */ 213),
-	    isFunction = __webpack_require__(/*! ../objects/isFunction */ 170),
-	    slice = __webpack_require__(/*! ./slice */ 199);
+	var baseBind = __webpack_require__(/*! ./baseBind */ 208),
+	    baseCreateWrapper = __webpack_require__(/*! ./baseCreateWrapper */ 209),
+	    isFunction = __webpack_require__(/*! ../objects/isFunction */ 48),
+	    slice = __webpack_require__(/*! ./slice */ 182);
 	
 	/**
 	 * Used for `Array` method references.
@@ -13800,7 +13804,7 @@
 
 
 /***/ },
-/* 210 */
+/* 204 */
 /*!**********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/utilities/noop.js ***!
   \**********************************************************/
@@ -13835,7 +13839,7 @@
 
 
 /***/ },
-/* 211 */
+/* 205 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/objects/forIn.js ***!
   \*********************************************************/
@@ -13849,8 +13853,8 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 180),
-	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 181);
+	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
+	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
 	
 	/**
 	 * Iterates over own and inherited enumerable properties of an object,
@@ -13898,7 +13902,9 @@
 
 
 /***/ },
-/* 212 */
+/* 206 */,
+/* 207 */,
+/* 208 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseBind.js ***!
   \**************************************************************/
@@ -13912,10 +13918,10 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseCreate = __webpack_require__(/*! ./baseCreate */ 214),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 178),
-	    setBindData = __webpack_require__(/*! ./setBindData */ 196),
-	    slice = __webpack_require__(/*! ./slice */ 199);
+	var baseCreate = __webpack_require__(/*! ./baseCreate */ 212),
+	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
+	    setBindData = __webpack_require__(/*! ./setBindData */ 179),
+	    slice = __webpack_require__(/*! ./slice */ 182);
 	
 	/**
 	 * Used for `Array` method references.
@@ -13969,7 +13975,7 @@
 
 
 /***/ },
-/* 213 */
+/* 209 */
 /*!***********************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreateWrapper.js ***!
   \***********************************************************************/
@@ -13983,10 +13989,10 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var baseCreate = __webpack_require__(/*! ./baseCreate */ 214),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 178),
-	    setBindData = __webpack_require__(/*! ./setBindData */ 196),
-	    slice = __webpack_require__(/*! ./slice */ 199);
+	var baseCreate = __webpack_require__(/*! ./baseCreate */ 212),
+	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
+	    setBindData = __webpack_require__(/*! ./setBindData */ 179),
+	    slice = __webpack_require__(/*! ./slice */ 182);
 	
 	/**
 	 * Used for `Array` method references.
@@ -14056,7 +14062,9 @@
 
 
 /***/ },
-/* 214 */
+/* 210 */,
+/* 211 */,
+/* 212 */
 /*!****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreate.js ***!
   \****************************************************************/
@@ -14070,9 +14078,9 @@
 	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <http://lodash.com/license>
 	 */
-	var isNative = __webpack_require__(/*! ./isNative */ 182),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 178),
-	    noop = __webpack_require__(/*! ../utilities/noop */ 210);
+	var isNative = __webpack_require__(/*! ./isNative */ 119),
+	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
+	    noop = __webpack_require__(/*! ../utilities/noop */ 204);
 	
 	/* Native method shortcuts for methods with the same name as other `lodash` methods */
 	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;

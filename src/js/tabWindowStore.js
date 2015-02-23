@@ -7,7 +7,6 @@
  var windowIdMap = {};
  var tabWindows = [];
 
-
  var bgw = chrome.extension.getBackgroundPage();
 
 /*
@@ -37,13 +36,22 @@ function removeTabWindow(tabWindow) {
     delete windowIdMap[ windowId ];
 }
 
-function closeTabWindow(tabWindow) {
+function closeTabWindow(tabWindow, cb) {
   console.log("closeTabWindow: ", tabWindow);
+  if (!tabWindow.open) {
+    console.log("closeTabWindow: request to close non-open window, ignoring...");
+    return;
+  }
   var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
   chrome.windows.remove( windowId, function() {
     tabWindow.open = false;
+    delete windowIdMap[ windowId ];
+    if (!tabWindow.isManaged()) {
+      console.log("unmanaged window -- removing");
+      removeTabWindow(tabWindow);
+    }
+    cb();    
   });
-  removeTabWindow(tabWindow);
 }
 
 function restoreBookmarkWindow( tabWindow, callback ) {
@@ -119,8 +127,10 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   onCloseTabWindow: function(payload) {
-    closeTabWindow(payload.tabWindow);
-    this.emit("change");
+    var self = this;
+    closeTabWindow(payload.tabWindow, function () {
+        self.emit("change");      
+      });
   },
 
   onOpenTabWindow: function(payload) {

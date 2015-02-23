@@ -88,8 +88,6 @@ gulp.task("build-dev", ["webpack:build-dev"], function() {
     gulp.watch(["public/**/*","./*"], ["webpack:build-dev"]);
 });
 
-// Production build
-gulp.task("build_js", ["webpack:build"]);
 
 gulp.task("webpack:build", function(callback) {
     // modify some webpack config options
@@ -115,6 +113,9 @@ gulp.task("webpack:build", function(callback) {
         callback();
     });
 });
+
+// Production build
+gulp.task("build_js", ["webpack:build"]);
 
 // modify some webpack config options
 var myDevConfig = Object.create(webpackConfig);
