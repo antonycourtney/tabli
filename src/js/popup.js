@@ -5,6 +5,8 @@ var _ = require('underscore');
 
 var React = require('react');
 
+var objectAssign = require('object-assign');
+
 var Fluxxor = require('fluxxor');
 var constants = require('./constants.js');
 var actions = require('./actions.js');
@@ -12,6 +14,38 @@ var TabWindowStore = require('./tabWindowStore.js');
 
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
+var styles = {
+  noWrap: { 
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  },
+  singleRow: { 
+    maxHeight: 20
+  },
+  oneRowContainer: {
+    lineHeight: '22px',       // Looks like React doesn't convert this to px! 
+    verticalAlign: 'baseline'
+  },
+  windowHeader: {
+    backgroundColor: '#ebe9eb',
+    borderBottom: '1px solid #bababa',
+    paddingLeft: 3,
+    paddingRight: 3,
+    marginBottom: 3
+  }    
+}
+
+function m() {
+  var res = {};
+  for (var i = 0; i < arguments.length; i++) {
+    if (arguments[i]) {
+      objectAssign(res, arguments[i]);
+    }
+  }
+  return res;
+}
 
 var bgw = chrome.extension.getBackgroundPage();
 
@@ -73,7 +107,7 @@ var R_WindowHeader = React.createClass({
     console.log("WindowHeader: ", windowTitle, openClass, managed, this.props.expanded);
 
     return (
-      <div className="nowrap singlerow oneRowContainer windowHeader"
+      <div style={m(styles.noWrap,styles.singleRow,styles.oneRowContainer,styles.windowHeader)}
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
           onClick={this.props.onOpen} >
         {windowCheckItem}

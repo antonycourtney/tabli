@@ -48,12 +48,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	$ = __webpack_require__(/*! jquery */ 5);
+	$ = __webpack_require__(/*! jquery */ 6);
 	
 	var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
-	var constants = __webpack_require__(/*! ./constants.js */ 2);
-	var actions = __webpack_require__(/*! ./actions.js */ 3);
-	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 1);
+	var constants = __webpack_require__(/*! ./constants.js */ 1);
+	var actions = __webpack_require__(/*! ./actions.js */ 2);
+	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 3);
 	
 	'use strict';
 	var CONTEXT_MENU_ID = 99;
@@ -462,6 +462,72 @@
 
 /***/ },
 /* 1 */
+/*!*****************************!*\
+  !*** ./src/js/constants.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * constants for managing tab window Flux store
+	 */
+	'use strict';
+	
+	var constants = {
+	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
+	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
+	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
+	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
+	};
+	
+	module.exports = constants;
+
+/***/ },
+/* 2 */
+/*!***************************!*\
+  !*** ./src/js/actions.js ***!
+  \***************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * actions that can be sent to Flux store
+	 */
+	'use strict';
+	
+	var constants = __webpack_require__(/*! ./constants.js */ 1);
+	
+	var actions = {
+	  addTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
+	  },
+	
+	  closeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+	  },
+	
+	  removeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
+	  },
+	
+	  openTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
+	  },
+	
+	  // associate a Chrome window with a given tabWindow:
+	  attachChromeWindow: function(tabWindow,chromeWindow) {
+	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
+	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
+	  }
+	};
+	
+	module.exports = actions;
+
+/***/ },
+/* 3 */
 /*!**********************************!*\
   !*** ./src/js/tabWindowStore.js ***!
   \**********************************/
@@ -471,7 +537,7 @@
 	 * A Flux store for TabWindows
 	 */
 	 var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
-	 var constants = __webpack_require__(/*! ./constants.js */ 2);
+	 var constants = __webpack_require__(/*! ./constants.js */ 1);
 	
 	 var windowIdMap = {};
 	 var tabWindows = [];
@@ -633,72 +699,6 @@
 	module.exports = TabWindowStore;
 
 /***/ },
-/* 2 */
-/*!*****************************!*\
-  !*** ./src/js/constants.js ***!
-  \*****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * constants for managing tab window Flux store
-	 */
-	'use strict';
-	
-	var constants = {
-	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
-	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
-	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
-	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
-	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
-	};
-	
-	module.exports = constants;
-
-/***/ },
-/* 3 */
-/*!***************************!*\
-  !*** ./src/js/actions.js ***!
-  \***************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * actions that can be sent to Flux store
-	 */
-	'use strict';
-	
-	var constants = __webpack_require__(/*! ./constants.js */ 2);
-	
-	var actions = {
-	  addTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
-	  },
-	
-	  closeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
-	  },
-	
-	  removeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
-	  },
-	
-	  openTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
-	  },
-	
-	  // associate a Chrome window with a given tabWindow:
-	  attachChromeWindow: function(tabWindow,chromeWindow) {
-	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
-	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
-	  }
-	};
-	
-	module.exports = actions;
-
-/***/ },
 /* 4 */
 /*!****************************!*\
   !*** ./~/fluxxor/index.js ***!
@@ -719,14 +719,15 @@
 	  FluxChildMixin: FluxChildMixin,
 	  StoreWatchMixin: StoreWatchMixin,
 	  createStore: createStore,
-	  version: __webpack_require__(/*! ./version */ 8)
+	  version: __webpack_require__(/*! ./version */ 15)
 	};
 	
 	module.exports = Fluxxor;
 
 
 /***/ },
-/* 5 */
+/* 5 */,
+/* 6 */
 /*!*********************************!*\
   !*** ./~/jquery/dist/jquery.js ***!
   \*********************************/
@@ -9940,33 +9941,24 @@
 
 
 /***/ },
-/* 6 */,
 /* 7 */,
-/* 8 */
-/*!******************************!*\
-  !*** ./~/fluxxor/version.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = "1.5.1"
-
-/***/ },
+/* 8 */,
 /* 9 */
 /*!*************************************!*\
   !*** ./~/fluxxor/lib/dispatcher.js ***!
   \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _clone = __webpack_require__(/*! lodash-node/modern/objects/clone */ 50),
-	    _mapValues = __webpack_require__(/*! lodash-node/modern/objects/mapValues */ 51),
-	    _forOwn = __webpack_require__(/*! lodash-node/modern/objects/forOwn */ 52),
-	    _intersection = __webpack_require__(/*! lodash-node/modern/arrays/intersection */ 55),
-	    _keys = __webpack_require__(/*! lodash-node/modern/objects/keys */ 53),
-	    _map = __webpack_require__(/*! lodash-node/modern/collections/map */ 46),
-	    _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44),
-	    _size = __webpack_require__(/*! lodash-node/modern/collections/size */ 47),
-	    _findKey = __webpack_require__(/*! lodash-node/modern/objects/findKey */ 54),
-	    _uniq = __webpack_require__(/*! lodash-node/modern/arrays/uniq */ 56);
+	var _clone = __webpack_require__(/*! lodash-node/modern/lang/clone */ 45),
+	    _mapValues = __webpack_require__(/*! lodash-node/modern/object/mapValues */ 48),
+	    _forOwn = __webpack_require__(/*! lodash-node/modern/object/forOwn */ 49),
+	    _intersection = __webpack_require__(/*! lodash-node/modern/array/intersection */ 52),
+	    _keys = __webpack_require__(/*! lodash-node/modern/object/keys */ 50),
+	    _map = __webpack_require__(/*! lodash-node/modern/collection/map */ 54),
+	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55),
+	    _size = __webpack_require__(/*! lodash-node/modern/collection/size */ 56),
+	    _findKey = __webpack_require__(/*! lodash-node/modern/object/findKey */ 51),
+	    _uniq = __webpack_require__(/*! lodash-node/modern/array/uniq */ 53);
 	
 	var Dispatcher = function(stores) {
 	  this.stores = {};
@@ -10110,13 +10102,13 @@
   \*******************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17),
-	    inherits = __webpack_require__(/*! inherits */ 43),
-	    objectPath = __webpack_require__(/*! object-path */ 18),
-	    _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44),
-	    _reduce = __webpack_require__(/*! lodash-node/modern/collections/reduce */ 45),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 48),
-	    _isString = __webpack_require__(/*! lodash-node/modern/objects/isString */ 49);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18),
+	    inherits = __webpack_require__(/*! inherits */ 44),
+	    objectPath = __webpack_require__(/*! object-path */ 19),
+	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55),
+	    _reduce = __webpack_require__(/*! lodash-node/modern/collection/reduce */ 57),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 46),
+	    _isString = __webpack_require__(/*! lodash-node/modern/lang/isString */ 47);
 	
 	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 9);
 	
@@ -10269,7 +10261,7 @@
 	
 	FluxMixin.componentWillMount = function() {
 	  throw new Error("Fluxxor.FluxMixin is a function that takes React as a " +
-	    "parameter and returns the mixin, e.g.: mixins[Fluxxor.FluxMixin(React)]");
+	    "parameter and returns the mixin, e.g.: mixins: [Fluxxor.FluxMixin(React)]");
 	};
 	
 	module.exports = FluxMixin;
@@ -10318,7 +10310,7 @@
   \********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44);
+	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55);
 	
 	var StoreWatchMixin = function() {
 	  var storeNames = Array.prototype.slice.call(arguments);
@@ -10352,7 +10344,7 @@
 	StoreWatchMixin.componentWillMount = function() {
 	  throw new Error("Fluxxor.StoreWatchMixin is a function that takes one or more " +
 	    "store names as parameters and returns the mixin, e.g.: " +
-	    "mixins[Fluxxor.StoreWatchMixin(\"Store1\", \"Store2\")]");
+	    "mixins: [Fluxxor.StoreWatchMixin(\"Store1\", \"Store2\")]");
 	};
 	
 	module.exports = StoreWatchMixin;
@@ -10365,10 +10357,10 @@
   \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collections/forEach */ 44),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 48),
-	    Store = __webpack_require__(/*! ./store */ 16),
-	    inherits = __webpack_require__(/*! inherits */ 43);
+	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 46),
+	    Store = __webpack_require__(/*! ./store */ 17),
+	    inherits = __webpack_require__(/*! inherits */ 44);
 	
 	var RESERVED_KEYS = ["flux", "waitFor"];
 	
@@ -10408,17 +10400,26 @@
 
 
 /***/ },
-/* 15 */,
-/* 16 */
+/* 15 */
+/*!******************************!*\
+  !*** ./~/fluxxor/version.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = "1.5.2"
+
+/***/ },
+/* 16 */,
+/* 17 */
 /*!********************************!*\
   !*** ./~/fluxxor/lib/store.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17),
-	    inherits = __webpack_require__(/*! inherits */ 43),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/objects/isFunction */ 48),
-	    _isObject = __webpack_require__(/*! lodash-node/modern/objects/isObject */ 57);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18),
+	    inherits = __webpack_require__(/*! inherits */ 44),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 46),
+	    _isObject = __webpack_require__(/*! lodash-node/modern/lang/isObject */ 58);
 	
 	function Store(dispatcher) {
 	  this.dispatcher = dispatcher;
@@ -10488,7 +10489,7 @@
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /*!********************************************!*\
   !*** ./~/fluxxor/~/eventemitter3/index.js ***!
   \********************************************/
@@ -10726,7 +10727,7 @@
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /*!******************************************!*\
   !*** ./~/fluxxor/~/object-path/index.js ***!
   \******************************************/
@@ -10975,7 +10976,6 @@
 	});
 
 /***/ },
-/* 19 */,
 /* 20 */,
 /* 21 */,
 /* 22 */,
@@ -10999,7 +10999,8 @@
 /* 40 */,
 /* 41 */,
 /* 42 */,
-/* 43 */
+/* 43 */,
+/* 44 */
 /*!**************************************************!*\
   !*** ./~/fluxxor/~/inherits/inherits_browser.js ***!
   \**************************************************/
@@ -11031,483 +11032,238 @@
 
 
 /***/ },
-/* 44 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/forEach.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52);
-	
-	/**
-	 * Iterates over elements of a collection, executing the callback for each
-	 * element. The callback is bound to `thisArg` and invoked with three arguments;
-	 * (value, index|key, collection). Callbacks may exit iteration early by
-	 * explicitly returning `false`.
-	 *
-	 * Note: As with other "Collections" methods, objects with a `length` property
-	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
-	 * may be used for object iteration.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias each
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [callback=identity] The function called per iteration.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array|Object|string} Returns `collection`.
-	 * @example
-	 *
-	 * _([1, 2, 3]).forEach(function(num) { console.log(num); }).join(',');
-	 * // => logs each number and returns '1,2,3'
-	 *
-	 * _.forEach({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { console.log(num); });
-	 * // => logs each number and returns the object (property order is not guaranteed across environments)
-	 */
-	function forEach(collection, callback, thisArg) {
-	  var index = -1,
-	      length = collection ? collection.length : 0;
-	
-	  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-	  if (typeof length == 'number') {
-	    while (++index < length) {
-	      if (callback(collection[index], index, collection) === false) {
-	        break;
-	      }
-	    }
-	  } else {
-	    forOwn(collection, callback);
-	  }
-	  return collection;
-	}
-	
-	module.exports = forEach;
-
-
-/***/ },
 /* 45 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/reduce.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/clone.js ***!
+  \******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52);
+	var baseClone = __webpack_require__(/*! ../internal/baseClone */ 132),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 118),
+	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 133);
 	
 	/**
-	 * Reduces a collection to a value which is the accumulated result of running
-	 * each element in the collection through the callback, where each successive
-	 * callback execution consumes the return value of the previous execution. If
-	 * `accumulator` is not provided the first element of the collection will be
-	 * used as the initial `accumulator` value. The callback is bound to `thisArg`
-	 * and invoked with four arguments; (accumulator, value, index|key, collection).
+	 * Creates a clone of `value`. If `isDeep` is `true` nested objects are cloned,
+	 * otherwise they are assigned by reference. If `customizer` is provided it is
+	 * invoked to produce the cloned values. If `customizer` returns `undefined`
+	 * cloning is handled by the method instead. The `customizer` is bound to
+	 * `thisArg` and invoked with two argument; (value [, index|key, object]).
+	 *
+	 * **Note:** This method is loosely based on the structured clone algorithm.
+	 * The enumerable properties of `arguments` objects and objects created by
+	 * constructors other than `Object` are cloned to plain `Object` objects. An
+	 * empty object is returned for uncloneable values such as functions, DOM nodes,
+	 * Maps, Sets, and WeakMaps. See the [HTML5 specification](http://www.w3.org/TR/html5/infrastructure.html#internal-structured-cloning-algorithm)
+	 * for more details.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @alias foldl, inject
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [callback=identity] The function called per iteration.
-	 * @param {*} [accumulator] Initial value of the accumulator.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {*} Returns the accumulated value.
-	 * @example
-	 *
-	 * var sum = _.reduce([1, 2, 3], function(sum, num) {
-	 *   return sum + num;
-	 * });
-	 * // => 6
-	 *
-	 * var mapped = _.reduce({ 'a': 1, 'b': 2, 'c': 3 }, function(result, num, key) {
-	 *   result[key] = num * 3;
-	 *   return result;
-	 * }, {});
-	 * // => { 'a': 3, 'b': 6, 'c': 9 }
-	 */
-	function reduce(collection, callback, accumulator, thisArg) {
-	  if (!collection) return accumulator;
-	  var noaccum = arguments.length < 3;
-	  callback = createCallback(callback, thisArg, 4);
-	
-	  var index = -1,
-	      length = collection.length;
-	
-	  if (typeof length == 'number') {
-	    if (noaccum) {
-	      accumulator = collection[++index];
-	    }
-	    while (++index < length) {
-	      accumulator = callback(accumulator, collection[index], index, collection);
-	    }
-	  } else {
-	    forOwn(collection, function(value, index, collection) {
-	      accumulator = noaccum
-	        ? (noaccum = false, value)
-	        : callback(accumulator, value, index, collection)
-	    });
-	  }
-	  return accumulator;
-	}
-	
-	module.exports = reduce;
-
-
-/***/ },
-/* 46 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/map.js ***!
-  \***********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52);
-	
-	/**
-	 * Creates an array of values by running each element in the collection
-	 * through the callback. The callback is bound to `thisArg` and invoked with
-	 * three arguments; (value, index|key, collection).
-	 *
-	 * If a property name is provided for `callback` the created "_.pluck" style
-	 * callback will return the property value of the given element.
-	 *
-	 * If an object is provided for `callback` the created "_.where" style callback
-	 * will return `true` for elements that have the properties of the given object,
-	 * else `false`.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias collect
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function|Object|string} [callback=identity] The function called
-	 *  per iteration. If a property name or object is provided it will be used
-	 *  to create a "_.pluck" or "_.where" style callback, respectively.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array} Returns a new array of the results of each `callback` execution.
-	 * @example
-	 *
-	 * _.map([1, 2, 3], function(num) { return num * 3; });
-	 * // => [3, 6, 9]
-	 *
-	 * _.map({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { return num * 3; });
-	 * // => [3, 6, 9] (property order is not guaranteed across environments)
-	 *
-	 * var characters = [
-	 *   { 'name': 'barney', 'age': 36 },
-	 *   { 'name': 'fred',   'age': 40 }
-	 * ];
-	 *
-	 * // using "_.pluck" callback shorthand
-	 * _.map(characters, 'name');
-	 * // => ['barney', 'fred']
-	 */
-	function map(collection, callback, thisArg) {
-	  var index = -1,
-	      length = collection ? collection.length : 0;
-	
-	  callback = createCallback(callback, thisArg, 3);
-	  if (typeof length == 'number') {
-	    var result = Array(length);
-	    while (++index < length) {
-	      result[index] = callback(collection[index], index, collection);
-	    }
-	  } else {
-	    result = [];
-	    forOwn(collection, function(value, key, collection) {
-	      result[++index] = callback(value, key, collection);
-	    });
-	  }
-	  return result;
-	}
-	
-	module.exports = map;
-
-
-/***/ },
-/* 47 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collections/size.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var keys = __webpack_require__(/*! ../objects/keys */ 53);
-	
-	/**
-	 * Gets the size of the `collection` by returning `collection.length` for arrays
-	 * and array-like objects or the number of own enumerable properties for objects.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Collections
-	 * @param {Array|Object|string} collection The collection to inspect.
-	 * @returns {number} Returns `collection.length` or number of own enumerable properties.
-	 * @example
-	 *
-	 * _.size([1, 2]);
-	 * // => 2
-	 *
-	 * _.size({ 'one': 1, 'two': 2, 'three': 3 });
-	 * // => 3
-	 *
-	 * _.size('pebbles');
-	 * // => 7
-	 */
-	function size(collection) {
-	  var length = collection ? collection.length : 0;
-	  return typeof length == 'number' ? length : keys(collection).length;
-	}
-	
-	module.exports = size;
-
-
-/***/ },
-/* 48 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isFunction.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/**
-	 * Checks if `value` is a function.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Objects
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is a function, else `false`.
-	 * @example
-	 *
-	 * _.isFunction(_);
-	 * // => true
-	 */
-	function isFunction(value) {
-	  return typeof value == 'function';
-	}
-	
-	module.exports = isFunction;
-
-
-/***/ },
-/* 49 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isString.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** `Object#toString` result shortcuts */
-	var stringClass = '[object String]';
-	
-	/** Used for native method references */
-	var objectProto = Object.prototype;
-	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is a string.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Objects
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is a string, else `false`.
-	 * @example
-	 *
-	 * _.isString('fred');
-	 * // => true
-	 */
-	function isString(value) {
-	  return typeof value == 'string' ||
-	    value && typeof value == 'object' && toString.call(value) == stringClass || false;
-	}
-	
-	module.exports = isString;
-
-
-/***/ },
-/* 50 */
-/*!*********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/clone.js ***!
-  \*********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseClone = __webpack_require__(/*! ../internals/baseClone */ 118),
-	    baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117);
-	
-	/**
-	 * Creates a clone of `value`. If `isDeep` is `true` nested objects will also
-	 * be cloned, otherwise they will be assigned by reference. If a callback
-	 * is provided it will be executed to produce the cloned values. If the
-	 * callback returns `undefined` cloning will be handled by the method instead.
-	 * The callback is bound to `thisArg` and invoked with one argument; (value).
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Objects
+	 * @category Lang
 	 * @param {*} value The value to clone.
-	 * @param {boolean} [isDeep=false] Specify a deep clone.
-	 * @param {Function} [callback] The function to customize cloning values.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
+	 * @param {boolean} [isDeep] Specify a deep clone.
+	 * @param {Function} [customizer] The function to customize cloning values.
+	 * @param {*} [thisArg] The `this` binding of `customizer`.
 	 * @returns {*} Returns the cloned value.
 	 * @example
 	 *
-	 * var characters = [
-	 *   { 'name': 'barney', 'age': 36 },
-	 *   { 'name': 'fred',   'age': 40 }
+	 * var users = [
+	 *   { 'user': 'barney' },
+	 *   { 'user': 'fred' }
 	 * ];
 	 *
-	 * var shallow = _.clone(characters);
-	 * shallow[0] === characters[0];
+	 * var shallow = _.clone(users);
+	 * shallow[0] === users[0];
 	 * // => true
 	 *
-	 * var deep = _.clone(characters, true);
-	 * deep[0] === characters[0];
+	 * var deep = _.clone(users, true);
+	 * deep[0] === users[0];
 	 * // => false
 	 *
-	 * _.mixin({
-	 *   'clone': _.partialRight(_.clone, function(value) {
-	 *     return _.isElement(value) ? value.cloneNode(false) : undefined;
-	 *   })
+	 * // using a customizer callback
+	 * var el = _.clone(document.body, function(value) {
+	 *   if (_.isElement(value)) {
+	 *     return value.cloneNode(false);
+	 *   }
 	 * });
 	 *
-	 * var clone = _.clone(document.body);
-	 * clone.childNodes.length;
+	 * el === document.body
+	 * // => false
+	 * el.nodeName
+	 * // => BODY
+	 * el.childNodes.length;
 	 * // => 0
 	 */
-	function clone(value, isDeep, callback, thisArg) {
-	  // allows working with "Collections" methods without using their `index`
-	  // and `collection` arguments for `isDeep` and `callback`
-	  if (typeof isDeep != 'boolean' && isDeep != null) {
-	    thisArg = callback;
-	    callback = isDeep;
+	function clone(value, isDeep, customizer, thisArg) {
+	  if (isDeep && typeof isDeep != 'boolean' && isIterateeCall(value, isDeep, customizer)) {
 	    isDeep = false;
 	  }
-	  return baseClone(value, isDeep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
+	  else if (typeof isDeep == 'function') {
+	    thisArg = customizer;
+	    customizer = isDeep;
+	    isDeep = false;
+	  }
+	  customizer = typeof customizer == 'function' && bindCallback(customizer, thisArg, 1);
+	  return baseClone(value, isDeep, customizer);
 	}
 	
 	module.exports = clone;
 
 
 /***/ },
-/* 51 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/mapValues.js ***!
-  \*************************************************************/
+/* 46 */
+/*!***********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isFunction.js ***!
+  \***********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
-	    forOwn = __webpack_require__(/*! ./forOwn */ 52);
+	/* WEBPACK VAR INJECTION */(function(global) {var baseIsFunction = __webpack_require__(/*! ../internal/baseIsFunction */ 134),
+	    isNative = __webpack_require__(/*! ./isNative */ 119);
+	
+	/** `Object#toString` result references. */
+	var funcTag = '[object Function]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
 	
 	/**
-	 * Creates an object with the same keys as `object` and values generated by
-	 * running each own enumerable property of `object` through the callback.
-	 * The callback is bound to `thisArg` and invoked with three arguments;
-	 * (value, key, object).
-	 *
-	 * If a property name is provided for `callback` the created "_.pluck" style
-	 * callback will return the property value of the given element.
-	 *
-	 * If an object is provided for `callback` the created "_.where" style callback
-	 * will return `true` for elements that have the properties of the given object,
-	 * else `false`.
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/** Native method references. */
+	var Uint8Array = isNative(Uint8Array = global.Uint8Array) && Uint8Array;
+	
+	/**
+	 * Checks if `value` is classified as a `Function` object.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Objects
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function|Object|string} [callback=identity] The function called
-	 *  per iteration. If a property name or object is provided it will be used
-	 *  to create a "_.pluck" or "_.where" style callback, respectively.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array} Returns a new object with values of the results of each `callback` execution.
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
 	 * @example
 	 *
-	 * _.mapValues({ 'a': 1, 'b': 2, 'c': 3} , function(num) { return num * 3; });
-	 * // => { 'a': 3, 'b': 6, 'c': 9 }
+	 * _.isFunction(_);
+	 * // => true
 	 *
-	 * var characters = {
-	 *   'fred': { 'name': 'fred', 'age': 40 },
-	 *   'pebbles': { 'name': 'pebbles', 'age': 1 }
+	 * _.isFunction(/abc/);
+	 * // => false
+	 */
+	var isFunction = !(baseIsFunction(/x/) || (Uint8Array && !baseIsFunction(Uint8Array))) ? baseIsFunction : function(value) {
+	  // The use of `Object#toString` avoids issues with the `typeof` operator
+	  // in older versions of Chrome and Safari which return 'function' for regexes
+	  // and Safari 8 equivalents which return 'object' for typed array constructors.
+	  return objToString.call(value) == funcTag;
+	};
+	
+	module.exports = isFunction;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 47 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isString.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 135);
+	
+	/** `Object#toString` result references. */
+	var stringTag = '[object String]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/**
+	 * Checks if `value` is classified as a `String` primitive or object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @example
+	 *
+	 * _.isString('abc');
+	 * // => true
+	 *
+	 * _.isString(1);
+	 * // => false
+	 */
+	function isString(value) {
+	  return typeof value == 'string' || (isObjectLike(value) && objToString.call(value) == stringTag) || false;
+	}
+	
+	module.exports = isString;
+
+
+/***/ },
+/* 48 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/mapValues.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 120),
+	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 121);
+	
+	/**
+	 * Creates an object with the same keys as `object` and values generated by
+	 * running each own enumerable property of `object` through `iteratee`. The
+	 * iteratee function is bound to `thisArg` and invoked with three arguments;
+	 * (value, key, object).
+	 *
+	 * If a property name is provided for `iteratee` the created `_.property`
+	 * style callback returns the property value of the given element.
+	 *
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `iteratee` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+	 *  per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Object} Returns the new mapped object.
+	 * @example
+	 *
+	 * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
+	 *   return n * 3;
+	 * });
+	 * // => { 'a': 3, 'b': 6 }
+	 *
+	 * var users = {
+	 *   'fred':    { 'user': 'fred',    'age': 40 },
+	 *   'pebbles': { 'user': 'pebbles', 'age': 1 }
 	 * };
 	 *
-	 * // using "_.pluck" callback shorthand
-	 * _.mapValues(characters, 'age');
-	 * // => { 'fred': 40, 'pebbles': 1 }
+	 * // using the `_.property` callback shorthand
+	 * _.mapValues(users, 'age');
+	 * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
 	 */
-	function mapValues(object, callback, thisArg) {
+	function mapValues(object, iteratee, thisArg) {
 	  var result = {};
-	  callback = createCallback(callback, thisArg, 3);
+	  iteratee = baseCallback(iteratee, thisArg, 3);
 	
-	  forOwn(object, function(value, key, object) {
-	    result[key] = callback(value, key, object);
+	  baseForOwn(object, function(value, key, object) {
+	    result[key] = iteratee(value, key, object);
 	  });
 	  return result;
 	}
@@ -11516,269 +11272,246 @@
 
 
 /***/ },
-/* 52 */
-/*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/forOwn.js ***!
-  \**********************************************************/
+/* 49 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/forOwn.js ***!
+  \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
-	    keys = __webpack_require__(/*! ./keys */ 53),
-	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
+	var baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 121),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 118);
 	
 	/**
-	 * Iterates over own enumerable properties of an object, executing the callback
-	 * for each property. The callback is bound to `thisArg` and invoked with three
-	 * arguments; (value, key, object). Callbacks may exit iteration early by
-	 * explicitly returning `false`.
+	 * Iterates over own enumerable properties of an object invoking `iteratee`
+	 * for each property. The `iteratee` is bound to `thisArg` and invoked with
+	 * three arguments; (value, key, object). Iterator functions may exit iteration
+	 * early by explicitly returning `false`.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @type Function
-	 * @category Objects
+	 * @category Object
 	 * @param {Object} object The object to iterate over.
-	 * @param {Function} [callback=identity] The function called per iteration.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
 	 * @returns {Object} Returns `object`.
 	 * @example
 	 *
-	 * _.forOwn({ '0': 'zero', '1': 'one', 'length': 2 }, function(num, key) {
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.forOwn(new Foo, function(value, key) {
 	 *   console.log(key);
 	 * });
-	 * // => logs '0', '1', and 'length' (property order is not guaranteed across environments)
+	 * // => logs 'a' and 'b' (iteration order is not guaranteed)
 	 */
-	var forOwn = function(collection, callback, thisArg) {
-	  var index, iterable = collection, result = iterable;
-	  if (!iterable) return result;
-	  if (!objectTypes[typeof iterable]) return result;
-	  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-	    var ownIndex = -1,
-	        ownProps = objectTypes[typeof iterable] && keys(iterable),
-	        length = ownProps ? ownProps.length : 0;
-	
-	    while (++ownIndex < length) {
-	      index = ownProps[ownIndex];
-	      if (callback(iterable[index], index, collection) === false) return result;
-	    }
-	  return result
-	};
+	function forOwn(object, iteratee, thisArg) {
+	  if (typeof iteratee != 'function' || typeof thisArg != 'undefined') {
+	    iteratee = bindCallback(iteratee, thisArg, 3);
+	  }
+	  return baseForOwn(object, iteratee);
+	}
 	
 	module.exports = forOwn;
 
 
 /***/ },
-/* 53 */
-/*!********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/keys.js ***!
-  \********************************************************/
+/* 50 */
+/*!*******************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/keys.js ***!
+  \*******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var isNative = __webpack_require__(/*! ../internals/isNative */ 119),
-	    isObject = __webpack_require__(/*! ./isObject */ 57),
-	    shimKeys = __webpack_require__(/*! ../internals/shimKeys */ 120);
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 122),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 119),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 58),
+	    shimKeys = __webpack_require__(/*! ../internal/shimKeys */ 123);
 	
-	/* Native method shortcuts for methods with the same name as other `lodash` methods */
+	/* Native method references for those with the same name as other `lodash` methods. */
 	var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
 	
 	/**
-	 * Creates an array composed of the own enumerable property names of an object.
+	 * Creates an array of the own enumerable property names of `object`.
+	 *
+	 * **Note:** Non-object values are coerced to objects. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.keys)
+	 * for more details.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Objects
+	 * @category Object
 	 * @param {Object} object The object to inspect.
-	 * @returns {Array} Returns an array of property names.
+	 * @returns {Array} Returns the array of property names.
 	 * @example
 	 *
-	 * _.keys({ 'one': 1, 'two': 2, 'three': 3 });
-	 * // => ['one', 'two', 'three'] (property order is not guaranteed across environments)
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.keys(new Foo);
+	 * // => ['a', 'b'] (iteration order is not guaranteed)
+	 *
+	 * _.keys('hi');
+	 * // => ['0', '1']
 	 */
 	var keys = !nativeKeys ? shimKeys : function(object) {
-	  if (!isObject(object)) {
-	    return [];
+	  if (object) {
+	    var Ctor = object.constructor,
+	        length = object.length;
 	  }
-	  return nativeKeys(object);
+	  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+	     (typeof object != 'function' && (length && isLength(length)))) {
+	    return shimKeys(object);
+	  }
+	  return isObject(object) ? nativeKeys(object) : [];
 	};
 	
 	module.exports = keys;
 
 
 /***/ },
-/* 54 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/findKey.js ***!
-  \***********************************************************/
+/* 51 */
+/*!**********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/findKey.js ***!
+  \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createCallback = __webpack_require__(/*! ../functions/createCallback */ 122),
-	    forOwn = __webpack_require__(/*! ./forOwn */ 52);
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 120),
+	    baseFind = __webpack_require__(/*! ../internal/baseFind */ 124),
+	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 121);
 	
 	/**
 	 * This method is like `_.findIndex` except that it returns the key of the
-	 * first element that passes the callback check, instead of the element itself.
+	 * first element `predicate` returns truthy for, instead of the element itself.
 	 *
-	 * If a property name is provided for `callback` the created "_.pluck" style
-	 * callback will return the property value of the given element.
+	 * If a property name is provided for `predicate` the created `_.property`
+	 * style callback returns the property value of the given element.
 	 *
-	 * If an object is provided for `callback` the created "_.where" style callback
-	 * will return `true` for elements that have the properties of the given object,
-	 * else `false`.
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `predicate` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Objects
+	 * @category Object
 	 * @param {Object} object The object to search.
-	 * @param {Function|Object|string} [callback=identity] The function called per
-	 *  iteration. If a property name or object is provided it will be used to
-	 *  create a "_.pluck" or "_.where" style callback, respectively.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {string|undefined} Returns the key of the found element, else `undefined`.
+	 * @param {Function|Object|string} [predicate=_.identity] The function invoked
+	 *  per iteration.
+	 * @param {*} [thisArg] The `this` binding of `predicate`.
+	 * @returns {string|undefined} Returns the key of the matched element, else `undefined`.
 	 * @example
 	 *
-	 * var characters = {
-	 *   'barney': {  'age': 36, 'blocked': false },
-	 *   'fred': {    'age': 40, 'blocked': true },
-	 *   'pebbles': { 'age': 1,  'blocked': false }
+	 * var users = {
+	 *   'barney':  { 'age': 36, 'active': true },
+	 *   'fred':    { 'age': 40, 'active': false },
+	 *   'pebbles': { 'age': 1,  'active': true }
 	 * };
 	 *
-	 * _.findKey(characters, function(chr) {
+	 * _.findKey(users, function(chr) {
 	 *   return chr.age < 40;
 	 * });
-	 * // => 'barney' (property order is not guaranteed across environments)
+	 * // => 'barney' (iteration order is not guaranteed)
 	 *
-	 * // using "_.where" callback shorthand
-	 * _.findKey(characters, { 'age': 1 });
+	 * // using the `_.matches` callback shorthand
+	 * _.findKey(users, { 'age': 1, 'active': true });
 	 * // => 'pebbles'
 	 *
-	 * // using "_.pluck" callback shorthand
-	 * _.findKey(characters, 'blocked');
+	 * // using the `_.matchesProperty` callback shorthand
+	 * _.findKey(users, 'active', false);
 	 * // => 'fred'
+	 *
+	 * // using the `_.property` callback shorthand
+	 * _.findKey(users, 'active');
+	 * // => 'barney'
 	 */
-	function findKey(object, callback, thisArg) {
-	  var result;
-	  callback = createCallback(callback, thisArg, 3);
-	  forOwn(object, function(value, key, object) {
-	    if (callback(value, key, object)) {
-	      result = key;
-	      return false;
-	    }
-	  });
-	  return result;
+	function findKey(object, predicate, thisArg) {
+	  predicate = baseCallback(predicate, thisArg, 3);
+	  return baseFind(object, predicate, baseForOwn, true);
 	}
 	
 	module.exports = findKey;
 
 
 /***/ },
-/* 55 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/arrays/intersection.js ***!
-  \***************************************************************/
+/* 52 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/array/intersection.js ***!
+  \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseIndexOf = __webpack_require__(/*! ../internals/baseIndexOf */ 125),
-	    cacheIndexOf = __webpack_require__(/*! ../internals/cacheIndexOf */ 126),
-	    createCache = __webpack_require__(/*! ../internals/createCache */ 127),
-	    getArray = __webpack_require__(/*! ../internals/getArray */ 128),
-	    isArguments = __webpack_require__(/*! ../objects/isArguments */ 123),
-	    isArray = __webpack_require__(/*! ../objects/isArray */ 124),
-	    largeArraySize = __webpack_require__(/*! ../internals/largeArraySize */ 129),
-	    releaseArray = __webpack_require__(/*! ../internals/releaseArray */ 130),
-	    releaseObject = __webpack_require__(/*! ../internals/releaseObject */ 131);
+	var baseIndexOf = __webpack_require__(/*! ../internal/baseIndexOf */ 136),
+	    cacheIndexOf = __webpack_require__(/*! ../internal/cacheIndexOf */ 137),
+	    createCache = __webpack_require__(/*! ../internal/createCache */ 138),
+	    isArguments = __webpack_require__(/*! ../lang/isArguments */ 139),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
 	
 	/**
-	 * Creates an array of unique values present in all provided arrays using
-	 * strict equality for comparisons, i.e. `===`.
+	 * Creates an array of unique values in all provided arrays using `SameValueZero`
+	 * for equality comparisons.
+	 *
+	 * **Note:** `SameValueZero` comparisons are like strict equality comparisons,
+	 * e.g. `===`, except that `NaN` matches `NaN`. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+	 * for more details.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Arrays
-	 * @param {...Array} [array] The arrays to inspect.
-	 * @returns {Array} Returns an array of shared values.
+	 * @category Array
+	 * @param {...Array} [arrays] The arrays to inspect.
+	 * @returns {Array} Returns the new array of shared values.
 	 * @example
-	 *
-	 * _.intersection([1, 2, 3], [5, 2, 1, 4], [2, 1]);
-	 * // => [1, 2]
+	 * _.intersection([1, 2], [4, 2], [2, 1]);
+	 * // => [2]
 	 */
 	function intersection() {
 	  var args = [],
 	      argsIndex = -1,
 	      argsLength = arguments.length,
-	      caches = getArray(),
+	      caches = [],
 	      indexOf = baseIndexOf,
-	      trustIndexOf = indexOf === baseIndexOf,
-	      seen = getArray();
+	      isCommon = true;
 	
 	  while (++argsIndex < argsLength) {
 	    var value = arguments[argsIndex];
 	    if (isArray(value) || isArguments(value)) {
 	      args.push(value);
-	      caches.push(trustIndexOf && value.length >= largeArraySize &&
-	        createCache(argsIndex ? args[argsIndex] : seen));
+	      caches.push(isCommon && value.length >= 120 && createCache(argsIndex && value));
 	    }
 	  }
+	  argsLength = args.length;
 	  var array = args[0],
 	      index = -1,
 	      length = array ? array.length : 0,
-	      result = [];
+	      result = [],
+	      seen = caches[0];
 	
 	  outer:
 	  while (++index < length) {
-	    var cache = caches[0];
 	    value = array[index];
-	
-	    if ((cache ? cacheIndexOf(cache, value) : indexOf(seen, value)) < 0) {
+	    if ((seen ? cacheIndexOf(seen, value) : indexOf(result, value)) < 0) {
 	      argsIndex = argsLength;
-	      (cache || seen).push(value);
 	      while (--argsIndex) {
-	        cache = caches[argsIndex];
+	        var cache = caches[argsIndex];
 	        if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value)) < 0) {
 	          continue outer;
 	        }
 	      }
+	      if (seen) {
+	        seen.push(value);
+	      }
 	      result.push(value);
 	    }
 	  }
-	  while (argsLength--) {
-	    cache = caches[argsLength];
-	    if (cache) {
-	      releaseObject(cache);
-	    }
-	  }
-	  releaseArray(caches);
-	  releaseArray(seen);
 	  return result;
 	}
 	
@@ -11786,109 +11519,329 @@
 
 
 /***/ },
-/* 56 */
-/*!*******************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/arrays/uniq.js ***!
-  \*******************************************************/
+/* 53 */
+/*!******************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/array/uniq.js ***!
+  \******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseUniq = __webpack_require__(/*! ../internals/baseUniq */ 132),
-	    createCallback = __webpack_require__(/*! ../functions/createCallback */ 122);
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 120),
+	    baseUniq = __webpack_require__(/*! ../internal/baseUniq */ 140),
+	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 133),
+	    sortedUniq = __webpack_require__(/*! ../internal/sortedUniq */ 141);
 	
 	/**
-	 * Creates a duplicate-value-free version of an array using strict equality
-	 * for comparisons, i.e. `===`. If the array is sorted, providing
-	 * `true` for `isSorted` will use a faster algorithm. If a callback is provided
-	 * each element of `array` is passed through the callback before uniqueness
-	 * is computed. The callback is bound to `thisArg` and invoked with three
-	 * arguments; (value, index, array).
+	 * Creates a duplicate-value-free version of an array using `SameValueZero`
+	 * for equality comparisons. Providing `true` for `isSorted` performs a faster
+	 * search algorithm for sorted arrays. If an iteratee function is provided it
+	 * is invoked for each value in the array to generate the criterion by which
+	 * uniqueness is computed. The `iteratee` is bound to `thisArg` and invoked
+	 * with three arguments; (value, index, array).
 	 *
-	 * If a property name is provided for `callback` the created "_.pluck" style
-	 * callback will return the property value of the given element.
+	 * If a property name is provided for `predicate` the created `_.property`
+	 * style callback returns the property value of the given element.
 	 *
-	 * If an object is provided for `callback` the created "_.where" style callback
-	 * will return `true` for elements that have the properties of the given object,
-	 * else `false`.
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `predicate` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
+	 *
+	 * **Note:** `SameValueZero` comparisons are like strict equality comparisons,
+	 * e.g. `===`, except that `NaN` matches `NaN`. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-samevaluezero)
+	 * for more details.
 	 *
 	 * @static
 	 * @memberOf _
 	 * @alias unique
-	 * @category Arrays
-	 * @param {Array} array The array to process.
-	 * @param {boolean} [isSorted=false] A flag to indicate that `array` is sorted.
-	 * @param {Function|Object|string} [callback=identity] The function called
-	 *  per iteration. If a property name or object is provided it will be used
-	 *  to create a "_.pluck" or "_.where" style callback, respectively.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Array} Returns a duplicate-value-free array.
+	 * @category Array
+	 * @param {Array} array The array to inspect.
+	 * @param {boolean} [isSorted] Specify the array is sorted.
+	 * @param {Function|Object|string} [iteratee] The function invoked per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Array} Returns the new duplicate-value-free array.
 	 * @example
 	 *
-	 * _.uniq([1, 2, 1, 3, 1]);
-	 * // => [1, 2, 3]
+	 * _.uniq([1, 2, 1]);
+	 * // => [1, 2]
 	 *
-	 * _.uniq([1, 1, 2, 2, 3], true);
-	 * // => [1, 2, 3]
+	 * // using `isSorted`
+	 * _.uniq([1, 1, 2], true);
+	 * // => [1, 2]
 	 *
-	 * _.uniq(['A', 'b', 'C', 'a', 'B', 'c'], function(letter) { return letter.toLowerCase(); });
-	 * // => ['A', 'b', 'C']
+	 * // using an iteratee function
+	 * _.uniq([1, 2.5, 1.5, 2], function(n) {
+	 *   return this.floor(n);
+	 * }, Math);
+	 * // => [1, 2.5]
 	 *
-	 * _.uniq([1, 2.5, 3, 1.5, 2, 3.5], function(num) { return this.floor(num); }, Math);
-	 * // => [1, 2.5, 3]
-	 *
-	 * // using "_.pluck" callback shorthand
+	 * // using the `_.property` callback shorthand
 	 * _.uniq([{ 'x': 1 }, { 'x': 2 }, { 'x': 1 }], 'x');
 	 * // => [{ 'x': 1 }, { 'x': 2 }]
 	 */
-	function uniq(array, isSorted, callback, thisArg) {
-	  // juggle arguments
-	  if (typeof isSorted != 'boolean' && isSorted != null) {
-	    thisArg = callback;
-	    callback = (typeof isSorted != 'function' && thisArg && thisArg[isSorted] === array) ? null : isSorted;
+	function uniq(array, isSorted, iteratee, thisArg) {
+	  var length = array ? array.length : 0;
+	  if (!length) {
+	    return [];
+	  }
+	  if (isSorted != null && typeof isSorted != 'boolean') {
+	    thisArg = iteratee;
+	    iteratee = isIterateeCall(array, isSorted, thisArg) ? null : isSorted;
 	    isSorted = false;
 	  }
-	  if (callback != null) {
-	    callback = createCallback(callback, thisArg, 3);
-	  }
-	  return baseUniq(array, isSorted, callback);
+	  iteratee = iteratee == null ? iteratee : baseCallback(iteratee, thisArg, 3);
+	  return (isSorted)
+	    ? sortedUniq(array, iteratee)
+	    : baseUniq(array, iteratee);
 	}
 	
 	module.exports = uniq;
 
 
 /***/ },
-/* 57 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isObject.js ***!
-  \************************************************************/
+/* 54 */
+/*!**********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/map.js ***!
+  \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
+	var arrayMap = __webpack_require__(/*! ../internal/arrayMap */ 126),
+	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 120),
+	    baseMap = __webpack_require__(/*! ../internal/baseMap */ 127),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
 	
 	/**
-	 * Checks if `value` is the language type of Object.
-	 * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+	 * Creates an array of values by running each element in `collection` through
+	 * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
+	 * arguments; (value, index|key, collection).
+	 *
+	 * If a property name is provided for `predicate` the created `_.property`
+	 * style callback returns the property value of the given element.
+	 *
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `predicate` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
+	 *
+	 * Many lodash methods are guarded to work as interatees for methods like
+	 * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
+	 *
+	 * The guarded methods are:
+	 * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`, `drop`,
+	 * `dropRight`, `fill`, `flatten`, `invert`, `max`, `min`, `parseInt`, `slice`,
+	 * `sortBy`, `take`, `takeRight`, `template`, `trim`, `trimLeft`, `trimRight`,
+	 * `trunc`, `random`, `range`, `sample`, `uniq`, and `words`
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Objects
+	 * @alias collect
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+	 *  per iteration.
+	 *  create a `_.property` or `_.matches` style callback respectively.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Array} Returns the new mapped array.
+	 * @example
+	 *
+	 * function timesThree(n) {
+	 *   return n * 3;
+	 * }
+	 *
+	 * _.map([1, 2], timesThree);
+	 * // => [3, 6]
+	 *
+	 * _.map({ 'a': 1, 'b': 2 }, timesThree);
+	 * // => [3, 6] (iteration order is not guaranteed)
+	 *
+	 * var users = [
+	 *   { 'user': 'barney' },
+	 *   { 'user': 'fred' }
+	 * ];
+	 *
+	 * // using the `_.property` callback shorthand
+	 * _.map(users, 'user');
+	 * // => ['barney', 'fred']
+	 */
+	function map(collection, iteratee, thisArg) {
+	  var func = isArray(collection) ? arrayMap : baseMap;
+	  iteratee = baseCallback(iteratee, thisArg, 3);
+	  return func(collection, iteratee);
+	}
+	
+	module.exports = map;
+
+
+/***/ },
+/* 55 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/forEach.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayEach = __webpack_require__(/*! ../internal/arrayEach */ 128),
+	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 129),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 118),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
+	
+	/**
+	 * Iterates over elements of `collection` invoking `iteratee` for each element.
+	 * The `iteratee` is bound to `thisArg` and invoked with three arguments;
+	 * (value, index|key, collection). Iterator functions may exit iteration early
+	 * by explicitly returning `false`.
+	 *
+	 * **Note:** As with other "Collections" methods, objects with a `length` property
+	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+	 * may be used for object iteration.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @alias each
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Array|Object|string} Returns `collection`.
+	 * @example
+	 *
+	 * _([1, 2]).forEach(function(n) {
+	 *   console.log(n);
+	 * }).value();
+	 * // => logs each value from left to right and returns the array
+	 *
+	 * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
+	 *   console.log(n, key);
+	 * });
+	 * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
+	 */
+	function forEach(collection, iteratee, thisArg) {
+	  return (typeof iteratee == 'function' && typeof thisArg == 'undefined' && isArray(collection))
+	    ? arrayEach(collection, iteratee)
+	    : baseEach(collection, bindCallback(iteratee, thisArg, 3));
+	}
+	
+	module.exports = forEach;
+
+
+/***/ },
+/* 56 */
+/*!***********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/size.js ***!
+  \***********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 122),
+	    keys = __webpack_require__(/*! ../object/keys */ 50);
+	
+	/**
+	 * Gets the size of `collection` by returning `collection.length` for
+	 * array-like values or the number of own enumerable properties for objects.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to inspect.
+	 * @returns {number} Returns the size of `collection`.
+	 * @example
+	 *
+	 * _.size([1, 2, 3]);
+	 * // => 3
+	 *
+	 * _.size({ 'a': 1, 'b': 2 });
+	 * // => 2
+	 *
+	 * _.size('pebbles');
+	 * // => 7
+	 */
+	function size(collection) {
+	  var length = collection ? collection.length : 0;
+	  return isLength(length) ? length : keys(collection).length;
+	}
+	
+	module.exports = size;
+
+
+/***/ },
+/* 57 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/reduce.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayReduce = __webpack_require__(/*! ../internal/arrayReduce */ 130),
+	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 120),
+	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 129),
+	    baseReduce = __webpack_require__(/*! ../internal/baseReduce */ 131),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
+	
+	/**
+	 * Reduces `collection` to a value which is the accumulated result of running
+	 * each element in `collection` through `iteratee`, where each successive
+	 * invocation is supplied the return value of the previous. If `accumulator`
+	 * is not provided the first element of `collection` is used as the initial
+	 * value. The `iteratee` is bound to `thisArg`and invoked with four arguments;
+	 * (accumulator, value, index|key, collection).
+	 *
+	 * Many lodash methods are guarded to work as interatees for methods like
+	 * `_.reduce`, `_.reduceRight`, and `_.transform`.
+	 *
+	 * The guarded methods are:
+	 * `assign`, `defaults`, `merge`, and `sortAllBy`
+	 *
+	 * @static
+	 * @memberOf _
+	 * @alias foldl, inject
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [accumulator] The initial value.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {*} Returns the accumulated value.
+	 * @example
+	 *
+	 * _.reduce([1, 2], function(sum, n) {
+	 *   return sum + n;
+	 * });
+	 * // => 3
+	 *
+	 * _.reduce({ 'a': 1, 'b': 2 }, function(result, n, key) {
+	 *   result[key] = n * 3;
+	 *   return result;
+	 * }, {});
+	 * // => { 'a': 3, 'b': 6 } (iteration order is not guaranteed)
+	 */
+	function reduce(collection, iteratee, accumulator, thisArg) {
+	  var func = isArray(collection) ? arrayReduce : baseReduce;
+	  return func(collection, baseCallback(iteratee, thisArg, 4), accumulator, arguments.length < 3, baseEach);
+	}
+	
+	module.exports = reduce;
+
+
+/***/ },
+/* 58 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isObject.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Checks if `value` is the language type of `Object`.
+	 * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+	 *
+	 * **Note:** See the [ES5 spec](https://es5.github.io/#x8) for more details.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
 	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is an object, else `false`.
+	 * @returns {boolean} Returns `true` if `value` is an object, else `false`.
 	 * @example
 	 *
 	 * _.isObject({});
@@ -11901,18 +11854,16 @@
 	 * // => false
 	 */
 	function isObject(value) {
-	  // check if the value is the ECMAScript language type of Object
-	  // http://es5.github.io/#x8
-	  // and avoid a V8 bug
-	  // http://code.google.com/p/v8/issues/detail?id=2291
-	  return !!(value && objectTypes[typeof value]);
+	  // Avoid a V8 JIT bug in Chrome 19-20.
+	  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+	  var type = typeof value;
+	  return type == 'function' || (value && type == 'object') || false;
 	}
 	
 	module.exports = isObject;
 
 
 /***/ },
-/* 58 */,
 /* 59 */,
 /* 60 */,
 /* 61 */,
@@ -11971,80 +11922,35 @@
 /* 114 */,
 /* 115 */,
 /* 116 */,
-/* 117 */
-/*!************************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreateCallback.js ***!
-  \************************************************************************/
+/* 117 */,
+/* 118 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/bindCallback.js ***!
+  \*****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var bind = __webpack_require__(/*! ../functions/bind */ 178),
-	    identity = __webpack_require__(/*! ../utilities/identity */ 190),
-	    setBindData = __webpack_require__(/*! ./setBindData */ 179),
-	    support = __webpack_require__(/*! ../support */ 180);
-	
-	/** Used to detected named functions */
-	var reFuncName = /^\s*function[ \n\r\t]+\w/;
-	
-	/** Used to detect functions containing a `this` reference */
-	var reThis = /\bthis\b/;
-	
-	/** Native method shortcuts */
-	var fnToString = Function.prototype.toString;
+	var identity = __webpack_require__(/*! ../utility/identity */ 187);
 	
 	/**
-	 * The base implementation of `_.createCallback` without support for creating
-	 * "_.pluck" or "_.where" style callbacks.
+	 * A specialized version of `baseCallback` which only supports `this` binding
+	 * and specifying the number of arguments to provide to `func`.
 	 *
 	 * @private
-	 * @param {*} [func=identity] The value to convert to a callback.
-	 * @param {*} [thisArg] The `this` binding of the created callback.
-	 * @param {number} [argCount] The number of arguments the callback accepts.
-	 * @returns {Function} Returns a callback function.
+	 * @param {Function} func The function to bind.
+	 * @param {*} thisArg The `this` binding of `func`.
+	 * @param {number} [argCount] The number of arguments to provide to `func`.
+	 * @returns {Function} Returns the callback.
 	 */
-	function baseCreateCallback(func, thisArg, argCount) {
+	function bindCallback(func, thisArg, argCount) {
 	  if (typeof func != 'function') {
 	    return identity;
 	  }
-	  // exit early for no `thisArg` or already bound by `Function#bind`
-	  if (typeof thisArg == 'undefined' || !('prototype' in func)) {
-	    return func;
-	  }
-	  var bindData = func.__bindData__;
-	  if (typeof bindData == 'undefined') {
-	    if (support.funcNames) {
-	      bindData = !func.name;
-	    }
-	    bindData = bindData || !support.funcDecomp;
-	    if (!bindData) {
-	      var source = fnToString.call(func);
-	      if (!support.funcNames) {
-	        bindData = !reFuncName.test(source);
-	      }
-	      if (!bindData) {
-	        // checks if `func` references the `this` keyword and stores the result
-	        bindData = reThis.test(source);
-	        setBindData(func, bindData);
-	      }
-	    }
-	  }
-	  // exit early if there are no `this` references or `func` is bound
-	  if (bindData === false || (bindData !== true && bindData[1] & 1)) {
+	  if (typeof thisArg == 'undefined') {
 	    return func;
 	  }
 	  switch (argCount) {
 	    case 1: return function(value) {
 	      return func.call(thisArg, value);
-	    };
-	    case 2: return function(a, b) {
-	      return func.call(thisArg, a, b);
 	    };
 	    case 3: return function(value, index, collection) {
 	      return func.call(thisArg, value, index, collection);
@@ -12052,212 +11958,77 @@
 	    case 4: return function(accumulator, value, index, collection) {
 	      return func.call(thisArg, accumulator, value, index, collection);
 	    };
+	    case 5: return function(value, other, key, object, source) {
+	      return func.call(thisArg, value, other, key, object, source);
+	    };
 	  }
-	  return bind(func, thisArg);
+	  return function() {
+	    return func.apply(thisArg, arguments);
+	  };
 	}
 	
-	module.exports = baseCreateCallback;
-
-
-/***/ },
-/* 118 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseClone.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var assign = __webpack_require__(/*! ../objects/assign */ 181),
-	    forEach = __webpack_require__(/*! ../collections/forEach */ 44),
-	    forOwn = __webpack_require__(/*! ../objects/forOwn */ 52),
-	    getArray = __webpack_require__(/*! ./getArray */ 128),
-	    isArray = __webpack_require__(/*! ../objects/isArray */ 124),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
-	    releaseArray = __webpack_require__(/*! ./releaseArray */ 130),
-	    slice = __webpack_require__(/*! ./slice */ 182);
-	
-	/** Used to match regexp flags from their coerced string values */
-	var reFlags = /\w*$/;
-	
-	/** `Object#toString` result shortcuts */
-	var argsClass = '[object Arguments]',
-	    arrayClass = '[object Array]',
-	    boolClass = '[object Boolean]',
-	    dateClass = '[object Date]',
-	    funcClass = '[object Function]',
-	    numberClass = '[object Number]',
-	    objectClass = '[object Object]',
-	    regexpClass = '[object RegExp]',
-	    stringClass = '[object String]';
-	
-	/** Used to identify object classifications that `_.clone` supports */
-	var cloneableClasses = {};
-	cloneableClasses[funcClass] = false;
-	cloneableClasses[argsClass] = cloneableClasses[arrayClass] =
-	cloneableClasses[boolClass] = cloneableClasses[dateClass] =
-	cloneableClasses[numberClass] = cloneableClasses[objectClass] =
-	cloneableClasses[regexpClass] = cloneableClasses[stringClass] = true;
-	
-	/** Used for native method references */
-	var objectProto = Object.prototype;
-	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
-	
-	/** Native method shortcuts */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/** Used to lookup a built-in constructor by [[Class]] */
-	var ctorByClass = {};
-	ctorByClass[arrayClass] = Array;
-	ctorByClass[boolClass] = Boolean;
-	ctorByClass[dateClass] = Date;
-	ctorByClass[funcClass] = Function;
-	ctorByClass[objectClass] = Object;
-	ctorByClass[numberClass] = Number;
-	ctorByClass[regexpClass] = RegExp;
-	ctorByClass[stringClass] = String;
-	
-	/**
-	 * The base implementation of `_.clone` without argument juggling or support
-	 * for `thisArg` binding.
-	 *
-	 * @private
-	 * @param {*} value The value to clone.
-	 * @param {boolean} [isDeep=false] Specify a deep clone.
-	 * @param {Function} [callback] The function to customize cloning values.
-	 * @param {Array} [stackA=[]] Tracks traversed source objects.
-	 * @param {Array} [stackB=[]] Associates clones with source counterparts.
-	 * @returns {*} Returns the cloned value.
-	 */
-	function baseClone(value, isDeep, callback, stackA, stackB) {
-	  if (callback) {
-	    var result = callback(value);
-	    if (typeof result != 'undefined') {
-	      return result;
-	    }
-	  }
-	  // inspect [[Class]]
-	  var isObj = isObject(value);
-	  if (isObj) {
-	    var className = toString.call(value);
-	    if (!cloneableClasses[className]) {
-	      return value;
-	    }
-	    var ctor = ctorByClass[className];
-	    switch (className) {
-	      case boolClass:
-	      case dateClass:
-	        return new ctor(+value);
-	
-	      case numberClass:
-	      case stringClass:
-	        return new ctor(value);
-	
-	      case regexpClass:
-	        result = ctor(value.source, reFlags.exec(value));
-	        result.lastIndex = value.lastIndex;
-	        return result;
-	    }
-	  } else {
-	    return value;
-	  }
-	  var isArr = isArray(value);
-	  if (isDeep) {
-	    // check for circular references and return corresponding clone
-	    var initedStack = !stackA;
-	    stackA || (stackA = getArray());
-	    stackB || (stackB = getArray());
-	
-	    var length = stackA.length;
-	    while (length--) {
-	      if (stackA[length] == value) {
-	        return stackB[length];
-	      }
-	    }
-	    result = isArr ? ctor(value.length) : {};
-	  }
-	  else {
-	    result = isArr ? slice(value) : assign({}, value);
-	  }
-	  // add array properties assigned by `RegExp#exec`
-	  if (isArr) {
-	    if (hasOwnProperty.call(value, 'index')) {
-	      result.index = value.index;
-	    }
-	    if (hasOwnProperty.call(value, 'input')) {
-	      result.input = value.input;
-	    }
-	  }
-	  // exit for shallow clone
-	  if (!isDeep) {
-	    return result;
-	  }
-	  // add the source value to the stack of traversed objects
-	  // and associate it with its clone
-	  stackA.push(value);
-	  stackB.push(result);
-	
-	  // recursively populate clone (susceptible to call stack limits)
-	  (isArr ? forEach : forOwn)(value, function(objValue, key) {
-	    result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
-	  });
-	
-	  if (initedStack) {
-	    releaseArray(stackA);
-	    releaseArray(stackB);
-	  }
-	  return result;
-	}
-	
-	module.exports = baseClone;
+	module.exports = bindCallback;
 
 
 /***/ },
 /* 119 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/isNative.js ***!
-  \**************************************************************/
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isNative.js ***!
+  \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
+	var escapeRegExp = __webpack_require__(/*! ../string/escapeRegExp */ 188),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 135);
 	
-	/** Used for native method references */
+	/** `Object#toString` result references. */
+	var funcTag = '[object Function]';
+	
+	/** Used to detect host constructors (Safari > 5). */
+	var reHostCtor = /^\[object .+?Constructor\]$/;
+	
+	/** Used for native method references. */
 	var objectProto = Object.prototype;
 	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
+	/** Used to resolve the decompiled source of functions. */
+	var fnToString = Function.prototype.toString;
 	
-	/** Used to detect if a method is native */
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/** Used to detect if a method is native. */
 	var reNative = RegExp('^' +
-	  String(toString)
-	    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	    .replace(/toString| for [^\]]+/g, '.*?') + '$'
+	  escapeRegExp(objToString)
+	  .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
 	);
 	
 	/**
 	 * Checks if `value` is a native function.
 	 *
-	 * @private
+	 * @static
+	 * @memberOf _
+	 * @category Lang
 	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is a native function, else `false`.
+	 * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
+	 * @example
+	 *
+	 * _.isNative(Array.prototype.push);
+	 * // => true
+	 *
+	 * _.isNative(_);
+	 * // => false
 	 */
 	function isNative(value) {
-	  return typeof value == 'function' && reNative.test(value);
+	  if (value == null) {
+	    return false;
+	  }
+	  if (objToString.call(value) == funcTag) {
+	    return reNative.test(fnToString.call(value));
+	  }
+	  return (isObjectLike(value) && reHostCtor.test(value)) || false;
 	}
 	
 	module.exports = isNative;
@@ -12265,302 +12036,685 @@
 
 /***/ },
 /* 120 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/shimKeys.js ***!
-  \**************************************************************/
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseCallback.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseMatches = __webpack_require__(/*! ./baseMatches */ 189),
+	    baseMatchesProperty = __webpack_require__(/*! ./baseMatchesProperty */ 190),
+	    baseProperty = __webpack_require__(/*! ./baseProperty */ 191),
+	    bindCallback = __webpack_require__(/*! ./bindCallback */ 118),
+	    identity = __webpack_require__(/*! ../utility/identity */ 187),
+	    isBindable = __webpack_require__(/*! ./isBindable */ 192);
+	
+	/**
+	 * The base implementation of `_.callback` which supports specifying the
+	 * number of arguments to provide to `func`.
+	 *
+	 * @private
+	 * @param {*} [func=_.identity] The value to convert to a callback.
+	 * @param {*} [thisArg] The `this` binding of `func`.
+	 * @param {number} [argCount] The number of arguments to provide to `func`.
+	 * @returns {Function} Returns the callback.
+	 */
+	function baseCallback(func, thisArg, argCount) {
+	  var type = typeof func;
+	  if (type == 'function') {
+	    return (typeof thisArg != 'undefined' && isBindable(func))
+	      ? bindCallback(func, thisArg, argCount)
+	      : func;
+	  }
+	  if (func == null) {
+	    return identity;
+	  }
+	  if (type == 'object') {
+	    return baseMatches(func);
+	  }
+	  return typeof thisArg == 'undefined'
+	    ? baseProperty(func + '')
+	    : baseMatchesProperty(func + '', thisArg);
+	}
+	
+	module.exports = baseCallback;
+
+
+/***/ },
+/* 121 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseForOwn.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseFor = __webpack_require__(/*! ./baseFor */ 193),
+	    keys = __webpack_require__(/*! ../object/keys */ 50);
+	
+	/**
+	 * The base implementation of `_.forOwn` without support for callback
+	 * shorthands and `this` binding.
+	 *
+	 * @private
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Object} Returns `object`.
+	 */
+	function baseForOwn(object, iteratee) {
+	  return baseFor(object, iteratee, keys);
+	}
+	
+	module.exports = baseForOwn;
+
+
+/***/ },
+/* 122 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isLength.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
+	 * Used as the maximum length of an array-like value.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+	 * for more details.
 	 */
-	var objectTypes = __webpack_require__(/*! ./objectTypes */ 121);
+	var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 	
-	/** Used for native method references */
+	/**
+	 * Checks if `value` is a valid array-like length.
+	 *
+	 * **Note:** This function is based on ES `ToLength`. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
+	 * for more details.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+	 */
+	function isLength(value) {
+	  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	}
+	
+	module.exports = isLength;
+
+
+/***/ },
+/* 123 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/shimKeys.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 139),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
+	    isIndex = __webpack_require__(/*! ./isIndex */ 194),
+	    isLength = __webpack_require__(/*! ./isLength */ 122),
+	    keysIn = __webpack_require__(/*! ../object/keysIn */ 195),
+	    support = __webpack_require__(/*! ../support */ 196);
+	
+	/** Used for native method references. */
 	var objectProto = Object.prototype;
 	
-	/** Native method shortcuts */
+	/** Used to check objects for own properties. */
 	var hasOwnProperty = objectProto.hasOwnProperty;
 	
 	/**
-	 * A fallback implementation of `Object.keys` which produces an array of the
-	 * given object's own enumerable property names.
+	 * A fallback implementation of `Object.keys` which creates an array of the
+	 * own enumerable property names of `object`.
 	 *
 	 * @private
-	 * @type Function
 	 * @param {Object} object The object to inspect.
-	 * @returns {Array} Returns an array of property names.
+	 * @returns {Array} Returns the array of property names.
 	 */
-	var shimKeys = function(object) {
-	  var index, iterable = object, result = [];
-	  if (!iterable) return result;
-	  if (!(objectTypes[typeof object])) return result;
-	    for (index in iterable) {
-	      if (hasOwnProperty.call(iterable, index)) {
-	        result.push(index);
-	      }
+	function shimKeys(object) {
+	  var props = keysIn(object),
+	      propsLength = props.length,
+	      length = propsLength && object.length;
+	
+	  var allowIndexes = length && isLength(length) &&
+	    (isArray(object) || (support.nonEnumArgs && isArguments(object)));
+	
+	  var index = -1,
+	      result = [];
+	
+	  while (++index < propsLength) {
+	    var key = props[index];
+	    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
+	      result.push(key);
 	    }
-	  return result
-	};
+	  }
+	  return result;
+	}
 	
 	module.exports = shimKeys;
 
 
 /***/ },
-/* 121 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/objectTypes.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to determine if values are of the language type Object */
-	var objectTypes = {
-	  'boolean': false,
-	  'function': true,
-	  'object': true,
-	  'number': false,
-	  'string': false,
-	  'undefined': false
-	};
-	
-	module.exports = objectTypes;
-
-
-/***/ },
-/* 122 */
-/*!********************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/functions/createCallback.js ***!
-  \********************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
-	    baseIsEqual = __webpack_require__(/*! ../internals/baseIsEqual */ 189),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
-	    keys = __webpack_require__(/*! ../objects/keys */ 53),
-	    property = __webpack_require__(/*! ../utilities/property */ 191);
-	
-	/**
-	 * Produces a callback bound to an optional `thisArg`. If `func` is a property
-	 * name the created callback will return the property value for a given element.
-	 * If `func` is an object the created callback will return `true` for elements
-	 * that contain the equivalent object properties, otherwise it will return `false`.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Utilities
-	 * @param {*} [func=identity] The value to convert to a callback.
-	 * @param {*} [thisArg] The `this` binding of the created callback.
-	 * @param {number} [argCount] The number of arguments the callback accepts.
-	 * @returns {Function} Returns a callback function.
-	 * @example
-	 *
-	 * var characters = [
-	 *   { 'name': 'barney', 'age': 36 },
-	 *   { 'name': 'fred',   'age': 40 }
-	 * ];
-	 *
-	 * // wrap to create custom callback shorthands
-	 * _.createCallback = _.wrap(_.createCallback, function(func, callback, thisArg) {
-	 *   var match = /^(.+?)__([gl]t)(.+)$/.exec(callback);
-	 *   return !match ? func(callback, thisArg) : function(object) {
-	 *     return match[2] == 'gt' ? object[match[1]] > match[3] : object[match[1]] < match[3];
-	 *   };
-	 * });
-	 *
-	 * _.filter(characters, 'age__gt38');
-	 * // => [{ 'name': 'fred', 'age': 40 }]
-	 */
-	function createCallback(func, thisArg, argCount) {
-	  var type = typeof func;
-	  if (func == null || type == 'function') {
-	    return baseCreateCallback(func, thisArg, argCount);
-	  }
-	  // handle "_.pluck" style callback shorthands
-	  if (type != 'object') {
-	    return property(func);
-	  }
-	  var props = keys(func),
-	      key = props[0],
-	      a = func[key];
-	
-	  // handle "_.where" style callback shorthands
-	  if (props.length == 1 && a === a && !isObject(a)) {
-	    // fast path the common case of providing an object with a single
-	    // property containing a primitive value
-	    return function(object) {
-	      var b = object[key];
-	      return a === b && (a !== 0 || (1 / a == 1 / b));
-	    };
-	  }
-	  return function(object) {
-	    var length = props.length,
-	        result = false;
-	
-	    while (length--) {
-	      if (!(result = baseIsEqual(object[props[length]], func[props[length]], null, true))) {
-	        break;
-	      }
-	    }
-	    return result;
-	  };
-	}
-	
-	module.exports = createCallback;
-
-
-/***/ },
-/* 123 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isArguments.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** `Object#toString` result shortcuts */
-	var argsClass = '[object Arguments]';
-	
-	/** Used for native method references */
-	var objectProto = Object.prototype;
-	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is an `arguments` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Objects
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is an `arguments` object, else `false`.
-	 * @example
-	 *
-	 * (function() { return _.isArguments(arguments); })(1, 2, 3);
-	 * // => true
-	 *
-	 * _.isArguments([1, 2, 3]);
-	 * // => false
-	 */
-	function isArguments(value) {
-	  return value && typeof value == 'object' && typeof value.length == 'number' &&
-	    toString.call(value) == argsClass || false;
-	}
-	
-	module.exports = isArguments;
-
-
-/***/ },
 /* 124 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/isArray.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFind.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
+	 * The base implementation of `_.find`, `_.findLast`, `_.findKey`, and `_.findLastKey`,
+	 * without support for callback shorthands and `this` binding, which iterates
+	 * over `collection` using the provided `eachFunc`.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to search.
+	 * @param {Function} predicate The function invoked per iteration.
+	 * @param {Function} eachFunc The function to iterate over `collection`.
+	 * @param {boolean} [retKey] Specify returning the key of the found element
+	 *  instead of the element itself.
+	 * @returns {*} Returns the found element or its key, else `undefined`.
 	 */
-	var isNative = __webpack_require__(/*! ../internals/isNative */ 119);
+	function baseFind(collection, predicate, eachFunc, retKey) {
+	  var result;
+	  eachFunc(collection, function(value, key, collection) {
+	    if (predicate(value, key, collection)) {
+	      result = retKey ? key : value;
+	      return false;
+	    }
+	  });
+	  return result;
+	}
 	
-	/** `Object#toString` result shortcuts */
-	var arrayClass = '[object Array]';
+	module.exports = baseFind;
+
+
+/***/ },
+/* 125 */
+/*!********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArray.js ***!
+  \********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 122),
+	    isNative = __webpack_require__(/*! ./isNative */ 119),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 135);
 	
-	/** Used for native method references */
+	/** `Object#toString` result references. */
+	var arrayTag = '[object Array]';
+	
+	/** Used for native method references. */
 	var objectProto = Object.prototype;
 	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
 	
-	/* Native method shortcuts for methods with the same name as other `lodash` methods */
+	/* Native method references for those with the same name as other `lodash` methods. */
 	var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
 	
 	/**
-	 * Checks if `value` is an array.
+	 * Checks if `value` is classified as an `Array` object.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @type Function
-	 * @category Objects
+	 * @category Lang
 	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if the `value` is an array, else `false`.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
 	 * @example
-	 *
-	 * (function() { return _.isArray(arguments); })();
-	 * // => false
 	 *
 	 * _.isArray([1, 2, 3]);
 	 * // => true
+	 *
+	 * _.isArray(function() { return arguments; }());
+	 * // => false
 	 */
 	var isArray = nativeIsArray || function(value) {
-	  return value && typeof value == 'object' && typeof value.length == 'number' &&
-	    toString.call(value) == arrayClass || false;
+	  return (isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag) || false;
 	};
 	
 	module.exports = isArray;
 
 
 /***/ },
-/* 125 */
+/* 126 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayMap.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.map` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function arrayMap(array, iteratee) {
+	  var index = -1,
+	      length = array.length,
+	      result = Array(length);
+	
+	  while (++index < length) {
+	    result[index] = iteratee(array[index], index, array);
+	  }
+	  return result;
+	}
+	
+	module.exports = arrayMap;
+
+
+/***/ },
+/* 127 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMap.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseEach = __webpack_require__(/*! ./baseEach */ 129);
+	
+	/**
+	 * The base implementation of `_.map` without support for callback shorthands
+	 * or `this` binding.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function baseMap(collection, iteratee) {
+	  var result = [];
+	  baseEach(collection, function(value, key, collection) {
+	    result.push(iteratee(value, key, collection));
+	  });
+	  return result;
+	}
+	
+	module.exports = baseMap;
+
+
+/***/ },
+/* 128 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayEach.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.forEach` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns `array`.
+	 */
+	function arrayEach(array, iteratee) {
+	  var index = -1,
+	      length = array.length;
+	
+	  while (++index < length) {
+	    if (iteratee(array[index], index, array) === false) {
+	      break;
+	    }
+	  }
+	  return array;
+	}
+	
+	module.exports = arrayEach;
+
+
+/***/ },
+/* 129 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseEach.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseForOwn = __webpack_require__(/*! ./baseForOwn */ 121),
+	    isLength = __webpack_require__(/*! ./isLength */ 122),
+	    toObject = __webpack_require__(/*! ./toObject */ 197);
+	
+	/**
+	 * The base implementation of `_.forEach` without support for callback
+	 * shorthands and `this` binding.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array|Object|string} Returns `collection`.
+	 */
+	function baseEach(collection, iteratee) {
+	  var length = collection ? collection.length : 0;
+	  if (!isLength(length)) {
+	    return baseForOwn(collection, iteratee);
+	  }
+	  var index = -1,
+	      iterable = toObject(collection);
+	
+	  while (++index < length) {
+	    if (iteratee(iterable[index], index, iterable) === false) {
+	      break;
+	    }
+	  }
+	  return collection;
+	}
+	
+	module.exports = baseEach;
+
+
+/***/ },
+/* 130 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayReduce.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.reduce` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {*} [accumulator] The initial value.
+	 * @param {boolean} [initFromArray] Specify using the first element of `array`
+	 *  as the initial value.
+	 * @returns {*} Returns the accumulated value.
+	 */
+	function arrayReduce(array, iteratee, accumulator, initFromArray) {
+	  var index = -1,
+	      length = array.length;
+	
+	  if (initFromArray && length) {
+	    accumulator = array[++index];
+	  }
+	  while (++index < length) {
+	    accumulator = iteratee(accumulator, array[index], index, array);
+	  }
+	  return accumulator;
+	}
+	
+	module.exports = arrayReduce;
+
+
+/***/ },
+/* 131 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseReduce.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * The base implementation of `_.reduce` and `_.reduceRight` without support
+	 * for callback shorthands or `this` binding, which iterates over `collection`
+	 * using the provided `eachFunc`.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {*} accumulator The initial value.
+	 * @param {boolean} initFromCollection Specify using the first or last element
+	 *  of `collection` as the initial value.
+	 * @param {Function} eachFunc The function to iterate over `collection`.
+	 * @returns {*} Returns the accumulated value.
+	 */
+	function baseReduce(collection, iteratee, accumulator, initFromCollection, eachFunc) {
+	  eachFunc(collection, function(value, index, collection) {
+	    accumulator = initFromCollection
+	      ? (initFromCollection = false, value)
+	      : iteratee(accumulator, value, index, collection);
+	  });
+	  return accumulator;
+	}
+	
+	module.exports = baseReduce;
+
+
+/***/ },
+/* 132 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseClone.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayCopy = __webpack_require__(/*! ./arrayCopy */ 198),
+	    arrayEach = __webpack_require__(/*! ./arrayEach */ 128),
+	    baseCopy = __webpack_require__(/*! ./baseCopy */ 199),
+	    baseForOwn = __webpack_require__(/*! ./baseForOwn */ 121),
+	    initCloneArray = __webpack_require__(/*! ./initCloneArray */ 200),
+	    initCloneByTag = __webpack_require__(/*! ./initCloneByTag */ 201),
+	    initCloneObject = __webpack_require__(/*! ./initCloneObject */ 202),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 58),
+	    keys = __webpack_require__(/*! ../object/keys */ 50);
+	
+	/** `Object#toString` result references. */
+	var argsTag = '[object Arguments]',
+	    arrayTag = '[object Array]',
+	    boolTag = '[object Boolean]',
+	    dateTag = '[object Date]',
+	    errorTag = '[object Error]',
+	    funcTag = '[object Function]',
+	    mapTag = '[object Map]',
+	    numberTag = '[object Number]',
+	    objectTag = '[object Object]',
+	    regexpTag = '[object RegExp]',
+	    setTag = '[object Set]',
+	    stringTag = '[object String]',
+	    weakMapTag = '[object WeakMap]';
+	
+	var arrayBufferTag = '[object ArrayBuffer]',
+	    float32Tag = '[object Float32Array]',
+	    float64Tag = '[object Float64Array]',
+	    int8Tag = '[object Int8Array]',
+	    int16Tag = '[object Int16Array]',
+	    int32Tag = '[object Int32Array]',
+	    uint8Tag = '[object Uint8Array]',
+	    uint8ClampedTag = '[object Uint8ClampedArray]',
+	    uint16Tag = '[object Uint16Array]',
+	    uint32Tag = '[object Uint32Array]';
+	
+	/** Used to identify `toStringTag` values supported by `_.clone`. */
+	var cloneableTags = {};
+	cloneableTags[argsTag] = cloneableTags[arrayTag] =
+	cloneableTags[arrayBufferTag] = cloneableTags[boolTag] =
+	cloneableTags[dateTag] = cloneableTags[float32Tag] =
+	cloneableTags[float64Tag] = cloneableTags[int8Tag] =
+	cloneableTags[int16Tag] = cloneableTags[int32Tag] =
+	cloneableTags[numberTag] = cloneableTags[objectTag] =
+	cloneableTags[regexpTag] = cloneableTags[stringTag] =
+	cloneableTags[uint8Tag] = cloneableTags[uint8ClampedTag] =
+	cloneableTags[uint16Tag] = cloneableTags[uint32Tag] = true;
+	cloneableTags[errorTag] = cloneableTags[funcTag] =
+	cloneableTags[mapTag] = cloneableTags[setTag] =
+	cloneableTags[weakMapTag] = false;
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/**
+	 * The base implementation of `_.clone` without support for argument juggling
+	 * and `this` binding `customizer` functions.
+	 *
+	 * @private
+	 * @param {*} value The value to clone.
+	 * @param {boolean} [isDeep] Specify a deep clone.
+	 * @param {Function} [customizer] The function to customize cloning values.
+	 * @param {string} [key] The key of `value`.
+	 * @param {Object} [object] The object `value` belongs to.
+	 * @param {Array} [stackA=[]] Tracks traversed source objects.
+	 * @param {Array} [stackB=[]] Associates clones with source counterparts.
+	 * @returns {*} Returns the cloned value.
+	 */
+	function baseClone(value, isDeep, customizer, key, object, stackA, stackB) {
+	  var result;
+	  if (customizer) {
+	    result = object ? customizer(value, key, object) : customizer(value);
+	  }
+	  if (typeof result != 'undefined') {
+	    return result;
+	  }
+	  if (!isObject(value)) {
+	    return value;
+	  }
+	  var isArr = isArray(value);
+	  if (isArr) {
+	    result = initCloneArray(value);
+	    if (!isDeep) {
+	      return arrayCopy(value, result);
+	    }
+	  } else {
+	    var tag = objToString.call(value),
+	        isFunc = tag == funcTag;
+	
+	    if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
+	      result = initCloneObject(isFunc ? {} : value);
+	      if (!isDeep) {
+	        return baseCopy(value, result, keys(value));
+	      }
+	    } else {
+	      return cloneableTags[tag]
+	        ? initCloneByTag(value, tag, isDeep)
+	        : (object ? value : {});
+	    }
+	  }
+	  // Check for circular references and return corresponding clone.
+	  stackA || (stackA = []);
+	  stackB || (stackB = []);
+	
+	  var length = stackA.length;
+	  while (length--) {
+	    if (stackA[length] == value) {
+	      return stackB[length];
+	    }
+	  }
+	  // Add the source value to the stack of traversed objects and associate it with its clone.
+	  stackA.push(value);
+	  stackB.push(result);
+	
+	  // Recursively populate clone (susceptible to call stack limits).
+	  (isArr ? arrayEach : baseForOwn)(value, function(subValue, key) {
+	    result[key] = baseClone(subValue, isDeep, customizer, key, value, stackA, stackB);
+	  });
+	  return result;
+	}
+	
+	module.exports = baseClone;
+
+
+/***/ },
+/* 133 */
+/*!*******************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isIterateeCall.js ***!
+  \*******************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isIndex = __webpack_require__(/*! ./isIndex */ 194),
+	    isLength = __webpack_require__(/*! ./isLength */ 122),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 58);
+	
+	/**
+	 * Checks if the provided arguments are from an iteratee call.
+	 *
+	 * @private
+	 * @param {*} value The potential iteratee value argument.
+	 * @param {*} index The potential iteratee index or key argument.
+	 * @param {*} object The potential iteratee object argument.
+	 * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
+	 */
+	function isIterateeCall(value, index, object) {
+	  if (!isObject(object)) {
+	    return false;
+	  }
+	  var type = typeof index;
+	  if (type == 'number') {
+	    var length = object.length,
+	        prereq = isLength(length) && isIndex(index, length);
+	  } else {
+	    prereq = type == 'string' && index in object;
+	  }
+	  var other = object[index];
+	  return prereq && (value === value ? value === other : other !== other);
+	}
+	
+	module.exports = isIterateeCall;
+
+
+/***/ },
+/* 134 */
+/*!*******************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsFunction.js ***!
+  \*******************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * The base implementation of `_.isFunction` without support for environments
+	 * with incorrect `typeof` results.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 */
+	function baseIsFunction(value) {
+	  // Avoid a Chakra JIT bug in compatibility modes of IE 11.
+	  // See https://github.com/jashkenas/underscore/issues/1621 for more details.
+	  return typeof value == 'function' || false;
+	}
+	
+	module.exports = baseIsFunction;
+
+
+/***/ },
+/* 135 */
 /*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseIndexOf.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isObjectLike.js ***!
   \*****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
+	 * Checks if `value` is object-like.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
 	 */
+	function isObjectLike(value) {
+	  return (value && typeof value == 'object') || false;
+	}
+	
+	module.exports = isObjectLike;
+
+
+/***/ },
+/* 136 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIndexOf.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var indexOfNaN = __webpack_require__(/*! ./indexOfNaN */ 203);
 	
 	/**
-	 * The base implementation of `_.indexOf` without support for binary searches
-	 * or `fromIndex` constraints.
+	 * The base implementation of `_.indexOf` without support for binary searches.
 	 *
 	 * @private
 	 * @param {Array} array The array to search.
 	 * @param {*} value The value to search for.
 	 * @param {number} [fromIndex=0] The index to search from.
-	 * @returns {number} Returns the index of the matched value or `-1`.
+	 * @returns {number} Returns the index of the matched value, else `-1`.
 	 */
 	function baseIndexOf(array, value, fromIndex) {
+	  if (value !== value) {
+	    return indexOfNaN(array, fromIndex);
+	  }
 	  var index = (fromIndex || 0) - 1,
-	      length = array ? array.length : 0;
+	      length = array.length;
 	
 	  while (++index < length) {
 	    if (array[index] === value) {
@@ -12574,297 +12728,171 @@
 
 
 /***/ },
-/* 126 */
-/*!******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/cacheIndexOf.js ***!
-  \******************************************************************/
+/* 137 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/cacheIndexOf.js ***!
+  \*****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 125),
-	    keyPrefix = __webpack_require__(/*! ./keyPrefix */ 188);
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 58);
 	
 	/**
-	 * An implementation of `_.contains` for cache objects that mimics the return
-	 * signature of `_.indexOf` by returning `0` if the value is found, else `-1`.
+	 * Checks if `value` is in `cache` mimicking the return signature of
+	 * `_.indexOf` by returning `0` if the value is found, else `-1`.
 	 *
 	 * @private
-	 * @param {Object} cache The cache object to inspect.
+	 * @param {Object} cache The cache to search.
 	 * @param {*} value The value to search for.
 	 * @returns {number} Returns `0` if `value` is found, else `-1`.
 	 */
 	function cacheIndexOf(cache, value) {
-	  var type = typeof value;
-	  cache = cache.cache;
+	  var data = cache.data,
+	      result = (typeof value == 'string' || isObject(value)) ? data.set.has(value) : data.hash[value];
 	
-	  if (type == 'boolean' || value == null) {
-	    return cache[value] ? 0 : -1;
-	  }
-	  if (type != 'number' && type != 'string') {
-	    type = 'object';
-	  }
-	  var key = type == 'number' ? value : keyPrefix + value;
-	  cache = (cache = cache[type]) && cache[key];
-	
-	  return type == 'object'
-	    ? (cache && baseIndexOf(cache, value) > -1 ? 0 : -1)
-	    : (cache ? 0 : -1);
+	  return result ? 0 : -1;
 	}
 	
 	module.exports = cacheIndexOf;
 
 
 /***/ },
-/* 127 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/createCache.js ***!
-  \*****************************************************************/
+/* 138 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/createCache.js ***!
+  \****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var cachePush = __webpack_require__(/*! ./cachePush */ 183),
-	    getObject = __webpack_require__(/*! ./getObject */ 184),
-	    releaseObject = __webpack_require__(/*! ./releaseObject */ 131);
+	/* WEBPACK VAR INJECTION */(function(global) {var SetCache = __webpack_require__(/*! ./SetCache */ 204),
+	    constant = __webpack_require__(/*! ../utility/constant */ 205),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 119);
+	
+	/** Native method references. */
+	var Set = isNative(Set = global.Set) && Set;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
 	
 	/**
-	 * Creates a cache object to optimize linear searches of large arrays.
+	 * Creates a `Set` cache object to optimize linear searches of large arrays.
 	 *
 	 * @private
-	 * @param {Array} [array=[]] The array to search.
-	 * @returns {null|Object} Returns the cache object or `null` if caching should not be used.
+	 * @param {Array} [values] The values to cache.
+	 * @returns {null|Object} Returns the new cache object if `Set` is supported, else `null`.
 	 */
-	function createCache(array) {
-	  var index = -1,
-	      length = array.length,
-	      first = array[0],
-	      mid = array[(length / 2) | 0],
-	      last = array[length - 1];
-	
-	  if (first && typeof first == 'object' &&
-	      mid && typeof mid == 'object' && last && typeof last == 'object') {
-	    return false;
-	  }
-	  var cache = getObject();
-	  cache['false'] = cache['null'] = cache['true'] = cache['undefined'] = false;
-	
-	  var result = getObject();
-	  result.array = array;
-	  result.cache = cache;
-	  result.push = cachePush;
-	
-	  while (++index < length) {
-	    result.push(array[index]);
-	  }
-	  return result;
-	}
+	var createCache = !(nativeCreate && Set) ? constant(null) : function(values) {
+	  return new SetCache(values);
+	};
 	
 	module.exports = createCache;
-
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 128 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/getArray.js ***!
-  \**************************************************************/
+/* 139 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArguments.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var arrayPool = __webpack_require__(/*! ./arrayPool */ 185);
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 122),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 135);
+	
+	/** `Object#toString` result references. */
+	var argsTag = '[object Arguments]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
 	
 	/**
-	 * Gets an array from the array pool or creates a new one if the pool is empty.
-	 *
-	 * @private
-	 * @returns {Array} The array from the pool.
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
 	 */
-	function getArray() {
-	  return arrayPool.pop() || [];
+	var objToString = objectProto.toString;
+	
+	/**
+	 * Checks if `value` is classified as an `arguments` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @example
+	 *
+	 * _.isArguments(function() { return arguments; }());
+	 * // => true
+	 *
+	 * _.isArguments([1, 2, 3]);
+	 * // => false
+	 */
+	function isArguments(value) {
+	  var length = isObjectLike(value) ? value.length : undefined;
+	  return (isLength(length) && objToString.call(value) == argsTag) || false;
 	}
 	
-	module.exports = getArray;
+	module.exports = isArguments;
 
 
 /***/ },
-/* 129 */
-/*!********************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/largeArraySize.js ***!
-  \********************************************************************/
+/* 140 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseUniq.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used as the size when optimizations are enabled for large arrays */
-	var largeArraySize = 75;
-	
-	module.exports = largeArraySize;
-
-
-/***/ },
-/* 130 */
-/*!******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/releaseArray.js ***!
-  \******************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var arrayPool = __webpack_require__(/*! ./arrayPool */ 185),
-	    maxPoolSize = __webpack_require__(/*! ./maxPoolSize */ 186);
-	
-	/**
-	 * Releases the given array back to the array pool.
-	 *
-	 * @private
-	 * @param {Array} [array] The array to release.
-	 */
-	function releaseArray(array) {
-	  array.length = 0;
-	  if (arrayPool.length < maxPoolSize) {
-	    arrayPool.push(array);
-	  }
-	}
-	
-	module.exports = releaseArray;
-
-
-/***/ },
-/* 131 */
-/*!*******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/releaseObject.js ***!
-  \*******************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var maxPoolSize = __webpack_require__(/*! ./maxPoolSize */ 186),
-	    objectPool = __webpack_require__(/*! ./objectPool */ 187);
-	
-	/**
-	 * Releases the given object back to the object pool.
-	 *
-	 * @private
-	 * @param {Object} [object] The object to release.
-	 */
-	function releaseObject(object) {
-	  var cache = object.cache;
-	  if (cache) {
-	    releaseObject(cache);
-	  }
-	  object.array = object.cache = object.criteria = object.object = object.number = object.string = object.value = null;
-	  if (objectPool.length < maxPoolSize) {
-	    objectPool.push(object);
-	  }
-	}
-	
-	module.exports = releaseObject;
-
-
-/***/ },
-/* 132 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseUniq.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 125),
-	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 126),
-	    createCache = __webpack_require__(/*! ./createCache */ 127),
-	    getArray = __webpack_require__(/*! ./getArray */ 128),
-	    largeArraySize = __webpack_require__(/*! ./largeArraySize */ 129),
-	    releaseArray = __webpack_require__(/*! ./releaseArray */ 130),
-	    releaseObject = __webpack_require__(/*! ./releaseObject */ 131);
+	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 136),
+	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 137),
+	    createCache = __webpack_require__(/*! ./createCache */ 138);
 	
 	/**
 	 * The base implementation of `_.uniq` without support for callback shorthands
-	 * or `thisArg` binding.
+	 * and `this` binding.
 	 *
 	 * @private
-	 * @param {Array} array The array to process.
-	 * @param {boolean} [isSorted=false] A flag to indicate that `array` is sorted.
-	 * @param {Function} [callback] The function called per iteration.
-	 * @returns {Array} Returns a duplicate-value-free array.
+	 * @param {Array} array The array to inspect.
+	 * @param {Function} [iteratee] The function invoked per iteration.
+	 * @returns {Array} Returns the new duplicate-value-free array.
 	 */
-	function baseUniq(array, isSorted, callback) {
+	function baseUniq(array, iteratee) {
 	  var index = -1,
 	      indexOf = baseIndexOf,
-	      length = array ? array.length : 0,
+	      length = array.length,
+	      isCommon = true,
+	      isLarge = isCommon && length >= 200,
+	      seen = isLarge && createCache(),
 	      result = [];
 	
-	  var isLarge = !isSorted && length >= largeArraySize,
-	      seen = (callback || isLarge) ? getArray() : result;
-	
-	  if (isLarge) {
-	    var cache = createCache(seen);
+	  if (seen) {
 	    indexOf = cacheIndexOf;
-	    seen = cache;
+	    isCommon = false;
+	  } else {
+	    isLarge = false;
+	    seen = iteratee ? [] : result;
 	  }
+	  outer:
 	  while (++index < length) {
 	    var value = array[index],
-	        computed = callback ? callback(value, index, array) : value;
+	        computed = iteratee ? iteratee(value, index, array) : value;
 	
-	    if (isSorted
-	          ? !index || seen[seen.length - 1] !== computed
-	          : indexOf(seen, computed) < 0
-	        ) {
-	      if (callback || isLarge) {
+	    if (isCommon && value === value) {
+	      var seenIndex = seen.length;
+	      while (seenIndex--) {
+	        if (seen[seenIndex] === computed) {
+	          continue outer;
+	        }
+	      }
+	      if (iteratee) {
 	        seen.push(computed);
 	      }
 	      result.push(value);
 	    }
-	  }
-	  if (isLarge) {
-	    releaseArray(seen.array);
-	    releaseObject(seen);
-	  } else if (callback) {
-	    releaseArray(seen);
+	    else if (indexOf(seen, computed) < 0) {
+	      if (iteratee || isLarge) {
+	        seen.push(computed);
+	      }
+	      result.push(value);
+	    }
 	  }
 	  return result;
 	}
@@ -12873,15 +12901,44 @@
 
 
 /***/ },
-/* 133 */,
-/* 134 */,
-/* 135 */,
-/* 136 */,
-/* 137 */,
-/* 138 */,
-/* 139 */,
-/* 140 */,
-/* 141 */,
+/* 141 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/sortedUniq.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * An implementation of `_.uniq` optimized for sorted arrays without support
+	 * for callback shorthands and `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to inspect.
+	 * @param {Function} [iteratee] The function invoked per iteration.
+	 * @returns {Array} Returns the new duplicate-value-free array.
+	 */
+	function sortedUniq(array, iteratee) {
+	  var seen,
+	      index = -1,
+	      length = array.length,
+	      resIndex = -1,
+	      result = [];
+	
+	  while (++index < length) {
+	    var value = array[index],
+	        computed = iteratee ? iteratee(value, index, array) : value;
+	
+	    if (!index || seen !== computed) {
+	      seen = computed;
+	      result[++resIndex] = value;
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = sortedUniq;
+
+
+/***/ },
 /* 142 */,
 /* 143 */,
 /* 144 */,
@@ -12918,706 +12975,33 @@
 /* 175 */,
 /* 176 */,
 /* 177 */,
-/* 178 */
-/*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/functions/bind.js ***!
-  \**********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var createWrapper = __webpack_require__(/*! ../internals/createWrapper */ 203),
-	    slice = __webpack_require__(/*! ../internals/slice */ 182);
-	
-	/**
-	 * Creates a function that, when called, invokes `func` with the `this`
-	 * binding of `thisArg` and prepends any additional `bind` arguments to those
-	 * provided to the bound function.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Functions
-	 * @param {Function} func The function to bind.
-	 * @param {*} [thisArg] The `this` binding of `func`.
-	 * @param {...*} [arg] Arguments to be partially applied.
-	 * @returns {Function} Returns the new bound function.
-	 * @example
-	 *
-	 * var func = function(greeting) {
-	 *   return greeting + ' ' + this.name;
-	 * };
-	 *
-	 * func = _.bind(func, { 'name': 'fred' }, 'hi');
-	 * func();
-	 * // => 'hi fred'
-	 */
-	function bind(func, thisArg) {
-	  return arguments.length > 2
-	    ? createWrapper(func, 17, slice(arguments, 2), null, thisArg)
-	    : createWrapper(func, 1, null, null, thisArg);
-	}
-	
-	module.exports = bind;
-
-
-/***/ },
-/* 179 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/setBindData.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var isNative = __webpack_require__(/*! ./isNative */ 119),
-	    noop = __webpack_require__(/*! ../utilities/noop */ 204);
-	
-	/** Used as the property descriptor for `__bindData__` */
-	var descriptor = {
-	  'configurable': false,
-	  'enumerable': false,
-	  'value': null,
-	  'writable': false
-	};
-	
-	/** Used to set meta data on functions */
-	var defineProperty = (function() {
-	  // IE 8 only accepts DOM elements
-	  try {
-	    var o = {},
-	        func = isNative(func = Object.defineProperty) && func,
-	        result = func(o, o, o) && func;
-	  } catch(e) { }
-	  return result;
-	}());
-	
-	/**
-	 * Sets `this` binding data on a given function.
-	 *
-	 * @private
-	 * @param {Function} func The function to set data on.
-	 * @param {Array} value The data array to set.
-	 */
-	var setBindData = !defineProperty ? noop : function(func, value) {
-	  descriptor.value = value;
-	  defineProperty(func, '__bindData__', descriptor);
-	};
-	
-	module.exports = setBindData;
-
-
-/***/ },
-/* 180 */
-/*!***************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/support.js ***!
-  \***************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var isNative = __webpack_require__(/*! ./internals/isNative */ 119);
-	
-	/** Used to detect functions containing a `this` reference */
-	var reThis = /\bthis\b/;
-	
-	/**
-	 * An object used to flag environments features.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @type Object
-	 */
-	var support = {};
-	
-	/**
-	 * Detect if functions can be decompiled by `Function#toString`
-	 * (all but PS3 and older Opera mobile browsers & avoided in Windows 8 apps).
-	 *
-	 * @memberOf _.support
-	 * @type boolean
-	 */
-	support.funcDecomp = !isNative(global.WinRTError) && reThis.test(function() { return this; });
-	
-	/**
-	 * Detect if `Function#name` is supported (all but IE).
-	 *
-	 * @memberOf _.support
-	 * @type boolean
-	 */
-	support.funcNames = typeof Function.name == 'string';
-	
-	module.exports = support;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 181 */
-/*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/assign.js ***!
-  \**********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
-	    keys = __webpack_require__(/*! ./keys */ 53),
-	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
-	
-	/**
-	 * Assigns own enumerable properties of source object(s) to the destination
-	 * object. Subsequent sources will overwrite property assignments of previous
-	 * sources. If a callback is provided it will be executed to produce the
-	 * assigned values. The callback is bound to `thisArg` and invoked with two
-	 * arguments; (objectValue, sourceValue).
-	 *
-	 * @static
-	 * @memberOf _
-	 * @type Function
-	 * @alias extend
-	 * @category Objects
-	 * @param {Object} object The destination object.
-	 * @param {...Object} [source] The source objects.
-	 * @param {Function} [callback] The function to customize assigning values.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Object} Returns the destination object.
-	 * @example
-	 *
-	 * _.assign({ 'name': 'fred' }, { 'employer': 'slate' });
-	 * // => { 'name': 'fred', 'employer': 'slate' }
-	 *
-	 * var defaults = _.partialRight(_.assign, function(a, b) {
-	 *   return typeof a == 'undefined' ? b : a;
-	 * });
-	 *
-	 * var object = { 'name': 'barney' };
-	 * defaults(object, { 'name': 'fred', 'employer': 'slate' });
-	 * // => { 'name': 'barney', 'employer': 'slate' }
-	 */
-	var assign = function(object, source, guard) {
-	  var index, iterable = object, result = iterable;
-	  if (!iterable) return result;
-	  var args = arguments,
-	      argsIndex = 0,
-	      argsLength = typeof guard == 'number' ? 2 : args.length;
-	  if (argsLength > 3 && typeof args[argsLength - 2] == 'function') {
-	    var callback = baseCreateCallback(args[--argsLength - 1], args[argsLength--], 2);
-	  } else if (argsLength > 2 && typeof args[argsLength - 1] == 'function') {
-	    callback = args[--argsLength];
-	  }
-	  while (++argsIndex < argsLength) {
-	    iterable = args[argsIndex];
-	    if (iterable && objectTypes[typeof iterable]) {
-	    var ownIndex = -1,
-	        ownProps = objectTypes[typeof iterable] && keys(iterable),
-	        length = ownProps ? ownProps.length : 0;
-	
-	    while (++ownIndex < length) {
-	      index = ownProps[ownIndex];
-	      result[index] = callback ? callback(result[index], iterable[index]) : iterable[index];
-	    }
-	    }
-	  }
-	  return result
-	};
-	
-	module.exports = assign;
-
-
-/***/ },
-/* 182 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/slice.js ***!
-  \***********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/**
-	 * Slices the `collection` from the `start` index up to, but not including,
-	 * the `end` index.
-	 *
-	 * Note: This function is used instead of `Array#slice` to support node lists
-	 * in IE < 9 and to ensure dense arrays are returned.
-	 *
-	 * @private
-	 * @param {Array|Object|string} collection The collection to slice.
-	 * @param {number} start The start index.
-	 * @param {number} end The end index.
-	 * @returns {Array} Returns the new array.
-	 */
-	function slice(array, start, end) {
-	  start || (start = 0);
-	  if (typeof end == 'undefined') {
-	    end = array ? array.length : 0;
-	  }
-	  var index = -1,
-	      length = end - start || 0,
-	      result = Array(length < 0 ? 0 : length);
-	
-	  while (++index < length) {
-	    result[index] = array[start + index];
-	  }
-	  return result;
-	}
-	
-	module.exports = slice;
-
-
-/***/ },
-/* 183 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/cachePush.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var keyPrefix = __webpack_require__(/*! ./keyPrefix */ 188);
-	
-	/**
-	 * Adds a given value to the corresponding cache object.
-	 *
-	 * @private
-	 * @param {*} value The value to add to the cache.
-	 */
-	function cachePush(value) {
-	  var cache = this.cache,
-	      type = typeof value;
-	
-	  if (type == 'boolean' || value == null) {
-	    cache[value] = true;
-	  } else {
-	    if (type != 'number' && type != 'string') {
-	      type = 'object';
-	    }
-	    var key = type == 'number' ? value : keyPrefix + value,
-	        typeCache = cache[type] || (cache[type] = {});
-	
-	    if (type == 'object') {
-	      (typeCache[key] || (typeCache[key] = [])).push(value);
-	    } else {
-	      typeCache[key] = true;
-	    }
-	  }
-	}
-	
-	module.exports = cachePush;
-
-
-/***/ },
-/* 184 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/getObject.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var objectPool = __webpack_require__(/*! ./objectPool */ 187);
-	
-	/**
-	 * Gets an object from the object pool or creates a new one if the pool is empty.
-	 *
-	 * @private
-	 * @returns {Object} The object from the pool.
-	 */
-	function getObject() {
-	  return objectPool.pop() || {
-	    'array': null,
-	    'cache': null,
-	    'criteria': null,
-	    'false': false,
-	    'index': 0,
-	    'null': false,
-	    'number': null,
-	    'object': null,
-	    'push': null,
-	    'string': null,
-	    'true': false,
-	    'undefined': false,
-	    'value': null
-	  };
-	}
-	
-	module.exports = getObject;
-
-
-/***/ },
-/* 185 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/arrayPool.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to pool arrays and objects used internally */
-	var arrayPool = [];
-	
-	module.exports = arrayPool;
-
-
-/***/ },
-/* 186 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/maxPoolSize.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used as the max size of the `arrayPool` and `objectPool` */
-	var maxPoolSize = 40;
-	
-	module.exports = maxPoolSize;
-
-
-/***/ },
+/* 178 */,
+/* 179 */,
+/* 180 */,
+/* 181 */,
+/* 182 */,
+/* 183 */,
+/* 184 */,
+/* 185 */,
+/* 186 */,
 /* 187 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/objectPool.js ***!
-  \****************************************************************/
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/utility/identity.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to pool arrays and objects used internally */
-	var objectPool = [];
-	
-	module.exports = objectPool;
-
-
-/***/ },
-/* 188 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/keyPrefix.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
-	/** Used to prefix keys to avoid issues with `__proto__` and properties on `Object.prototype` */
-	var keyPrefix = +new Date + '';
-	
-	module.exports = keyPrefix;
-
-
-/***/ },
-/* 189 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseIsEqual.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var forIn = __webpack_require__(/*! ../objects/forIn */ 205),
-	    getArray = __webpack_require__(/*! ./getArray */ 128),
-	    isFunction = __webpack_require__(/*! ../objects/isFunction */ 48),
-	    objectTypes = __webpack_require__(/*! ./objectTypes */ 121),
-	    releaseArray = __webpack_require__(/*! ./releaseArray */ 130);
-	
-	/** `Object#toString` result shortcuts */
-	var argsClass = '[object Arguments]',
-	    arrayClass = '[object Array]',
-	    boolClass = '[object Boolean]',
-	    dateClass = '[object Date]',
-	    numberClass = '[object Number]',
-	    objectClass = '[object Object]',
-	    regexpClass = '[object RegExp]',
-	    stringClass = '[object String]';
-	
-	/** Used for native method references */
-	var objectProto = Object.prototype;
-	
-	/** Used to resolve the internal [[Class]] of values */
-	var toString = objectProto.toString;
-	
-	/** Native method shortcuts */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/**
-	 * The base implementation of `_.isEqual`, without support for `thisArg` binding,
-	 * that allows partial "_.where" style comparisons.
-	 *
-	 * @private
-	 * @param {*} a The value to compare.
-	 * @param {*} b The other value to compare.
-	 * @param {Function} [callback] The function to customize comparing values.
-	 * @param {Function} [isWhere=false] A flag to indicate performing partial comparisons.
-	 * @param {Array} [stackA=[]] Tracks traversed `a` objects.
-	 * @param {Array} [stackB=[]] Tracks traversed `b` objects.
-	 * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-	 */
-	function baseIsEqual(a, b, callback, isWhere, stackA, stackB) {
-	  // used to indicate that when comparing objects, `a` has at least the properties of `b`
-	  if (callback) {
-	    var result = callback(a, b);
-	    if (typeof result != 'undefined') {
-	      return !!result;
-	    }
-	  }
-	  // exit early for identical values
-	  if (a === b) {
-	    // treat `+0` vs. `-0` as not equal
-	    return a !== 0 || (1 / a == 1 / b);
-	  }
-	  var type = typeof a,
-	      otherType = typeof b;
-	
-	  // exit early for unlike primitive values
-	  if (a === a &&
-	      !(a && objectTypes[type]) &&
-	      !(b && objectTypes[otherType])) {
-	    return false;
-	  }
-	  // exit early for `null` and `undefined` avoiding ES3's Function#call behavior
-	  // http://es5.github.io/#x15.3.4.4
-	  if (a == null || b == null) {
-	    return a === b;
-	  }
-	  // compare [[Class]] names
-	  var className = toString.call(a),
-	      otherClass = toString.call(b);
-	
-	  if (className == argsClass) {
-	    className = objectClass;
-	  }
-	  if (otherClass == argsClass) {
-	    otherClass = objectClass;
-	  }
-	  if (className != otherClass) {
-	    return false;
-	  }
-	  switch (className) {
-	    case boolClass:
-	    case dateClass:
-	      // coerce dates and booleans to numbers, dates to milliseconds and booleans
-	      // to `1` or `0` treating invalid dates coerced to `NaN` as not equal
-	      return +a == +b;
-	
-	    case numberClass:
-	      // treat `NaN` vs. `NaN` as equal
-	      return (a != +a)
-	        ? b != +b
-	        // but treat `+0` vs. `-0` as not equal
-	        : (a == 0 ? (1 / a == 1 / b) : a == +b);
-	
-	    case regexpClass:
-	    case stringClass:
-	      // coerce regexes to strings (http://es5.github.io/#x15.10.6.4)
-	      // treat string primitives and their corresponding object instances as equal
-	      return a == String(b);
-	  }
-	  var isArr = className == arrayClass;
-	  if (!isArr) {
-	    // unwrap any `lodash` wrapped values
-	    var aWrapped = hasOwnProperty.call(a, '__wrapped__'),
-	        bWrapped = hasOwnProperty.call(b, '__wrapped__');
-	
-	    if (aWrapped || bWrapped) {
-	      return baseIsEqual(aWrapped ? a.__wrapped__ : a, bWrapped ? b.__wrapped__ : b, callback, isWhere, stackA, stackB);
-	    }
-	    // exit for functions and DOM nodes
-	    if (className != objectClass) {
-	      return false;
-	    }
-	    // in older versions of Opera, `arguments` objects have `Array` constructors
-	    var ctorA = a.constructor,
-	        ctorB = b.constructor;
-	
-	    // non `Object` object instances with different constructors are not equal
-	    if (ctorA != ctorB &&
-	          !(isFunction(ctorA) && ctorA instanceof ctorA && isFunction(ctorB) && ctorB instanceof ctorB) &&
-	          ('constructor' in a && 'constructor' in b)
-	        ) {
-	      return false;
-	    }
-	  }
-	  // assume cyclic structures are equal
-	  // the algorithm for detecting cyclic structures is adapted from ES 5.1
-	  // section 15.12.3, abstract operation `JO` (http://es5.github.io/#x15.12.3)
-	  var initedStack = !stackA;
-	  stackA || (stackA = getArray());
-	  stackB || (stackB = getArray());
-	
-	  var length = stackA.length;
-	  while (length--) {
-	    if (stackA[length] == a) {
-	      return stackB[length] == b;
-	    }
-	  }
-	  var size = 0;
-	  result = true;
-	
-	  // add `a` and `b` to the stack of traversed objects
-	  stackA.push(a);
-	  stackB.push(b);
-	
-	  // recursively compare objects and arrays (susceptible to call stack limits)
-	  if (isArr) {
-	    // compare lengths to determine if a deep comparison is necessary
-	    length = a.length;
-	    size = b.length;
-	    result = size == length;
-	
-	    if (result || isWhere) {
-	      // deep compare the contents, ignoring non-numeric properties
-	      while (size--) {
-	        var index = length,
-	            value = b[size];
-	
-	        if (isWhere) {
-	          while (index--) {
-	            if ((result = baseIsEqual(a[index], value, callback, isWhere, stackA, stackB))) {
-	              break;
-	            }
-	          }
-	        } else if (!(result = baseIsEqual(a[size], value, callback, isWhere, stackA, stackB))) {
-	          break;
-	        }
-	      }
-	    }
-	  }
-	  else {
-	    // deep compare objects using `forIn`, instead of `forOwn`, to avoid `Object.keys`
-	    // which, in this case, is more costly
-	    forIn(b, function(value, key, b) {
-	      if (hasOwnProperty.call(b, key)) {
-	        // count the number of properties.
-	        size++;
-	        // deep compare each property value.
-	        return (result = hasOwnProperty.call(a, key) && baseIsEqual(a[key], value, callback, isWhere, stackA, stackB));
-	      }
-	    });
-	
-	    if (result && !isWhere) {
-	      // ensure both objects have the same number of properties
-	      forIn(a, function(value, key, a) {
-	        if (hasOwnProperty.call(a, key)) {
-	          // `size` will be `-1` if `a` has more properties than `b`
-	          return (result = --size > -1);
-	        }
-	      });
-	    }
-	  }
-	  stackA.pop();
-	  stackB.pop();
-	
-	  if (initedStack) {
-	    releaseArray(stackA);
-	    releaseArray(stackB);
-	  }
-	  return result;
-	}
-	
-	module.exports = baseIsEqual;
-
-
-/***/ },
-/* 190 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/utilities/identity.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	
 	/**
 	 * This method returns the first argument provided to it.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Utilities
+	 * @category Utility
 	 * @param {*} value Any value.
 	 * @returns {*} Returns `value`.
 	 * @example
 	 *
-	 * var object = { 'name': 'fred' };
+	 * var object = { 'user': 'fred' };
+	 *
 	 * _.identity(object) === object;
 	 * // => true
 	 */
@@ -13629,491 +13013,1461 @@
 
 
 /***/ },
+/* 188 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/string/escapeRegExp.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseToString = __webpack_require__(/*! ../internal/baseToString */ 223);
+	
+	/**
+	 * Used to match `RegExp` special characters.
+	 * See this [article on `RegExp` characters](http://www.regular-expressions.info/characters.html#special)
+	 * for more details.
+	 */
+	var reRegExpChars = /[.*+?^${}()|[\]\/\\]/g,
+	    reHasRegExpChars = RegExp(reRegExpChars.source);
+	
+	/**
+	 * Escapes the `RegExp` special characters "\", "^", "$", ".", "|", "?", "*",
+	 * "+", "(", ")", "[", "]", "{" and "}" in `string`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category String
+	 * @param {string} [string=''] The string to escape.
+	 * @returns {string} Returns the escaped string.
+	 * @example
+	 *
+	 * _.escapeRegExp('[lodash](https://lodash.com/)');
+	 * // => '\[lodash\]\(https://lodash\.com/\)'
+	 */
+	function escapeRegExp(string) {
+	  string = baseToString(string);
+	  return (string && reHasRegExpChars.test(string))
+	    ? string.replace(reRegExpChars, '\\$&')
+	    : string;
+	}
+	
+	module.exports = escapeRegExp;
+
+
+/***/ },
+/* 189 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMatches.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsMatch = __webpack_require__(/*! ./baseIsMatch */ 217),
+	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 218),
+	    keys = __webpack_require__(/*! ../object/keys */ 50);
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * The base implementation of `_.matches` which does not clone `source`.
+	 *
+	 * @private
+	 * @param {Object} source The object of property values to match.
+	 * @returns {Function} Returns the new function.
+	 */
+	function baseMatches(source) {
+	  var props = keys(source),
+	      length = props.length;
+	
+	  if (length == 1) {
+	    var key = props[0],
+	        value = source[key];
+	
+	    if (isStrictComparable(value)) {
+	      return function(object) {
+	        return object != null && object[key] === value && hasOwnProperty.call(object, key);
+	      };
+	    }
+	  }
+	  var values = Array(length),
+	      strictCompareFlags = Array(length);
+	
+	  while (length--) {
+	    value = source[props[length]];
+	    values[length] = value;
+	    strictCompareFlags[length] = isStrictComparable(value);
+	  }
+	  return function(object) {
+	    return baseIsMatch(object, props, values, strictCompareFlags);
+	  };
+	}
+	
+	module.exports = baseMatches;
+
+
+/***/ },
+/* 190 */
+/*!************************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMatchesProperty.js ***!
+  \************************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsEqual = __webpack_require__(/*! ./baseIsEqual */ 219),
+	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 218);
+	
+	/**
+	 * The base implementation of `_.matchesProperty` which does not coerce `key`
+	 * to a string.
+	 *
+	 * @private
+	 * @param {string} key The key of the property to get.
+	 * @param {*} value The value to compare.
+	 * @returns {Function} Returns the new function.
+	 */
+	function baseMatchesProperty(key, value) {
+	  if (isStrictComparable(value)) {
+	    return function(object) {
+	      return object != null && object[key] === value;
+	    };
+	  }
+	  return function(object) {
+	    return object != null && baseIsEqual(value, object[key], null, true);
+	  };
+	}
+	
+	module.exports = baseMatchesProperty;
+
+
+/***/ },
 /* 191 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseProperty.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * The base implementation of `_.property` which does not coerce `key` to a string.
+	 *
+	 * @private
+	 * @param {string} key The key of the property to get.
+	 * @returns {Function} Returns the new function.
+	 */
+	function baseProperty(key) {
+	  return function(object) {
+	    return object == null ? undefined : object[key];
+	  };
+	}
+	
+	module.exports = baseProperty;
+
+
+/***/ },
+/* 192 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isBindable.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseSetData = __webpack_require__(/*! ./baseSetData */ 220),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 119),
+	    support = __webpack_require__(/*! ../support */ 196);
+	
+	/** Used to detect named functions. */
+	var reFuncName = /^\s*function[ \n\r\t]+\w/;
+	
+	/** Used to detect functions containing a `this` reference. */
+	var reThis = /\bthis\b/;
+	
+	/** Used to resolve the decompiled source of functions. */
+	var fnToString = Function.prototype.toString;
+	
+	/**
+	 * Checks if `func` is eligible for `this` binding.
+	 *
+	 * @private
+	 * @param {Function} func The function to check.
+	 * @returns {boolean} Returns `true` if `func` is eligible, else `false`.
+	 */
+	function isBindable(func) {
+	  var result = !(support.funcNames ? func.name : support.funcDecomp);
+	
+	  if (!result) {
+	    var source = fnToString.call(func);
+	    if (!support.funcNames) {
+	      result = !reFuncName.test(source);
+	    }
+	    if (!result) {
+	      // Check if `func` references the `this` keyword and store the result.
+	      result = reThis.test(source) || isNative(func);
+	      baseSetData(func, result);
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = isBindable;
+
+
+/***/ },
+/* 193 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFor.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var toObject = __webpack_require__(/*! ./toObject */ 197);
+	
+	/**
+	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
+	 * over `object` properties returned by `keysFunc` invoking `iteratee` for
+	 * each property. Iterator functions may exit iteration early by explicitly
+	 * returning `false`.
+	 *
+	 * @private
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {Function} keysFunc The function to get the keys of `object`.
+	 * @returns {Object} Returns `object`.
+	 */
+	function baseFor(object, iteratee, keysFunc) {
+	  var index = -1,
+	      iterable = toObject(object),
+	      props = keysFunc(object),
+	      length = props.length;
+	
+	  while (++index < length) {
+	    var key = props[index];
+	    if (iteratee(iterable[key], key, iterable) === false) {
+	      break;
+	    }
+	  }
+	  return object;
+	}
+	
+	module.exports = baseFor;
+
+
+/***/ },
+/* 194 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isIndex.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Used as the maximum length of an array-like value.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+	 * for more details.
+	 */
+	var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+	
+	/**
+	 * Checks if `value` is a valid array-like index.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+	 * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+	 */
+	function isIndex(value, length) {
+	  value = +value;
+	  length = length == null ? MAX_SAFE_INTEGER : length;
+	  return value > -1 && value % 1 == 0 && value < length;
+	}
+	
+	module.exports = isIndex;
+
+
+/***/ },
+/* 195 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/keysIn.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 139),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
+	    isIndex = __webpack_require__(/*! ../internal/isIndex */ 194),
+	    isLength = __webpack_require__(/*! ../internal/isLength */ 122),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 58),
+	    support = __webpack_require__(/*! ../support */ 196);
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * Creates an array of the own and inherited enumerable property names of `object`.
+	 *
+	 * **Note:** Non-object values are coerced to objects.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to inspect.
+	 * @returns {Array} Returns the array of property names.
+	 * @example
+	 *
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.keysIn(new Foo);
+	 * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+	 */
+	function keysIn(object) {
+	  if (object == null) {
+	    return [];
+	  }
+	  if (!isObject(object)) {
+	    object = Object(object);
+	  }
+	  var length = object.length;
+	  length = (length && isLength(length) &&
+	    (isArray(object) || (support.nonEnumArgs && isArguments(object))) && length) || 0;
+	
+	  var Ctor = object.constructor,
+	      index = -1,
+	      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+	      result = Array(length),
+	      skipIndexes = length > 0;
+	
+	  while (++index < length) {
+	    result[index] = (index + '');
+	  }
+	  for (var key in object) {
+	    if (!(skipIndexes && isIndex(key, length)) &&
+	        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+	      result.push(key);
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = keysIn;
+
+
+/***/ },
+/* 196 */
+/*!***************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/support.js ***!
+  \***************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ./lang/isNative */ 119);
+	
+	/** Used to detect functions containing a `this` reference. */
+	var reThis = /\bthis\b/;
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to detect DOM support. */
+	var document = (document = global.window) && document.document;
+	
+	/** Native method references. */
+	var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+	
+	/**
+	 * An object environment feature flags.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @type Object
+	 */
+	var support = {};
+	
+	(function(x) {
+	
+	  /**
+	   * Detect if functions can be decompiled by `Function#toString`
+	   * (all but Firefox OS certified apps, older Opera mobile browsers, and
+	   * the PlayStation 3; forced `false` for Windows 8 apps).
+	   *
+	   * @memberOf _.support
+	   * @type boolean
+	   */
+	  support.funcDecomp = !isNative(global.WinRTError) && reThis.test(function() { return this; });
+	
+	  /**
+	   * Detect if `Function#name` is supported (all but IE).
+	   *
+	   * @memberOf _.support
+	   * @type boolean
+	   */
+	  support.funcNames = typeof Function.name == 'string';
+	
+	  /**
+	   * Detect if the DOM is supported.
+	   *
+	   * @memberOf _.support
+	   * @type boolean
+	   */
+	  try {
+	    support.dom = document.createDocumentFragment().nodeType === 11;
+	  } catch(e) {
+	    support.dom = false;
+	  }
+	
+	  /**
+	   * Detect if `arguments` object indexes are non-enumerable.
+	   *
+	   * In Firefox < 4, IE < 9, PhantomJS, and Safari < 5.1 `arguments` object
+	   * indexes are non-enumerable. Chrome < 25 and Node.js < 0.11.0 treat
+	   * `arguments` object indexes as non-enumerable and fail `hasOwnProperty`
+	   * checks for indexes that exceed their function's formal parameters with
+	   * associated values of `0`.
+	   *
+	   * @memberOf _.support
+	   * @type boolean
+	   */
+	  try {
+	    support.nonEnumArgs = !propertyIsEnumerable.call(arguments, 1);
+	  } catch(e) {
+	    support.nonEnumArgs = true;
+	  }
+	}(0, 0));
+	
+	module.exports = support;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 197 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/toObject.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 58);
+	
+	/**
+	 * Converts `value` to an object if it is not one.
+	 *
+	 * @private
+	 * @param {*} value The value to process.
+	 * @returns {Object} Returns the object.
+	 */
+	function toObject(value) {
+	  return isObject(value) ? value : Object(value);
+	}
+	
+	module.exports = toObject;
+
+
+/***/ },
+/* 198 */
 /*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/utilities/property.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayCopy.js ***!
   \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
+	 * Copies the values of `source` to `array`.
+	 *
+	 * @private
+	 * @param {Array} source The array to copy values from.
+	 * @param {Array} [array=[]] The array to copy values to.
+	 * @returns {Array} Returns `array`.
 	 */
+	function arrayCopy(source, array) {
+	  var index = -1,
+	      length = source.length;
 	
-	/**
-	 * Creates a "_.pluck" style function, which returns the `key` value of a
-	 * given object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Utilities
-	 * @param {string} key The name of the property to retrieve.
-	 * @returns {Function} Returns the new function.
-	 * @example
-	 *
-	 * var characters = [
-	 *   { 'name': 'fred',   'age': 40 },
-	 *   { 'name': 'barney', 'age': 36 }
-	 * ];
-	 *
-	 * var getName = _.property('name');
-	 *
-	 * _.map(characters, getName);
-	 * // => ['barney', 'fred']
-	 *
-	 * _.sortBy(characters, getName);
-	 * // => [{ 'name': 'barney', 'age': 36 }, { 'name': 'fred',   'age': 40 }]
-	 */
-	function property(key) {
-	  return function(object) {
-	    return object[key];
-	  };
+	  array || (array = Array(length));
+	  while (++index < length) {
+	    array[index] = source[index];
+	  }
+	  return array;
 	}
 	
-	module.exports = property;
+	module.exports = arrayCopy;
 
 
 /***/ },
-/* 192 */,
-/* 193 */,
-/* 194 */,
-/* 195 */,
-/* 196 */,
-/* 197 */,
-/* 198 */,
-/* 199 */,
-/* 200 */,
-/* 201 */,
-/* 202 */,
-/* 203 */
-/*!*******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/createWrapper.js ***!
-  \*******************************************************************/
+/* 199 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseCopy.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseBind = __webpack_require__(/*! ./baseBind */ 208),
-	    baseCreateWrapper = __webpack_require__(/*! ./baseCreateWrapper */ 209),
-	    isFunction = __webpack_require__(/*! ../objects/isFunction */ 48),
-	    slice = __webpack_require__(/*! ./slice */ 182);
-	
-	/**
-	 * Used for `Array` method references.
-	 *
-	 * Normally `Array.prototype` would suffice, however, using an array literal
-	 * avoids issues in Narwhal.
-	 */
-	var arrayRef = [];
-	
-	/** Native method shortcuts */
-	var push = arrayRef.push,
-	    unshift = arrayRef.unshift;
-	
-	/**
-	 * Creates a function that, when called, either curries or invokes `func`
-	 * with an optional `this` binding and partially applied arguments.
+	 * Copies the properties of `source` to `object`.
 	 *
 	 * @private
-	 * @param {Function|string} func The function or method name to reference.
-	 * @param {number} bitmask The bitmask of method flags to compose.
-	 *  The bitmask may be composed of the following flags:
-	 *  1 - `_.bind`
-	 *  2 - `_.bindKey`
-	 *  4 - `_.curry`
-	 *  8 - `_.curry` (bound)
-	 *  16 - `_.partial`
-	 *  32 - `_.partialRight`
-	 * @param {Array} [partialArgs] An array of arguments to prepend to those
-	 *  provided to the new function.
-	 * @param {Array} [partialRightArgs] An array of arguments to append to those
-	 *  provided to the new function.
-	 * @param {*} [thisArg] The `this` binding of `func`.
-	 * @param {number} [arity] The arity of `func`.
-	 * @returns {Function} Returns the new function.
+	 * @param {Object} source The object to copy properties from.
+	 * @param {Object} [object={}] The object to copy properties to.
+	 * @param {Array} props The property names to copy.
+	 * @returns {Object} Returns `object`.
 	 */
-	function createWrapper(func, bitmask, partialArgs, partialRightArgs, thisArg, arity) {
-	  var isBind = bitmask & 1,
-	      isBindKey = bitmask & 2,
-	      isCurry = bitmask & 4,
-	      isCurryBound = bitmask & 8,
-	      isPartial = bitmask & 16,
-	      isPartialRight = bitmask & 32;
+	function baseCopy(source, object, props) {
+	  if (!props) {
+	    props = object;
+	    object = {};
+	  }
+	  var index = -1,
+	      length = props.length;
 	
-	  if (!isBindKey && !isFunction(func)) {
-	    throw new TypeError;
+	  while (++index < length) {
+	    var key = props[index];
+	    object[key] = source[key];
 	  }
-	  if (isPartial && !partialArgs.length) {
-	    bitmask &= ~16;
-	    isPartial = partialArgs = false;
-	  }
-	  if (isPartialRight && !partialRightArgs.length) {
-	    bitmask &= ~32;
-	    isPartialRight = partialRightArgs = false;
-	  }
-	  var bindData = func && func.__bindData__;
-	  if (bindData && bindData !== true) {
-	    // clone `bindData`
-	    bindData = slice(bindData);
-	    if (bindData[2]) {
-	      bindData[2] = slice(bindData[2]);
-	    }
-	    if (bindData[3]) {
-	      bindData[3] = slice(bindData[3]);
-	    }
-	    // set `thisBinding` is not previously bound
-	    if (isBind && !(bindData[1] & 1)) {
-	      bindData[4] = thisArg;
-	    }
-	    // set if previously bound but not currently (subsequent curried functions)
-	    if (!isBind && bindData[1] & 1) {
-	      bitmask |= 8;
-	    }
-	    // set curried arity if not yet set
-	    if (isCurry && !(bindData[1] & 4)) {
-	      bindData[5] = arity;
-	    }
-	    // append partial left arguments
-	    if (isPartial) {
-	      push.apply(bindData[2] || (bindData[2] = []), partialArgs);
-	    }
-	    // append partial right arguments
-	    if (isPartialRight) {
-	      unshift.apply(bindData[3] || (bindData[3] = []), partialRightArgs);
-	    }
-	    // merge flags
-	    bindData[1] |= bitmask;
-	    return createWrapper.apply(null, bindData);
-	  }
-	  // fast path for `_.bind`
-	  var creater = (bitmask == 1 || bitmask === 17) ? baseBind : baseCreateWrapper;
-	  return creater([func, bitmask, partialArgs, partialRightArgs, thisArg, arity]);
+	  return object;
 	}
 	
-	module.exports = createWrapper;
+	module.exports = baseCopy;
+
+
+/***/ },
+/* 200 */
+/*!*******************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/initCloneArray.js ***!
+  \*******************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * Initializes an array clone.
+	 *
+	 * @private
+	 * @param {Array} array The array to clone.
+	 * @returns {Array} Returns the initialized clone.
+	 */
+	function initCloneArray(array) {
+	  var length = array.length,
+	      result = new array.constructor(length);
+	
+	  // Add array properties assigned by `RegExp#exec`.
+	  if (length && typeof array[0] == 'string' && hasOwnProperty.call(array, 'index')) {
+	    result.index = array.index;
+	    result.input = array.input;
+	  }
+	  return result;
+	}
+	
+	module.exports = initCloneArray;
+
+
+/***/ },
+/* 201 */
+/*!*******************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/initCloneByTag.js ***!
+  \*******************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var bufferClone = __webpack_require__(/*! ./bufferClone */ 221);
+	
+	/** `Object#toString` result references. */
+	var boolTag = '[object Boolean]',
+	    dateTag = '[object Date]',
+	    numberTag = '[object Number]',
+	    regexpTag = '[object RegExp]',
+	    stringTag = '[object String]';
+	
+	var arrayBufferTag = '[object ArrayBuffer]',
+	    float32Tag = '[object Float32Array]',
+	    float64Tag = '[object Float64Array]',
+	    int8Tag = '[object Int8Array]',
+	    int16Tag = '[object Int16Array]',
+	    int32Tag = '[object Int32Array]',
+	    uint8Tag = '[object Uint8Array]',
+	    uint8ClampedTag = '[object Uint8ClampedArray]',
+	    uint16Tag = '[object Uint16Array]',
+	    uint32Tag = '[object Uint32Array]';
+	
+	/** Used to match `RegExp` flags from their coerced string values. */
+	var reFlags = /\w*$/;
+	
+	/**
+	 * Initializes an object clone based on its `toStringTag`.
+	 *
+	 * **Note:** This function only supports cloning values with tags of
+	 * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+	 *
+	 *
+	 * @private
+	 * @param {Object} object The object to clone.
+	 * @param {string} tag The `toStringTag` of the object to clone.
+	 * @param {boolean} [isDeep] Specify a deep clone.
+	 * @returns {Object} Returns the initialized clone.
+	 */
+	function initCloneByTag(object, tag, isDeep) {
+	  var Ctor = object.constructor;
+	  switch (tag) {
+	    case arrayBufferTag:
+	      return bufferClone(object);
+	
+	    case boolTag:
+	    case dateTag:
+	      return new Ctor(+object);
+	
+	    case float32Tag: case float64Tag:
+	    case int8Tag: case int16Tag: case int32Tag:
+	    case uint8Tag: case uint8ClampedTag: case uint16Tag: case uint32Tag:
+	      var buffer = object.buffer;
+	      return new Ctor(isDeep ? bufferClone(buffer) : buffer, object.byteOffset, object.length);
+	
+	    case numberTag:
+	    case stringTag:
+	      return new Ctor(object);
+	
+	    case regexpTag:
+	      var result = new Ctor(object.source, reFlags.exec(object));
+	      result.lastIndex = object.lastIndex;
+	  }
+	  return result;
+	}
+	
+	module.exports = initCloneByTag;
+
+
+/***/ },
+/* 202 */
+/*!********************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/initCloneObject.js ***!
+  \********************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Initializes an object clone.
+	 *
+	 * @private
+	 * @param {Object} object The object to clone.
+	 * @returns {Object} Returns the initialized clone.
+	 */
+	function initCloneObject(object) {
+	  var Ctor = object.constructor;
+	  if (!(typeof Ctor == 'function' && Ctor instanceof Ctor)) {
+	    Ctor = Object;
+	  }
+	  return new Ctor;
+	}
+	
+	module.exports = initCloneObject;
+
+
+/***/ },
+/* 203 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/indexOfNaN.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Gets the index at which the first occurrence of `NaN` is found in `array`.
+	 * If `fromRight` is provided elements of `array` are iterated from right to left.
+	 *
+	 * @private
+	 * @param {Array} array The array to search.
+	 * @param {number} [fromIndex] The index to search from.
+	 * @param {boolean} [fromRight] Specify iterating from right to left.
+	 * @returns {number} Returns the index of the matched `NaN`, else `-1`.
+	 */
+	function indexOfNaN(array, fromIndex, fromRight) {
+	  var length = array.length,
+	      index = fromRight ? (fromIndex || length) : ((fromIndex || 0) - 1);
+	
+	  while ((fromRight ? index-- : ++index < length)) {
+	    var other = array[index];
+	    if (other !== other) {
+	      return index;
+	    }
+	  }
+	  return -1;
+	}
+	
+	module.exports = indexOfNaN;
 
 
 /***/ },
 /* 204 */
-/*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/utilities/noop.js ***!
-  \**********************************************************/
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/SetCache.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
+	/* WEBPACK VAR INJECTION */(function(global) {var cachePush = __webpack_require__(/*! ./cachePush */ 222),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 119);
+	
+	/** Native method references. */
+	var Set = isNative(Set = global.Set) && Set;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
 	
 	/**
-	 * A no-operation function.
 	 *
-	 * @static
-	 * @memberOf _
-	 * @category Utilities
-	 * @example
+	 * Creates a cache object to store unique values.
 	 *
-	 * var object = { 'name': 'fred' };
-	 * _.noop(object) === undefined;
-	 * // => true
+	 * @private
+	 * @param {Array} [values] The values to cache.
 	 */
-	function noop() {
-	  // no operation performed
+	function SetCache(values) {
+	  var length = values ? values.length : 0;
+	
+	  this.data = { 'hash': nativeCreate(null), 'set': new Set };
+	  while (length--) {
+	    this.push(values[length]);
+	  }
 	}
 	
-	module.exports = noop;
-
+	// Add functions to the `Set` cache.
+	SetCache.prototype.push = cachePush;
+	
+	module.exports = SetCache;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 205 */
-/*!*********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/objects/forIn.js ***!
-  \*********************************************************/
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/utility/constant.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreateCallback = __webpack_require__(/*! ../internals/baseCreateCallback */ 117),
-	    objectTypes = __webpack_require__(/*! ../internals/objectTypes */ 121);
-	
-	/**
-	 * Iterates over own and inherited enumerable properties of an object,
-	 * executing the callback for each property. The callback is bound to `thisArg`
-	 * and invoked with three arguments; (value, key, object). Callbacks may exit
-	 * iteration early by explicitly returning `false`.
+	 * Creates a function that returns `value`.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @type Function
-	 * @category Objects
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function} [callback=identity] The function called per iteration.
-	 * @param {*} [thisArg] The `this` binding of `callback`.
-	 * @returns {Object} Returns `object`.
+	 * @category Utility
+	 * @param {*} value The value to return from the new function.
+	 * @returns {Function} Returns the new function.
 	 * @example
 	 *
-	 * function Shape() {
-	 *   this.x = 0;
-	 *   this.y = 0;
-	 * }
+	 * var object = { 'user': 'fred' };
+	 * var getter = _.constant(object);
 	 *
-	 * Shape.prototype.move = function(x, y) {
-	 *   this.x += x;
-	 *   this.y += y;
-	 * };
-	 *
-	 * _.forIn(new Shape, function(value, key) {
-	 *   console.log(key);
-	 * });
-	 * // => logs 'x', 'y', and 'move' (property order is not guaranteed across environments)
+	 * getter() === object;
+	 * // => true
 	 */
-	var forIn = function(collection, callback, thisArg) {
-	  var index, iterable = collection, result = iterable;
-	  if (!iterable) return result;
-	  if (!objectTypes[typeof iterable]) return result;
-	  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-	    for (index in iterable) {
-	      if (callback(iterable[index], index, collection) === false) return result;
-	    }
-	  return result
-	};
+	function constant(value) {
+	  return function() {
+	    return value;
+	  };
+	}
 	
-	module.exports = forIn;
+	module.exports = constant;
 
 
 /***/ },
 /* 206 */,
 /* 207 */,
-/* 208 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseBind.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreate = __webpack_require__(/*! ./baseCreate */ 212),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
-	    setBindData = __webpack_require__(/*! ./setBindData */ 179),
-	    slice = __webpack_require__(/*! ./slice */ 182);
-	
-	/**
-	 * Used for `Array` method references.
-	 *
-	 * Normally `Array.prototype` would suffice, however, using an array literal
-	 * avoids issues in Narwhal.
-	 */
-	var arrayRef = [];
-	
-	/** Native method shortcuts */
-	var push = arrayRef.push;
-	
-	/**
-	 * The base implementation of `_.bind` that creates the bound function and
-	 * sets its meta data.
-	 *
-	 * @private
-	 * @param {Array} bindData The bind data array.
-	 * @returns {Function} Returns the new bound function.
-	 */
-	function baseBind(bindData) {
-	  var func = bindData[0],
-	      partialArgs = bindData[2],
-	      thisArg = bindData[4];
-	
-	  function bound() {
-	    // `Function#bind` spec
-	    // http://es5.github.io/#x15.3.4.5
-	    if (partialArgs) {
-	      // avoid `arguments` object deoptimizations by using `slice` instead
-	      // of `Array.prototype.slice.call` and not assigning `arguments` to a
-	      // variable as a ternary expression
-	      var args = slice(partialArgs);
-	      push.apply(args, arguments);
-	    }
-	    // mimic the constructor's `return` behavior
-	    // http://es5.github.io/#x13.2.2
-	    if (this instanceof bound) {
-	      // ensure `new bound` is an instance of `func`
-	      var thisBinding = baseCreate(func.prototype),
-	          result = func.apply(thisBinding, args || arguments);
-	      return isObject(result) ? result : thisBinding;
-	    }
-	    return func.apply(thisArg, args || arguments);
-	  }
-	  setBindData(bound, bindData);
-	  return bound;
-	}
-	
-	module.exports = baseBind;
-
-
-/***/ },
-/* 209 */
-/*!***********************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreateWrapper.js ***!
-  \***********************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var baseCreate = __webpack_require__(/*! ./baseCreate */ 212),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
-	    setBindData = __webpack_require__(/*! ./setBindData */ 179),
-	    slice = __webpack_require__(/*! ./slice */ 182);
-	
-	/**
-	 * Used for `Array` method references.
-	 *
-	 * Normally `Array.prototype` would suffice, however, using an array literal
-	 * avoids issues in Narwhal.
-	 */
-	var arrayRef = [];
-	
-	/** Native method shortcuts */
-	var push = arrayRef.push;
-	
-	/**
-	 * The base implementation of `createWrapper` that creates the wrapper and
-	 * sets its meta data.
-	 *
-	 * @private
-	 * @param {Array} bindData The bind data array.
-	 * @returns {Function} Returns the new function.
-	 */
-	function baseCreateWrapper(bindData) {
-	  var func = bindData[0],
-	      bitmask = bindData[1],
-	      partialArgs = bindData[2],
-	      partialRightArgs = bindData[3],
-	      thisArg = bindData[4],
-	      arity = bindData[5];
-	
-	  var isBind = bitmask & 1,
-	      isBindKey = bitmask & 2,
-	      isCurry = bitmask & 4,
-	      isCurryBound = bitmask & 8,
-	      key = func;
-	
-	  function bound() {
-	    var thisBinding = isBind ? thisArg : this;
-	    if (partialArgs) {
-	      var args = slice(partialArgs);
-	      push.apply(args, arguments);
-	    }
-	    if (partialRightArgs || isCurry) {
-	      args || (args = slice(arguments));
-	      if (partialRightArgs) {
-	        push.apply(args, partialRightArgs);
-	      }
-	      if (isCurry && args.length < arity) {
-	        bitmask |= 16 & ~32;
-	        return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
-	      }
-	    }
-	    args || (args = arguments);
-	    if (isBindKey) {
-	      func = thisBinding[key];
-	    }
-	    if (this instanceof bound) {
-	      thisBinding = baseCreate(func.prototype);
-	      var result = func.apply(thisBinding, args);
-	      return isObject(result) ? result : thisBinding;
-	    }
-	    return func.apply(thisBinding, args);
-	  }
-	  setBindData(bound, bindData);
-	  return bound;
-	}
-	
-	module.exports = baseCreateWrapper;
-
-
-/***/ },
+/* 208 */,
+/* 209 */,
 /* 210 */,
 /* 211 */,
-/* 212 */
+/* 212 */,
+/* 213 */,
+/* 214 */,
+/* 215 */,
+/* 216 */,
+/* 217 */
 /*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internals/baseCreate.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsMatch.js ***!
   \****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
-	 * Build: `lodash modularize modern exports="node" -o ./modern/`
-	 * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
-	 * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
-	 * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 * Available under MIT license <http://lodash.com/license>
-	 */
-	var isNative = __webpack_require__(/*! ./isNative */ 119),
-	    isObject = __webpack_require__(/*! ../objects/isObject */ 57),
-	    noop = __webpack_require__(/*! ../utilities/noop */ 204);
+	var baseIsEqual = __webpack_require__(/*! ./baseIsEqual */ 219);
 	
-	/* Native method shortcuts for methods with the same name as other `lodash` methods */
-	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
 	
 	/**
-	 * The base implementation of `_.create` without support for assigning
-	 * properties to the created object.
+	 * The base implementation of `_.isMatch` without support for callback
+	 * shorthands or `this` binding.
 	 *
 	 * @private
-	 * @param {Object} prototype The object to inherit from.
-	 * @returns {Object} Returns the new object.
+	 * @param {Object} object The object to inspect.
+	 * @param {Array} props The source property names to match.
+	 * @param {Array} values The source values to match.
+	 * @param {Array} strictCompareFlags Strict comparison flags for source values.
+	 * @param {Function} [customizer] The function to customize comparing objects.
+	 * @returns {boolean} Returns `true` if `object` is a match, else `false`.
 	 */
-	function baseCreate(prototype, properties) {
-	  return isObject(prototype) ? nativeCreate(prototype) : {};
-	}
-	// fallback for browsers without `Object.create`
-	if (!nativeCreate) {
-	  baseCreate = (function() {
-	    function Object() {}
-	    return function(prototype) {
-	      if (isObject(prototype)) {
-	        Object.prototype = prototype;
-	        var result = new Object;
-	        Object.prototype = null;
+	function baseIsMatch(object, props, values, strictCompareFlags, customizer) {
+	  var length = props.length;
+	  if (object == null) {
+	    return !length;
+	  }
+	  var index = -1,
+	      noCustomizer = !customizer;
+	
+	  while (++index < length) {
+	    if ((noCustomizer && strictCompareFlags[index])
+	          ? values[index] !== object[props[index]]
+	          : !hasOwnProperty.call(object, props[index])
+	        ) {
+	      return false;
+	    }
+	  }
+	  index = -1;
+	  while (++index < length) {
+	    var key = props[index];
+	    if (noCustomizer && strictCompareFlags[index]) {
+	      var result = hasOwnProperty.call(object, key);
+	    } else {
+	      var objValue = object[key],
+	          srcValue = values[index];
+	
+	      result = customizer ? customizer(objValue, srcValue, key) : undefined;
+	      if (typeof result == 'undefined') {
+	        result = baseIsEqual(srcValue, objValue, customizer, true);
 	      }
-	      return result || global.Object();
-	    };
-	  }());
+	    }
+	    if (!result) {
+	      return false;
+	    }
+	  }
+	  return true;
 	}
 	
-	module.exports = baseCreate;
+	module.exports = baseIsMatch;
+
+
+/***/ },
+/* 218 */
+/*!***********************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isStrictComparable.js ***!
+  \***********************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 58);
+	
+	/**
+	 * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` if suitable for strict
+	 *  equality comparisons, else `false`.
+	 */
+	function isStrictComparable(value) {
+	  return value === value && (value === 0 ? ((1 / value) > 0) : !isObject(value));
+	}
+	
+	module.exports = isStrictComparable;
+
+
+/***/ },
+/* 219 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsEqual.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsEqualDeep = __webpack_require__(/*! ./baseIsEqualDeep */ 226);
+	
+	/**
+	 * The base implementation of `_.isEqual` without support for `this` binding
+	 * `customizer` functions.
+	 *
+	 * @private
+	 * @param {*} value The value to compare.
+	 * @param {*} other The other value to compare.
+	 * @param {Function} [customizer] The function to customize comparing values.
+	 * @param {boolean} [isWhere] Specify performing partial comparisons.
+	 * @param {Array} [stackA] Tracks traversed `value` objects.
+	 * @param {Array} [stackB] Tracks traversed `other` objects.
+	 * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+	 */
+	function baseIsEqual(value, other, customizer, isWhere, stackA, stackB) {
+	  // Exit early for identical values.
+	  if (value === other) {
+	    // Treat `+0` vs. `-0` as not equal.
+	    return value !== 0 || (1 / value == 1 / other);
+	  }
+	  var valType = typeof value,
+	      othType = typeof other;
+	
+	  // Exit early for unlike primitive values.
+	  if ((valType != 'function' && valType != 'object' && othType != 'function' && othType != 'object') ||
+	      value == null || other == null) {
+	    // Return `false` unless both values are `NaN`.
+	    return value !== value && other !== other;
+	  }
+	  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isWhere, stackA, stackB);
+	}
+	
+	module.exports = baseIsEqual;
+
+
+/***/ },
+/* 220 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseSetData.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var identity = __webpack_require__(/*! ../utility/identity */ 187),
+	    metaMap = __webpack_require__(/*! ./metaMap */ 227);
+	
+	/**
+	 * The base implementation of `setData` without support for hot loop detection.
+	 *
+	 * @private
+	 * @param {Function} func The function to associate metadata with.
+	 * @param {*} data The metadata.
+	 * @returns {Function} Returns `func`.
+	 */
+	var baseSetData = !metaMap ? identity : function(func, data) {
+	  metaMap.set(func, data);
+	  return func;
+	};
+	
+	module.exports = baseSetData;
+
+
+/***/ },
+/* 221 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/bufferClone.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {var constant = __webpack_require__(/*! ../utility/constant */ 205),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 119);
+	
+	/** Native method references. */
+	var ArrayBuffer = isNative(ArrayBuffer = global.ArrayBuffer) && ArrayBuffer,
+	    bufferSlice = isNative(bufferSlice = ArrayBuffer && new ArrayBuffer(0).slice) && bufferSlice,
+	    floor = Math.floor,
+	    Uint8Array = isNative(Uint8Array = global.Uint8Array) && Uint8Array;
+	
+	/** Used to clone array buffers. */
+	var Float64Array = (function() {
+	  // Safari 5 errors when using an array buffer to initialize a typed array
+	  // where the array buffer's `byteLength` is not a multiple of the typed
+	  // array's `BYTES_PER_ELEMENT`.
+	  try {
+	    var func = isNative(func = global.Float64Array) && func,
+	        result = new func(new ArrayBuffer(10), 0, 1) && func;
+	  } catch(e) {}
+	  return result;
+	}());
+	
+	/** Used as the size, in bytes, of each `Float64Array` element. */
+	var FLOAT64_BYTES_PER_ELEMENT = Float64Array ? Float64Array.BYTES_PER_ELEMENT : 0;
+	
+	/**
+	 * Creates a clone of the given array buffer.
+	 *
+	 * @private
+	 * @param {ArrayBuffer} buffer The array buffer to clone.
+	 * @returns {ArrayBuffer} Returns the cloned array buffer.
+	 */
+	function bufferClone(buffer) {
+	  return bufferSlice.call(buffer, 0);
+	}
+	if (!bufferSlice) {
+	  // PhantomJS has `ArrayBuffer` and `Uint8Array` but not `Float64Array`.
+	  bufferClone = !(ArrayBuffer && Uint8Array) ? constant(null) : function(buffer) {
+	    var byteLength = buffer.byteLength,
+	        floatLength = Float64Array ? floor(byteLength / FLOAT64_BYTES_PER_ELEMENT) : 0,
+	        offset = floatLength * FLOAT64_BYTES_PER_ELEMENT,
+	        result = new ArrayBuffer(byteLength);
+	
+	    if (floatLength) {
+	      var view = new Float64Array(result, 0, floatLength);
+	      view.set(new Float64Array(buffer, 0, floatLength));
+	    }
+	    if (byteLength != offset) {
+	      view = new Uint8Array(result, offset);
+	      view.set(new Uint8Array(buffer, offset));
+	    }
+	    return result;
+	  };
+	}
+	
+	module.exports = bufferClone;
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 222 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/cachePush.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 58);
+	
+	/**
+	 * Adds `value` to the cache.
+	 *
+	 * @private
+	 * @name push
+	 * @memberOf SetCache
+	 * @param {*} value The value to cache.
+	 */
+	function cachePush(value) {
+	  var data = this.data;
+	  if (typeof value == 'string' || isObject(value)) {
+	    data.set.add(value);
+	  } else {
+	    data.hash[value] = true;
+	  }
+	}
+	
+	module.exports = cachePush;
+
+
+/***/ },
+/* 223 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseToString.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Converts `value` to a string if it is not one. An empty string is returned
+	 * for `null` or `undefined` values.
+	 *
+	 * @private
+	 * @param {*} value The value to process.
+	 * @returns {string} Returns the string.
+	 */
+	function baseToString(value) {
+	  if (typeof value == 'string') {
+	    return value;
+	  }
+	  return value == null ? '' : (value + '');
+	}
+	
+	module.exports = baseToString;
+
+
+/***/ },
+/* 224 */,
+/* 225 */,
+/* 226 */
+/*!********************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsEqualDeep.js ***!
+  \********************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var equalArrays = __webpack_require__(/*! ./equalArrays */ 228),
+	    equalByTag = __webpack_require__(/*! ./equalByTag */ 229),
+	    equalObjects = __webpack_require__(/*! ./equalObjects */ 230),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
+	    isTypedArray = __webpack_require__(/*! ../lang/isTypedArray */ 231);
+	
+	/** `Object#toString` result references. */
+	var argsTag = '[object Arguments]',
+	    arrayTag = '[object Array]',
+	    objectTag = '[object Object]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/**
+	 * A specialized version of `baseIsEqual` for arrays and objects which performs
+	 * deep comparisons and tracks traversed objects enabling objects with circular
+	 * references to be compared.
+	 *
+	 * @private
+	 * @param {Object} object The object to compare.
+	 * @param {Object} other The other object to compare.
+	 * @param {Function} equalFunc The function to determine equivalents of values.
+	 * @param {Function} [customizer] The function to customize comparing objects.
+	 * @param {boolean} [isWhere] Specify performing partial comparisons.
+	 * @param {Array} [stackA=[]] Tracks traversed `value` objects.
+	 * @param {Array} [stackB=[]] Tracks traversed `other` objects.
+	 * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+	 */
+	function baseIsEqualDeep(object, other, equalFunc, customizer, isWhere, stackA, stackB) {
+	  var objIsArr = isArray(object),
+	      othIsArr = isArray(other),
+	      objTag = arrayTag,
+	      othTag = arrayTag;
+	
+	  if (!objIsArr) {
+	    objTag = objToString.call(object);
+	    if (objTag == argsTag) {
+	      objTag = objectTag;
+	    } else if (objTag != objectTag) {
+	      objIsArr = isTypedArray(object);
+	    }
+	  }
+	  if (!othIsArr) {
+	    othTag = objToString.call(other);
+	    if (othTag == argsTag) {
+	      othTag = objectTag;
+	    } else if (othTag != objectTag) {
+	      othIsArr = isTypedArray(other);
+	    }
+	  }
+	  var objIsObj = objTag == objectTag,
+	      othIsObj = othTag == objectTag,
+	      isSameTag = objTag == othTag;
+	
+	  if (isSameTag && !(objIsArr || objIsObj)) {
+	    return equalByTag(object, other, objTag);
+	  }
+	  var valWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+	      othWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+	
+	  if (valWrapped || othWrapped) {
+	    return equalFunc(valWrapped ? object.value() : object, othWrapped ? other.value() : other, customizer, isWhere, stackA, stackB);
+	  }
+	  if (!isSameTag) {
+	    return false;
+	  }
+	  // Assume cyclic values are equal.
+	  // For more information on detecting circular references see https://es5.github.io/#JO.
+	  stackA || (stackA = []);
+	  stackB || (stackB = []);
+	
+	  var length = stackA.length;
+	  while (length--) {
+	    if (stackA[length] == object) {
+	      return stackB[length] == other;
+	    }
+	  }
+	  // Add `object` and `other` to the stack of traversed objects.
+	  stackA.push(object);
+	  stackB.push(other);
+	
+	  var result = (objIsArr ? equalArrays : equalObjects)(object, other, equalFunc, customizer, isWhere, stackA, stackB);
+	
+	  stackA.pop();
+	  stackB.pop();
+	
+	  return result;
+	}
+	
+	module.exports = baseIsEqualDeep;
+
+
+/***/ },
+/* 227 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/metaMap.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ../lang/isNative */ 119);
+	
+	/** Native method references. */
+	var WeakMap = isNative(WeakMap = global.WeakMap) && WeakMap;
+	
+	/** Used to store function metadata. */
+	var metaMap = WeakMap && new WeakMap;
+	
+	module.exports = metaMap;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 228 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/equalArrays.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `baseIsEqualDeep` for arrays with support for
+	 * partial deep comparisons.
+	 *
+	 * @private
+	 * @param {Array} array The array to compare.
+	 * @param {Array} other The other array to compare.
+	 * @param {Function} equalFunc The function to determine equivalents of values.
+	 * @param {Function} [customizer] The function to customize comparing arrays.
+	 * @param {boolean} [isWhere] Specify performing partial comparisons.
+	 * @param {Array} [stackA] Tracks traversed `value` objects.
+	 * @param {Array} [stackB] Tracks traversed `other` objects.
+	 * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
+	 */
+	function equalArrays(array, other, equalFunc, customizer, isWhere, stackA, stackB) {
+	  var index = -1,
+	      arrLength = array.length,
+	      othLength = other.length,
+	      result = true;
+	
+	  if (arrLength != othLength && !(isWhere && othLength > arrLength)) {
+	    return false;
+	  }
+	  // Deep compare the contents, ignoring non-numeric properties.
+	  while (result && ++index < arrLength) {
+	    var arrValue = array[index],
+	        othValue = other[index];
+	
+	    result = undefined;
+	    if (customizer) {
+	      result = isWhere
+	        ? customizer(othValue, arrValue, index)
+	        : customizer(arrValue, othValue, index);
+	    }
+	    if (typeof result == 'undefined') {
+	      // Recursively compare arrays (susceptible to call stack limits).
+	      if (isWhere) {
+	        var othIndex = othLength;
+	        while (othIndex--) {
+	          othValue = other[othIndex];
+	          result = (arrValue && arrValue === othValue) || equalFunc(arrValue, othValue, customizer, isWhere, stackA, stackB);
+	          if (result) {
+	            break;
+	          }
+	        }
+	      } else {
+	        result = (arrValue && arrValue === othValue) || equalFunc(arrValue, othValue, customizer, isWhere, stackA, stackB);
+	      }
+	    }
+	  }
+	  return !!result;
+	}
+	
+	module.exports = equalArrays;
+
+
+/***/ },
+/* 229 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/equalByTag.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/** `Object#toString` result references. */
+	var boolTag = '[object Boolean]',
+	    dateTag = '[object Date]',
+	    errorTag = '[object Error]',
+	    numberTag = '[object Number]',
+	    regexpTag = '[object RegExp]',
+	    stringTag = '[object String]';
+	
+	/**
+	 * A specialized version of `baseIsEqualDeep` for comparing objects of
+	 * the same `toStringTag`.
+	 *
+	 * **Note:** This function only supports comparing values with tags of
+	 * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+	 *
+	 * @private
+	 * @param {Object} value The object to compare.
+	 * @param {Object} other The other object to compare.
+	 * @param {string} tag The `toStringTag` of the objects to compare.
+	 * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+	 */
+	function equalByTag(object, other, tag) {
+	  switch (tag) {
+	    case boolTag:
+	    case dateTag:
+	      // Coerce dates and booleans to numbers, dates to milliseconds and booleans
+	      // to `1` or `0` treating invalid dates coerced to `NaN` as not equal.
+	      return +object == +other;
+	
+	    case errorTag:
+	      return object.name == other.name && object.message == other.message;
+	
+	    case numberTag:
+	      // Treat `NaN` vs. `NaN` as equal.
+	      return (object != +object)
+	        ? other != +other
+	        // But, treat `-0` vs. `+0` as not equal.
+	        : (object == 0 ? ((1 / object) == (1 / other)) : object == +other);
+	
+	    case regexpTag:
+	    case stringTag:
+	      // Coerce regexes to strings and treat strings primitives and string
+	      // objects as equal. See https://es5.github.io/#x15.10.6.4 for more details.
+	      return object == (other + '');
+	  }
+	  return false;
+	}
+	
+	module.exports = equalByTag;
+
+
+/***/ },
+/* 230 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/equalObjects.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var keys = __webpack_require__(/*! ../object/keys */ 50);
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * A specialized version of `baseIsEqualDeep` for objects with support for
+	 * partial deep comparisons.
+	 *
+	 * @private
+	 * @param {Object} object The object to compare.
+	 * @param {Object} other The other object to compare.
+	 * @param {Function} equalFunc The function to determine equivalents of values.
+	 * @param {Function} [customizer] The function to customize comparing values.
+	 * @param {boolean} [isWhere] Specify performing partial comparisons.
+	 * @param {Array} [stackA] Tracks traversed `value` objects.
+	 * @param {Array} [stackB] Tracks traversed `other` objects.
+	 * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+	 */
+	function equalObjects(object, other, equalFunc, customizer, isWhere, stackA, stackB) {
+	  var objProps = keys(object),
+	      objLength = objProps.length,
+	      othProps = keys(other),
+	      othLength = othProps.length;
+	
+	  if (objLength != othLength && !isWhere) {
+	    return false;
+	  }
+	  var hasCtor,
+	      index = -1;
+	
+	  while (++index < objLength) {
+	    var key = objProps[index],
+	        result = hasOwnProperty.call(other, key);
+	
+	    if (result) {
+	      var objValue = object[key],
+	          othValue = other[key];
+	
+	      result = undefined;
+	      if (customizer) {
+	        result = isWhere
+	          ? customizer(othValue, objValue, key)
+	          : customizer(objValue, othValue, key);
+	      }
+	      if (typeof result == 'undefined') {
+	        // Recursively compare objects (susceptible to call stack limits).
+	        result = (objValue && objValue === othValue) || equalFunc(objValue, othValue, customizer, isWhere, stackA, stackB);
+	      }
+	    }
+	    if (!result) {
+	      return false;
+	    }
+	    hasCtor || (hasCtor = key == 'constructor');
+	  }
+	  if (!hasCtor) {
+	    var objCtor = object.constructor,
+	        othCtor = other.constructor;
+	
+	    // Non `Object` object instances with different constructors are not equal.
+	    if (objCtor != othCtor && ('constructor' in object && 'constructor' in other) &&
+	        !(typeof objCtor == 'function' && objCtor instanceof objCtor && typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+	      return false;
+	    }
+	  }
+	  return true;
+	}
+	
+	module.exports = equalObjects;
+
+
+/***/ },
+/* 231 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isTypedArray.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 122),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 135);
+	
+	/** `Object#toString` result references. */
+	var argsTag = '[object Arguments]',
+	    arrayTag = '[object Array]',
+	    boolTag = '[object Boolean]',
+	    dateTag = '[object Date]',
+	    errorTag = '[object Error]',
+	    funcTag = '[object Function]',
+	    mapTag = '[object Map]',
+	    numberTag = '[object Number]',
+	    objectTag = '[object Object]',
+	    regexpTag = '[object RegExp]',
+	    setTag = '[object Set]',
+	    stringTag = '[object String]',
+	    weakMapTag = '[object WeakMap]';
+	
+	var arrayBufferTag = '[object ArrayBuffer]',
+	    float32Tag = '[object Float32Array]',
+	    float64Tag = '[object Float64Array]',
+	    int8Tag = '[object Int8Array]',
+	    int16Tag = '[object Int16Array]',
+	    int32Tag = '[object Int32Array]',
+	    uint8Tag = '[object Uint8Array]',
+	    uint8ClampedTag = '[object Uint8ClampedArray]',
+	    uint16Tag = '[object Uint16Array]',
+	    uint32Tag = '[object Uint32Array]';
+	
+	/** Used to identify `toStringTag` values of typed arrays. */
+	var typedArrayTags = {};
+	typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+	typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+	typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+	typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+	typedArrayTags[uint32Tag] = true;
+	typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+	typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+	typedArrayTags[dateTag] = typedArrayTags[errorTag] =
+	typedArrayTags[funcTag] = typedArrayTags[mapTag] =
+	typedArrayTags[numberTag] = typedArrayTags[objectTag] =
+	typedArrayTags[regexpTag] = typedArrayTags[setTag] =
+	typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/**
+	 * Checks if `value` is classified as a typed array.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @example
+	 *
+	 * _.isTypedArray(new Uint8Array);
+	 * // => true
+	 *
+	 * _.isTypedArray([]);
+	 * // => false
+	 */
+	function isTypedArray(value) {
+	  return (isObjectLike(value) && isLength(value.length) && typedArrayTags[objToString.call(value)]) || false;
+	}
+	
+	module.exports = isTypedArray;
+
 
 /***/ }
 /******/ ])
