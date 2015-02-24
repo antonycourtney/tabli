@@ -35,8 +35,34 @@ var styles = {
     borderBottom: '1px solid #bababa',
     paddingLeft: 3,
     paddingRight: 3,
-    marginBottom: 3
+    marginBottom: 3,
+    display: 'inline-flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
+
+  windowInfo: {
+    border: '1px solid #bababa',
+    borderRadius: 3,
+    marginBottom: 8,
+    maxWidth: 345
+  },
+
+  expandablePanel: {
+    width: '100%',
+    position: 'relative',
+    minHeight: 20,
+    overflow: 'hidden'
+  },
+
+  expandablePanelContentClosed: {
+    marginTop: '-999px'
+  },
+
+  expandablePanelContentOpen: {
+    marginTop: 0
+  },
+
   windowExpand: {
     WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
     backgroundColor: '#606060'
@@ -54,7 +80,8 @@ var styles = {
     border: 'none',
     backgroundColor: 'transparent',
     backgroundRepeat: 'no-repeat',
-    marginRight: 3,
+    // marginRight: 3,
+    margin: 'auto',
     width: 16,
     height: 16
   },
@@ -79,11 +106,12 @@ var styles = {
   windowList: { 
     display: 'inline-block',
     lineHeight: '14px',
-    height: 14,
+    height: 20,
     width: 245,
   },
   windowTitle: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    paddingTop: 2
   }
 }
 
@@ -189,7 +217,7 @@ var R_WindowHeader = React.createClass({
     console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
 
     return (
-      <div style={m(styles.noWrap,styles.singleRow,styles.oneRowContainer,styles.windowHeader)}
+      <div style={m(styles.windowHeader)}
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
           onClick={this.props.onOpen} >
         {windowCheckItem}
@@ -316,8 +344,12 @@ var R_TabWindow = React.createClass({
           onOpen={this.handleOpen}
           onClose={this.handleClose}
         />;
+
+    /* TODO: restore windowInfo:hover */
+    var windowStyles=m(styles.windowInfo,styles.expandablePanel);
+
     return (
-      <div className="windowInfo expandable-panel">
+      <div style={windowStyles} >
         {windowHeader}
         {tabItems}
       </div>
