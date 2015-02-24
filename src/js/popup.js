@@ -5,6 +5,8 @@ var _ = require('underscore');
 
 var React = require('react');
 
+window.React = React;
+
 var objectAssign = require('object-assign');
 
 var Fluxxor = require('fluxxor');
@@ -36,12 +38,16 @@ var styles = {
     marginBottom: 3
   },
   windowExpand: {
-    webkitMaskImage: 'url("../images/triangle-small-4-01.png")',
+    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
     backgroundColor: '#606060'
   },
   windowCollapse: {
-    webkitMaskImage: 'url("../images/triangle-small-1-01.png")',
+    WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
     backgroundColor: '#606060',
+  },
+  windowManaged: {
+    WebkitMaskImage: 'url("../images/Status-9.png")',
+    backgroundColor: '#7472ff'
   },
   headerButton: {
     outline: 'none',
@@ -51,7 +57,34 @@ var styles = {
     marginRight: 3,
     width: 16,
     height: 16
-  }  
+  },
+  hidden: {
+    visibility: 'hidden'
+  },
+  visible: {
+    visibility: 'visible'
+  },
+  open: {
+  },
+  closed: {
+    color: '#979ca0'    
+  },
+  closeButton: {
+    background: 'url("../images/interface-80.png")',
+    'float': 'right'  
+  },
+  closeButtonHover: {
+    background: 'url("../images/interface-94.png")'
+  },
+  windowList: { 
+    display: 'inline-block',
+    lineHeight: '14px',
+    height: 14,
+    width: 245,
+  },
+  windowTitle: {
+    fontWeight: 'bold'
+  }
 }
 
 function m() {
@@ -83,6 +116,33 @@ var R_ExpanderButton = React.createClass({
   }
 });
 
+// A button that will merge in hoverStyle when hovered over
+var R_HoverButton = React.createClass({
+  getInitialState: function() {
+    return { "hovering": false }
+  },
+
+  handleMouseOver: function() {
+    console.log("hoverButton: mouseOver");
+    this.setState({"hovering": true});
+  },
+
+  handleMouseOut: function() {
+    console.log("hoverButton: mouseOut");
+    this.setState({"hovering": false});
+  },
+
+  render: function() {
+    var visibilityStyle = this.props.visible ? styles.visible : styles.hidden;
+    var buttonStyle = m(this.props.baseStyle,visibilityStyle,this.state.hovering ? this.props.hoverStyle : null);
+    console.log("hoverButton: ", this.state.hovering, " background: ", buttonStyle.background );
+    return (<button style={buttonStyle} title={this.props.title} onClick={this.props.onClick}
+              onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
+            />);
+  }  
+})
+
+
 var R_WindowHeader = React.createClass({
   getInitialState: function() {
     return { "hovering": false }
@@ -102,26 +162,31 @@ var R_WindowHeader = React.createClass({
     var windowTitle = tabWindow.getTitle();
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 
-    var hoverClass = this.state.hovering ? "hover" : "show-on-hover";
+    var hoverStyle = this.state.hovering ? styles.visible : styles.hidden;
 
     var windowCheckItem;
 
     if( managed ) {
-      windowCheckItem =  <button className="header-button window-managed" title="Stop managing this window" />;
+      windowCheckItem =  <button style={m(styles.headerButton,styles.windowManaged)} title="Stop managing this window" />;
       // TODO: callbacks!
     } else {
-      var checkClass = "header-button " + hoverClass;
-      windowCheckItem = <input className={checkClass} type="checkbox" title="Bookmark this window (and all its tabs)" />;
+      var checkStyle = m(styles.headerButton,hoverStyle);
+      windowCheckItem = <input style={checkStyle} type="checkbox" title="Bookmark this window (and all its tabs)" />;
     }
 
     var windowTitle = tabWindow.getTitle();   
-    var openClass = tabWindow.open ? "open" : "closed";
-    var titleClass = "windowList nowrap singlerow windowTitle " + openClass;
+    var openStyle = tabWindow.open ? styles.open : styles.closed;
+    var titleStyle = m(styles.windowList,styles.noWrap,styles.singleRow,styles.windowTitle,openStyle);
 
-    var closeClass = "header-button close " + hoverClass;
-    var closeButton = <button className={closeClass} title="Close Window" onClick={this.props.onClose} />;
+    var closeStyle = m(styles.headerButton,styles.closeButton);
 
-    console.log("WindowHeader: ", windowTitle, openClass, managed, this.props.expanded);
+    // We use hovering in the window header (this.state.hovering) to 
+    // determine whether the close button will be visible (controlled by visible property on the
+    // button)
+    var closeButton = <R_HoverButton baseStyle={closeStyle} visible={this.state.hovering} hoverStyle={styles.closeButtonHover} title="Close Window" 
+              onClick={this.props.onClose} />
+
+    console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
 
     return (
       <div style={m(styles.noWrap,styles.singleRow,styles.oneRowContainer,styles.windowHeader)}
@@ -129,7 +194,7 @@ var R_WindowHeader = React.createClass({
           onClick={this.props.onOpen} >
         {windowCheckItem}
         <R_ExpanderButton expanded={this.props.expanded} onClick={this.props.onExpand} />
-        <span className={titleClass}>{windowTitle}</span>
+        <span style={titleStyle}>{windowTitle}</span>
         {closeButton}
       </div>
     );
