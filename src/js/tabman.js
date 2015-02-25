@@ -20,31 +20,6 @@ var archiveFolderTitle = "_Archive";
 var flux = null; // flux instance
 var winStore = null;  // TabWindowStore instance
 
-
-function revertWindow( tabWindow, callback ) {
-  var tabs = tabWindow.chromeWindow.tabs;
-  var currentTabIds = tabs.map( function ( t ) { return t.id; } );
-
-  // re-open bookmarks:
-  var urls = tabWindow.bookmarkFolder.children.map( function (bm) { return bm.url; } );
-  for ( var i = 0; i < urls.length; i++ ) {
-    // need to open it:
-    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[ i ] };
-    chrome.tabs.create( tabInfo );
-  };        
-
-  // blow away all the existing tabs:
-  chrome.tabs.remove( currentTabIds, function() {
-    var windowId = tabWindow.chromeWindow.id;
-    tabWindow.chromeWindow = null;
-    // refresh window details:
-    chrome.windows.get( windowId, { populate: true }, function ( chromeWindow ) {
-      tabWindow.chromeWindow = chromeWindow;
-      callback();
-    });
-  });
-}
-
 /*
 * begin managing the specified tab window
 *
@@ -405,8 +380,7 @@ window.tabMan = {
   parseURL: parseURL,
   syncWindowList: syncWindowList,
   manageWindow: manageWindow,
-  unmanageWindow: unmanageWindow,
-  revertWindow: revertWindow
+  unmanageWindow: unmanageWindow
 };
 
 main();

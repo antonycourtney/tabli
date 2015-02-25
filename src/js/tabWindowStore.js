@@ -54,6 +54,30 @@ function closeTabWindow(tabWindow, cb) {
   });
 }
 
+function revertTabWindow( tabWindow, callback ) {
+  var tabs = tabWindow.chromeWindow.tabs;
+  var currentTabIds = tabs.map( function ( t ) { return t.id; } );
+
+  // re-open bookmarks:
+  var urls = tabWindow.bookmarkFolder.children.map( function (bm) { return bm.url; } );
+  for ( var i = 0; i < urls.length; i++ ) {
+    // need to open it:
+    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[ i ] };
+    chrome.tabs.create( tabInfo );
+  };        
+
+  // blow away all the existing tabs:
+  chrome.tabs.remove( currentTabIds, function() {
+    var windowId = tabWindow.chromeWindow.id;
+    tabWindow.chromeWindow = null;
+    // refresh window details:
+    chrome.windows.get( windowId, { populate: true }, function ( chromeWindow ) {
+      tabWindow.chromeWindow = chromeWindow;
+      callback();
+    });
+  });
+}
+
 function restoreBookmarkWindow( tabWindow, callback ) {
   chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
     var urls = [];
@@ -117,7 +141,8 @@ var TabWindowStore = Fluxxor.createStore({
       constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
       constants.OPEN_TAB_WINDOW, this.onOpenTabWindow,
       constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
-      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow
+      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
+      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow
       );
   },
 
@@ -129,6 +154,13 @@ var TabWindowStore = Fluxxor.createStore({
   onCloseTabWindow: function(payload) {
     var self = this;
     closeTabWindow(payload.tabWindow, function () {
+        self.emit("change");      
+      });
+  },
+
+  onRevertTabWindow: function(payload) {
+    var self = this;
+    revertTabWindow(payload.tabWindow, function () {
         self.emit("change");      
       });
   },

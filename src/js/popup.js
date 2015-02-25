@@ -23,6 +23,7 @@ var styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   },
+  /*
   singleRow: { 
     maxHeight: 20
   },
@@ -30,6 +31,7 @@ var styles = {
     lineHeight: '22px',       // Looks like React doesn't convert this to px! 
     verticalAlign: 'baseline'
   },
+  */
   windowHeader: {
     backgroundColor: '#ebe9eb',
     borderBottom: '1px solid #bababa',
@@ -37,15 +39,19 @@ var styles = {
     paddingRight: 3,
     marginBottom: 3,
     display: 'inline-flex',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     alignItems: 'center'
   },
 
+  // This is the container for a single tabWindow, consisting of its
+  // header and tabs:
   windowInfo: {
     border: '1px solid #bababa',
     borderRadius: 3,
     marginBottom: 8,
-    maxWidth: 345
+    maxWidth: 345,
+    display: 'flex',
+    flexDirection: 'column'
   },
 
   expandablePanel: {
@@ -81,7 +87,7 @@ var styles = {
     backgroundColor: 'transparent',
     backgroundRepeat: 'no-repeat',
     // marginRight: 3,
-    margin: 'auto',
+    // margin: 'auto',
     width: 16,
     height: 16
   },
@@ -96,6 +102,12 @@ var styles = {
   closed: {
     color: '#979ca0'    
   },
+  revertButton: { 
+      WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
+      backgroundColor: '#7472ff',
+      marginRight: '20px'
+  },
+
   closeButton: {
     background: 'url("../images/interface-80.png")',
     'float': 'right'  
@@ -108,10 +120,11 @@ var styles = {
     lineHeight: '14px',
     height: 20,
     width: 245,
+    maxWidth: 245,
   },
   windowTitle: {
     fontWeight: 'bold',
-    paddingTop: 2
+    paddingTop: 3
   }
 }
 
@@ -145,7 +158,7 @@ var R_ExpanderButton = React.createClass({
 });
 
 // A button that will merge in hoverStyle when hovered over
-var R_HoverButton = React.createClass({
+var R_HeaderButton = React.createClass({
   getInitialState: function() {
     return { "hovering": false }
   },
@@ -160,11 +173,18 @@ var R_HoverButton = React.createClass({
     this.setState({"hovering": false});
   },
 
+  handleClick: function(event) {
+    if (this.props.visible) {
+      this.props.onClick();
+      event.stopPropagation();
+    }
+  },
+
   render: function() {
     var visibilityStyle = this.props.visible ? styles.visible : styles.hidden;
     var buttonStyle = m(this.props.baseStyle,visibilityStyle,this.state.hovering ? this.props.hoverStyle : null);
     console.log("hoverButton: ", this.state.hovering, " background: ", buttonStyle.background );
-    return (<button style={buttonStyle} title={this.props.title} onClick={this.props.onClick}
+    return (<button style={buttonStyle} title={this.props.title} onClick={this.handleClick}
               onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
             />);
   }  
@@ -208,21 +228,27 @@ var R_WindowHeader = React.createClass({
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
 
-    // We use hovering in the window header (this.state.hovering) to 
-    // determine whether the close button will be visible (controlled by visible property on the
-    // button)
-    var closeButton = <R_HoverButton baseStyle={closeStyle} visible={this.state.hovering} hoverStyle={styles.closeButtonHover} title="Close Window" 
-              onClick={this.props.onClose} />
+    // We use hovering in the window header (this.state.hovering) to determine 
+    // visibility of both the revert button and close button appearing after the window title.
+    var revertButton = <R_HeaderButton baseStyle={m(styles.headerButton,styles.revertButton)} 
+                          visible={this.state.hovering && managed && tabWindow.open} 
+                          title="Revert to bookmarked tabs (Close other tabs)" 
+                          onClick={this.props.onRevert} />
+
+    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={this.state.hovering} 
+                          hoverStyle={styles.closeButtonHover} title="Close Window" 
+                          onClick={this.props.onClose} />
 
     console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
 
     return (
-      <div style={m(styles.windowHeader)}
+      <div style={m(styles.windowHeader,styles.noWrap)}
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
           onClick={this.props.onOpen} >
         {windowCheckItem}
         <R_ExpanderButton expanded={this.props.expanded} onClick={this.props.onExpand} />
         <span style={titleStyle}>{windowTitle}</span>
+        {revertButton}
         {closeButton}
       </div>
     );
@@ -297,8 +323,13 @@ var R_TabWindow = React.createClass({
   handleClose: function(event) {
     console.log("handleClose");
     bgw.tabMan.flux.actions.closeTabWindow(this.props.tabWindow);
-    event.stopPropagation();
   },
+
+  handleRevert: function(event) {
+    console.log("handleRevert");
+    bgw.tabMan.flux.actions.revertTabWindow(this.props.tabWindow);
+  },
+
 
   /* expanded state follows window open/closed state unless it is 
    * explicitly set interactively by the user
@@ -342,6 +373,7 @@ var R_TabWindow = React.createClass({
           expanded={expanded} 
           onExpand={this.handleExpand} 
           onOpen={this.handleOpen}
+          onRevert={this.handleRevert}
           onClose={this.handleClose}
         />;
 

@@ -16,6 +16,11 @@ var actions = {
     this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
   },
 
+  revertTabWindow: function(tabWindow) {
+    var payload = { tabWindow: tabWindow };
+    this.dispatch(constants.REVERT_TAB_WINDOW, payload);
+  },
+
   removeTabWindow: function(tabWindow) {
     var payload = { tabWindow: tabWindow };
     this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
