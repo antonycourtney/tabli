@@ -51,9 +51,9 @@
 	$ = __webpack_require__(/*! jquery */ 5);
 	
 	var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
-	var constants = __webpack_require__(/*! ./constants.js */ 1);
+	var constants = __webpack_require__(/*! ./constants.js */ 3);
 	var actions = __webpack_require__(/*! ./actions.js */ 2);
-	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 3);
+	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 1);
 	
 	'use strict';
 	var CONTEXT_MENU_ID = 99;
@@ -436,78 +436,6 @@
 
 /***/ },
 /* 1 */
-/*!*****************************!*\
-  !*** ./src/js/constants.js ***!
-  \*****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * constants for managing tab window Flux store
-	 */
-	'use strict';
-	
-	var constants = {
-	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
-	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
-	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
-	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
-	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
-	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW"
-	};
-	
-	module.exports = constants;
-
-/***/ },
-/* 2 */
-/*!***************************!*\
-  !*** ./src/js/actions.js ***!
-  \***************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	 * actions that can be sent to Flux store
-	 */
-	'use strict';
-	
-	var constants = __webpack_require__(/*! ./constants.js */ 1);
-	
-	var actions = {
-	  addTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
-	  },
-	
-	  closeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
-	  },
-	
-	  revertTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.REVERT_TAB_WINDOW, payload);
-	  },
-	
-	  removeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
-	  },
-	
-	  openTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
-	  },
-	
-	  // associate a Chrome window with a given tabWindow:
-	  attachChromeWindow: function(tabWindow,chromeWindow) {
-	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
-	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
-	  }
-	};
-	
-	module.exports = actions;
-
-/***/ },
-/* 3 */
 /*!**********************************!*\
   !*** ./src/js/tabWindowStore.js ***!
   \**********************************/
@@ -517,7 +445,7 @@
 	 * A Flux store for TabWindows
 	 */
 	 var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
-	 var constants = __webpack_require__(/*! ./constants.js */ 1);
+	 var constants = __webpack_require__(/*! ./constants.js */ 3);
 	
 	 var windowIdMap = {};
 	 var tabWindows = [];
@@ -711,15 +639,87 @@
 	module.exports = TabWindowStore;
 
 /***/ },
+/* 2 */
+/*!***************************!*\
+  !*** ./src/js/actions.js ***!
+  \***************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * actions that can be sent to Flux store
+	 */
+	'use strict';
+	
+	var constants = __webpack_require__(/*! ./constants.js */ 3);
+	
+	var actions = {
+	  addTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.ADD_TAB_WINDOW, payload);
+	  },
+	
+	  closeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+	  },
+	
+	  revertTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.REVERT_TAB_WINDOW, payload);
+	  },
+	
+	  removeTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
+	  },
+	
+	  openTabWindow: function(tabWindow) {
+	    var payload = { tabWindow: tabWindow };
+	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
+	  },
+	
+	  // associate a Chrome window with a given tabWindow:
+	  attachChromeWindow: function(tabWindow,chromeWindow) {
+	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
+	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
+	  }
+	};
+	
+	module.exports = actions;
+
+/***/ },
+/* 3 */
+/*!*****************************!*\
+  !*** ./src/js/constants.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * constants for managing tab window Flux store
+	 */
+	'use strict';
+	
+	var constants = {
+	  ADD_TAB_WINDOW: "ADD_TAB_WINDOW",
+	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
+	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
+	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
+	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW"
+	};
+	
+	module.exports = constants;
+
+/***/ },
 /* 4 */
 /*!****************************!*\
   !*** ./~/fluxxor/index.js ***!
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var Dispatcher = __webpack_require__(/*! ./lib/dispatcher */ 6),
-	    Flux = __webpack_require__(/*! ./lib/flux */ 7),
-	    FluxMixin = __webpack_require__(/*! ./lib/flux_mixin */ 8),
+	var Dispatcher = __webpack_require__(/*! ./lib/dispatcher */ 8),
+	    Flux = __webpack_require__(/*! ./lib/flux */ 6),
+	    FluxMixin = __webpack_require__(/*! ./lib/flux_mixin */ 7),
 	    FluxChildMixin = __webpack_require__(/*! ./lib/flux_child_mixin */ 9),
 	    StoreWatchMixin = __webpack_require__(/*! ./lib/store_watch_mixin */ 10),
 	    createStore = __webpack_require__(/*! ./lib/create_store */ 11);
@@ -9953,21 +9953,193 @@
 
 /***/ },
 /* 6 */
+/*!*******************************!*\
+  !*** ./~/fluxxor/lib/flux.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 15),
+	    inherits = __webpack_require__(/*! inherits */ 16),
+	    objectPath = __webpack_require__(/*! object-path */ 14),
+	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 17),
+	    _reduce = __webpack_require__(/*! lodash-node/modern/collection/reduce */ 18),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 22),
+	    _isString = __webpack_require__(/*! lodash-node/modern/lang/isString */ 23);
+	
+	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 8);
+	
+	var findLeaves = function(obj, path, callback) {
+	  path = path || [];
+	
+	  for (var key in obj) {
+	    if (obj.hasOwnProperty(key)) {
+	      if (_isFunction(obj[key])) {
+	        callback(path.concat(key), obj[key]);
+	      } else {
+	        findLeaves(obj[key], path.concat(key), callback);
+	      }
+	    }
+	  }
+	};
+	
+	var Flux = function(stores, actions) {
+	  EventEmitter.call(this);
+	  this.dispatcher = new Dispatcher(stores);
+	  this.actions = {};
+	  this.stores = {};
+	
+	  var dispatcher = this.dispatcher;
+	  var flux = this;
+	  this.dispatchBinder = {
+	    flux: flux,
+	    dispatch: function(type, payload) {
+	      try {
+	        flux.emit("dispatch", type, payload);
+	      } finally {
+	        dispatcher.dispatch({type: type, payload: payload});
+	      }
+	    }
+	  };
+	
+	  this.addActions(actions);
+	  this.addStores(stores);
+	};
+	
+	inherits(Flux, EventEmitter);
+	
+	Flux.prototype.addActions = function(actions) {
+	  findLeaves(actions, [], this.addAction.bind(this));
+	};
+	
+	// addAction has two signatures:
+	// 1: string[, string, string, string...], actionFunction
+	// 2: arrayOfStrings, actionFunction
+	Flux.prototype.addAction = function() {
+	  if (arguments.length < 2) {
+	    throw new Error("addAction requires at least two arguments, a string (or array of strings) and a function");
+	  }
+	
+	  var args = Array.prototype.slice.call(arguments);
+	
+	  if (!_isFunction(args[args.length - 1])) {
+	    throw new Error("The last argument to addAction must be a function");
+	  }
+	
+	  var func = args.pop().bind(this.dispatchBinder);
+	
+	  if (!_isString(args[0])) {
+	    args = args[0];
+	  }
+	
+	  var leadingPaths = _reduce(args, function(acc, next) {
+	    if (acc) {
+	      var nextPath = acc[acc.length - 1].concat([next]);
+	      return acc.concat([nextPath]);
+	    } else {
+	      return [[next]];
+	    }
+	  }, null);
+	
+	  // Detect trying to replace a function at any point in the path
+	  _each(leadingPaths, function(path) {
+	    if (_isFunction(objectPath.get(this.actions, path))) {
+	      throw new Error("An action named " + args.join(".") + " already exists");
+	    }
+	  }, this);
+	
+	  // Detect trying to replace a namespace at the final point in the path
+	  if (objectPath.get(this.actions, args)) {
+	    throw new Error("A namespace named " + args.join(".") + " already exists");
+	  }
+	
+	  objectPath.set(this.actions, args, func, true);
+	};
+	
+	Flux.prototype.store = function(name) {
+	  return this.stores[name];
+	};
+	
+	Flux.prototype.addStore = function(name, store) {
+	  if (name in this.stores) {
+	    throw new Error("A store named '" + name + "' already exists");
+	  }
+	  store.flux = this;
+	  this.stores[name] = store;
+	  this.dispatcher.addStore(name, store);
+	};
+	
+	Flux.prototype.addStores = function(stores) {
+	  for (var key in stores) {
+	    if (stores.hasOwnProperty(key)) {
+	      this.addStore(key, stores[key]);
+	    }
+	  }
+	};
+	
+	module.exports = Flux;
+
+
+/***/ },
+/* 7 */
+/*!*************************************!*\
+  !*** ./~/fluxxor/lib/flux_mixin.js ***!
+  \*************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var FluxMixin = function(React) {
+	  return {
+	    componentWillMount: function() {
+	      if (!this.props.flux && (!this.context || !this.context.flux)) {
+	        var namePart = this.constructor.displayName ? " of " + this.constructor.displayName : "";
+	        throw new Error("Could not find flux on this.props or this.context" + namePart);
+	      }
+	    },
+	
+	    childContextTypes: {
+	      flux: React.PropTypes.object
+	    },
+	
+	    contextTypes: {
+	      flux: React.PropTypes.object
+	    },
+	
+	    getChildContext: function() {
+	      return {
+	        flux: this.getFlux()
+	      };
+	    },
+	
+	    getFlux: function() {
+	      return this.props.flux || (this.context && this.context.flux);
+	    }
+	  };
+	};
+	
+	FluxMixin.componentWillMount = function() {
+	  throw new Error("Fluxxor.FluxMixin is a function that takes React as a " +
+	    "parameter and returns the mixin, e.g.: mixins: [Fluxxor.FluxMixin(React)]");
+	};
+	
+	module.exports = FluxMixin;
+
+
+/***/ },
+/* 8 */
 /*!*************************************!*\
   !*** ./~/fluxxor/lib/dispatcher.js ***!
   \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var _clone = __webpack_require__(/*! lodash-node/modern/lang/clone */ 21),
-	    _mapValues = __webpack_require__(/*! lodash-node/modern/object/mapValues */ 17),
-	    _forOwn = __webpack_require__(/*! lodash-node/modern/object/forOwn */ 18),
-	    _intersection = __webpack_require__(/*! lodash-node/modern/array/intersection */ 24),
-	    _keys = __webpack_require__(/*! lodash-node/modern/object/keys */ 19),
-	    _map = __webpack_require__(/*! lodash-node/modern/collection/map */ 27),
-	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 26),
-	    _size = __webpack_require__(/*! lodash-node/modern/collection/size */ 28),
-	    _findKey = __webpack_require__(/*! lodash-node/modern/object/findKey */ 20),
-	    _uniq = __webpack_require__(/*! lodash-node/modern/array/uniq */ 25);
+	    _mapValues = __webpack_require__(/*! lodash-node/modern/object/mapValues */ 24),
+	    _forOwn = __webpack_require__(/*! lodash-node/modern/object/forOwn */ 26),
+	    _intersection = __webpack_require__(/*! lodash-node/modern/array/intersection */ 28),
+	    _keys = __webpack_require__(/*! lodash-node/modern/object/keys */ 25),
+	    _map = __webpack_require__(/*! lodash-node/modern/collection/map */ 19),
+	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 17),
+	    _size = __webpack_require__(/*! lodash-node/modern/collection/size */ 20),
+	    _findKey = __webpack_require__(/*! lodash-node/modern/object/findKey */ 27),
+	    _uniq = __webpack_require__(/*! lodash-node/modern/array/uniq */ 29);
 	
 	var Dispatcher = function(stores) {
 	  this.stores = {};
@@ -10105,178 +10277,6 @@
 
 
 /***/ },
-/* 7 */
-/*!*******************************!*\
-  !*** ./~/fluxxor/lib/flux.js ***!
-  \*******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 14),
-	    inherits = __webpack_require__(/*! inherits */ 16),
-	    objectPath = __webpack_require__(/*! object-path */ 15),
-	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 26),
-	    _reduce = __webpack_require__(/*! lodash-node/modern/collection/reduce */ 29),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 22),
-	    _isString = __webpack_require__(/*! lodash-node/modern/lang/isString */ 23);
-	
-	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 6);
-	
-	var findLeaves = function(obj, path, callback) {
-	  path = path || [];
-	
-	  for (var key in obj) {
-	    if (obj.hasOwnProperty(key)) {
-	      if (_isFunction(obj[key])) {
-	        callback(path.concat(key), obj[key]);
-	      } else {
-	        findLeaves(obj[key], path.concat(key), callback);
-	      }
-	    }
-	  }
-	};
-	
-	var Flux = function(stores, actions) {
-	  EventEmitter.call(this);
-	  this.dispatcher = new Dispatcher(stores);
-	  this.actions = {};
-	  this.stores = {};
-	
-	  var dispatcher = this.dispatcher;
-	  var flux = this;
-	  this.dispatchBinder = {
-	    flux: flux,
-	    dispatch: function(type, payload) {
-	      try {
-	        flux.emit("dispatch", type, payload);
-	      } finally {
-	        dispatcher.dispatch({type: type, payload: payload});
-	      }
-	    }
-	  };
-	
-	  this.addActions(actions);
-	  this.addStores(stores);
-	};
-	
-	inherits(Flux, EventEmitter);
-	
-	Flux.prototype.addActions = function(actions) {
-	  findLeaves(actions, [], this.addAction.bind(this));
-	};
-	
-	// addAction has two signatures:
-	// 1: string[, string, string, string...], actionFunction
-	// 2: arrayOfStrings, actionFunction
-	Flux.prototype.addAction = function() {
-	  if (arguments.length < 2) {
-	    throw new Error("addAction requires at least two arguments, a string (or array of strings) and a function");
-	  }
-	
-	  var args = Array.prototype.slice.call(arguments);
-	
-	  if (!_isFunction(args[args.length - 1])) {
-	    throw new Error("The last argument to addAction must be a function");
-	  }
-	
-	  var func = args.pop().bind(this.dispatchBinder);
-	
-	  if (!_isString(args[0])) {
-	    args = args[0];
-	  }
-	
-	  var leadingPaths = _reduce(args, function(acc, next) {
-	    if (acc) {
-	      var nextPath = acc[acc.length - 1].concat([next]);
-	      return acc.concat([nextPath]);
-	    } else {
-	      return [[next]];
-	    }
-	  }, null);
-	
-	  // Detect trying to replace a function at any point in the path
-	  _each(leadingPaths, function(path) {
-	    if (_isFunction(objectPath.get(this.actions, path))) {
-	      throw new Error("An action named " + args.join(".") + " already exists");
-	    }
-	  }, this);
-	
-	  // Detect trying to replace a namespace at the final point in the path
-	  if (objectPath.get(this.actions, args)) {
-	    throw new Error("A namespace named " + args.join(".") + " already exists");
-	  }
-	
-	  objectPath.set(this.actions, args, func, true);
-	};
-	
-	Flux.prototype.store = function(name) {
-	  return this.stores[name];
-	};
-	
-	Flux.prototype.addStore = function(name, store) {
-	  if (name in this.stores) {
-	    throw new Error("A store named '" + name + "' already exists");
-	  }
-	  store.flux = this;
-	  this.stores[name] = store;
-	  this.dispatcher.addStore(name, store);
-	};
-	
-	Flux.prototype.addStores = function(stores) {
-	  for (var key in stores) {
-	    if (stores.hasOwnProperty(key)) {
-	      this.addStore(key, stores[key]);
-	    }
-	  }
-	};
-	
-	module.exports = Flux;
-
-
-/***/ },
-/* 8 */
-/*!*************************************!*\
-  !*** ./~/fluxxor/lib/flux_mixin.js ***!
-  \*************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var FluxMixin = function(React) {
-	  return {
-	    componentWillMount: function() {
-	      if (!this.props.flux && (!this.context || !this.context.flux)) {
-	        var namePart = this.constructor.displayName ? " of " + this.constructor.displayName : "";
-	        throw new Error("Could not find flux on this.props or this.context" + namePart);
-	      }
-	    },
-	
-	    childContextTypes: {
-	      flux: React.PropTypes.object
-	    },
-	
-	    contextTypes: {
-	      flux: React.PropTypes.object
-	    },
-	
-	    getChildContext: function() {
-	      return {
-	        flux: this.getFlux()
-	      };
-	    },
-	
-	    getFlux: function() {
-	      return this.props.flux || (this.context && this.context.flux);
-	    }
-	  };
-	};
-	
-	FluxMixin.componentWillMount = function() {
-	  throw new Error("Fluxxor.FluxMixin is a function that takes React as a " +
-	    "parameter and returns the mixin, e.g.: mixins: [Fluxxor.FluxMixin(React)]");
-	};
-	
-	module.exports = FluxMixin;
-
-
-/***/ },
 /* 9 */
 /*!*******************************************!*\
   !*** ./~/fluxxor/lib/flux_child_mixin.js ***!
@@ -10319,7 +10319,7 @@
   \********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 26);
+	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 17);
 	
 	var StoreWatchMixin = function() {
 	  var storeNames = Array.prototype.slice.call(arguments);
@@ -10366,7 +10366,7 @@
   \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 26),
+	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 17),
 	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 22),
 	    Store = __webpack_require__(/*! ./store */ 13),
 	    inherits = __webpack_require__(/*! inherits */ 16);
@@ -10424,7 +10424,7 @@
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 14),
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 15),
 	    inherits = __webpack_require__(/*! inherits */ 16),
 	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 22),
 	    _isObject = __webpack_require__(/*! lodash-node/modern/lang/isObject */ 30);
@@ -10498,244 +10498,6 @@
 
 /***/ },
 /* 14 */
-/*!********************************************!*\
-  !*** ./~/fluxxor/~/eventemitter3/index.js ***!
-  \********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	/**
-	 * Representation of a single EventEmitter function.
-	 *
-	 * @param {Function} fn Event handler to be called.
-	 * @param {Mixed} context Context for function execution.
-	 * @param {Boolean} once Only emit once
-	 * @api private
-	 */
-	function EE(fn, context, once) {
-	  this.fn = fn;
-	  this.context = context;
-	  this.once = once || false;
-	}
-	
-	/**
-	 * Minimal EventEmitter interface that is molded against the Node.js
-	 * EventEmitter interface.
-	 *
-	 * @constructor
-	 * @api public
-	 */
-	function EventEmitter() { /* Nothing to set */ }
-	
-	/**
-	 * Holds the assigned EventEmitters by name.
-	 *
-	 * @type {Object}
-	 * @private
-	 */
-	EventEmitter.prototype._events = undefined;
-	
-	/**
-	 * Return a list of assigned event listeners.
-	 *
-	 * @param {String} event The events that should be listed.
-	 * @returns {Array}
-	 * @api public
-	 */
-	EventEmitter.prototype.listeners = function listeners(event) {
-	  if (!this._events || !this._events[event]) return [];
-	  if (this._events[event].fn) return [this._events[event].fn];
-	
-	  for (var i = 0, l = this._events[event].length, ee = new Array(l); i < l; i++) {
-	    ee[i] = this._events[event][i].fn;
-	  }
-	
-	  return ee;
-	};
-	
-	/**
-	 * Emit an event to all registered event listeners.
-	 *
-	 * @param {String} event The name of the event.
-	 * @returns {Boolean} Indication if we've emitted an event.
-	 * @api public
-	 */
-	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-	  if (!this._events || !this._events[event]) return false;
-	
-	  var listeners = this._events[event]
-	    , len = arguments.length
-	    , args
-	    , i;
-	
-	  if ('function' === typeof listeners.fn) {
-	    if (listeners.once) this.removeListener(event, listeners.fn, true);
-	
-	    switch (len) {
-	      case 1: return listeners.fn.call(listeners.context), true;
-	      case 2: return listeners.fn.call(listeners.context, a1), true;
-	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
-	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
-	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-	    }
-	
-	    for (i = 1, args = new Array(len -1); i < len; i++) {
-	      args[i - 1] = arguments[i];
-	    }
-	
-	    listeners.fn.apply(listeners.context, args);
-	  } else {
-	    var length = listeners.length
-	      , j;
-	
-	    for (i = 0; i < length; i++) {
-	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, true);
-	
-	      switch (len) {
-	        case 1: listeners[i].fn.call(listeners[i].context); break;
-	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
-	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
-	        default:
-	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
-	            args[j - 1] = arguments[j];
-	          }
-	
-	          listeners[i].fn.apply(listeners[i].context, args);
-	      }
-	    }
-	  }
-	
-	  return true;
-	};
-	
-	/**
-	 * Register a new EventListener for the given event.
-	 *
-	 * @param {String} event Name of the event.
-	 * @param {Functon} fn Callback function.
-	 * @param {Mixed} context The context of the function.
-	 * @api public
-	 */
-	EventEmitter.prototype.on = function on(event, fn, context) {
-	  var listener = new EE(fn, context || this);
-	
-	  if (!this._events) this._events = {};
-	  if (!this._events[event]) this._events[event] = listener;
-	  else {
-	    if (!this._events[event].fn) this._events[event].push(listener);
-	    else this._events[event] = [
-	      this._events[event], listener
-	    ];
-	  }
-	
-	  return this;
-	};
-	
-	/**
-	 * Add an EventListener that's only called once.
-	 *
-	 * @param {String} event Name of the event.
-	 * @param {Function} fn Callback function.
-	 * @param {Mixed} context The context of the function.
-	 * @api public
-	 */
-	EventEmitter.prototype.once = function once(event, fn, context) {
-	  var listener = new EE(fn, context || this, true);
-	
-	  if (!this._events) this._events = {};
-	  if (!this._events[event]) this._events[event] = listener;
-	  else {
-	    if (!this._events[event].fn) this._events[event].push(listener);
-	    else this._events[event] = [
-	      this._events[event], listener
-	    ];
-	  }
-	
-	  return this;
-	};
-	
-	/**
-	 * Remove event listeners.
-	 *
-	 * @param {String} event The event we want to remove.
-	 * @param {Function} fn The listener that we need to find.
-	 * @param {Boolean} once Only remove once listeners.
-	 * @api public
-	 */
-	EventEmitter.prototype.removeListener = function removeListener(event, fn, once) {
-	  if (!this._events || !this._events[event]) return this;
-	
-	  var listeners = this._events[event]
-	    , events = [];
-	
-	  if (fn) {
-	    if (listeners.fn && (listeners.fn !== fn || (once && !listeners.once))) {
-	      events.push(listeners);
-	    }
-	    if (!listeners.fn) for (var i = 0, length = listeners.length; i < length; i++) {
-	      if (listeners[i].fn !== fn || (once && !listeners[i].once)) {
-	        events.push(listeners[i]);
-	      }
-	    }
-	  }
-	
-	  //
-	  // Reset the array, or remove it completely if we have no more listeners.
-	  //
-	  if (events.length) {
-	    this._events[event] = events.length === 1 ? events[0] : events;
-	  } else {
-	    delete this._events[event];
-	  }
-	
-	  return this;
-	};
-	
-	/**
-	 * Remove all listeners or only the listeners for the specified event.
-	 *
-	 * @param {String} event The event want to remove all listeners for.
-	 * @api public
-	 */
-	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
-	  if (!this._events) return this;
-	
-	  if (event) delete this._events[event];
-	  else this._events = {};
-	
-	  return this;
-	};
-	
-	//
-	// Alias methods names because people roll like that.
-	//
-	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
-	
-	//
-	// This function doesn't apply anymore.
-	//
-	EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
-	  return this;
-	};
-	
-	//
-	// Expose the module.
-	//
-	EventEmitter.EventEmitter = EventEmitter;
-	EventEmitter.EventEmitter2 = EventEmitter;
-	EventEmitter.EventEmitter3 = EventEmitter;
-	
-	//
-	// Expose the module.
-	//
-	module.exports = EventEmitter;
-
-
-/***/ },
-/* 15 */
 /*!******************************************!*\
   !*** ./~/fluxxor/~/object-path/index.js ***!
   \******************************************/
@@ -10984,6 +10746,244 @@
 	});
 
 /***/ },
+/* 15 */
+/*!********************************************!*\
+  !*** ./~/fluxxor/~/eventemitter3/index.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	/**
+	 * Representation of a single EventEmitter function.
+	 *
+	 * @param {Function} fn Event handler to be called.
+	 * @param {Mixed} context Context for function execution.
+	 * @param {Boolean} once Only emit once
+	 * @api private
+	 */
+	function EE(fn, context, once) {
+	  this.fn = fn;
+	  this.context = context;
+	  this.once = once || false;
+	}
+	
+	/**
+	 * Minimal EventEmitter interface that is molded against the Node.js
+	 * EventEmitter interface.
+	 *
+	 * @constructor
+	 * @api public
+	 */
+	function EventEmitter() { /* Nothing to set */ }
+	
+	/**
+	 * Holds the assigned EventEmitters by name.
+	 *
+	 * @type {Object}
+	 * @private
+	 */
+	EventEmitter.prototype._events = undefined;
+	
+	/**
+	 * Return a list of assigned event listeners.
+	 *
+	 * @param {String} event The events that should be listed.
+	 * @returns {Array}
+	 * @api public
+	 */
+	EventEmitter.prototype.listeners = function listeners(event) {
+	  if (!this._events || !this._events[event]) return [];
+	  if (this._events[event].fn) return [this._events[event].fn];
+	
+	  for (var i = 0, l = this._events[event].length, ee = new Array(l); i < l; i++) {
+	    ee[i] = this._events[event][i].fn;
+	  }
+	
+	  return ee;
+	};
+	
+	/**
+	 * Emit an event to all registered event listeners.
+	 *
+	 * @param {String} event The name of the event.
+	 * @returns {Boolean} Indication if we've emitted an event.
+	 * @api public
+	 */
+	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+	  if (!this._events || !this._events[event]) return false;
+	
+	  var listeners = this._events[event]
+	    , len = arguments.length
+	    , args
+	    , i;
+	
+	  if ('function' === typeof listeners.fn) {
+	    if (listeners.once) this.removeListener(event, listeners.fn, true);
+	
+	    switch (len) {
+	      case 1: return listeners.fn.call(listeners.context), true;
+	      case 2: return listeners.fn.call(listeners.context, a1), true;
+	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+	    }
+	
+	    for (i = 1, args = new Array(len -1); i < len; i++) {
+	      args[i - 1] = arguments[i];
+	    }
+	
+	    listeners.fn.apply(listeners.context, args);
+	  } else {
+	    var length = listeners.length
+	      , j;
+	
+	    for (i = 0; i < length; i++) {
+	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, true);
+	
+	      switch (len) {
+	        case 1: listeners[i].fn.call(listeners[i].context); break;
+	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+	        default:
+	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+	            args[j - 1] = arguments[j];
+	          }
+	
+	          listeners[i].fn.apply(listeners[i].context, args);
+	      }
+	    }
+	  }
+	
+	  return true;
+	};
+	
+	/**
+	 * Register a new EventListener for the given event.
+	 *
+	 * @param {String} event Name of the event.
+	 * @param {Functon} fn Callback function.
+	 * @param {Mixed} context The context of the function.
+	 * @api public
+	 */
+	EventEmitter.prototype.on = function on(event, fn, context) {
+	  var listener = new EE(fn, context || this);
+	
+	  if (!this._events) this._events = {};
+	  if (!this._events[event]) this._events[event] = listener;
+	  else {
+	    if (!this._events[event].fn) this._events[event].push(listener);
+	    else this._events[event] = [
+	      this._events[event], listener
+	    ];
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Add an EventListener that's only called once.
+	 *
+	 * @param {String} event Name of the event.
+	 * @param {Function} fn Callback function.
+	 * @param {Mixed} context The context of the function.
+	 * @api public
+	 */
+	EventEmitter.prototype.once = function once(event, fn, context) {
+	  var listener = new EE(fn, context || this, true);
+	
+	  if (!this._events) this._events = {};
+	  if (!this._events[event]) this._events[event] = listener;
+	  else {
+	    if (!this._events[event].fn) this._events[event].push(listener);
+	    else this._events[event] = [
+	      this._events[event], listener
+	    ];
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Remove event listeners.
+	 *
+	 * @param {String} event The event we want to remove.
+	 * @param {Function} fn The listener that we need to find.
+	 * @param {Boolean} once Only remove once listeners.
+	 * @api public
+	 */
+	EventEmitter.prototype.removeListener = function removeListener(event, fn, once) {
+	  if (!this._events || !this._events[event]) return this;
+	
+	  var listeners = this._events[event]
+	    , events = [];
+	
+	  if (fn) {
+	    if (listeners.fn && (listeners.fn !== fn || (once && !listeners.once))) {
+	      events.push(listeners);
+	    }
+	    if (!listeners.fn) for (var i = 0, length = listeners.length; i < length; i++) {
+	      if (listeners[i].fn !== fn || (once && !listeners[i].once)) {
+	        events.push(listeners[i]);
+	      }
+	    }
+	  }
+	
+	  //
+	  // Reset the array, or remove it completely if we have no more listeners.
+	  //
+	  if (events.length) {
+	    this._events[event] = events.length === 1 ? events[0] : events;
+	  } else {
+	    delete this._events[event];
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Remove all listeners or only the listeners for the specified event.
+	 *
+	 * @param {String} event The event want to remove all listeners for.
+	 * @api public
+	 */
+	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+	  if (!this._events) return this;
+	
+	  if (event) delete this._events[event];
+	  else this._events = {};
+	
+	  return this;
+	};
+	
+	//
+	// Alias methods names because people roll like that.
+	//
+	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+	
+	//
+	// This function doesn't apply anymore.
+	//
+	EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
+	  return this;
+	};
+	
+	//
+	// Expose the module.
+	//
+	EventEmitter.EventEmitter = EventEmitter;
+	EventEmitter.EventEmitter2 = EventEmitter;
+	EventEmitter.EventEmitter3 = EventEmitter;
+	
+	//
+	// Expose the module.
+	//
+	module.exports = EventEmitter;
+
+
+/***/ },
 /* 16 */
 /*!**************************************************!*\
   !*** ./~/fluxxor/~/inherits/inherits_browser.js ***!
@@ -11017,186 +11017,128 @@
 
 /***/ },
 /* 17 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/mapValues.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/forEach.js ***!
+  \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 31),
-	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 32);
+	var arrayEach = __webpack_require__(/*! ../internal/arrayEach */ 37),
+	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 33),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 38),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35);
 	
 	/**
-	 * Creates an object with the same keys as `object` and values generated by
-	 * running each own enumerable property of `object` through `iteratee`. The
-	 * iteratee function is bound to `thisArg` and invoked with three arguments;
-	 * (value, key, object).
+	 * Iterates over elements of `collection` invoking `iteratee` for each element.
+	 * The `iteratee` is bound to `thisArg` and invoked with three arguments;
+	 * (value, index|key, collection). Iterator functions may exit iteration early
+	 * by explicitly returning `false`.
 	 *
-	 * If a property name is provided for `iteratee` the created `_.property`
-	 * style callback returns the property value of the given element.
-	 *
-	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
-	 * style callback returns `true` for elements that have a matching property
-	 * value, else `false`.
-	 *
-	 * If an object is provided for `iteratee` the created `_.matches` style
-	 * callback returns `true` for elements that have the properties of the given
-	 * object, else `false`.
+	 * **Note:** As with other "Collections" methods, objects with a `length` property
+	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+	 * may be used for object iteration.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
-	 *  per iteration.
+	 * @alias each
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
 	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Object} Returns the new mapped object.
+	 * @returns {Array|Object|string} Returns `collection`.
 	 * @example
 	 *
-	 * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
-	 *   return n * 3;
+	 * _([1, 2]).forEach(function(n) {
+	 *   console.log(n);
+	 * }).value();
+	 * // => logs each value from left to right and returns the array
+	 *
+	 * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
+	 *   console.log(n, key);
 	 * });
-	 * // => { 'a': 3, 'b': 6 }
-	 *
-	 * var users = {
-	 *   'fred':    { 'user': 'fred',    'age': 40 },
-	 *   'pebbles': { 'user': 'pebbles', 'age': 1 }
-	 * };
-	 *
-	 * // using the `_.property` callback shorthand
-	 * _.mapValues(users, 'age');
-	 * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
+	 * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
 	 */
-	function mapValues(object, iteratee, thisArg) {
-	  var result = {};
-	  iteratee = baseCallback(iteratee, thisArg, 3);
-	
-	  baseForOwn(object, function(value, key, object) {
-	    result[key] = iteratee(value, key, object);
-	  });
-	  return result;
+	function forEach(collection, iteratee, thisArg) {
+	  return (typeof iteratee == 'function' && typeof thisArg == 'undefined' && isArray(collection))
+	    ? arrayEach(collection, iteratee)
+	    : baseEach(collection, bindCallback(iteratee, thisArg, 3));
 	}
 	
-	module.exports = mapValues;
+	module.exports = forEach;
 
 
 /***/ },
 /* 18 */
-/*!*********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/forOwn.js ***!
-  \*********************************************************/
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/reduce.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 32),
-	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 37);
+	var arrayReduce = __webpack_require__(/*! ../internal/arrayReduce */ 34),
+	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 32),
+	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 33),
+	    baseReduce = __webpack_require__(/*! ../internal/baseReduce */ 36),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35);
 	
 	/**
-	 * Iterates over own enumerable properties of an object invoking `iteratee`
-	 * for each property. The `iteratee` is bound to `thisArg` and invoked with
-	 * three arguments; (value, key, object). Iterator functions may exit iteration
-	 * early by explicitly returning `false`.
+	 * Reduces `collection` to a value which is the accumulated result of running
+	 * each element in `collection` through `iteratee`, where each successive
+	 * invocation is supplied the return value of the previous. If `accumulator`
+	 * is not provided the first element of `collection` is used as the initial
+	 * value. The `iteratee` is bound to `thisArg`and invoked with four arguments;
+	 * (accumulator, value, index|key, collection).
+	 *
+	 * Many lodash methods are guarded to work as interatees for methods like
+	 * `_.reduce`, `_.reduceRight`, and `_.transform`.
+	 *
+	 * The guarded methods are:
+	 * `assign`, `defaults`, `merge`, and `sortAllBy`
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to iterate over.
+	 * @alias foldl, inject
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
 	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [accumulator] The initial value.
 	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Object} Returns `object`.
+	 * @returns {*} Returns the accumulated value.
 	 * @example
 	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 *   this.b = 2;
-	 * }
-	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.forOwn(new Foo, function(value, key) {
-	 *   console.log(key);
+	 * _.reduce([1, 2], function(sum, n) {
+	 *   return sum + n;
 	 * });
-	 * // => logs 'a' and 'b' (iteration order is not guaranteed)
+	 * // => 3
+	 *
+	 * _.reduce({ 'a': 1, 'b': 2 }, function(result, n, key) {
+	 *   result[key] = n * 3;
+	 *   return result;
+	 * }, {});
+	 * // => { 'a': 3, 'b': 6 } (iteration order is not guaranteed)
 	 */
-	function forOwn(object, iteratee, thisArg) {
-	  if (typeof iteratee != 'function' || typeof thisArg != 'undefined') {
-	    iteratee = bindCallback(iteratee, thisArg, 3);
-	  }
-	  return baseForOwn(object, iteratee);
+	function reduce(collection, iteratee, accumulator, thisArg) {
+	  var func = isArray(collection) ? arrayReduce : baseReduce;
+	  return func(collection, baseCallback(iteratee, thisArg, 4), accumulator, arguments.length < 3, baseEach);
 	}
 	
-	module.exports = forOwn;
+	module.exports = reduce;
 
 
 /***/ },
 /* 19 */
-/*!*******************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/keys.js ***!
-  \*******************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 34),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 33),
-	    isObject = __webpack_require__(/*! ../lang/isObject */ 30),
-	    shimKeys = __webpack_require__(/*! ../internal/shimKeys */ 35);
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
-	
-	/**
-	 * Creates an array of the own enumerable property names of `object`.
-	 *
-	 * **Note:** Non-object values are coerced to objects. See the
-	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.keys)
-	 * for more details.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to inspect.
-	 * @returns {Array} Returns the array of property names.
-	 * @example
-	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 *   this.b = 2;
-	 * }
-	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.keys(new Foo);
-	 * // => ['a', 'b'] (iteration order is not guaranteed)
-	 *
-	 * _.keys('hi');
-	 * // => ['0', '1']
-	 */
-	var keys = !nativeKeys ? shimKeys : function(object) {
-	  if (object) {
-	    var Ctor = object.constructor,
-	        length = object.length;
-	  }
-	  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
-	     (typeof object != 'function' && (length && isLength(length)))) {
-	    return shimKeys(object);
-	  }
-	  return isObject(object) ? nativeKeys(object) : [];
-	};
-	
-	module.exports = keys;
-
-
-/***/ },
-/* 20 */
 /*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/findKey.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/map.js ***!
   \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 31),
-	    baseFind = __webpack_require__(/*! ../internal/baseFind */ 36),
-	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 32);
+	var arrayMap = __webpack_require__(/*! ../internal/arrayMap */ 39),
+	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 32),
+	    baseMap = __webpack_require__(/*! ../internal/baseMap */ 40),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35);
 	
 	/**
-	 * This method is like `_.findIndex` except that it returns the key of the
-	 * first element `predicate` returns truthy for, instead of the element itself.
+	 * Creates an array of values by running each element in `collection` through
+	 * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
+	 * arguments; (value, index|key, collection).
 	 *
 	 * If a property name is provided for `predicate` the created `_.property`
 	 * style callback returns the property value of the given element.
@@ -11209,45 +11151,91 @@
 	 * callback returns `true` for elements that have the properties of the given
 	 * object, else `false`.
 	 *
+	 * Many lodash methods are guarded to work as interatees for methods like
+	 * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
+	 *
+	 * The guarded methods are:
+	 * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`, `drop`,
+	 * `dropRight`, `fill`, `flatten`, `invert`, `max`, `min`, `parseInt`, `slice`,
+	 * `sortBy`, `take`, `takeRight`, `template`, `trim`, `trimLeft`, `trimRight`,
+	 * `trunc`, `random`, `range`, `sample`, `uniq`, and `words`
+	 *
 	 * @static
 	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to search.
-	 * @param {Function|Object|string} [predicate=_.identity] The function invoked
+	 * @alias collect
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
 	 *  per iteration.
-	 * @param {*} [thisArg] The `this` binding of `predicate`.
-	 * @returns {string|undefined} Returns the key of the matched element, else `undefined`.
+	 *  create a `_.property` or `_.matches` style callback respectively.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Array} Returns the new mapped array.
 	 * @example
 	 *
-	 * var users = {
-	 *   'barney':  { 'age': 36, 'active': true },
-	 *   'fred':    { 'age': 40, 'active': false },
-	 *   'pebbles': { 'age': 1,  'active': true }
-	 * };
+	 * function timesThree(n) {
+	 *   return n * 3;
+	 * }
 	 *
-	 * _.findKey(users, function(chr) {
-	 *   return chr.age < 40;
-	 * });
-	 * // => 'barney' (iteration order is not guaranteed)
+	 * _.map([1, 2], timesThree);
+	 * // => [3, 6]
 	 *
-	 * // using the `_.matches` callback shorthand
-	 * _.findKey(users, { 'age': 1, 'active': true });
-	 * // => 'pebbles'
+	 * _.map({ 'a': 1, 'b': 2 }, timesThree);
+	 * // => [3, 6] (iteration order is not guaranteed)
 	 *
-	 * // using the `_.matchesProperty` callback shorthand
-	 * _.findKey(users, 'active', false);
-	 * // => 'fred'
+	 * var users = [
+	 *   { 'user': 'barney' },
+	 *   { 'user': 'fred' }
+	 * ];
 	 *
 	 * // using the `_.property` callback shorthand
-	 * _.findKey(users, 'active');
-	 * // => 'barney'
+	 * _.map(users, 'user');
+	 * // => ['barney', 'fred']
 	 */
-	function findKey(object, predicate, thisArg) {
-	  predicate = baseCallback(predicate, thisArg, 3);
-	  return baseFind(object, predicate, baseForOwn, true);
+	function map(collection, iteratee, thisArg) {
+	  var func = isArray(collection) ? arrayMap : baseMap;
+	  iteratee = baseCallback(iteratee, thisArg, 3);
+	  return func(collection, iteratee);
 	}
 	
-	module.exports = findKey;
+	module.exports = map;
+
+
+/***/ },
+/* 20 */
+/*!***********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/size.js ***!
+  \***********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 31),
+	    keys = __webpack_require__(/*! ../object/keys */ 25);
+	
+	/**
+	 * Gets the size of `collection` by returning `collection.length` for
+	 * array-like values or the number of own enumerable properties for objects.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to inspect.
+	 * @returns {number} Returns the size of `collection`.
+	 * @example
+	 *
+	 * _.size([1, 2, 3]);
+	 * // => 3
+	 *
+	 * _.size({ 'a': 1, 'b': 2 });
+	 * // => 2
+	 *
+	 * _.size('pebbles');
+	 * // => 7
+	 */
+	function size(collection) {
+	  var length = collection ? collection.length : 0;
+	  return isLength(length) ? length : keys(collection).length;
+	}
+	
+	module.exports = size;
 
 
 /***/ },
@@ -11257,9 +11245,9 @@
   \******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseClone = __webpack_require__(/*! ../internal/baseClone */ 51),
-	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 37),
-	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 47);
+	var baseClone = __webpack_require__(/*! ../internal/baseClone */ 52),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 38),
+	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 45);
 	
 	/**
 	 * Creates a clone of `value`. If `isDeep` is `true` nested objects are cloned,
@@ -11335,8 +11323,8 @@
   \***********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var baseIsFunction = __webpack_require__(/*! ../internal/baseIsFunction */ 50),
-	    isNative = __webpack_require__(/*! ./isNative */ 33);
+	/* WEBPACK VAR INJECTION */(function(global) {var baseIsFunction = __webpack_require__(/*! ../internal/baseIsFunction */ 51),
+	    isNative = __webpack_require__(/*! ./isNative */ 42);
 	
 	/** `Object#toString` result references. */
 	var funcTag = '[object Function]';
@@ -11388,7 +11376,7 @@
   \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 52);
+	var isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 50);
 	
 	/** `Object#toString` result references. */
 	var stringTag = '[object String]';
@@ -11428,16 +11416,251 @@
 
 /***/ },
 /* 24 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/mapValues.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 32),
+	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 41);
+	
+	/**
+	 * Creates an object with the same keys as `object` and values generated by
+	 * running each own enumerable property of `object` through `iteratee`. The
+	 * iteratee function is bound to `thisArg` and invoked with three arguments;
+	 * (value, key, object).
+	 *
+	 * If a property name is provided for `iteratee` the created `_.property`
+	 * style callback returns the property value of the given element.
+	 *
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `iteratee` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+	 *  per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Object} Returns the new mapped object.
+	 * @example
+	 *
+	 * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
+	 *   return n * 3;
+	 * });
+	 * // => { 'a': 3, 'b': 6 }
+	 *
+	 * var users = {
+	 *   'fred':    { 'user': 'fred',    'age': 40 },
+	 *   'pebbles': { 'user': 'pebbles', 'age': 1 }
+	 * };
+	 *
+	 * // using the `_.property` callback shorthand
+	 * _.mapValues(users, 'age');
+	 * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
+	 */
+	function mapValues(object, iteratee, thisArg) {
+	  var result = {};
+	  iteratee = baseCallback(iteratee, thisArg, 3);
+	
+	  baseForOwn(object, function(value, key, object) {
+	    result[key] = iteratee(value, key, object);
+	  });
+	  return result;
+	}
+	
+	module.exports = mapValues;
+
+
+/***/ },
+/* 25 */
+/*!*******************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/keys.js ***!
+  \*******************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 31),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 42),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 30),
+	    shimKeys = __webpack_require__(/*! ../internal/shimKeys */ 44);
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
+	
+	/**
+	 * Creates an array of the own enumerable property names of `object`.
+	 *
+	 * **Note:** Non-object values are coerced to objects. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.keys)
+	 * for more details.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to inspect.
+	 * @returns {Array} Returns the array of property names.
+	 * @example
+	 *
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.keys(new Foo);
+	 * // => ['a', 'b'] (iteration order is not guaranteed)
+	 *
+	 * _.keys('hi');
+	 * // => ['0', '1']
+	 */
+	var keys = !nativeKeys ? shimKeys : function(object) {
+	  if (object) {
+	    var Ctor = object.constructor,
+	        length = object.length;
+	  }
+	  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+	     (typeof object != 'function' && (length && isLength(length)))) {
+	    return shimKeys(object);
+	  }
+	  return isObject(object) ? nativeKeys(object) : [];
+	};
+	
+	module.exports = keys;
+
+
+/***/ },
+/* 26 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/forOwn.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 41),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 38);
+	
+	/**
+	 * Iterates over own enumerable properties of an object invoking `iteratee`
+	 * for each property. The `iteratee` is bound to `thisArg` and invoked with
+	 * three arguments; (value, key, object). Iterator functions may exit iteration
+	 * early by explicitly returning `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Object} Returns `object`.
+	 * @example
+	 *
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.forOwn(new Foo, function(value, key) {
+	 *   console.log(key);
+	 * });
+	 * // => logs 'a' and 'b' (iteration order is not guaranteed)
+	 */
+	function forOwn(object, iteratee, thisArg) {
+	  if (typeof iteratee != 'function' || typeof thisArg != 'undefined') {
+	    iteratee = bindCallback(iteratee, thisArg, 3);
+	  }
+	  return baseForOwn(object, iteratee);
+	}
+	
+	module.exports = forOwn;
+
+
+/***/ },
+/* 27 */
+/*!**********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/findKey.js ***!
+  \**********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 32),
+	    baseFind = __webpack_require__(/*! ../internal/baseFind */ 43),
+	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 41);
+	
+	/**
+	 * This method is like `_.findIndex` except that it returns the key of the
+	 * first element `predicate` returns truthy for, instead of the element itself.
+	 *
+	 * If a property name is provided for `predicate` the created `_.property`
+	 * style callback returns the property value of the given element.
+	 *
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `predicate` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to search.
+	 * @param {Function|Object|string} [predicate=_.identity] The function invoked
+	 *  per iteration.
+	 * @param {*} [thisArg] The `this` binding of `predicate`.
+	 * @returns {string|undefined} Returns the key of the matched element, else `undefined`.
+	 * @example
+	 *
+	 * var users = {
+	 *   'barney':  { 'age': 36, 'active': true },
+	 *   'fred':    { 'age': 40, 'active': false },
+	 *   'pebbles': { 'age': 1,  'active': true }
+	 * };
+	 *
+	 * _.findKey(users, function(chr) {
+	 *   return chr.age < 40;
+	 * });
+	 * // => 'barney' (iteration order is not guaranteed)
+	 *
+	 * // using the `_.matches` callback shorthand
+	 * _.findKey(users, { 'age': 1, 'active': true });
+	 * // => 'pebbles'
+	 *
+	 * // using the `_.matchesProperty` callback shorthand
+	 * _.findKey(users, 'active', false);
+	 * // => 'fred'
+	 *
+	 * // using the `_.property` callback shorthand
+	 * _.findKey(users, 'active');
+	 * // => 'barney'
+	 */
+	function findKey(object, predicate, thisArg) {
+	  predicate = baseCallback(predicate, thisArg, 3);
+	  return baseFind(object, predicate, baseForOwn, true);
+	}
+	
+	module.exports = findKey;
+
+
+/***/ },
+/* 28 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/array/intersection.js ***!
   \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIndexOf = __webpack_require__(/*! ../internal/baseIndexOf */ 44),
-	    cacheIndexOf = __webpack_require__(/*! ../internal/cacheIndexOf */ 43),
-	    createCache = __webpack_require__(/*! ../internal/createCache */ 46),
-	    isArguments = __webpack_require__(/*! ../lang/isArguments */ 45),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38);
+	var baseIndexOf = __webpack_require__(/*! ../internal/baseIndexOf */ 46),
+	    cacheIndexOf = __webpack_require__(/*! ../internal/cacheIndexOf */ 47),
+	    createCache = __webpack_require__(/*! ../internal/createCache */ 48),
+	    isArguments = __webpack_require__(/*! ../lang/isArguments */ 49),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35);
 	
 	/**
 	 * Creates an array of unique values in all provided arrays using `SameValueZero`
@@ -11503,16 +11726,16 @@
 
 
 /***/ },
-/* 25 */
+/* 29 */
 /*!******************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/array/uniq.js ***!
   \******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 31),
-	    baseUniq = __webpack_require__(/*! ../internal/baseUniq */ 48),
-	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 47),
-	    sortedUniq = __webpack_require__(/*! ../internal/sortedUniq */ 49);
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 32),
+	    baseUniq = __webpack_require__(/*! ../internal/baseUniq */ 53),
+	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 45),
+	    sortedUniq = __webpack_require__(/*! ../internal/sortedUniq */ 54);
 	
 	/**
 	 * Creates a duplicate-value-free version of an array using `SameValueZero`
@@ -11586,229 +11809,6 @@
 
 
 /***/ },
-/* 26 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/forEach.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var arrayEach = __webpack_require__(/*! ../internal/arrayEach */ 42),
-	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 41),
-	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 37),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38);
-	
-	/**
-	 * Iterates over elements of `collection` invoking `iteratee` for each element.
-	 * The `iteratee` is bound to `thisArg` and invoked with three arguments;
-	 * (value, index|key, collection). Iterator functions may exit iteration early
-	 * by explicitly returning `false`.
-	 *
-	 * **Note:** As with other "Collections" methods, objects with a `length` property
-	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
-	 * may be used for object iteration.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias each
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Array|Object|string} Returns `collection`.
-	 * @example
-	 *
-	 * _([1, 2]).forEach(function(n) {
-	 *   console.log(n);
-	 * }).value();
-	 * // => logs each value from left to right and returns the array
-	 *
-	 * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
-	 *   console.log(n, key);
-	 * });
-	 * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
-	 */
-	function forEach(collection, iteratee, thisArg) {
-	  return (typeof iteratee == 'function' && typeof thisArg == 'undefined' && isArray(collection))
-	    ? arrayEach(collection, iteratee)
-	    : baseEach(collection, bindCallback(iteratee, thisArg, 3));
-	}
-	
-	module.exports = forEach;
-
-
-/***/ },
-/* 27 */
-/*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/map.js ***!
-  \**********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var arrayMap = __webpack_require__(/*! ../internal/arrayMap */ 40),
-	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 31),
-	    baseMap = __webpack_require__(/*! ../internal/baseMap */ 39),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38);
-	
-	/**
-	 * Creates an array of values by running each element in `collection` through
-	 * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
-	 * arguments; (value, index|key, collection).
-	 *
-	 * If a property name is provided for `predicate` the created `_.property`
-	 * style callback returns the property value of the given element.
-	 *
-	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
-	 * style callback returns `true` for elements that have a matching property
-	 * value, else `false`.
-	 *
-	 * If an object is provided for `predicate` the created `_.matches` style
-	 * callback returns `true` for elements that have the properties of the given
-	 * object, else `false`.
-	 *
-	 * Many lodash methods are guarded to work as interatees for methods like
-	 * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
-	 *
-	 * The guarded methods are:
-	 * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`, `drop`,
-	 * `dropRight`, `fill`, `flatten`, `invert`, `max`, `min`, `parseInt`, `slice`,
-	 * `sortBy`, `take`, `takeRight`, `template`, `trim`, `trimLeft`, `trimRight`,
-	 * `trunc`, `random`, `range`, `sample`, `uniq`, and `words`
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias collect
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
-	 *  per iteration.
-	 *  create a `_.property` or `_.matches` style callback respectively.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Array} Returns the new mapped array.
-	 * @example
-	 *
-	 * function timesThree(n) {
-	 *   return n * 3;
-	 * }
-	 *
-	 * _.map([1, 2], timesThree);
-	 * // => [3, 6]
-	 *
-	 * _.map({ 'a': 1, 'b': 2 }, timesThree);
-	 * // => [3, 6] (iteration order is not guaranteed)
-	 *
-	 * var users = [
-	 *   { 'user': 'barney' },
-	 *   { 'user': 'fred' }
-	 * ];
-	 *
-	 * // using the `_.property` callback shorthand
-	 * _.map(users, 'user');
-	 * // => ['barney', 'fred']
-	 */
-	function map(collection, iteratee, thisArg) {
-	  var func = isArray(collection) ? arrayMap : baseMap;
-	  iteratee = baseCallback(iteratee, thisArg, 3);
-	  return func(collection, iteratee);
-	}
-	
-	module.exports = map;
-
-
-/***/ },
-/* 28 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/size.js ***!
-  \***********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 34),
-	    keys = __webpack_require__(/*! ../object/keys */ 19);
-	
-	/**
-	 * Gets the size of `collection` by returning `collection.length` for
-	 * array-like values or the number of own enumerable properties for objects.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to inspect.
-	 * @returns {number} Returns the size of `collection`.
-	 * @example
-	 *
-	 * _.size([1, 2, 3]);
-	 * // => 3
-	 *
-	 * _.size({ 'a': 1, 'b': 2 });
-	 * // => 2
-	 *
-	 * _.size('pebbles');
-	 * // => 7
-	 */
-	function size(collection) {
-	  var length = collection ? collection.length : 0;
-	  return isLength(length) ? length : keys(collection).length;
-	}
-	
-	module.exports = size;
-
-
-/***/ },
-/* 29 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/reduce.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var arrayReduce = __webpack_require__(/*! ../internal/arrayReduce */ 53),
-	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 31),
-	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 41),
-	    baseReduce = __webpack_require__(/*! ../internal/baseReduce */ 54),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38);
-	
-	/**
-	 * Reduces `collection` to a value which is the accumulated result of running
-	 * each element in `collection` through `iteratee`, where each successive
-	 * invocation is supplied the return value of the previous. If `accumulator`
-	 * is not provided the first element of `collection` is used as the initial
-	 * value. The `iteratee` is bound to `thisArg`and invoked with four arguments;
-	 * (accumulator, value, index|key, collection).
-	 *
-	 * Many lodash methods are guarded to work as interatees for methods like
-	 * `_.reduce`, `_.reduceRight`, and `_.transform`.
-	 *
-	 * The guarded methods are:
-	 * `assign`, `defaults`, `merge`, and `sortAllBy`
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias foldl, inject
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
-	 * @param {*} [accumulator] The initial value.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {*} Returns the accumulated value.
-	 * @example
-	 *
-	 * _.reduce([1, 2], function(sum, n) {
-	 *   return sum + n;
-	 * });
-	 * // => 3
-	 *
-	 * _.reduce({ 'a': 1, 'b': 2 }, function(result, n, key) {
-	 *   result[key] = n * 3;
-	 *   return result;
-	 * }, {});
-	 * // => { 'a': 3, 'b': 6 } (iteration order is not guaranteed)
-	 */
-	function reduce(collection, iteratee, accumulator, thisArg) {
-	  var func = isArray(collection) ? arrayReduce : baseReduce;
-	  return func(collection, baseCallback(iteratee, thisArg, 4), accumulator, arguments.length < 3, baseEach);
-	}
-	
-	module.exports = reduce;
-
-
-/***/ },
 /* 30 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isObject.js ***!
@@ -11849,6 +11849,38 @@
 
 /***/ },
 /* 31 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isLength.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Used as the maximum length of an array-like value.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+	 * for more details.
+	 */
+	var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+	
+	/**
+	 * Checks if `value` is a valid array-like length.
+	 *
+	 * **Note:** This function is based on ES `ToLength`. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
+	 * for more details.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+	 */
+	function isLength(value) {
+	  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	}
+	
+	module.exports = isLength;
+
+
+/***/ },
+/* 32 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseCallback.js ***!
   \*****************************************************************/
@@ -11857,7 +11889,7 @@
 	var baseMatches = __webpack_require__(/*! ./baseMatches */ 55),
 	    baseMatchesProperty = __webpack_require__(/*! ./baseMatchesProperty */ 56),
 	    baseProperty = __webpack_require__(/*! ./baseProperty */ 57),
-	    bindCallback = __webpack_require__(/*! ./bindCallback */ 37),
+	    bindCallback = __webpack_require__(/*! ./bindCallback */ 38),
 	    identity = __webpack_require__(/*! ../utility/identity */ 59),
 	    isBindable = __webpack_require__(/*! ./isBindable */ 58);
 	
@@ -11893,14 +11925,309 @@
 
 
 /***/ },
-/* 32 */
+/* 33 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseEach.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseForOwn = __webpack_require__(/*! ./baseForOwn */ 41),
+	    isLength = __webpack_require__(/*! ./isLength */ 31),
+	    toObject = __webpack_require__(/*! ./toObject */ 60);
+	
+	/**
+	 * The base implementation of `_.forEach` without support for callback
+	 * shorthands and `this` binding.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array|Object|string} Returns `collection`.
+	 */
+	function baseEach(collection, iteratee) {
+	  var length = collection ? collection.length : 0;
+	  if (!isLength(length)) {
+	    return baseForOwn(collection, iteratee);
+	  }
+	  var index = -1,
+	      iterable = toObject(collection);
+	
+	  while (++index < length) {
+	    if (iteratee(iterable[index], index, iterable) === false) {
+	      break;
+	    }
+	  }
+	  return collection;
+	}
+	
+	module.exports = baseEach;
+
+
+/***/ },
+/* 34 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayReduce.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.reduce` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {*} [accumulator] The initial value.
+	 * @param {boolean} [initFromArray] Specify using the first element of `array`
+	 *  as the initial value.
+	 * @returns {*} Returns the accumulated value.
+	 */
+	function arrayReduce(array, iteratee, accumulator, initFromArray) {
+	  var index = -1,
+	      length = array.length;
+	
+	  if (initFromArray && length) {
+	    accumulator = array[++index];
+	  }
+	  while (++index < length) {
+	    accumulator = iteratee(accumulator, array[index], index, array);
+	  }
+	  return accumulator;
+	}
+	
+	module.exports = arrayReduce;
+
+
+/***/ },
+/* 35 */
+/*!********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArray.js ***!
+  \********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 31),
+	    isNative = __webpack_require__(/*! ./isNative */ 42),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 50);
+	
+	/** `Object#toString` result references. */
+	var arrayTag = '[object Array]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
+	
+	/**
+	 * Checks if `value` is classified as an `Array` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @example
+	 *
+	 * _.isArray([1, 2, 3]);
+	 * // => true
+	 *
+	 * _.isArray(function() { return arguments; }());
+	 * // => false
+	 */
+	var isArray = nativeIsArray || function(value) {
+	  return (isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag) || false;
+	};
+	
+	module.exports = isArray;
+
+
+/***/ },
+/* 36 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseReduce.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * The base implementation of `_.reduce` and `_.reduceRight` without support
+	 * for callback shorthands or `this` binding, which iterates over `collection`
+	 * using the provided `eachFunc`.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {*} accumulator The initial value.
+	 * @param {boolean} initFromCollection Specify using the first or last element
+	 *  of `collection` as the initial value.
+	 * @param {Function} eachFunc The function to iterate over `collection`.
+	 * @returns {*} Returns the accumulated value.
+	 */
+	function baseReduce(collection, iteratee, accumulator, initFromCollection, eachFunc) {
+	  eachFunc(collection, function(value, index, collection) {
+	    accumulator = initFromCollection
+	      ? (initFromCollection = false, value)
+	      : iteratee(accumulator, value, index, collection);
+	  });
+	  return accumulator;
+	}
+	
+	module.exports = baseReduce;
+
+
+/***/ },
+/* 37 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayEach.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.forEach` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns `array`.
+	 */
+	function arrayEach(array, iteratee) {
+	  var index = -1,
+	      length = array.length;
+	
+	  while (++index < length) {
+	    if (iteratee(array[index], index, array) === false) {
+	      break;
+	    }
+	  }
+	  return array;
+	}
+	
+	module.exports = arrayEach;
+
+
+/***/ },
+/* 38 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/bindCallback.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var identity = __webpack_require__(/*! ../utility/identity */ 59);
+	
+	/**
+	 * A specialized version of `baseCallback` which only supports `this` binding
+	 * and specifying the number of arguments to provide to `func`.
+	 *
+	 * @private
+	 * @param {Function} func The function to bind.
+	 * @param {*} thisArg The `this` binding of `func`.
+	 * @param {number} [argCount] The number of arguments to provide to `func`.
+	 * @returns {Function} Returns the callback.
+	 */
+	function bindCallback(func, thisArg, argCount) {
+	  if (typeof func != 'function') {
+	    return identity;
+	  }
+	  if (typeof thisArg == 'undefined') {
+	    return func;
+	  }
+	  switch (argCount) {
+	    case 1: return function(value) {
+	      return func.call(thisArg, value);
+	    };
+	    case 3: return function(value, index, collection) {
+	      return func.call(thisArg, value, index, collection);
+	    };
+	    case 4: return function(accumulator, value, index, collection) {
+	      return func.call(thisArg, accumulator, value, index, collection);
+	    };
+	    case 5: return function(value, other, key, object, source) {
+	      return func.call(thisArg, value, other, key, object, source);
+	    };
+	  }
+	  return function() {
+	    return func.apply(thisArg, arguments);
+	  };
+	}
+	
+	module.exports = bindCallback;
+
+
+/***/ },
+/* 39 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayMap.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.map` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function arrayMap(array, iteratee) {
+	  var index = -1,
+	      length = array.length,
+	      result = Array(length);
+	
+	  while (++index < length) {
+	    result[index] = iteratee(array[index], index, array);
+	  }
+	  return result;
+	}
+	
+	module.exports = arrayMap;
+
+
+/***/ },
+/* 40 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMap.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseEach = __webpack_require__(/*! ./baseEach */ 33);
+	
+	/**
+	 * The base implementation of `_.map` without support for callback shorthands
+	 * or `this` binding.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function baseMap(collection, iteratee) {
+	  var result = [];
+	  baseEach(collection, function(value, key, collection) {
+	    result.push(iteratee(value, key, collection));
+	  });
+	  return result;
+	}
+	
+	module.exports = baseMap;
+
+
+/***/ },
+/* 41 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseForOwn.js ***!
   \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFor = __webpack_require__(/*! ./baseFor */ 60),
-	    keys = __webpack_require__(/*! ../object/keys */ 19);
+	var baseFor = __webpack_require__(/*! ./baseFor */ 62),
+	    keys = __webpack_require__(/*! ../object/keys */ 25);
 	
 	/**
 	 * The base implementation of `_.forOwn` without support for callback
@@ -11919,14 +12246,14 @@
 
 
 /***/ },
-/* 33 */
+/* 42 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isNative.js ***!
   \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var escapeRegExp = __webpack_require__(/*! ../string/escapeRegExp */ 61),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 52);
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 50);
 	
 	/** `Object#toString` result references. */
 	var funcTag = '[object Function]';
@@ -11983,50 +12310,52 @@
 
 
 /***/ },
-/* 34 */
+/* 43 */
 /*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isLength.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFind.js ***!
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Used as the maximum length of an array-like value.
-	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
-	 * for more details.
-	 */
-	var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
-	
-	/**
-	 * Checks if `value` is a valid array-like length.
-	 *
-	 * **Note:** This function is based on ES `ToLength`. See the
-	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
-	 * for more details.
+	 * The base implementation of `_.find`, `_.findLast`, `_.findKey`, and `_.findLastKey`,
+	 * without support for callback shorthands and `this` binding, which iterates
+	 * over `collection` using the provided `eachFunc`.
 	 *
 	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+	 * @param {Array|Object|string} collection The collection to search.
+	 * @param {Function} predicate The function invoked per iteration.
+	 * @param {Function} eachFunc The function to iterate over `collection`.
+	 * @param {boolean} [retKey] Specify returning the key of the found element
+	 *  instead of the element itself.
+	 * @returns {*} Returns the found element or its key, else `undefined`.
 	 */
-	function isLength(value) {
-	  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	function baseFind(collection, predicate, eachFunc, retKey) {
+	  var result;
+	  eachFunc(collection, function(value, key, collection) {
+	    if (predicate(value, key, collection)) {
+	      result = retKey ? key : value;
+	      return false;
+	    }
+	  });
+	  return result;
 	}
 	
-	module.exports = isLength;
+	module.exports = baseFind;
 
 
 /***/ },
-/* 35 */
+/* 44 */
 /*!*************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/shimKeys.js ***!
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 45),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38),
-	    isIndex = __webpack_require__(/*! ./isIndex */ 62),
-	    isLength = __webpack_require__(/*! ./isLength */ 34),
-	    keysIn = __webpack_require__(/*! ../object/keysIn */ 63),
-	    support = __webpack_require__(/*! ../support */ 64);
+	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 49),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35),
+	    isIndex = __webpack_require__(/*! ./isIndex */ 63),
+	    isLength = __webpack_require__(/*! ./isLength */ 31),
+	    keysIn = __webpack_require__(/*! ../object/keysIn */ 64),
+	    support = __webpack_require__(/*! ../support */ 65);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -12066,296 +12395,45 @@
 
 
 /***/ },
-/* 36 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFind.js ***!
-  \*************************************************************/
+/* 45 */
+/*!*******************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isIterateeCall.js ***!
+  \*******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
+	var isIndex = __webpack_require__(/*! ./isIndex */ 63),
+	    isLength = __webpack_require__(/*! ./isLength */ 31),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 30);
+	
 	/**
-	 * The base implementation of `_.find`, `_.findLast`, `_.findKey`, and `_.findLastKey`,
-	 * without support for callback shorthands and `this` binding, which iterates
-	 * over `collection` using the provided `eachFunc`.
+	 * Checks if the provided arguments are from an iteratee call.
 	 *
 	 * @private
-	 * @param {Array|Object|string} collection The collection to search.
-	 * @param {Function} predicate The function invoked per iteration.
-	 * @param {Function} eachFunc The function to iterate over `collection`.
-	 * @param {boolean} [retKey] Specify returning the key of the found element
-	 *  instead of the element itself.
-	 * @returns {*} Returns the found element or its key, else `undefined`.
+	 * @param {*} value The potential iteratee value argument.
+	 * @param {*} index The potential iteratee index or key argument.
+	 * @param {*} object The potential iteratee object argument.
+	 * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
 	 */
-	function baseFind(collection, predicate, eachFunc, retKey) {
-	  var result;
-	  eachFunc(collection, function(value, key, collection) {
-	    if (predicate(value, key, collection)) {
-	      result = retKey ? key : value;
-	      return false;
-	    }
-	  });
-	  return result;
+	function isIterateeCall(value, index, object) {
+	  if (!isObject(object)) {
+	    return false;
+	  }
+	  var type = typeof index;
+	  if (type == 'number') {
+	    var length = object.length,
+	        prereq = isLength(length) && isIndex(index, length);
+	  } else {
+	    prereq = type == 'string' && index in object;
+	  }
+	  var other = object[index];
+	  return prereq && (value === value ? value === other : other !== other);
 	}
 	
-	module.exports = baseFind;
+	module.exports = isIterateeCall;
 
 
 /***/ },
-/* 37 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/bindCallback.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var identity = __webpack_require__(/*! ../utility/identity */ 59);
-	
-	/**
-	 * A specialized version of `baseCallback` which only supports `this` binding
-	 * and specifying the number of arguments to provide to `func`.
-	 *
-	 * @private
-	 * @param {Function} func The function to bind.
-	 * @param {*} thisArg The `this` binding of `func`.
-	 * @param {number} [argCount] The number of arguments to provide to `func`.
-	 * @returns {Function} Returns the callback.
-	 */
-	function bindCallback(func, thisArg, argCount) {
-	  if (typeof func != 'function') {
-	    return identity;
-	  }
-	  if (typeof thisArg == 'undefined') {
-	    return func;
-	  }
-	  switch (argCount) {
-	    case 1: return function(value) {
-	      return func.call(thisArg, value);
-	    };
-	    case 3: return function(value, index, collection) {
-	      return func.call(thisArg, value, index, collection);
-	    };
-	    case 4: return function(accumulator, value, index, collection) {
-	      return func.call(thisArg, accumulator, value, index, collection);
-	    };
-	    case 5: return function(value, other, key, object, source) {
-	      return func.call(thisArg, value, other, key, object, source);
-	    };
-	  }
-	  return function() {
-	    return func.apply(thisArg, arguments);
-	  };
-	}
-	
-	module.exports = bindCallback;
-
-
-/***/ },
-/* 38 */
-/*!********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArray.js ***!
-  \********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 34),
-	    isNative = __webpack_require__(/*! ./isNative */ 33),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 52);
-	
-	/** `Object#toString` result references. */
-	var arrayTag = '[object Array]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the `toStringTag` of values.
-	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
-	 * for more details.
-	 */
-	var objToString = objectProto.toString;
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
-	
-	/**
-	 * Checks if `value` is classified as an `Array` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isArray([1, 2, 3]);
-	 * // => true
-	 *
-	 * _.isArray(function() { return arguments; }());
-	 * // => false
-	 */
-	var isArray = nativeIsArray || function(value) {
-	  return (isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag) || false;
-	};
-	
-	module.exports = isArray;
-
-
-/***/ },
-/* 39 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMap.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseEach = __webpack_require__(/*! ./baseEach */ 41);
-	
-	/**
-	 * The base implementation of `_.map` without support for callback shorthands
-	 * or `this` binding.
-	 *
-	 * @private
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns the new mapped array.
-	 */
-	function baseMap(collection, iteratee) {
-	  var result = [];
-	  baseEach(collection, function(value, key, collection) {
-	    result.push(iteratee(value, key, collection));
-	  });
-	  return result;
-	}
-	
-	module.exports = baseMap;
-
-
-/***/ },
-/* 40 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayMap.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * A specialized version of `_.map` for arrays without support for callback
-	 * shorthands or `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns the new mapped array.
-	 */
-	function arrayMap(array, iteratee) {
-	  var index = -1,
-	      length = array.length,
-	      result = Array(length);
-	
-	  while (++index < length) {
-	    result[index] = iteratee(array[index], index, array);
-	  }
-	  return result;
-	}
-	
-	module.exports = arrayMap;
-
-
-/***/ },
-/* 41 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseEach.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseForOwn = __webpack_require__(/*! ./baseForOwn */ 32),
-	    isLength = __webpack_require__(/*! ./isLength */ 34),
-	    toObject = __webpack_require__(/*! ./toObject */ 65);
-	
-	/**
-	 * The base implementation of `_.forEach` without support for callback
-	 * shorthands and `this` binding.
-	 *
-	 * @private
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array|Object|string} Returns `collection`.
-	 */
-	function baseEach(collection, iteratee) {
-	  var length = collection ? collection.length : 0;
-	  if (!isLength(length)) {
-	    return baseForOwn(collection, iteratee);
-	  }
-	  var index = -1,
-	      iterable = toObject(collection);
-	
-	  while (++index < length) {
-	    if (iteratee(iterable[index], index, iterable) === false) {
-	      break;
-	    }
-	  }
-	  return collection;
-	}
-	
-	module.exports = baseEach;
-
-
-/***/ },
-/* 42 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayEach.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * A specialized version of `_.forEach` for arrays without support for callback
-	 * shorthands or `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns `array`.
-	 */
-	function arrayEach(array, iteratee) {
-	  var index = -1,
-	      length = array.length;
-	
-	  while (++index < length) {
-	    if (iteratee(array[index], index, array) === false) {
-	      break;
-	    }
-	  }
-	  return array;
-	}
-	
-	module.exports = arrayEach;
-
-
-/***/ },
-/* 43 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/cacheIndexOf.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isObject = __webpack_require__(/*! ../lang/isObject */ 30);
-	
-	/**
-	 * Checks if `value` is in `cache` mimicking the return signature of
-	 * `_.indexOf` by returning `0` if the value is found, else `-1`.
-	 *
-	 * @private
-	 * @param {Object} cache The cache to search.
-	 * @param {*} value The value to search for.
-	 * @returns {number} Returns `0` if `value` is found, else `-1`.
-	 */
-	function cacheIndexOf(cache, value) {
-	  var data = cache.data,
-	      result = (typeof value == 'string' || isObject(value)) ? data.set.has(value) : data.hash[value];
-	
-	  return result ? 0 : -1;
-	}
-	
-	module.exports = cacheIndexOf;
-
-
-/***/ },
-/* 44 */
+/* 46 */
 /*!****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIndexOf.js ***!
   \****************************************************************/
@@ -12391,14 +12469,74 @@
 
 
 /***/ },
-/* 45 */
+/* 47 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/cacheIndexOf.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 30);
+	
+	/**
+	 * Checks if `value` is in `cache` mimicking the return signature of
+	 * `_.indexOf` by returning `0` if the value is found, else `-1`.
+	 *
+	 * @private
+	 * @param {Object} cache The cache to search.
+	 * @param {*} value The value to search for.
+	 * @returns {number} Returns `0` if `value` is found, else `-1`.
+	 */
+	function cacheIndexOf(cache, value) {
+	  var data = cache.data,
+	      result = (typeof value == 'string' || isObject(value)) ? data.set.has(value) : data.hash[value];
+	
+	  return result ? 0 : -1;
+	}
+	
+	module.exports = cacheIndexOf;
+
+
+/***/ },
+/* 48 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/createCache.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {var SetCache = __webpack_require__(/*! ./SetCache */ 68),
+	    constant = __webpack_require__(/*! ../utility/constant */ 67),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 42);
+	
+	/** Native method references. */
+	var Set = isNative(Set = global.Set) && Set;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+	
+	/**
+	 * Creates a `Set` cache object to optimize linear searches of large arrays.
+	 *
+	 * @private
+	 * @param {Array} [values] The values to cache.
+	 * @returns {null|Object} Returns the new cache object if `Set` is supported, else `null`.
+	 */
+	var createCache = !(nativeCreate && Set) ? constant(null) : function(values) {
+	  return new SetCache(values);
+	};
+	
+	module.exports = createCache;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 49 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isArguments.js ***!
   \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 34),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 52);
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 31),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 50);
 	
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]';
@@ -12438,181 +12576,28 @@
 
 
 /***/ },
-/* 46 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/createCache.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {var SetCache = __webpack_require__(/*! ./SetCache */ 67),
-	    constant = __webpack_require__(/*! ../utility/constant */ 68),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 33);
-	
-	/** Native method references. */
-	var Set = isNative(Set = global.Set) && Set;
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
-	
-	/**
-	 * Creates a `Set` cache object to optimize linear searches of large arrays.
-	 *
-	 * @private
-	 * @param {Array} [values] The values to cache.
-	 * @returns {null|Object} Returns the new cache object if `Set` is supported, else `null`.
-	 */
-	var createCache = !(nativeCreate && Set) ? constant(null) : function(values) {
-	  return new SetCache(values);
-	};
-	
-	module.exports = createCache;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 47 */
-/*!*******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isIterateeCall.js ***!
-  \*******************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isIndex = __webpack_require__(/*! ./isIndex */ 62),
-	    isLength = __webpack_require__(/*! ./isLength */ 34),
-	    isObject = __webpack_require__(/*! ../lang/isObject */ 30);
-	
-	/**
-	 * Checks if the provided arguments are from an iteratee call.
-	 *
-	 * @private
-	 * @param {*} value The potential iteratee value argument.
-	 * @param {*} index The potential iteratee index or key argument.
-	 * @param {*} object The potential iteratee object argument.
-	 * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
-	 */
-	function isIterateeCall(value, index, object) {
-	  if (!isObject(object)) {
-	    return false;
-	  }
-	  var type = typeof index;
-	  if (type == 'number') {
-	    var length = object.length,
-	        prereq = isLength(length) && isIndex(index, length);
-	  } else {
-	    prereq = type == 'string' && index in object;
-	  }
-	  var other = object[index];
-	  return prereq && (value === value ? value === other : other !== other);
-	}
-	
-	module.exports = isIterateeCall;
-
-
-/***/ },
-/* 48 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseUniq.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 44),
-	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 43),
-	    createCache = __webpack_require__(/*! ./createCache */ 46);
-	
-	/**
-	 * The base implementation of `_.uniq` without support for callback shorthands
-	 * and `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to inspect.
-	 * @param {Function} [iteratee] The function invoked per iteration.
-	 * @returns {Array} Returns the new duplicate-value-free array.
-	 */
-	function baseUniq(array, iteratee) {
-	  var index = -1,
-	      indexOf = baseIndexOf,
-	      length = array.length,
-	      isCommon = true,
-	      isLarge = isCommon && length >= 200,
-	      seen = isLarge && createCache(),
-	      result = [];
-	
-	  if (seen) {
-	    indexOf = cacheIndexOf;
-	    isCommon = false;
-	  } else {
-	    isLarge = false;
-	    seen = iteratee ? [] : result;
-	  }
-	  outer:
-	  while (++index < length) {
-	    var value = array[index],
-	        computed = iteratee ? iteratee(value, index, array) : value;
-	
-	    if (isCommon && value === value) {
-	      var seenIndex = seen.length;
-	      while (seenIndex--) {
-	        if (seen[seenIndex] === computed) {
-	          continue outer;
-	        }
-	      }
-	      if (iteratee) {
-	        seen.push(computed);
-	      }
-	      result.push(value);
-	    }
-	    else if (indexOf(seen, computed) < 0) {
-	      if (iteratee || isLarge) {
-	        seen.push(computed);
-	      }
-	      result.push(value);
-	    }
-	  }
-	  return result;
-	}
-	
-	module.exports = baseUniq;
-
-
-/***/ },
-/* 49 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/sortedUniq.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * An implementation of `_.uniq` optimized for sorted arrays without support
-	 * for callback shorthands and `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to inspect.
-	 * @param {Function} [iteratee] The function invoked per iteration.
-	 * @returns {Array} Returns the new duplicate-value-free array.
-	 */
-	function sortedUniq(array, iteratee) {
-	  var seen,
-	      index = -1,
-	      length = array.length,
-	      resIndex = -1,
-	      result = [];
-	
-	  while (++index < length) {
-	    var value = array[index],
-	        computed = iteratee ? iteratee(value, index, array) : value;
-	
-	    if (!index || seen !== computed) {
-	      seen = computed;
-	      result[++resIndex] = value;
-	    }
-	  }
-	  return result;
-	}
-	
-	module.exports = sortedUniq;
-
-
-/***/ },
 /* 50 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isObjectLike.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Checks if `value` is object-like.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+	 */
+	function isObjectLike(value) {
+	  return (value && typeof value == 'object') || false;
+	}
+	
+	module.exports = isObjectLike;
+
+
+/***/ },
+/* 51 */
 /*!*******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsFunction.js ***!
   \*******************************************************************/
@@ -12636,22 +12621,22 @@
 
 
 /***/ },
-/* 51 */
+/* 52 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseClone.js ***!
   \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var arrayCopy = __webpack_require__(/*! ./arrayCopy */ 69),
-	    arrayEach = __webpack_require__(/*! ./arrayEach */ 42),
+	    arrayEach = __webpack_require__(/*! ./arrayEach */ 37),
 	    baseCopy = __webpack_require__(/*! ./baseCopy */ 70),
-	    baseForOwn = __webpack_require__(/*! ./baseForOwn */ 32),
+	    baseForOwn = __webpack_require__(/*! ./baseForOwn */ 41),
 	    initCloneArray = __webpack_require__(/*! ./initCloneArray */ 71),
 	    initCloneByTag = __webpack_require__(/*! ./initCloneByTag */ 72),
 	    initCloneObject = __webpack_require__(/*! ./initCloneObject */ 73),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35),
 	    isObject = __webpack_require__(/*! ../lang/isObject */ 30),
-	    keys = __webpack_require__(/*! ../object/keys */ 19);
+	    keys = __webpack_require__(/*! ../object/keys */ 25);
 	
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -12775,92 +12760,107 @@
 
 
 /***/ },
-/* 52 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isObjectLike.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Checks if `value` is object-like.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-	 */
-	function isObjectLike(value) {
-	  return (value && typeof value == 'object') || false;
-	}
-	
-	module.exports = isObjectLike;
-
-
-/***/ },
 /* 53 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayReduce.js ***!
-  \****************************************************************/
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseUniq.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
+	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 46),
+	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 47),
+	    createCache = __webpack_require__(/*! ./createCache */ 48);
+	
 	/**
-	 * A specialized version of `_.reduce` for arrays without support for callback
-	 * shorthands or `this` binding.
+	 * The base implementation of `_.uniq` without support for callback shorthands
+	 * and `this` binding.
 	 *
 	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @param {*} [accumulator] The initial value.
-	 * @param {boolean} [initFromArray] Specify using the first element of `array`
-	 *  as the initial value.
-	 * @returns {*} Returns the accumulated value.
+	 * @param {Array} array The array to inspect.
+	 * @param {Function} [iteratee] The function invoked per iteration.
+	 * @returns {Array} Returns the new duplicate-value-free array.
 	 */
-	function arrayReduce(array, iteratee, accumulator, initFromArray) {
+	function baseUniq(array, iteratee) {
 	  var index = -1,
-	      length = array.length;
+	      indexOf = baseIndexOf,
+	      length = array.length,
+	      isCommon = true,
+	      isLarge = isCommon && length >= 200,
+	      seen = isLarge && createCache(),
+	      result = [];
 	
-	  if (initFromArray && length) {
-	    accumulator = array[++index];
+	  if (seen) {
+	    indexOf = cacheIndexOf;
+	    isCommon = false;
+	  } else {
+	    isLarge = false;
+	    seen = iteratee ? [] : result;
 	  }
+	  outer:
 	  while (++index < length) {
-	    accumulator = iteratee(accumulator, array[index], index, array);
+	    var value = array[index],
+	        computed = iteratee ? iteratee(value, index, array) : value;
+	
+	    if (isCommon && value === value) {
+	      var seenIndex = seen.length;
+	      while (seenIndex--) {
+	        if (seen[seenIndex] === computed) {
+	          continue outer;
+	        }
+	      }
+	      if (iteratee) {
+	        seen.push(computed);
+	      }
+	      result.push(value);
+	    }
+	    else if (indexOf(seen, computed) < 0) {
+	      if (iteratee || isLarge) {
+	        seen.push(computed);
+	      }
+	      result.push(value);
+	    }
 	  }
-	  return accumulator;
+	  return result;
 	}
 	
-	module.exports = arrayReduce;
+	module.exports = baseUniq;
 
 
 /***/ },
 /* 54 */
 /*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseReduce.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/sortedUniq.js ***!
   \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * The base implementation of `_.reduce` and `_.reduceRight` without support
-	 * for callback shorthands or `this` binding, which iterates over `collection`
-	 * using the provided `eachFunc`.
+	 * An implementation of `_.uniq` optimized for sorted arrays without support
+	 * for callback shorthands and `this` binding.
 	 *
 	 * @private
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @param {*} accumulator The initial value.
-	 * @param {boolean} initFromCollection Specify using the first or last element
-	 *  of `collection` as the initial value.
-	 * @param {Function} eachFunc The function to iterate over `collection`.
-	 * @returns {*} Returns the accumulated value.
+	 * @param {Array} array The array to inspect.
+	 * @param {Function} [iteratee] The function invoked per iteration.
+	 * @returns {Array} Returns the new duplicate-value-free array.
 	 */
-	function baseReduce(collection, iteratee, accumulator, initFromCollection, eachFunc) {
-	  eachFunc(collection, function(value, index, collection) {
-	    accumulator = initFromCollection
-	      ? (initFromCollection = false, value)
-	      : iteratee(accumulator, value, index, collection);
-	  });
-	  return accumulator;
+	function sortedUniq(array, iteratee) {
+	  var seen,
+	      index = -1,
+	      length = array.length,
+	      resIndex = -1,
+	      result = [];
+	
+	  while (++index < length) {
+	    var value = array[index],
+	        computed = iteratee ? iteratee(value, index, array) : value;
+	
+	    if (!index || seen !== computed) {
+	      seen = computed;
+	      result[++resIndex] = value;
+	    }
+	  }
+	  return result;
 	}
 	
-	module.exports = baseReduce;
+	module.exports = sortedUniq;
 
 
 /***/ },
@@ -12872,7 +12872,7 @@
 
 	var baseIsMatch = __webpack_require__(/*! ./baseIsMatch */ 74),
 	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 75),
-	    keys = __webpack_require__(/*! ../object/keys */ 19);
+	    keys = __webpack_require__(/*! ../object/keys */ 25);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -12981,8 +12981,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var baseSetData = __webpack_require__(/*! ./baseSetData */ 77),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 33),
-	    support = __webpack_require__(/*! ../support */ 64);
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 42),
+	    support = __webpack_require__(/*! ../support */ 65);
 	
 	/** Used to detect named functions. */
 	var reFuncName = /^\s*function[ \n\r\t]+\w/;
@@ -13051,41 +13051,25 @@
 
 /***/ },
 /* 60 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFor.js ***!
-  \************************************************************/
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/toObject.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(/*! ./toObject */ 65);
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 30);
 	
 	/**
-	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
-	 * over `object` properties returned by `keysFunc` invoking `iteratee` for
-	 * each property. Iterator functions may exit iteration early by explicitly
-	 * returning `false`.
+	 * Converts `value` to an object if it is not one.
 	 *
 	 * @private
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @param {Function} keysFunc The function to get the keys of `object`.
-	 * @returns {Object} Returns `object`.
+	 * @param {*} value The value to process.
+	 * @returns {Object} Returns the object.
 	 */
-	function baseFor(object, iteratee, keysFunc) {
-	  var index = -1,
-	      iterable = toObject(object),
-	      props = keysFunc(object),
-	      length = props.length;
-	
-	  while (++index < length) {
-	    var key = props[index];
-	    if (iteratee(iterable[key], key, iterable) === false) {
-	      break;
-	    }
-	  }
-	  return object;
+	function toObject(value) {
+	  return isObject(value) ? value : Object(value);
 	}
 	
-	module.exports = baseFor;
+	module.exports = toObject;
 
 
 /***/ },
@@ -13132,6 +13116,45 @@
 /***/ },
 /* 62 */
 /*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFor.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var toObject = __webpack_require__(/*! ./toObject */ 60);
+	
+	/**
+	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
+	 * over `object` properties returned by `keysFunc` invoking `iteratee` for
+	 * each property. Iterator functions may exit iteration early by explicitly
+	 * returning `false`.
+	 *
+	 * @private
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {Function} keysFunc The function to get the keys of `object`.
+	 * @returns {Object} Returns `object`.
+	 */
+	function baseFor(object, iteratee, keysFunc) {
+	  var index = -1,
+	      iterable = toObject(object),
+	      props = keysFunc(object),
+	      length = props.length;
+	
+	  while (++index < length) {
+	    var key = props[index];
+	    if (iteratee(iterable[key], key, iterable) === false) {
+	      break;
+	    }
+	  }
+	  return object;
+	}
+	
+	module.exports = baseFor;
+
+
+/***/ },
+/* 63 */
+/*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/isIndex.js ***!
   \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
@@ -13161,18 +13184,18 @@
 
 
 /***/ },
-/* 63 */
+/* 64 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/object/keysIn.js ***!
   \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 45),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38),
-	    isIndex = __webpack_require__(/*! ../internal/isIndex */ 62),
-	    isLength = __webpack_require__(/*! ../internal/isLength */ 34),
+	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 49),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35),
+	    isIndex = __webpack_require__(/*! ../internal/isIndex */ 63),
+	    isLength = __webpack_require__(/*! ../internal/isLength */ 31),
 	    isObject = __webpack_require__(/*! ../lang/isObject */ 30),
-	    support = __webpack_require__(/*! ../support */ 64);
+	    support = __webpack_require__(/*! ../support */ 65);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -13235,13 +13258,13 @@
 
 
 /***/ },
-/* 64 */
+/* 65 */
 /*!***************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/support.js ***!
   \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ./lang/isNative */ 33);
+	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ./lang/isNative */ 42);
 	
 	/** Used to detect functions containing a `this` reference. */
 	var reThis = /\bthis\b/;
@@ -13320,29 +13343,6 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 65 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/toObject.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isObject = __webpack_require__(/*! ../lang/isObject */ 30);
-	
-	/**
-	 * Converts `value` to an object if it is not one.
-	 *
-	 * @private
-	 * @param {*} value The value to process.
-	 * @returns {Object} Returns the object.
-	 */
-	function toObject(value) {
-	  return isObject(value) ? value : Object(value);
-	}
-	
-	module.exports = toObject;
-
-
-/***/ },
 /* 66 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/indexOfNaN.js ***!
@@ -13377,45 +13377,6 @@
 
 /***/ },
 /* 67 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/SetCache.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {var cachePush = __webpack_require__(/*! ./cachePush */ 79),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 33);
-	
-	/** Native method references. */
-	var Set = isNative(Set = global.Set) && Set;
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
-	
-	/**
-	 *
-	 * Creates a cache object to store unique values.
-	 *
-	 * @private
-	 * @param {Array} [values] The values to cache.
-	 */
-	function SetCache(values) {
-	  var length = values ? values.length : 0;
-	
-	  this.data = { 'hash': nativeCreate(null), 'set': new Set };
-	  while (length--) {
-	    this.push(values[length]);
-	  }
-	}
-	
-	// Add functions to the `Set` cache.
-	SetCache.prototype.push = cachePush;
-	
-	module.exports = SetCache;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 68 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/utility/constant.js ***!
   \************************************************************/
@@ -13445,6 +13406,45 @@
 	
 	module.exports = constant;
 
+
+/***/ },
+/* 68 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/SetCache.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {var cachePush = __webpack_require__(/*! ./cachePush */ 79),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 42);
+	
+	/** Native method references. */
+	var Set = isNative(Set = global.Set) && Set;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+	
+	/**
+	 *
+	 * Creates a cache object to store unique values.
+	 *
+	 * @private
+	 * @param {Array} [values] The values to cache.
+	 */
+	function SetCache(values) {
+	  var length = values ? values.length : 0;
+	
+	  this.data = { 'hash': nativeCreate(null), 'set': new Set };
+	  while (length--) {
+	    this.push(values[length]);
+	  }
+	}
+	
+	// Add functions to the `Set` cache.
+	SetCache.prototype.push = cachePush;
+	
+	module.exports = SetCache;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 69 */
@@ -13863,8 +13863,8 @@
   \****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var constant = __webpack_require__(/*! ../utility/constant */ 68),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 33);
+	/* WEBPACK VAR INJECTION */(function(global) {var constant = __webpack_require__(/*! ../utility/constant */ 67),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 42);
 	
 	/** Native method references. */
 	var ArrayBuffer = isNative(ArrayBuffer = global.ArrayBuffer) && ArrayBuffer,
@@ -13931,7 +13931,7 @@
 	var equalArrays = __webpack_require__(/*! ./equalArrays */ 83),
 	    equalByTag = __webpack_require__(/*! ./equalByTag */ 84),
 	    equalObjects = __webpack_require__(/*! ./equalObjects */ 85),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 38),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 35),
 	    isTypedArray = __webpack_require__(/*! ../lang/isTypedArray */ 86);
 	
 	/** `Object#toString` result references. */
@@ -14038,7 +14038,7 @@
   \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ../lang/isNative */ 33);
+	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ../lang/isNative */ 42);
 	
 	/** Native method references. */
 	var WeakMap = isNative(WeakMap = global.WeakMap) && WeakMap;
@@ -14178,7 +14178,7 @@
   \*****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var keys = __webpack_require__(/*! ../object/keys */ 19);
+	var keys = __webpack_require__(/*! ../object/keys */ 25);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -14259,8 +14259,8 @@
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 34),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 52);
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 31),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 50);
 	
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',

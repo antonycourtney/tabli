@@ -5,7 +5,7 @@ var _ = require('underscore');
 
 var React = require('react');
 
-window.React = React;
+window.React = require('react');
 
 var objectAssign = require('object-assign');
 
@@ -23,26 +23,6 @@ var styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   },
-  /*
-  singleRow: { 
-    maxHeight: 20
-  },
-  oneRowContainer: {
-    lineHeight: '22px',       // Looks like React doesn't convert this to px! 
-    verticalAlign: 'baseline'
-  },
-  */
-  windowHeader: {
-    backgroundColor: '#ebe9eb',
-    borderBottom: '1px solid #bababa',
-    paddingLeft: 3,
-    paddingRight: 3,
-    marginBottom: 3,
-    display: 'inline-flex',
-    // justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-
   // This is the container for a single tabWindow, consisting of its
   // header and tabs:
   windowInfo: {
@@ -53,11 +33,41 @@ var styles = {
     display: 'flex',
     flexDirection: 'column'
   },
-
+  windowHeader: {
+    backgroundColor: '#ebe9eb',
+    borderBottom: '1px solid #bababa',
+    maxHeight: 22,
+    paddingLeft: 3,
+    paddingRight: 3,
+    marginBottom: 3,
+    display: 'inline-flex',
+    // justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  tabItem: {
+    height: 20,
+    maxHeight: 20,
+    paddingLeft: 3,
+    paddingRight: 3,
+    display: 'flex',
+    alignItems: 'center'
+  },
+  windowList: { 
+    fontSize: 12,
+    // lineHeight: '100%',
+    width: 245,
+    maxWidth: 245,
+    marginTop: 'auto',
+    marginBottom: 'auto',
+    marginLeft: 3
+  },
+  tabTitle: {
+    width: 285
+  },  
   expandablePanel: {
     width: '100%',
     position: 'relative',
-    minHeight: 20,
+    minHeight: 18,
     overflow: 'hidden'
   },
 
@@ -77,19 +87,22 @@ var styles = {
     WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
     backgroundColor: '#606060',
   },
-  windowManaged: {
-    WebkitMaskImage: 'url("../images/Status-9.png")',
-    backgroundColor: '#7472ff'
-  },
+  // Hmmm, we use this as a common base for both
+  // 
   headerButton: {
     outline: 'none',
     border: 'none',
     backgroundColor: 'transparent',
     backgroundRepeat: 'no-repeat',
-    // marginRight: 3,
-    // margin: 'auto',
     width: 16,
-    height: 16
+    height: 16,
+    marginLeft: 1,
+    marginRight: 0 
+  },
+  favIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 3
   },
   hidden: {
     visibility: 'hidden'
@@ -102,12 +115,19 @@ var styles = {
   closed: {
     color: '#979ca0'    
   },
+  tabManagedButton: {
+    WebkitMaskImage: 'url("../images/status-9.png")',
+    backgroundColor: '#7472ff'
+  },
+  windowManagedButton: {
+    WebkitMaskImage: 'url("../images/Status-9.png")',
+    backgroundColor: '#7472ff'
+  },
   revertButton: { 
       WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
       backgroundColor: '#7472ff',
       marginRight: '20px'
   },
-
   closeButton: {
     background: 'url("../images/interface-80.png")',
     'float': 'right'  
@@ -115,16 +135,17 @@ var styles = {
   closeButtonHover: {
     background: 'url("../images/interface-94.png")'
   },
-  windowList: { 
-    display: 'inline-block',
-    lineHeight: '14px',
-    height: 20,
-    width: 245,
-    maxWidth: 245,
+  tabList: {
+    marginLeft: 0
+  },
+  spanClosed: {
+    color: '#979ca0'
+  },
+  activeSpan: {
+    fontWeight: 'bold',
   },
   windowTitle: {
-    fontWeight: 'bold',
-    paddingTop: 3
+    fontWeight: 'bold'
   }
 }
 
@@ -133,6 +154,10 @@ function m() {
   for (var i = 0; i < arguments.length; i++) {
     if (arguments[i]) {
       objectAssign(res, arguments[i]);
+    } else {
+      if (typeof(arguments[i])==="undefined") {
+        throw new Error("m(): argument " + i + " undefined");
+      }
     }
   }
   return res;
@@ -149,11 +174,11 @@ var R_ExpanderButton = React.createClass({
   },
   render: function() {
     var expandStyle = this.props.expanded ? styles.windowCollapse : styles.windowExpand;
-    var buttonStyle = m(styles.headerButton,styles.expander,expandStyle);
+    var buttonStyle = m(styles.headerButton,expandStyle);
     return ( 
       <button style={buttonStyle}
               onClick={this.handleClicked} />
-  );
+    );
   }
 });
 
@@ -164,12 +189,10 @@ var R_HeaderButton = React.createClass({
   },
 
   handleMouseOver: function() {
-    console.log("hoverButton: mouseOver");
     this.setState({"hovering": true});
   },
 
   handleMouseOut: function() {
-    console.log("hoverButton: mouseOut");
     this.setState({"hovering": false});
   },
 
@@ -183,7 +206,6 @@ var R_HeaderButton = React.createClass({
   render: function() {
     var visibilityStyle = this.props.visible ? styles.visible : styles.hidden;
     var buttonStyle = m(this.props.baseStyle,visibilityStyle,this.state.hovering ? this.props.hoverStyle : null);
-    console.log("hoverButton: ", this.state.hovering, " background: ", buttonStyle.background );
     return (<button style={buttonStyle} title={this.props.title} onClick={this.handleClick}
               onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
             />);
@@ -215,7 +237,7 @@ var R_WindowHeader = React.createClass({
     var windowCheckItem;
 
     if( managed ) {
-      windowCheckItem =  <button style={m(styles.headerButton,styles.windowManaged)} title="Stop managing this window" />;
+      windowCheckItem =  <button style={m(styles.headerButton,styles.windowManagedButton)} title="Stop managing this window" />;
       // TODO: callbacks!
     } else {
       var checkStyle = m(styles.headerButton,hoverStyle);
@@ -224,7 +246,7 @@ var R_WindowHeader = React.createClass({
 
     var windowTitle = tabWindow.getTitle();   
     var openStyle = tabWindow.open ? styles.open : styles.closed;
-    var titleStyle = m(styles.windowList,styles.noWrap,styles.singleRow,styles.windowTitle,openStyle);
+    var titleStyle = m(styles.windowList,styles.noWrap,styles.windowTitle,openStyle);
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
 
@@ -239,7 +261,7 @@ var R_WindowHeader = React.createClass({
                           hoverStyle={styles.closeButtonHover} title="Close Window" 
                           onClick={this.props.onClose} />
 
-    console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
+    // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
 
     return (
       <div style={m(styles.windowHeader,styles.noWrap)}
@@ -264,8 +286,8 @@ var R_TabItem = React.createClass({
 
     var tabTitle = tab.title;
 
-    var openClass = tabWindow.open ? "open" : "closed";
-    var tabOpenClass = openClass;
+    // span style depending on whether open or closed window
+    var tabOpenStyle = tabWindow.open ? null : styles.spanClosed;
 
     var tabCheckItem;
 
@@ -275,34 +297,29 @@ var R_TabItem = React.createClass({
 
 
       if (tab.bookmarked ) {
-        tabCheckItem = <button className="header-button tab-managed" title="Remove bookmark for this tab" />;
+        tabCheckItem = <button style={m(styles.headerButton,styles.tabManagedButton)} title="Remove bookmark for this tab" />;
         // TODO: callback
       } else {
-        tabCheckItem = <input className="header-button" type="checkbox" title="Bookmark this tab" />;
+        tabCheckItem = <input style={styles.headerButton} type="checkbox" title="Bookmark this tab" />;
         //showWhenHoverOn( tabCheckItem, tabItem );
         // TODO: callback
         //tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
       }
     } else {
       // insert a spacer:
-      tabCheckItem = <div className="header-button" />;
+      tabCheckItem = <div style={styles.headerButton} />;
     }
 
     var fiSrc=tab.favIconUrl ? tab.favIconUrl : "";
-    var tabFavIcon = <img className="favicon" src={fiSrc} />;
+    var tabFavIcon = <img style={styles.favIcon} src={fiSrc} />;
 
-    var tabTitleClasses = [ "windowList", "nowrap", "singlerow", tabOpenClass ];
-    if( tab.active ) {
-      tabTitleClasses.push( "activeTab" );
-    }
-
-    var titleClassStr = tabTitleClasses.join(" ");
-
+    var tabActiveStyle = tab.active ? styles.activeSpan : null;
+    var tabTitleStyles = m(styles.windowList,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
     return (
-      <div className="singlerow nowrap oneRowContainer tabinfo">
+      <div style={m(styles.noWrap,styles.tabItem)}>
         {tabCheckItem}
         {tabFavIcon}
-        <span className={titleClassStr}>{tabTitle}</span>
+        <span style={tabTitleStyles}>{tabTitle}</span>
       </div>);
   }
 
@@ -351,10 +368,10 @@ var R_TabWindow = React.createClass({
     };
 
     var expanded = this.getExpandedState();
-    var expandableContentClass = expanded ? "expandable-panel-content-open" : "expandable-panel-content-closed";
-    var tabListClasses="tablist expandable-panel-content " + expandableContentClass;
+    var expandableContentStyle = expanded ? styles.expandablePanelContentOpen : styles.expandablePanelContentClosed;
+    var tabListStyle = m(styles.tabList,expandableContentStyle);
     return (
-      <div className={tabListClasses}>
+      <div style={tabListStyle}>
         {items}
       </div>);
   },
@@ -446,423 +463,12 @@ var R_TabWindowList = React.createClass({
   }
 }); 
 
-function insertAfter(referenceNode, newNode) {
-  referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+function renderReact(tabWindows,currentWindow) {
+  React.render(
+    <R_TabWindowList flux={bgw.tabMan.flux} currentWindow={currentWindow} />,
+    document.getElementById('windowList-region')
+  );
 }
-
-function refreshPopup() {
-  window.location.href="popup.html";
-}
-
-function initManageDialog() {
-  /*
-  var subject = $("#subject"),
-      allFields = $( [] ).add( subject );
-  $("#manage-dialog").dialog({
-        autoOpen: false,
-        height: 200,
-        width: 280,
-        modal: true,
-        buttons: {
-          "Create": function() {
-            var bValid = true;
-            allFields.removeClass( "ui-state-error" );
-
-            if ( bValid ) {
-              var tabWindow = $( this ).data( "tabWindow" );
-              console.log( "manage window:", tabWindow );
-              var subjField = $( "#subject" );
-              var windowTitle = subjField.val();
-              bgw.tabMan.manageWindow( tabWindow, { title: windowTitle } );
-              $( this ).dialog( "close" );
-              refreshPopup();
-            }
-          },
-          Cancel: function() {
-            $( this ).dialog( "close" );
-          }
-        },
-        close: function() {
-          allFields.val( "" ).removeClass( "ui-state-error" );
-        }
-      });
-  */ 
-}
-
-function makeElem( tag, options ) {
-  var item = document.createElement( tag );
-  if( options ) {
-    var txt = options.text;
-    if( txt )
-      item.appendChild( document.createTextNode(txt) );
-    var classes = options.classes;
-    if( classes ) {
-      for ( var i = 0; i < classes.length; i++ ) {
-        item.classList.add( classes[ i ] );
-      }
-    }
-    var parent = options.parent;
-    if( parent ) {
-      parent.appendChild( item );
-    }
-    var attrs = options.attributes;
-    if( attrs ) {
-      for( var attr in attrs ) {
-        if( !attrs.hasOwnProperty( attr ) )
-          continue;
-        item.setAttribute( attr, attrs[attr] );
-      }
-    }
-  }
-
-  return item;
-};
-
-function mkChangeClassHandler( element, addClassName, removeClassName ) {
-  return function() {
-    if ( addClassName )
-      element.classList.add( addClassName );
-    if ( removeClassName )
-      element.classList.remove( removeClassName );
-  };
-}
-
-/* 
- * Show the target element when hovering on the subject element
- */
- function showWhenHoverOn( target, subject ) {
-  target.classList.add( 'show-on-hover' );
-  subject.addEventListener( "mouseover", mkChangeClassHandler( target, 'hover', 'show-on-hover' ) );
-  subject.addEventListener( "mouseout", mkChangeClassHandler( target, 'show-on-hover', 'hover' ) );
-}
-
-
-function renderTabWindowHeader( tabWindow, current, windowPanelId ) {
-  var managed = tabWindow.isManaged();
-  var windowTitle = tabWindow.getTitle();
-  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-
-  function windowCloseHandler() {
-    chrome.windows.remove( windowId, function() {
-      tabWindow.open = false;
-      if ( !managed ) {
-        var windowElem = windowHeader.parentNode;
-        var windowParent = windowElem.parentNode;
-        windowParent.removeChild( windowElem );
-      }
-    });
-  }
-
-  var windowHeader = makeElem( 'div', 
-    { classes: [ "nowrap", "singlerow", "oneRowContainer", "windowHeader" ] } );
-
-  var openClass = tabWindow.open ? "open" : "closed";
-
-  // We want to use a lighter, icon-based checkmark for the checked state, so this
-  // is a little involved...
-
-  var windowCheckItem;
-  if( managed ) {
-    windowCheckItem =  makeElem( 'button',
-      { classes: [ "header-button", "window-managed" ],
-        parent: windowHeader,
-        attributes: { title: "Stop managing this window"}
-      } );  
-    windowCheckItem.onclick = function() {
-      // managed --> unmanaged:
-      // TODO: confirmation dialog
-      bgw.tabMan.unmanageWindow( tabWindow );
-      refreshPopup();                
-    };
-  } else {
-    windowCheckItem = makeElem( 'input',
-      { classes: [ "header-button" ], parent: windowHeader,
-        attributes: { type: "checkbox", title: "Bookmark this window (and all its tabs)" }
-      } );
-    showWhenHoverOn( windowCheckItem, windowHeader );
-    windowCheckItem.onchange = function() {
-      console.log( "toggle manage for '", windowTitle, "'" );
-      var checked = windowCheckItem.checked;
-      console.log( "state:", checked );
-      if( checked ) {
-        // unmanaged --> managed:
-        var dlg = $("#manage-dialog" );
-        var subjField = $( "#subject" );
-        subjField.val( windowTitle );
-        window.setTimeout( function() {
-          subjField[0].setSelectionRange( 0, windowTitle.length );
-        }, 0 );
-        dlg.data( "tabWindow", tabWindow );
-        dlg.dialog( "open" );
-      }
-    }
-  }
-
-  var expandButtonClass = tabWindow.open ? "window-collapse" : "window-expand";
-  var windowExpandButton = makeElem( 'button',
-      { classes: [ "header-button", "expander", expandButtonClass ],
-        parent: windowHeader,
-        attributes: { title: "Expand window contents"}
-      } ); 
-  windowExpandButton.onclick = function() {
-    console.log( "Got click on expander" );
-    var obj = $("#" + windowPanelId + " .expandable-panel-content");
-    if (windowExpandButton.classList.contains( "window-expand" ) ) {
-      // obj.animate({'margin-top':0}, 500 );
-      obj.css('margin-top',"0px" );
-      windowExpandButton.classList.remove( "window-expand" );
-      windowExpandButton.classList.add( "window-collapse" );
-    } else {
-      // var ht = parseInt( contentHeight );
-      var ht = 500;
-      //obj.animate({'margin-top':"-" + (ht + 30) + "px" }, 500 );
-      obj.css('margin-top',"-500px");
-      windowExpandButton.classList.remove( "window-collapse" );        
-      windowExpandButton.classList.add( "window-expand" );
-    }
-  };
-
-  var windowTitleItem = makeElem( 'span', 
-    { text: windowTitle, 
-      classes: [ "windowList", "nowrap", "singlerow", "windowTitle", openClass ],
-      parent: windowHeader 
-    });
-  windowTitleItem.onclick = function() {
-    console.log( "clicked on window '", windowTitle, "'" );
-    if( tabWindow.open ) {
-      chrome.windows.update( windowId, { focused: true } );
-    } else {
-      // need to open it!
-      bgw.tabMan.restoreBookmarkWindow( tabWindow );
-      refreshPopup();
-    }
-  };
-
-  if ( tabWindow.open ) {
-    if ( managed ) {
-      var windowRevertButton = makeElem( 'button',
-        { classes: [ "header-button", "revert-spacer", "revert-window" ],
-          parent: windowHeader,
-          attributes: { title: "Revert to bookmarked tabs" }
-        });
-      showWhenHoverOn( windowRevertButton, windowHeader );
-      windowRevertButton.onclick = function () {
-        bgw.tabMan.revertWindow( tabWindow, refreshPopup );
-      }
-    } else {
-      var revertSpacer = makeElem( 'div',
-        { classes: [ "header-button", "revert-spacer" ],
-          parent: windowHeader
-        } );
-    }
-    var windowCloseButton = makeElem( 'button',
-      { classes: [ "header-button", "close" ],
-        parent: windowHeader,
-        attributes: { title: "Close Window" }
-      });
-    showWhenHoverOn( windowCloseButton, windowHeader );
-    windowCloseButton.onclick = windowCloseHandler;
-  }
-
-  return windowHeader;
-}
-
-function renderTabItem( tabWindow, tab, tabIndex ) {
-  var managed = tabWindow.isManaged();
-  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-
-  function makeTabClickHandler( windowId, tabId, isClosed ) {
-    function handler() {
-      console.log( "clicked on tab for tab id ", tabId );
-      if( tabWindow.open ) {
-        if ( !isClosed ) {
-          chrome.tabs.update( tabId, { active: true } );
-          chrome.windows.update( windowId, { focused: true } );
-        } else {
-          // restore this bookmarked tab:
-          var createOpts = {
-            windowId: tabWindow.chromeWindow.id, 
-            url: tab.url,
-            index: tabIndex,
-            active: true
-          };
-          chrome.tabs.create( createOpts, function () {
-            titleItem.classList.remove("closed");
-            titleIem.classList.add("open");  
-          });
-        }
-      } else {
-        bgw.tabMan.restoreBookmarkWindow( tabWindow );
-        refreshPopup();
-      }        
-    };
-    return handler;
-  }
-
-  function makeTabCloseHandler( tabElement, windowId, tabId ) {
-    function handler() {
-      chrome.tabs.remove( tabId );
-      tabElement.parentNode.removeChild( tabElement );
-    }
-    return handler;
-  }
-
-  function makeTabRemoveBookmarkHandler( tab ) {
-    function handler() {
-      console.log( "about to remove bookmark for tab: ", tab );
-      chrome.bookmarks.remove( tab.bookmark.id, function () {
-        console.log( "succesfully removed bookmark" );
-        tabWindow.reloadBookmarkFolder();
-        refreshPopup();
-      } );
-    }
-    return handler;
-  }
-
-  function makeTabAddBookmarkHandler( tab ) {
-    function handler() {
-      var tabMark = { parentId: tabWindow.bookmarkFolder.id, title: tab.title, url: tab.url };
-      chrome.bookmarks.create( tabMark, function( tabNode ) { 
-        console.log( "Successfully added bookmark for tab ',", tab.title, "'" );
-        tabWindow.reloadBookmarkFolder();
-        refreshPopup();
-      } );
-    }
-    return handler;
-  }
-
-  var openClass = tabWindow.open ? "open" : "closed";
-  var tabOpenClass = openClass;
-  var tabItem = makeElem( 'div', 
-    { classes: [ "singlerow", "nowrap", "oneRowContainer", "tabinfo" ] } );
-
-  if ( managed ) {
-    if( !tab.open )
-      tabOpenClass = "closed";
-
-    var tabCheckItem;
-
-    if (tab.bookmarked ) {
-      tabCheckItem = makeElem( 'button',
-        { classes: [ "header-button", "tab-managed" ],
-          parent: tabItem,
-          attributes: { title: "Remove bookmark for this tab"}
-        } );
-      tabCheckItem.onclick = makeTabRemoveBookmarkHandler( tab );
-    } else {
-      tabCheckItem = makeElem( 'input',
-        { classes: [ "header-button" ], parent: tabItem,
-          attributes: { type: "checkbox", title: "Bookmark this tab" }
-        } );
-      showWhenHoverOn( tabCheckItem, tabItem );
-      tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
-    }
-  } else {
-    var tabCheckSpacer = makeElem( 'div',
-      { classes: [ "header-button" ],
-        parent: tabItem
-      } );
-
-  }
-
-  var tabFavIcon = makeElem('img', { classes: [ "favicon" ], parent: tabItem } );
-  if ( tab.favIconUrl )
-    tabFavIcon.setAttribute( 'src', tab.favIconUrl );
-
-  var tabTitleClasses = [ "windowList", "nowrap", "singlerow", tabOpenClass ];
-  if( tab.active ) {
-    tabTitleClasses.push( "activeTab" );
-  }
-  var titleItem = makeElem( 'span', 
-    { text: tab.title,
-      classes: tabTitleClasses,
-      parent: tabItem
-    });
-  titleItem.onclick = makeTabClickHandler( windowId, tab.id, tabOpenClass === "closed" );
-
-  if ( tabWindow.open ) {
-    var closeButton = makeElem( 'button',
-      { classes: [ "header-button", "close" ],
-        parent: tabItem,
-        attributes: { title: "Close Tab" }
-      });
-
-    showWhenHoverOn( closeButton, tabItem );
-
-    closeButton.onclick = makeTabCloseHandler( tabItem, windowId, tab.id );
-  }
-
-  return tabItem;
-}
-
-function renderTabWindow( tabWindow, current, windowPanelId ) {
-  var managed = tabWindow.isManaged();
-  var windowTitle = tabWindow.getTitle();
-  var tabs = tabWindow.getTabItems();
-  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-
-  // console.log( "renderTabWindow: title: ", windowTitle, ", tabWindow: ", tabWindow );
-  // console.log( "tabs:", tabs );
-  var groupHeaderId = current ? 'currentWindow' : ( managed ? 'managedWindows' : 'unmanagedWindows' );
-  var windowItem = makeElem( 'div', { classes: [ "windowInfo", "expandable-panel" ], 
-    attributes: { id: windowPanelId } } );
-
-
-  var windowHeader = renderTabWindowHeader( tabWindow, current, windowPanelId, windowItem );
-
-  var expandableContentClass = tabWindow.open ? "expandable-panel-content-open" : "expandable-panel-content-closed";
-  var tabListItem = makeElem('div', { classes: [ "tablist", "expandable-panel-content", expandableContentClass ] } );
-  for( var i = 0; i < tabs.length; i++ ) {
-    var tab = tabs[ i ];
-
-    var tabItem = renderTabItem( tabWindow, tab, i );
-
-    tabListItem.appendChild( tabItem );
-  }
-  windowItem.appendChild( windowHeader ); 
-  windowItem.appendChild( tabListItem );
-
-  var winGroupHeader= document.getElementById( groupHeaderId );
-  insertAfter( winGroupHeader, windowItem );
-
-  var panelContent = $("#" + windowPanelId + " .expandable-panel-content");
-  // var contentHeight = panelContent.css('height');
-  if ( !window.open ) {
-    panelContent.css('margin-top',"-500px" );
-  }
-}
-
-/*
- * initialize global expand / collapse all toggle button
- */
- function initExpandToggle() {
-  var toggleElem = $('#expandToggle');
-  toggleElem.click( function() {
-    /* 
-     * Okay, this is where HTML really shows itself as a terrible programming model.
-     * We use the presence of the class name to squirrel away the state of the
-     * toggle button, and then we manipulate the expand / collapse state of every
-     * button and also apply the manipulation needed to expand / collapse every
-     * expandable panel, instead of just asking each panel to expand or collapse itself.
-     */
-    var iconElem = $( this ).find( '.top-button-icon' );
-    var collapse = iconElem.hasClass( 'window-collapse' );
-    iconElem.toggleClass('window-collapse').toggleClass('window-expand');
-
-    var expandButtons = $( '.expander' );
-    var expandPanels = $( '.expandable-panel-content' );
-    if ( collapse ) {
-      // collapse all windows
-      expandButtons.removeClass('window-collapse').addClass('window-expand');
-      expandPanels.css('margin-top', '-500px' );
-    } else {
-      // expand all windows
-      expandButtons.addClass('window-collapse').removeClass('window-expand');
-      expandPanels.css('margin-top', '0px' );
-    }
-  });
- }
-
 
 function windowCmpFn( tabWindowA, tabWindowB ) {
   // open windows first:
@@ -877,15 +483,8 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
   return tA.localeCompare( tB );
 }
 
-function renderReact(tabWindows,currentWindow) {
-  React.render(
-    <R_TabWindowList flux={bgw.tabMan.flux} currentWindow={currentWindow} />,
-    document.getElementById('windowList-region')
-  );
-}
-
 function renderPopup() {
-  initManageDialog();
+  // initManageDialog();
   console.log( "background page:", bgw );
   chrome.bookmarks.getTree( function ( tree ) {
     console.log( "Bookmarks tree: ", tree );
@@ -914,7 +513,6 @@ function renderPopup() {
         logWrap( renderReact )( tabWindows, currentWindow );
       }
 
-      initExpandToggle();
     } );
   }
 
