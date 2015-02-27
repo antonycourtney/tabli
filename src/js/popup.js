@@ -35,6 +35,9 @@ var styles = {
     display: 'flex',
     flexDirection: 'column'
   },
+  windowInfoHover: {
+    boxShadow: '0px 0px 5px 2px #7472ff'
+  },
   windowHeader: {
     backgroundColor: '#ebe9eb',
     borderBottom: '1px solid #bababa',
@@ -184,8 +187,13 @@ var R_ExpanderButton = React.createClass({
   }
 });
 
-// A button that will merge in hoverStyle when hovered over
-var R_HeaderButton = React.createClass({
+/**
+ * mixin for that maintains a "hovering" state
+ * and provides callbacks for mouseOver/mouseOut
+ * User of mixin must connect these callbacks to onMouseOver / onMouseOut
+ * of appropriate component
+ */
+var Hoverable = {
   getInitialState: function() {
     return { "hovering": false }
   },
@@ -196,8 +204,12 @@ var R_HeaderButton = React.createClass({
 
   handleMouseOut: function() {
     this.setState({"hovering": false});
-  },
+  }  
+};
 
+// A button that will merge in hoverStyle when hovered over
+var R_HeaderButton = React.createClass({
+  mixins: [Hoverable],
   handleClick: function(event) {
     if (this.props.visible) {
       this.props.onClick();
@@ -217,18 +229,7 @@ var R_HeaderButton = React.createClass({
 
 
 var R_WindowHeader = React.createClass({
-  getInitialState: function() {
-    return { "hovering": false }
-  },
-
-  handleMouseOver: function() {
-    this.setState({"hovering": true});
-  },
-
-  handleMouseOut: function() {
-    this.setState({"hovering": false});
-  },
-
+  mixins:[Hoverable],
   render: function() {
     var tabWindow = this.props.tabWindow;
     var managed = tabWindow.isManaged();
@@ -329,6 +330,8 @@ var R_TabItem = React.createClass({
 });
 
 var R_TabWindow = React.createClass({
+  mixins: [Hoverable],
+
   getInitialState: function() {
     // Note:  We initialize this with null rather than false so that it will follow
     // open / closed state of window
@@ -374,7 +377,7 @@ var R_TabWindow = React.createClass({
     var expandableContentStyle = expanded ? styles.expandablePanelContentOpen : styles.expandablePanelContentClosed;
     var tabListStyle = m(styles.tabList,expandableContentStyle);
     return (
-      <div style={tabListStyle}>
+      <div style={tabListStyle}  >
         {items}
       </div>);
   },
@@ -397,11 +400,11 @@ var R_TabWindow = React.createClass({
           onClose={this.handleClose}
         />;
 
-    /* TODO: restore windowInfo:hover */
-    var windowStyles=m(styles.windowInfo,styles.expandablePanel);
+    var hoverStyle=this.state.hovering ? styles.windowInfoHover : null;
+    var windowStyles=m(styles.windowInfo,styles.expandablePanel,hoverStyle);
 
     return (
-      <div style={windowStyles} >
+      <div style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
         {windowHeader}
         {tabItems}
       </div>
