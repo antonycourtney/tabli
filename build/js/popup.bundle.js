@@ -66,6 +66,8 @@
 	var FluxMixin = Fluxxor.FluxMixin(React),
 	    StoreWatchMixin = Fluxxor.StoreWatchMixin;
 	
+	var WINDOW_HEADER_HEIGHT = 22;
+	
 	var styles = {
 	  noWrap: { 
 	    overflow: 'hidden',
@@ -85,7 +87,8 @@
 	  windowHeader: {
 	    backgroundColor: '#ebe9eb',
 	    borderBottom: '1px solid #bababa',
-	    maxHeight: 22,
+	    height: WINDOW_HEADER_HEIGHT,
+	    maxHeight: WINDOW_HEADER_HEIGHT,
 	    paddingLeft: 3,
 	    paddingRight: 3,
 	    marginBottom: 3,
@@ -116,7 +119,7 @@
 	  expandablePanel: {
 	    width: '100%',
 	    position: 'relative',
-	    minHeight: 18,
+	    minHeight: WINDOW_HEADER_HEIGHT,
 	    overflow: 'hidden'
 	  },
 	
@@ -127,7 +130,6 @@
 	  expandablePanelContentOpen: {
 	    marginTop: 0
 	  },
-	
 	  windowExpand: {
 	    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
 	    backgroundColor: '#606060'
@@ -254,7 +256,8 @@
 	
 	  render: function() {
 	    var visibilityStyle = this.props.visible ? styles.visible : styles.hidden;
-	    var buttonStyle = m(this.props.baseStyle,visibilityStyle,this.state.hovering ? this.props.hoverStyle : null);
+	    var hoverStyle = (this.state.hovering && this.props.hoverStyle) ? this.props.hoverStyle : null;
+	    var buttonStyle = m(this.props.baseStyle,visibilityStyle,hoverStyle);
 	    return (React.createElement("button", {style: buttonStyle, title: this.props.title, onClick: this.handleClick, 
 	              onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut}
 	            ));
