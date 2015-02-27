@@ -1,4 +1,6 @@
 /** @jsx React.DOM */
+'use strict';
+
 var $ = require('jquery');
 
 var _ = require('underscore');
@@ -57,6 +59,9 @@ var styles = {
     paddingRight: 3,
     display: 'flex',
     alignItems: 'center'
+  },
+  tabItemHover: {
+   backgroundColor: '#dadada'
   },
   windowList: { 
     fontSize: 12,
@@ -282,6 +287,15 @@ var R_WindowHeader = React.createClass({
 });
 
 var R_TabItem = React.createClass({
+  mixins:[Hoverable],
+
+  handleClick: function() {
+    var tabWindow = this.props.tabWindow;
+    var tab = this.props.tab;
+
+    console.log("clicked on tab: ", tabWindow, tab );
+  },
+
   render: function() {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
@@ -291,22 +305,22 @@ var R_TabItem = React.createClass({
     var tabTitle = tab.title;
 
     // span style depending on whether open or closed window
-    var tabOpenStyle = tabWindow.open ? null : styles.spanClosed;
+    var tabOpenStyle = null;
 
     var tabCheckItem;
 
     if ( managed ) {
-      if( !tab.open )
-        tabOpenClass = "closed";
+      if( !tab.open ) 
+        tabOpenStyle = styles.closed;
 
+
+      var hoverVisible = this.state.hovering ? styles.visible : styles.hidden;
 
       if (tab.bookmarked ) {
         tabCheckItem = <button style={m(styles.headerButton,styles.tabManagedButton)} title="Remove bookmark for this tab" />;
         // TODO: callback
       } else {
-        tabCheckItem = <input style={styles.headerButton} type="checkbox" title="Bookmark this tab" />;
-        //showWhenHoverOn( tabCheckItem, tabItem );
-        // TODO: callback
+        tabCheckItem = <input style={m(styles.headerButton,hoverVisible)} type="checkbox" title="Bookmark this tab" />;
         //tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
       }
     } else {
@@ -319,8 +333,12 @@ var R_TabItem = React.createClass({
 
     var tabActiveStyle = tab.active ? styles.activeSpan : null;
     var tabTitleStyles = m(styles.windowList,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
+    var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
     return (
-      <div style={m(styles.noWrap,styles.tabItem)}>
+      <div style={m(styles.noWrap,styles.tabItem,hoverStyle)}
+          onMouseOut={this.handleMouseOut} 
+          onMouseOver={this.handleMouseOver}
+          onClick={this.handleClick} >
         {tabCheckItem}
         {tabFavIcon}
         <span style={tabTitleStyles}>{tabTitle}</span>
@@ -490,8 +508,6 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
 }
 
 function renderPopup() {
-  // initManageDialog();
-  console.log( "background page:", bgw );
   chrome.bookmarks.getTree( function ( tree ) {
     console.log( "Bookmarks tree: ", tree );
   });
@@ -505,16 +521,6 @@ function renderPopup() {
       var tabWindows = bgw.tabMan.winStore.getAll();
       tabWindows.sort( windowCmpFn );
       console.log( "tabWindows:", tabWindows );
-      /*
-      for ( var i = 0; i < tabWindows.length; i++ ) {
-        var tabWindow = tabWindows[ i ];
-        var id = "tabWindow" + i;
-        if( tabWindow ) {
-          var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
-          logWrap( function() { renderTabWindow( tabWindow, isCurrent, id ); } )();
-        }
-      }
-      */
       if (tabWindows.length > 0) {
         logWrap( renderReact )( tabWindows, currentWindow );
       }
@@ -540,7 +546,4 @@ function renderPopup() {
   chrome.windows.getAll( {populate: true}, logWrap( syncAndRender ) );
 }
 
-console.log("hello from popup.js");
-console.log("bgw: ", bgw);
 renderPopup();
-// $(document).bind('ready', tabMan.renderPopup );
