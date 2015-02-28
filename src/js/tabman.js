@@ -6,19 +6,21 @@ var constants = require('./constants.js');
 var actions = require('./actions.js');
 var TabWindowStore = require('./tabWindowStore.js');
 
+var TabWindow = require('./tabWindow.js');
+
 'use strict';
 var CONTEXT_MENU_ID = 99;
 
 var contextMenuCreated = false;
+
+var flux = null; // flux instance
+var winStore = null;  // TabWindowStore instance
 
 var tabmanFolderId = null;
 var tabmanFolderTitle = "Subjective Tab Manager";
 
 var archiveFolderId = null;
 var archiveFolderTitle = "_Archive";
-
-var flux = null; // flux instance
-var winStore = null;  // TabWindowStore instance
 
 /*
 * begin managing the specified tab window
@@ -73,147 +75,6 @@ function unmanageWindow( tabWindow ) {
   tabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
 }
 
-var tabWindowPrototype = { 
-  _managed: false, 
-  _managedTitle: "",
-  chromeWindow: null,
-  bookmarkFolder: null,  
-  open: false,
-
-  reloadBookmarkFolder: function() {
-    var tabWindow = this;
-    chrome.bookmarks.getSubTree( this.bookmarkFolder.id, function ( folderNodes ) {
-      var fullFolderNode = folderNodes[ 0 ];
-      tabWindow.bookmarkFolder = fullFolderNode;
-    } );
-  },
-
-  getTitle:  function() {
-    if( this._managed ) {
-      return this.bookmarkFolder.title;
-    } else {
-      var tabs = this.chromeWindow.tabs;
-      // linear search to find active tab to use as window title
-      for ( var j = 0; j < tabs.length; j++ ) {
-        var tab = tabs[j];
-        if ( tab.active ) {
-          return tab.title;
-        }
-      }
-    }
-    return "";  // shouldn't happen
-  },
-
-  isManaged: function() {
-    return this._managed;
-  },
-
-  // Get a set of tab-like items for rendering
-  getTabItems: function() {
-
-    function makeBookmarkedTabItem( bm ) {
-      var ret = Object.create( bm );
-      ret.bookmarked = true;
-      ret.open = false;
-      ret.bookmark = bm;
-      return ret;
-    };
-
-    function makeOpenTabItem(ot) {
-      var ret = Object.create( ot );
-      ret.bookmarked = false;
-      ret.open = true;
-      return ret;
-    };
-
-    var tabs;
-
-    if( this.isManaged() ) {
-      // try to match the open tabs as closely as possible by starting there:
-
-      var urlMap = {};
-
-      if( this.open ) {
-        tabs = this.chromeWindow.tabs.map( function ( ot ) { 
-            var item = makeOpenTabItem( ot); 
-            urlMap[ ot.url ] = item;
-            return item;
-        } );
-        var closedBookmarks = [];
-        for ( var i = 0; i < this.bookmarkFolder.children.length; i++ ) {
-          var bm = this.bookmarkFolder.children[ i ];
-          var obm = urlMap[ bm.url ];
-          if ( obm ) {
-            obm.bookmarked = true;
-            obm.bookmark = bm;
-          } else {
-            closedBookmarks.push( makeBookmarkedTabItem( bm ) );
-          }
-        }
-
-        /*
-         * So it's actually not possible to come up with a perfect ordering here, since we
-         * want to preserve both bookmark order (whether open or closed) and order of
-         * currently open tabs.
-         * As a compromise, we'll present bookmarked, opened tabs for as long as they
-         * match the bookmark ordering, then we'll inject the closed bookmarks, then
-         * everything else.
-         */
-        var outTabs = [];
-        var openTabs = tabs.slice();
-        var bookmarks = this.bookmarkFolder.children.slice();
-
-        while ( openTabs.length > 0 && bookmarks.length > 0) {
-          var tab = openTabs.shift();
-          var bm = bookmarks.shift();
-          if ( tab.bookmarked && bm.url === tab.url) {
-            outTabs.push( tab );
-            tab = null;
-            bm = null;
-          } else {
-            break;
-          }
-        }
-        // we hit a non-matching tab, now inject closed bookmarks:
-        outTabs = outTabs.concat( closedBookmarks );
-        if (tab) {
-          outTabs.push(tab);
-        }
-        // and inject the remaining tabs:
-        outTabs = outTabs.concat( openTabs );
-        tabs = outTabs;
-      } else {
-        tabs = this.bookmarkFolder.children.map( makeBookmarkedTabItem );
-      }
-    } else {
-      tabs = this.chromeWindow.tabs.map( makeOpenTabItem );
-    }
-
-    return tabs;
-  }
-};
-
-/*  
- * initialize a tab window from a (unmanaged) chrome Window
- */
-function makeChromeTabWindow( chromeWindow ) {
-  var ret = Object.create( tabWindowPrototype );
-  ret.chromeWindow = chromeWindow;
-  ret.open = true;
-  return ret;
-}
-
-/*
- * initialize an unopened window from a bookmarks folder
- */
-function makeFolderTabWindow( bookmarkFolder ) {
-  var ret = Object.create( tabWindowPrototype );
-  ret._managed = true;
-  ret.bookmarkFolder = bookmarkFolder;
-
-  return ret;
-}
-
 /**
  * synchronize windows from chrome.windows.getAll with internal map of
  * managed and unmanaged tab windows
@@ -234,7 +95,7 @@ function syncWindowList( chromeWindowList ) {
     var tabWindow = winStore.getTabWindowByChromeId(chromeWindow.id);
     if( !tabWindow ) {
       console.log( "syncWindowList: new window id: ", chromeWindow.id );
-      tabWindow = makeChromeTabWindow( chromeWindow );
+      tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       flux.actions.addTabWindow( tabWindow );
     } else {
       // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
@@ -256,7 +117,7 @@ function syncWindowList( chromeWindowList ) {
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows( tabManFolder ) {
   function loadWindow( winFolder ) {
-    var folderWindow = makeFolderTabWindow( winFolder );
+    var folderWindow = TabWindow.makeFolderTabWindow( winFolder );
     flux.actions.addTabWindow( folderWindow );
   }
 
