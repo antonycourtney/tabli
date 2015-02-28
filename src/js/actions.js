@@ -35,7 +35,14 @@ var actions = {
   attachChromeWindow: function(tabWindow,chromeWindow) {
     var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
     this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
+  },
+
+  // activate a specific tab:
+  activateTab: function(tabWindow,tab,tabIndex) {
+    var payload = { tabWindow: tabWindow, tab: tab, tabIndex: tabIndex };
+    this.dispatch(constants.ACTIVATE_TAB, payload);
   }
+
 };
 
 module.exports = actions;

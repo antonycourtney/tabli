@@ -1,6 +1,7 @@
 /*
  * A Flux store for TabWindows
  */
+ 'use strict';
  var Fluxxor = require('fluxxor');
  var constants = require('./constants.js');
 
@@ -119,19 +120,49 @@ function openTabWindow(tabWindow,callback) {
   var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
   if (tabWindow.open) {
     // existing window -- just transfer focus
-    chrome.windows.update( windowId, { focused: true } );
+    chrome.windows.update( windowId, { focused: true }, callback );
   } else {
     // bookmarked window -- need to open it!
     restoreBookmarkWindow( tabWindow, callback );      
   }    
 }
 
+function activateTab(tabWindow,tab,tabIndex,callback) {
+  console.log("activateTab: ", tabWindow, tab );
+  if( tabWindow.open ) {
+    // OK, so we know this window is open.  What about the specific tab?
+    if (tab.open) { 
+      // Tab is already open, just make it active:
+      console.log("making tab active");
+      chrome.tabs.update( tab.id, { active: true }, function () {
+        console.log("making tab's window active");
+        chrome.windows.update( tabWindow.chromeWindow.id, { focused: true }, callback);
+      });
+    } else {
+      // restore this bookmarked tab:
+      var createOpts = {
+        windowId: tabWindow.chromeWindow.id, 
+        url: tab.url,
+        index: tabIndex,
+        active: true
+      };
+      console.log("restoring bookmarked tab")
+      chrome.tabs.create( createOpts, callback );
+    }
+  } else {
+    console.log("activateTab: opening non-open window");
+    openTabWindow( tabWindow, function() {
+      console.log("activateTab: window open complete.");
+      // TODO: should really attempt to activate chosen tab
+      callback();
+    });
+  }        
+}
+
 function attachChromeWindow(tabWindow,chromeWindow) {
-  console.log("attachChromeWindow");
   tabWindow.chromeWindow = chromeWindow;
   tabWindow.open = true;
   windowIdMap[ chromeWindow.id ] = tabWindow;
-  console.log("attachChromeWindow: complete.");
 }
 
 var TabWindowStore = Fluxxor.createStore({
@@ -142,7 +173,8 @@ var TabWindowStore = Fluxxor.createStore({
       constants.OPEN_TAB_WINDOW, this.onOpenTabWindow,
       constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
       constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
-      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow
+      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
+      constants.ACTIVATE_TAB, this.onActivateTab
       );
   },
 
@@ -181,6 +213,13 @@ var TabWindowStore = Fluxxor.createStore({
   onAttachChromeWindow: function(payload) {
     attachChromeWindow(payload.tabWindow,payload.chromeWindow);
     this.emit("change");
+  },
+
+  onActivateTab: function(payload) {
+    var self = this;
+    activateTab(payload.tabWindow,payload.tab,payload.tabIndex,function() {
+      self.emit("change");
+    });
   },
 
   getAll: function() {

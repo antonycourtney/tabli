@@ -119,12 +119,10 @@ var tabWindowPrototype = {
       return ret;
     };
 
-    function makeOpenTabItem( urlMap, ot ) {
+    function makeOpenTabItem(ot) {
       var ret = Object.create( ot );
       ret.bookmarked = false;
       ret.open = true;
-      urlMap[ ot.url ] = ret;
-
       return ret;
     };
 
@@ -136,7 +134,11 @@ var tabWindowPrototype = {
       var urlMap = {};
 
       if( this.open ) {
-        tabs = this.chromeWindow.tabs.map( function ( ot ) { return makeOpenTabItem( urlMap, ot); } );
+        tabs = this.chromeWindow.tabs.map( function ( ot ) { 
+            var item = makeOpenTabItem( ot); 
+            urlMap[ ot.url ] = item;
+            return item;
+        } );
         var closedBookmarks = [];
         for ( var i = 0; i < this.bookmarkFolder.children.length; i++ ) {
           var bm = this.bookmarkFolder.children[ i ];
@@ -184,7 +186,7 @@ var tabWindowPrototype = {
         tabs = this.bookmarkFolder.children.map( makeBookmarkedTabItem );
       }
     } else {
-      tabs = this.chromeWindow.tabs;
+      tabs = this.chromeWindow.tabs.map( makeOpenTabItem );
     }
 
     return tabs;

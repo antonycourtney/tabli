@@ -292,8 +292,11 @@ var R_TabItem = React.createClass({
   handleClick: function() {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
+    var tabIndex = this.props.tabIndex;
 
-    console.log("clicked on tab: ", tabWindow, tab );
+    console.log("R_TabItem: handleClick: tab: ", tab);
+
+    bgw.tabMan.flux.actions.activateTab(tabWindow,tab,tabIndex);
   },
 
   render: function() {
@@ -387,7 +390,7 @@ var R_TabWindow = React.createClass({
     var items = [];
     for (var i = 0; i < tabs.length; i++ ) {
       var id = "tabItem-" + i;
-      var tabItem = <R_TabItem tabWindow={tabWindow} tab={tabs[i]} key={id} />;
+      var tabItem = <R_TabItem tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
       items.push(tabItem);
     };
 
