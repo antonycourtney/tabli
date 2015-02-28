@@ -66,14 +66,15 @@ var styles = {
   windowList: { 
     fontSize: 12,
     // lineHeight: '100%',
-    width: 245,
-    maxWidth: 245,
+    width: 243,
+    maxWidth: 243,
     marginTop: 'auto',
     marginBottom: 'auto',
     marginLeft: 3
   },
   tabTitle: {
-    width: 285
+    width: 275,
+    maxWidth: 275
   },  
   expandablePanel: {
     width: '100%',
@@ -140,7 +141,6 @@ var styles = {
   },
   closeButton: {
     background: 'url("../images/interface-80.png")',
-    'float': 'right'  
   },
   closeButtonHover: {
     background: 'url("../images/interface-94.png")'
@@ -156,6 +156,10 @@ var styles = {
   },
   windowTitle: {
     fontWeight: 'bold'
+  },
+  headerCheckBox: {
+    width: 13,
+    height: 13
   }
 }
 
@@ -249,7 +253,7 @@ var R_WindowHeader = React.createClass({
       windowCheckItem =  <button style={m(styles.headerButton,styles.windowManagedButton)} title="Stop managing this window" />;
       // TODO: callbacks!
     } else {
-      var checkStyle = m(styles.headerButton,hoverStyle);
+      var checkStyle = m(styles.headerButton,hoverStyle,styles.headerCheckBox);
       windowCheckItem = <input style={checkStyle} type="checkbox" title="Bookmark this window (and all its tabs)" />;
     }
 
@@ -299,6 +303,10 @@ var R_TabItem = React.createClass({
     bgw.tabMan.flux.actions.activateTab(tabWindow,tab,tabIndex);
   },
 
+  handleClose: function() {
+    bgw.tabMan.flux.actions.closeTab(this.props.tab);
+  }, 
+
   render: function() {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
@@ -323,7 +331,7 @@ var R_TabItem = React.createClass({
         tabCheckItem = <button style={m(styles.headerButton,styles.tabManagedButton)} title="Remove bookmark for this tab" />;
         // TODO: callback
       } else {
-        tabCheckItem = <input style={m(styles.headerButton,hoverVisible)} type="checkbox" title="Bookmark this tab" />;
+        tabCheckItem = <input style={m(styles.headerButton,hoverVisible,styles.headerCheckBox)} type="checkbox" title="Bookmark this tab" />;
         //tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
       }
     } else {
@@ -337,6 +345,12 @@ var R_TabItem = React.createClass({
     var tabActiveStyle = tab.active ? styles.activeSpan : null;
     var tabTitleStyles = m(styles.windowList,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
+
+    var closeStyle = m(styles.headerButton,styles.closeButton);
+    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
+                          hoverStyle={styles.closeButtonHover} title="Close Tab" 
+                          onClick={this.handleClose} />
+
     return (
       <div style={m(styles.noWrap,styles.tabItem,hoverStyle)}
           onMouseOut={this.handleMouseOut} 
@@ -345,6 +359,7 @@ var R_TabItem = React.createClass({
         {tabCheckItem}
         {tabFavIcon}
         <span style={tabTitleStyles}>{tabTitle}</span>
+        {closeButton}
       </div>);
   }
 

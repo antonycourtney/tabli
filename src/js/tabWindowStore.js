@@ -55,6 +55,10 @@ function closeTabWindow(tabWindow, cb) {
   });
 }
 
+function closeTab(tab,cb) {
+  chrome.tabs.remove( tab.id, cb );
+}
+
 function revertTabWindow( tabWindow, callback ) {
   var tabs = tabWindow.chromeWindow.tabs;
   var currentTabIds = tabs.map( function ( t ) { return t.id; } );
@@ -174,8 +178,18 @@ var TabWindowStore = Fluxxor.createStore({
       constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
       constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
       constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
-      constants.ACTIVATE_TAB, this.onActivateTab
+      constants.ACTIVATE_TAB, this.onActivateTab,
+      constants.CLOSE_TAB, this.onCloseTab
       );
+  },
+
+  onCloseTab: function(payload) {
+    var self = this;
+    console.log("onCloseTab: closing tab...");
+    closeTab(payload.tab,function() {
+      console.log("onCloseTab: close complete...");
+      self.emit("change");
+    });
   },
 
   onAddTabWindow: function(payload) {

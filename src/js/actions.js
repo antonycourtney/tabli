@@ -41,6 +41,11 @@ var actions = {
   activateTab: function(tabWindow,tab,tabIndex) {
     var payload = { tabWindow: tabWindow, tab: tab, tabIndex: tabIndex };
     this.dispatch(constants.ACTIVATE_TAB, payload);
+  },
+
+  closeTab: function(tab) {
+    var payload = { tab: tab };
+    this.dispatch(constants.CLOSE_TAB, payload);
   }
 
 };
