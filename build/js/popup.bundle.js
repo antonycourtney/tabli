@@ -50,9 +50,9 @@
 	/** @jsx React.DOM */
 	'use strict';
 	
-	var $ = __webpack_require__(/*! jquery */ 6);
+	var $ = __webpack_require__(/*! jquery */ 8);
 	
-	var _ = __webpack_require__(/*! underscore */ 8);
+	var _ = __webpack_require__(/*! underscore */ 9);
 	
 	var React = __webpack_require__(/*! react */ 7);
 	
@@ -60,7 +60,7 @@
 	
 	var objectAssign = __webpack_require__(/*! object-assign */ 5);
 	
-	var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
+	var Fluxxor = __webpack_require__(/*! fluxxor */ 6);
 	var constants = __webpack_require__(/*! ./constants.js */ 1);
 	var actions = __webpack_require__(/*! ./actions.js */ 2);
 	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 3);
@@ -521,13 +521,16 @@
 	    var managedWindows = [];
 	    var unmanagedWindows = [];
 	
-	    var currentWindow = this.props.currentWindow;
+	    // var currentWindow = this.props.currentWindow;
+	    // TODO: put back currentWindow, but get that state via Flux
+	    var currentWindow = null;
+	
 	    var tabWindows = this.state.tabWindows;
 	    for (var i=0; i < tabWindows.length; i++) {
 	      var tabWindow = tabWindows[i];
 	      var id = "tabWindow" + i;
 	      if (tabWindow) {
-	          var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
+	          var isCurrent = tabWindow.open && currentWindow && tabWindow.chromeWindow.id == currentWindow.id;
 	          var isManaged = tabWindow.isManaged();
 	
 	          var windowElem = React.createElement(R_TabWindow, {tabWindow: tabWindow, key: id});
@@ -554,13 +557,10 @@
 	  }
 	}); 
 	
-	function renderReact(tabWindows,currentWindow) {
-	  React.render(
-	    React.createElement(R_TabWindowList, {flux: bgw.tabMan.flux, currentWindow: currentWindow}),
-	    document.getElementById('windowList-region')
-	  );
-	}
-	
+	/*
+	 * currently unused
+	 * TODO: put sort by this back in R_TabWindowList
+	 */
 	function windowCmpFn( tabWindowA, tabWindowB ) {
 	  // open windows first:
 	  if ( tabWindowA.open != tabWindowB.open ) {
@@ -575,44 +575,29 @@
 	}
 	
 	function renderPopup() {
-	  chrome.bookmarks.getTree( function ( tree ) {
-	    console.log( "Bookmarks tree: ", tree );
-	  });
-	
-	  function syncAndRender( windowList ) {
-	    chrome.windows.getCurrent( null, function ( currentWindow ) {
-	      console.log( "in windows.getCurrent:" );
-	      console.log( "Chrome Windows: ", windowList );
-	      logWrap( bgw.tabMan.syncWindowList )( windowList );
-	      console.log("After syncWindowList");
-	      var tabWindows = bgw.tabMan.winStore.getAll();
-	      tabWindows.sort( windowCmpFn );
-	      console.log( "tabWindows:", tabWindows );
-	      if (tabWindows.length > 0) {
-	        logWrap( renderReact )( tabWindows, currentWindow );
-	      }
-	
-	    } );
-	  }
-	
-	  // wrapper to log exceptions
-	  function logWrap( f ) {
-	    function wf() {
-	      try {
-	        var ret = f.apply( this, arguments );
-	      } catch( e ) {
-	        console.error( "logWrap: caught exception invoking function: " );
-	        console.error( e.stack );
-	        throw e;
-	      }
-	      return ret;
-	    }
-	    return wf;
-	  }
-	
-	  chrome.windows.getAll( {populate: true}, logWrap( syncAndRender ) );
+	  bgw.tabMan.flux.actions.syncWindowList();
+	  window.onload = function() {
+	    var elemId = document.getElementById('windowList-region');
+	    var windowList = React.createElement(R_TabWindowList, {flux: bgw.tabMan.flux});
+	    // console.log("renderPopup: ", document, windowList, elemId, bgw.tabMan.flux );
+	    React.render( windowList, elemId );
+	  } 
 	}
 	
+	// wrapper to log exceptions
+	function logWrap( f ) {
+	  function wf() {
+	    try {
+	      var ret = f.apply( this, arguments );
+	    } catch( e ) {
+	      console.error( "logWrap: caught exception invoking function: " );
+	      console.error( e.stack );
+	      throw e;
+	    }
+	    return ret;
+	  }
+	  return wf;
+	}
 	renderPopup();
 
 /***/ },
@@ -635,7 +620,8 @@
 	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
 	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW",
 	  ACTIVATE_TAB: "ACTIVATE_TAB",
-	  CLOSE_TAB: "CLOSE_TAB"
+	  CLOSE_TAB: "CLOSE_TAB",
+	  SYNC_WINDOW_LIST: "SYNC_WINDOW_LIST"
 	};
 	
 	module.exports = constants;
@@ -679,24 +665,28 @@
 	    var payload = { tabWindow: tabWindow };
 	    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
 	  },
-	
 	  // associate a Chrome window with a given tabWindow:
 	  attachChromeWindow: function(tabWindow,chromeWindow) {
 	    var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
 	    this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
 	  },
-	
 	  // activate a specific tab:
 	  activateTab: function(tabWindow,tab,tabIndex) {
 	    var payload = { tabWindow: tabWindow, tab: tab, tabIndex: tabIndex };
 	    this.dispatch(constants.ACTIVATE_TAB, payload);
 	  },
-	
 	  closeTab: function(tab) {
 	    var payload = { tab: tab };
 	    this.dispatch(constants.CLOSE_TAB, payload);
-	  }
+	  },
 	
+	  syncWindowList: function() {
+	    var self = this;
+	    chrome.windows.getAll( {populate: true}, function (windowList) {
+	      var payload = { windowList: windowList };
+	      self.dispatch(constants.SYNC_WINDOW_LIST, payload);
+	    });
+	  }
 	};
 	
 	module.exports = actions;
@@ -711,14 +701,16 @@
 	/*
 	 * A Flux store for TabWindows
 	 */
-	 'use strict';
-	 var Fluxxor = __webpack_require__(/*! fluxxor */ 4);
-	 var constants = __webpack_require__(/*! ./constants.js */ 1);
+	'use strict';
+	var Fluxxor = __webpack_require__(/*! fluxxor */ 6);
+	var constants = __webpack_require__(/*! ./constants.js */ 1);
 	
-	 var windowIdMap = {};
-	 var tabWindows = [];
+	var TabWindow = __webpack_require__(/*! ./tabWindow.js */ 4);
 	
-	 var bgw = chrome.extension.getBackgroundPage();
+	var windowIdMap = {};
+	var tabWindows = [];
+	
+	var bgw = chrome.extension.getBackgroundPage();
 	
 	/*
 	 * add a new Tab window to global maps:
@@ -879,6 +871,42 @@
 	  windowIdMap[ chromeWindow.id ] = tabWindow;
 	}
 	
+	/**
+	 * synchronize windows from chrome.windows.getAll with internal map of
+	 * managed and unmanaged tab windows
+	 */
+	function syncWindowList( chromeWindowList ) {
+	  // To GC any closed windows:
+	  for ( var i = 0; i < tabWindows.length; i++ ) {
+	    var tabWindow = tabWindows[ i ];
+	    if( tabWindow )
+	      tabWindow.open = false;
+	  }
+	  for ( var i = 0; i < chromeWindowList.length; i++ ) {
+	    var chromeWindow = chromeWindowList[ i ];
+	    var tabWindow = windowIdMap[chromeWindow.id];
+	    if( !tabWindow ) {
+	      console.log( "syncWindowList: new window id: ", chromeWindow.id );
+	      tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
+	      addTabWindow(tabWindow);
+	    } else {
+	      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+	      // Set chromeWindow to current snapshot of tab contents:
+	      tabWindow.chromeWindow = chromeWindow;
+	      tabWindow.open = true;
+	    }
+	  }
+	  // GC any closed, unmanaged windows:
+	  for ( var i = 0; i < tabWindows.length; i++ ) {
+	    tabWindow = tabWindows[ i ];
+	    if( tabWindow && !( tabWindow._managed ) && !( tabWindow.open ) ) {
+	      console.log( "syncWindowList: detected closed window: ", tabWindow );
+	      removeTabWindow(tabWindow);
+	    }
+	  }
+	  console.log("syncWindowList: complete");
+	}   
+	
 	var TabWindowStore = Fluxxor.createStore({
 	  initialize: function() {
 	    this.bindActions(
@@ -889,7 +917,8 @@
 	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
 	      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
 	      constants.ACTIVATE_TAB, this.onActivateTab,
-	      constants.CLOSE_TAB, this.onCloseTab
+	      constants.CLOSE_TAB, this.onCloseTab,
+	      constants.SYNC_WINDOW_LIST, this.onSyncWindowList
 	      );
 	  },
 	
@@ -946,6 +975,11 @@
 	    });
 	  },
 	
+	  onSyncWindowList: function(payload) {
+	    syncWindowList(payload.windowList);
+	    this.emit("change");
+	  },
+	
 	  getAll: function() {
 	    return tabWindows;
 	  },
@@ -960,30 +994,177 @@
 
 /***/ },
 /* 4 */
-/*!****************************!*\
-  !*** ./~/fluxxor/index.js ***!
-  \****************************/
+/*!*****************************!*\
+  !*** ./src/js/tabWindow.js ***!
+  \*****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var Dispatcher = __webpack_require__(/*! ./lib/dispatcher */ 9),
-	    Flux = __webpack_require__(/*! ./lib/flux */ 10),
-	    FluxMixin = __webpack_require__(/*! ./lib/flux_mixin */ 11),
-	    FluxChildMixin = __webpack_require__(/*! ./lib/flux_child_mixin */ 12),
-	    StoreWatchMixin = __webpack_require__(/*! ./lib/store_watch_mixin */ 13),
-	    createStore = __webpack_require__(/*! ./lib/create_store */ 14);
+	/**
+	 * Representations of windows and bookmark folders
+	 */
+	'use strict';
 	
-	var Fluxxor = {
-	  Dispatcher: Dispatcher,
-	  Flux: Flux,
-	  FluxMixin: FluxMixin,
-	  FluxChildMixin: FluxChildMixin,
-	  StoreWatchMixin: StoreWatchMixin,
-	  createStore: createStore,
-	  version: __webpack_require__(/*! ./version */ 15)
+	
+	
+	function makeBookmarkedTabItem( bm ) {
+	  var ret = Object.create( bm );
+	  ret.bookmarked = true;
+	  ret.open = false;
+	  ret.bookmark = bm;
+	  return ret;
 	};
 	
-	module.exports = Fluxxor;
-
+	function makeOpenTabItem(ot) {
+	  var ret = Object.create( ot );
+	  ret.bookmarked = false;
+	  ret.open = true;
+	  return ret;
+	};
+	
+	/*
+	 * Gather open tabs and a set of non-opened bookmarks from the given bookmarks 
+	 * list for a managed window that is open
+	 */
+	function getManagedOpenTabInfo(openTabs,bookmarks) {
+	  var urlMap = {};
+	  tabs = openTabs.map( function ( ot ) { 
+	    var item = makeOpenTabItem( ot); 
+	    urlMap[ ot.url ] = item;
+	    return item;
+	  } );
+	  var closedBookmarks = [];
+	  for ( var i = 0; i < bookmarks.length; i++ ) {
+	    var bm = bookmarks[ i ];
+	    var obm = urlMap[ bm.url ];
+	    if ( obm ) {
+	      obm.bookmarked = true;
+	      obm.bookmark = bm;
+	    } else {
+	      closedBookmarks.push( makeBookmarkedTabItem( bm ) );
+	    }
+	  }
+	  return { openTabs: tabs, closedBookmarks: closedBookmarks };
+	}
+	
+	/*
+	 * For a managed, open window, return a list of tab items
+	 * representing both open tabs and closed bookmarks, making
+	 * best effort to preserve a sensible order
+	 */
+	function getManagedOpenTabs(chromeWindow,bookmarkFolder) {
+	  var tabInfo = getManagedOpenTabInfo( chromeWindow.tabs, bookmarkFolder.children );
+	  /*
+	   * So it's actually not possible to come up with a perfect ordering here, since we
+	   * want to preserve both bookmark order (whether open or closed) and order of
+	   * currently open tabs.
+	   * As a compromise, we'll present bookmarked, opened tabs for as long as they
+	   * match the bookmark ordering, then we'll inject the closed bookmarks, then
+	   * everything else.
+	   */
+	  var outTabs = [];
+	  var openTabs = tabInfo.openTabs.slice();
+	  var bookmarks = bookmarkFolder.children.slice();
+	
+	  while ( openTabs.length > 0 && bookmarks.length > 0) {
+	    var tab = openTabs.shift();
+	    var bm = bookmarks.shift();
+	    if ( tab.bookmarked && bm.url === tab.url) {
+	      outTabs.push( tab );
+	      tab = null;
+	      bm = null;
+	    } else {
+	      break;
+	    }
+	  }
+	  // we hit a non-matching tab, now inject closed bookmarks:
+	  outTabs = outTabs.concat( tabInfo.closedBookmarks );
+	  if (tab) {
+	    outTabs.push(tab);
+	  }
+	  // and inject the remaining tabs:
+	  outTabs = outTabs.concat( openTabs );
+	
+	  return outTabs;
+	}
+	
+	var tabWindowPrototype = { 
+	  _managed: false, 
+	  _managedTitle: "",
+	  chromeWindow: null,
+	  bookmarkFolder: null,  
+	  open: false,
+	
+	  reloadBookmarkFolder: function() {
+	    var tabWindow = this;
+	    chrome.bookmarks.getSubTree( this.bookmarkFolder.id, function ( folderNodes ) {
+	      var fullFolderNode = folderNodes[ 0 ];
+	      tabWindow.bookmarkFolder = fullFolderNode;
+	    } );
+	  },
+	
+	  getTitle:  function() {
+	    if( this._managed ) {
+	      return this.bookmarkFolder.title;
+	    } else {
+	      var tabs = this.chromeWindow.tabs;
+	      // linear search to find active tab to use as window title
+	      for ( var j = 0; j < tabs.length; j++ ) {
+	        var tab = tabs[j];
+	        if ( tab.active ) {
+	          return tab.title;
+	        }
+	      }
+	    }
+	    return "";  // shouldn't happen
+	  },
+	
+	  isManaged: function() {
+	    return this._managed;
+	  },
+	
+	  // Get a set of tab-like items for rendering
+	  getTabItems: function() {
+	    var tabs;
+	
+	    if( this.isManaged() ) {
+	      if( this.open ) {
+	        tabs = getManagedOpenTabs(this.chromeWindow,this.bookmarkFolder);
+	      } else {
+	        tabs = this.bookmarkFolder.children.map( makeBookmarkedTabItem );
+	      }
+	    } else {
+	      tabs = this.chromeWindow.tabs.map( makeOpenTabItem );
+	    }
+	
+	    return tabs;
+	  }
+	};
+	
+	/*  
+	 * initialize a tab window from a (unmanaged) chrome Window
+	 */
+	function makeChromeTabWindow( chromeWindow ) {
+	  var ret = Object.create( tabWindowPrototype );
+	  ret.chromeWindow = chromeWindow;
+	  ret.open = true;
+	  return ret;
+	}
+	
+	/*
+	 * initialize an unopened window from a bookmarks folder
+	 */
+	function makeFolderTabWindow( bookmarkFolder ) {
+	  var ret = Object.create( tabWindowPrototype );
+	  ret._managed = true;
+	  ret.bookmarkFolder = bookmarkFolder;
+	
+	  return ret;
+	}
+	
+	module.exports = {
+	  makeChromeTabWindow: makeChromeTabWindow,
+	  makeFolderTabWindow: makeFolderTabWindow
+	};
 
 /***/ },
 /* 5 */
@@ -1022,6 +1203,43 @@
 
 /***/ },
 /* 6 */
+/*!****************************!*\
+  !*** ./~/fluxxor/index.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var Dispatcher = __webpack_require__(/*! ./lib/dispatcher */ 10),
+	    Flux = __webpack_require__(/*! ./lib/flux */ 11),
+	    FluxMixin = __webpack_require__(/*! ./lib/flux_mixin */ 12),
+	    FluxChildMixin = __webpack_require__(/*! ./lib/flux_child_mixin */ 13),
+	    StoreWatchMixin = __webpack_require__(/*! ./lib/store_watch_mixin */ 14),
+	    createStore = __webpack_require__(/*! ./lib/create_store */ 15);
+	
+	var Fluxxor = {
+	  Dispatcher: Dispatcher,
+	  Flux: Flux,
+	  FluxMixin: FluxMixin,
+	  FluxChildMixin: FluxChildMixin,
+	  StoreWatchMixin: StoreWatchMixin,
+	  createStore: createStore,
+	  version: __webpack_require__(/*! ./version */ 16)
+	};
+	
+	module.exports = Fluxxor;
+
+
+/***/ },
+/* 7 */
+/*!**************************!*\
+  !*** ./~/react/react.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(/*! ./lib/React */ 17);
+
+
+/***/ },
+/* 8 */
 /*!*********************************!*\
   !*** ./~/jquery/dist/jquery.js ***!
   \*********************************/
@@ -10235,17 +10453,7 @@
 
 
 /***/ },
-/* 7 */
-/*!**************************!*\
-  !*** ./~/react/react.js ***!
-  \**************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(/*! ./lib/React */ 16);
-
-
-/***/ },
-/* 8 */
+/* 9 */
 /*!************************************!*\
   !*** ./~/underscore/underscore.js ***!
   \************************************/
@@ -11669,22 +11877,22 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /*!*************************************!*\
   !*** ./~/fluxxor/lib/dispatcher.js ***!
   \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _clone = __webpack_require__(/*! lodash-node/modern/lang/clone */ 50),
-	    _mapValues = __webpack_require__(/*! lodash-node/modern/object/mapValues */ 46),
-	    _forOwn = __webpack_require__(/*! lodash-node/modern/object/forOwn */ 47),
-	    _intersection = __webpack_require__(/*! lodash-node/modern/array/intersection */ 53),
-	    _keys = __webpack_require__(/*! lodash-node/modern/object/keys */ 48),
-	    _map = __webpack_require__(/*! lodash-node/modern/collection/map */ 56),
-	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55),
-	    _size = __webpack_require__(/*! lodash-node/modern/collection/size */ 57),
-	    _findKey = __webpack_require__(/*! lodash-node/modern/object/findKey */ 49),
-	    _uniq = __webpack_require__(/*! lodash-node/modern/array/uniq */ 54);
+	var _clone = __webpack_require__(/*! lodash-node/modern/lang/clone */ 52),
+	    _mapValues = __webpack_require__(/*! lodash-node/modern/object/mapValues */ 54),
+	    _forOwn = __webpack_require__(/*! lodash-node/modern/object/forOwn */ 56),
+	    _intersection = __webpack_require__(/*! lodash-node/modern/array/intersection */ 58),
+	    _keys = __webpack_require__(/*! lodash-node/modern/object/keys */ 55),
+	    _map = __webpack_require__(/*! lodash-node/modern/collection/map */ 50),
+	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 48),
+	    _size = __webpack_require__(/*! lodash-node/modern/collection/size */ 49),
+	    _findKey = __webpack_require__(/*! lodash-node/modern/object/findKey */ 57),
+	    _uniq = __webpack_require__(/*! lodash-node/modern/array/uniq */ 59);
 	
 	var Dispatcher = function(stores) {
 	  this.stores = {};
@@ -11822,21 +12030,21 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /*!*******************************!*\
   !*** ./~/fluxxor/lib/flux.js ***!
   \*******************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 42),
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 43),
 	    inherits = __webpack_require__(/*! inherits */ 45),
-	    objectPath = __webpack_require__(/*! object-path */ 43),
-	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55),
-	    _reduce = __webpack_require__(/*! lodash-node/modern/collection/reduce */ 58),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 51),
-	    _isString = __webpack_require__(/*! lodash-node/modern/lang/isString */ 52);
+	    objectPath = __webpack_require__(/*! object-path */ 44),
+	    _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 48),
+	    _reduce = __webpack_require__(/*! lodash-node/modern/collection/reduce */ 47),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 53),
+	    _isString = __webpack_require__(/*! lodash-node/modern/lang/isString */ 51);
 	
-	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 9);
+	var Dispatcher = __webpack_require__(/*! ./dispatcher */ 10);
 	
 	var findLeaves = function(obj, path, callback) {
 	  path = path || [];
@@ -11950,7 +12158,7 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /*!*************************************!*\
   !*** ./~/fluxxor/lib/flux_mixin.js ***!
   \*************************************/
@@ -11994,7 +12202,7 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /*!*******************************************!*\
   !*** ./~/fluxxor/lib/flux_child_mixin.js ***!
   \*******************************************/
@@ -12030,13 +12238,13 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /*!********************************************!*\
   !*** ./~/fluxxor/lib/store_watch_mixin.js ***!
   \********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55);
+	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 48);
 	
 	var StoreWatchMixin = function() {
 	  var storeNames = Array.prototype.slice.call(arguments);
@@ -12077,15 +12285,15 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /*!***************************************!*\
   !*** ./~/fluxxor/lib/create_store.js ***!
   \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 55),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 51),
-	    Store = __webpack_require__(/*! ./store */ 17),
+	var _each = __webpack_require__(/*! lodash-node/modern/collection/forEach */ 48),
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 53),
+	    Store = __webpack_require__(/*! ./store */ 18),
 	    inherits = __webpack_require__(/*! inherits */ 45);
 	
 	var RESERVED_KEYS = ["flux", "waitFor"];
@@ -12126,7 +12334,7 @@
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /*!******************************!*\
   !*** ./~/fluxxor/version.js ***!
   \******************************/
@@ -12135,7 +12343,7 @@
 	module.exports = "1.5.2"
 
 /***/ },
-/* 16 */
+/* 17 */
 /*!******************************!*\
   !*** ./~/react/lib/React.js ***!
   \******************************/
@@ -12154,30 +12362,30 @@
 	
 	"use strict";
 	
-	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 18);
+	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 20);
 	var EventPluginUtils = __webpack_require__(/*! ./EventPluginUtils */ 19);
-	var ReactChildren = __webpack_require__(/*! ./ReactChildren */ 20);
+	var ReactChildren = __webpack_require__(/*! ./ReactChildren */ 22);
 	var ReactComponent = __webpack_require__(/*! ./ReactComponent */ 21);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactContext = __webpack_require__(/*! ./ReactContext */ 23);
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactElementValidator = __webpack_require__(/*! ./ReactElementValidator */ 26);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
-	var ReactDOMComponent = __webpack_require__(/*! ./ReactDOMComponent */ 28);
-	var ReactDefaultInjection = __webpack_require__(/*! ./ReactDefaultInjection */ 29);
-	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 30);
-	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 31);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactMultiChild = __webpack_require__(/*! ./ReactMultiChild */ 33);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
-	var ReactPropTypes = __webpack_require__(/*! ./ReactPropTypes */ 35);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactContext = __webpack_require__(/*! ./ReactContext */ 24);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactElementValidator = __webpack_require__(/*! ./ReactElementValidator */ 27);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
+	var ReactDOMComponent = __webpack_require__(/*! ./ReactDOMComponent */ 29);
+	var ReactDefaultInjection = __webpack_require__(/*! ./ReactDefaultInjection */ 30);
+	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 31);
+	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 32);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactMultiChild = __webpack_require__(/*! ./ReactMultiChild */ 34);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
+	var ReactPropTypes = __webpack_require__(/*! ./ReactPropTypes */ 37);
 	var ReactServerRendering = __webpack_require__(/*! ./ReactServerRendering */ 36);
-	var ReactTextComponent = __webpack_require__(/*! ./ReactTextComponent */ 37);
+	var ReactTextComponent = __webpack_require__(/*! ./ReactTextComponent */ 39);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var deprecated = __webpack_require__(/*! ./deprecated */ 39);
-	var onlyChild = __webpack_require__(/*! ./onlyChild */ 40);
+	var deprecated = __webpack_require__(/*! ./deprecated */ 40);
+	var onlyChild = __webpack_require__(/*! ./onlyChild */ 41);
 	
 	ReactDefaultInjection.inject();
 	
@@ -12276,7 +12484,7 @@
 	}
 	
 	if ("production" !== process.env.NODE_ENV) {
-	  var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	  var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
 	
 	    // If we're in Chrome, look for the devtools marker and provide a download
@@ -12326,19 +12534,19 @@
 	
 	module.exports = React;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 17 */
+/* 18 */
 /*!********************************!*\
   !*** ./~/fluxxor/lib/store.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 42),
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 43),
 	    inherits = __webpack_require__(/*! inherits */ 45),
-	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 51),
-	    _isObject = __webpack_require__(/*! lodash-node/modern/lang/isObject */ 59);
+	    _isFunction = __webpack_require__(/*! lodash-node/modern/lang/isFunction */ 53),
+	    _isObject = __webpack_require__(/*! lodash-node/modern/lang/isObject */ 60);
 	
 	function Store(dispatcher) {
 	  this.dispatcher = dispatcher;
@@ -12408,209 +12616,6 @@
 
 
 /***/ },
-/* 18 */
-/*!**********************************************!*\
-  !*** ./~/react/lib/DOMPropertyOperations.js ***!
-  \**********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule DOMPropertyOperations
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
-	
-	var escapeTextForBrowser = __webpack_require__(/*! ./escapeTextForBrowser */ 63);
-	var memoizeStringOnly = __webpack_require__(/*! ./memoizeStringOnly */ 62);
-	var warning = __webpack_require__(/*! ./warning */ 61);
-	
-	function shouldIgnoreValue(name, value) {
-	  return value == null ||
-	    (DOMProperty.hasBooleanValue[name] && !value) ||
-	    (DOMProperty.hasNumericValue[name] && isNaN(value)) ||
-	    (DOMProperty.hasPositiveNumericValue[name] && (value < 1)) ||
-	    (DOMProperty.hasOverloadedBooleanValue[name] && value === false);
-	}
-	
-	var processAttributeNameAndPrefix = memoizeStringOnly(function(name) {
-	  return escapeTextForBrowser(name) + '="';
-	});
-	
-	if ("production" !== process.env.NODE_ENV) {
-	  var reactProps = {
-	    children: true,
-	    dangerouslySetInnerHTML: true,
-	    key: true,
-	    ref: true
-	  };
-	  var warnedProperties = {};
-	
-	  var warnUnknownProperty = function(name) {
-	    if (reactProps.hasOwnProperty(name) && reactProps[name] ||
-	        warnedProperties.hasOwnProperty(name) && warnedProperties[name]) {
-	      return;
-	    }
-	
-	    warnedProperties[name] = true;
-	    var lowerCasedName = name.toLowerCase();
-	
-	    // data-* attributes should be lowercase; suggest the lowercase version
-	    var standardName = (
-	      DOMProperty.isCustomAttribute(lowerCasedName) ?
-	        lowerCasedName :
-	      DOMProperty.getPossibleStandardName.hasOwnProperty(lowerCasedName) ?
-	        DOMProperty.getPossibleStandardName[lowerCasedName] :
-	        null
-	    );
-	
-	    // For now, only warn when we have a suggested correction. This prevents
-	    // logging too much when using transferPropsTo.
-	    ("production" !== process.env.NODE_ENV ? warning(
-	      standardName == null,
-	      'Unknown DOM property ' + name + '. Did you mean ' + standardName + '?'
-	    ) : null);
-	
-	  };
-	}
-	
-	/**
-	 * Operations for dealing with DOM properties.
-	 */
-	var DOMPropertyOperations = {
-	
-	  /**
-	   * Creates markup for the ID property.
-	   *
-	   * @param {string} id Unescaped ID.
-	   * @return {string} Markup string.
-	   */
-	  createMarkupForID: function(id) {
-	    return processAttributeNameAndPrefix(DOMProperty.ID_ATTRIBUTE_NAME) +
-	      escapeTextForBrowser(id) + '"';
-	  },
-	
-	  /**
-	   * Creates markup for a property.
-	   *
-	   * @param {string} name
-	   * @param {*} value
-	   * @return {?string} Markup string, or null if the property was invalid.
-	   */
-	  createMarkupForProperty: function(name, value) {
-	    if (DOMProperty.isStandardName.hasOwnProperty(name) &&
-	        DOMProperty.isStandardName[name]) {
-	      if (shouldIgnoreValue(name, value)) {
-	        return '';
-	      }
-	      var attributeName = DOMProperty.getAttributeName[name];
-	      if (DOMProperty.hasBooleanValue[name] ||
-	          (DOMProperty.hasOverloadedBooleanValue[name] && value === true)) {
-	        return escapeTextForBrowser(attributeName);
-	      }
-	      return processAttributeNameAndPrefix(attributeName) +
-	        escapeTextForBrowser(value) + '"';
-	    } else if (DOMProperty.isCustomAttribute(name)) {
-	      if (value == null) {
-	        return '';
-	      }
-	      return processAttributeNameAndPrefix(name) +
-	        escapeTextForBrowser(value) + '"';
-	    } else if ("production" !== process.env.NODE_ENV) {
-	      warnUnknownProperty(name);
-	    }
-	    return null;
-	  },
-	
-	  /**
-	   * Sets the value for a property on a node.
-	   *
-	   * @param {DOMElement} node
-	   * @param {string} name
-	   * @param {*} value
-	   */
-	  setValueForProperty: function(node, name, value) {
-	    if (DOMProperty.isStandardName.hasOwnProperty(name) &&
-	        DOMProperty.isStandardName[name]) {
-	      var mutationMethod = DOMProperty.getMutationMethod[name];
-	      if (mutationMethod) {
-	        mutationMethod(node, value);
-	      } else if (shouldIgnoreValue(name, value)) {
-	        this.deleteValueForProperty(node, name);
-	      } else if (DOMProperty.mustUseAttribute[name]) {
-	        // `setAttribute` with objects becomes only `[object]` in IE8/9,
-	        // ('' + value) makes it output the correct toString()-value.
-	        node.setAttribute(DOMProperty.getAttributeName[name], '' + value);
-	      } else {
-	        var propName = DOMProperty.getPropertyName[name];
-	        // Must explicitly cast values for HAS_SIDE_EFFECTS-properties to the
-	        // property type before comparing; only `value` does and is string.
-	        if (!DOMProperty.hasSideEffects[name] ||
-	            ('' + node[propName]) !== ('' + value)) {
-	          // Contrary to `setAttribute`, object properties are properly
-	          // `toString`ed by IE8/9.
-	          node[propName] = value;
-	        }
-	      }
-	    } else if (DOMProperty.isCustomAttribute(name)) {
-	      if (value == null) {
-	        node.removeAttribute(name);
-	      } else {
-	        node.setAttribute(name, '' + value);
-	      }
-	    } else if ("production" !== process.env.NODE_ENV) {
-	      warnUnknownProperty(name);
-	    }
-	  },
-	
-	  /**
-	   * Deletes the value for a property on a node.
-	   *
-	   * @param {DOMElement} node
-	   * @param {string} name
-	   */
-	  deleteValueForProperty: function(node, name) {
-	    if (DOMProperty.isStandardName.hasOwnProperty(name) &&
-	        DOMProperty.isStandardName[name]) {
-	      var mutationMethod = DOMProperty.getMutationMethod[name];
-	      if (mutationMethod) {
-	        mutationMethod(node, undefined);
-	      } else if (DOMProperty.mustUseAttribute[name]) {
-	        node.removeAttribute(DOMProperty.getAttributeName[name]);
-	      } else {
-	        var propName = DOMProperty.getPropertyName[name];
-	        var defaultValue = DOMProperty.getDefaultValueForProperty(
-	          node.nodeName,
-	          propName
-	        );
-	        if (!DOMProperty.hasSideEffects[name] ||
-	            ('' + node[propName]) !== defaultValue) {
-	          node[propName] = defaultValue;
-	        }
-	      }
-	    } else if (DOMProperty.isCustomAttribute(name)) {
-	      node.removeAttribute(name);
-	    } else if ("production" !== process.env.NODE_ENV) {
-	      warnUnknownProperty(name);
-	    }
-	  }
-	
-	};
-	
-	module.exports = DOMPropertyOperations;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
 /* 19 */
 /*!*****************************************!*\
   !*** ./~/react/lib/EventPluginUtils.js ***!
@@ -12630,9 +12635,9 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Injected dependencies:
@@ -12835,13 +12840,13 @@
 	
 	module.exports = EventPluginUtils;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 20 */
-/*!**************************************!*\
-  !*** ./~/react/lib/ReactChildren.js ***!
-  \**************************************/
+/*!**********************************************!*\
+  !*** ./~/react/lib/DOMPropertyOperations.js ***!
+  \**********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -12852,146 +12857,193 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule ReactChildren
+	 * @providesModule DOMPropertyOperations
+	 * @typechecks static-only
 	 */
 	
 	"use strict";
 	
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
 	
-	var traverseAllChildren = __webpack_require__(/*! ./traverseAllChildren */ 67);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var escapeTextForBrowser = __webpack_require__(/*! ./escapeTextForBrowser */ 64);
+	var memoizeStringOnly = __webpack_require__(/*! ./memoizeStringOnly */ 65);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
-	var twoArgumentPooler = PooledClass.twoArgumentPooler;
-	var threeArgumentPooler = PooledClass.threeArgumentPooler;
-	
-	/**
-	 * PooledClass representing the bookkeeping associated with performing a child
-	 * traversal. Allows avoiding binding callbacks.
-	 *
-	 * @constructor ForEachBookKeeping
-	 * @param {!function} forEachFunction Function to perform traversal with.
-	 * @param {?*} forEachContext Context to perform context with.
-	 */
-	function ForEachBookKeeping(forEachFunction, forEachContext) {
-	  this.forEachFunction = forEachFunction;
-	  this.forEachContext = forEachContext;
-	}
-	PooledClass.addPoolingTo(ForEachBookKeeping, twoArgumentPooler);
-	
-	function forEachSingleChild(traverseContext, child, name, i) {
-	  var forEachBookKeeping = traverseContext;
-	  forEachBookKeeping.forEachFunction.call(
-	    forEachBookKeeping.forEachContext, child, i);
+	function shouldIgnoreValue(name, value) {
+	  return value == null ||
+	    (DOMProperty.hasBooleanValue[name] && !value) ||
+	    (DOMProperty.hasNumericValue[name] && isNaN(value)) ||
+	    (DOMProperty.hasPositiveNumericValue[name] && (value < 1)) ||
+	    (DOMProperty.hasOverloadedBooleanValue[name] && value === false);
 	}
 	
+	var processAttributeNameAndPrefix = memoizeStringOnly(function(name) {
+	  return escapeTextForBrowser(name) + '="';
+	});
+	
+	if ("production" !== process.env.NODE_ENV) {
+	  var reactProps = {
+	    children: true,
+	    dangerouslySetInnerHTML: true,
+	    key: true,
+	    ref: true
+	  };
+	  var warnedProperties = {};
+	
+	  var warnUnknownProperty = function(name) {
+	    if (reactProps.hasOwnProperty(name) && reactProps[name] ||
+	        warnedProperties.hasOwnProperty(name) && warnedProperties[name]) {
+	      return;
+	    }
+	
+	    warnedProperties[name] = true;
+	    var lowerCasedName = name.toLowerCase();
+	
+	    // data-* attributes should be lowercase; suggest the lowercase version
+	    var standardName = (
+	      DOMProperty.isCustomAttribute(lowerCasedName) ?
+	        lowerCasedName :
+	      DOMProperty.getPossibleStandardName.hasOwnProperty(lowerCasedName) ?
+	        DOMProperty.getPossibleStandardName[lowerCasedName] :
+	        null
+	    );
+	
+	    // For now, only warn when we have a suggested correction. This prevents
+	    // logging too much when using transferPropsTo.
+	    ("production" !== process.env.NODE_ENV ? warning(
+	      standardName == null,
+	      'Unknown DOM property ' + name + '. Did you mean ' + standardName + '?'
+	    ) : null);
+	
+	  };
+	}
+	
 	/**
-	 * Iterates through children that are typically specified as `props.children`.
-	 *
-	 * The provided forEachFunc(child, index) will be called for each
-	 * leaf child.
-	 *
-	 * @param {?*} children Children tree container.
-	 * @param {function(*, int)} forEachFunc.
-	 * @param {*} forEachContext Context for forEachContext.
+	 * Operations for dealing with DOM properties.
 	 */
-	function forEachChildren(children, forEachFunc, forEachContext) {
-	  if (children == null) {
-	    return children;
+	var DOMPropertyOperations = {
+	
+	  /**
+	   * Creates markup for the ID property.
+	   *
+	   * @param {string} id Unescaped ID.
+	   * @return {string} Markup string.
+	   */
+	  createMarkupForID: function(id) {
+	    return processAttributeNameAndPrefix(DOMProperty.ID_ATTRIBUTE_NAME) +
+	      escapeTextForBrowser(id) + '"';
+	  },
+	
+	  /**
+	   * Creates markup for a property.
+	   *
+	   * @param {string} name
+	   * @param {*} value
+	   * @return {?string} Markup string, or null if the property was invalid.
+	   */
+	  createMarkupForProperty: function(name, value) {
+	    if (DOMProperty.isStandardName.hasOwnProperty(name) &&
+	        DOMProperty.isStandardName[name]) {
+	      if (shouldIgnoreValue(name, value)) {
+	        return '';
+	      }
+	      var attributeName = DOMProperty.getAttributeName[name];
+	      if (DOMProperty.hasBooleanValue[name] ||
+	          (DOMProperty.hasOverloadedBooleanValue[name] && value === true)) {
+	        return escapeTextForBrowser(attributeName);
+	      }
+	      return processAttributeNameAndPrefix(attributeName) +
+	        escapeTextForBrowser(value) + '"';
+	    } else if (DOMProperty.isCustomAttribute(name)) {
+	      if (value == null) {
+	        return '';
+	      }
+	      return processAttributeNameAndPrefix(name) +
+	        escapeTextForBrowser(value) + '"';
+	    } else if ("production" !== process.env.NODE_ENV) {
+	      warnUnknownProperty(name);
+	    }
+	    return null;
+	  },
+	
+	  /**
+	   * Sets the value for a property on a node.
+	   *
+	   * @param {DOMElement} node
+	   * @param {string} name
+	   * @param {*} value
+	   */
+	  setValueForProperty: function(node, name, value) {
+	    if (DOMProperty.isStandardName.hasOwnProperty(name) &&
+	        DOMProperty.isStandardName[name]) {
+	      var mutationMethod = DOMProperty.getMutationMethod[name];
+	      if (mutationMethod) {
+	        mutationMethod(node, value);
+	      } else if (shouldIgnoreValue(name, value)) {
+	        this.deleteValueForProperty(node, name);
+	      } else if (DOMProperty.mustUseAttribute[name]) {
+	        // `setAttribute` with objects becomes only `[object]` in IE8/9,
+	        // ('' + value) makes it output the correct toString()-value.
+	        node.setAttribute(DOMProperty.getAttributeName[name], '' + value);
+	      } else {
+	        var propName = DOMProperty.getPropertyName[name];
+	        // Must explicitly cast values for HAS_SIDE_EFFECTS-properties to the
+	        // property type before comparing; only `value` does and is string.
+	        if (!DOMProperty.hasSideEffects[name] ||
+	            ('' + node[propName]) !== ('' + value)) {
+	          // Contrary to `setAttribute`, object properties are properly
+	          // `toString`ed by IE8/9.
+	          node[propName] = value;
+	        }
+	      }
+	    } else if (DOMProperty.isCustomAttribute(name)) {
+	      if (value == null) {
+	        node.removeAttribute(name);
+	      } else {
+	        node.setAttribute(name, '' + value);
+	      }
+	    } else if ("production" !== process.env.NODE_ENV) {
+	      warnUnknownProperty(name);
+	    }
+	  },
+	
+	  /**
+	   * Deletes the value for a property on a node.
+	   *
+	   * @param {DOMElement} node
+	   * @param {string} name
+	   */
+	  deleteValueForProperty: function(node, name) {
+	    if (DOMProperty.isStandardName.hasOwnProperty(name) &&
+	        DOMProperty.isStandardName[name]) {
+	      var mutationMethod = DOMProperty.getMutationMethod[name];
+	      if (mutationMethod) {
+	        mutationMethod(node, undefined);
+	      } else if (DOMProperty.mustUseAttribute[name]) {
+	        node.removeAttribute(DOMProperty.getAttributeName[name]);
+	      } else {
+	        var propName = DOMProperty.getPropertyName[name];
+	        var defaultValue = DOMProperty.getDefaultValueForProperty(
+	          node.nodeName,
+	          propName
+	        );
+	        if (!DOMProperty.hasSideEffects[name] ||
+	            ('' + node[propName]) !== defaultValue) {
+	          node[propName] = defaultValue;
+	        }
+	      }
+	    } else if (DOMProperty.isCustomAttribute(name)) {
+	      node.removeAttribute(name);
+	    } else if ("production" !== process.env.NODE_ENV) {
+	      warnUnknownProperty(name);
+	    }
 	  }
 	
-	  var traverseContext =
-	    ForEachBookKeeping.getPooled(forEachFunc, forEachContext);
-	  traverseAllChildren(children, forEachSingleChild, traverseContext);
-	  ForEachBookKeeping.release(traverseContext);
-	}
-	
-	/**
-	 * PooledClass representing the bookkeeping associated with performing a child
-	 * mapping. Allows avoiding binding callbacks.
-	 *
-	 * @constructor MapBookKeeping
-	 * @param {!*} mapResult Object containing the ordered map of results.
-	 * @param {!function} mapFunction Function to perform mapping with.
-	 * @param {?*} mapContext Context to perform mapping with.
-	 */
-	function MapBookKeeping(mapResult, mapFunction, mapContext) {
-	  this.mapResult = mapResult;
-	  this.mapFunction = mapFunction;
-	  this.mapContext = mapContext;
-	}
-	PooledClass.addPoolingTo(MapBookKeeping, threeArgumentPooler);
-	
-	function mapSingleChildIntoContext(traverseContext, child, name, i) {
-	  var mapBookKeeping = traverseContext;
-	  var mapResult = mapBookKeeping.mapResult;
-	
-	  var keyUnique = !mapResult.hasOwnProperty(name);
-	  ("production" !== process.env.NODE_ENV ? warning(
-	    keyUnique,
-	    'ReactChildren.map(...): Encountered two children with the same key, ' +
-	    '`%s`. Child keys must be unique; when two children share a key, only ' +
-	    'the first child will be used.',
-	    name
-	  ) : null);
-	
-	  if (keyUnique) {
-	    var mappedChild =
-	      mapBookKeeping.mapFunction.call(mapBookKeeping.mapContext, child, i);
-	    mapResult[name] = mappedChild;
-	  }
-	}
-	
-	/**
-	 * Maps children that are typically specified as `props.children`.
-	 *
-	 * The provided mapFunction(child, key, index) will be called for each
-	 * leaf child.
-	 *
-	 * TODO: This may likely break any calls to `ReactChildren.map` that were
-	 * previously relying on the fact that we guarded against null children.
-	 *
-	 * @param {?*} children Children tree container.
-	 * @param {function(*, int)} mapFunction.
-	 * @param {*} mapContext Context for mapFunction.
-	 * @return {object} Object containing the ordered map of results.
-	 */
-	function mapChildren(children, func, context) {
-	  if (children == null) {
-	    return children;
-	  }
-	
-	  var mapResult = {};
-	  var traverseContext = MapBookKeeping.getPooled(mapResult, func, context);
-	  traverseAllChildren(children, mapSingleChildIntoContext, traverseContext);
-	  MapBookKeeping.release(traverseContext);
-	  return mapResult;
-	}
-	
-	function forEachSingleChildDummy(traverseContext, child, name, i) {
-	  return null;
-	}
-	
-	/**
-	 * Count the number of children that are typically specified as
-	 * `props.children`.
-	 *
-	 * @param {?*} children Children tree container.
-	 * @return {number} The number of children.
-	 */
-	function countChildren(children, context) {
-	  return traverseAllChildren(children, forEachSingleChildDummy, null);
-	}
-	
-	var ReactChildren = {
-	  forEach: forEachChildren,
-	  map: mapChildren,
-	  count: countChildren
 	};
 	
-	module.exports = ReactChildren;
+	module.exports = DOMPropertyOperations;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 21 */
@@ -13013,13 +13065,13 @@
 	
 	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactOwner = __webpack_require__(/*! ./ReactOwner */ 68);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactOwner = __webpack_require__(/*! ./ReactOwner */ 71);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var keyMirror = __webpack_require__(/*! ./keyMirror */ 70);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var keyMirror = __webpack_require__(/*! ./keyMirror */ 77);
 	
 	/**
 	 * Every React component is in one of these life cycles.
@@ -13440,10 +13492,166 @@
 	
 	module.exports = ReactComponent;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 22 */
+/*!**************************************!*\
+  !*** ./~/react/lib/ReactChildren.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactChildren
+	 */
+	
+	"use strict";
+	
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
+	
+	var traverseAllChildren = __webpack_require__(/*! ./traverseAllChildren */ 68);
+	var warning = __webpack_require__(/*! ./warning */ 66);
+	
+	var twoArgumentPooler = PooledClass.twoArgumentPooler;
+	var threeArgumentPooler = PooledClass.threeArgumentPooler;
+	
+	/**
+	 * PooledClass representing the bookkeeping associated with performing a child
+	 * traversal. Allows avoiding binding callbacks.
+	 *
+	 * @constructor ForEachBookKeeping
+	 * @param {!function} forEachFunction Function to perform traversal with.
+	 * @param {?*} forEachContext Context to perform context with.
+	 */
+	function ForEachBookKeeping(forEachFunction, forEachContext) {
+	  this.forEachFunction = forEachFunction;
+	  this.forEachContext = forEachContext;
+	}
+	PooledClass.addPoolingTo(ForEachBookKeeping, twoArgumentPooler);
+	
+	function forEachSingleChild(traverseContext, child, name, i) {
+	  var forEachBookKeeping = traverseContext;
+	  forEachBookKeeping.forEachFunction.call(
+	    forEachBookKeeping.forEachContext, child, i);
+	}
+	
+	/**
+	 * Iterates through children that are typically specified as `props.children`.
+	 *
+	 * The provided forEachFunc(child, index) will be called for each
+	 * leaf child.
+	 *
+	 * @param {?*} children Children tree container.
+	 * @param {function(*, int)} forEachFunc.
+	 * @param {*} forEachContext Context for forEachContext.
+	 */
+	function forEachChildren(children, forEachFunc, forEachContext) {
+	  if (children == null) {
+	    return children;
+	  }
+	
+	  var traverseContext =
+	    ForEachBookKeeping.getPooled(forEachFunc, forEachContext);
+	  traverseAllChildren(children, forEachSingleChild, traverseContext);
+	  ForEachBookKeeping.release(traverseContext);
+	}
+	
+	/**
+	 * PooledClass representing the bookkeeping associated with performing a child
+	 * mapping. Allows avoiding binding callbacks.
+	 *
+	 * @constructor MapBookKeeping
+	 * @param {!*} mapResult Object containing the ordered map of results.
+	 * @param {!function} mapFunction Function to perform mapping with.
+	 * @param {?*} mapContext Context to perform mapping with.
+	 */
+	function MapBookKeeping(mapResult, mapFunction, mapContext) {
+	  this.mapResult = mapResult;
+	  this.mapFunction = mapFunction;
+	  this.mapContext = mapContext;
+	}
+	PooledClass.addPoolingTo(MapBookKeeping, threeArgumentPooler);
+	
+	function mapSingleChildIntoContext(traverseContext, child, name, i) {
+	  var mapBookKeeping = traverseContext;
+	  var mapResult = mapBookKeeping.mapResult;
+	
+	  var keyUnique = !mapResult.hasOwnProperty(name);
+	  ("production" !== process.env.NODE_ENV ? warning(
+	    keyUnique,
+	    'ReactChildren.map(...): Encountered two children with the same key, ' +
+	    '`%s`. Child keys must be unique; when two children share a key, only ' +
+	    'the first child will be used.',
+	    name
+	  ) : null);
+	
+	  if (keyUnique) {
+	    var mappedChild =
+	      mapBookKeeping.mapFunction.call(mapBookKeeping.mapContext, child, i);
+	    mapResult[name] = mappedChild;
+	  }
+	}
+	
+	/**
+	 * Maps children that are typically specified as `props.children`.
+	 *
+	 * The provided mapFunction(child, key, index) will be called for each
+	 * leaf child.
+	 *
+	 * TODO: This may likely break any calls to `ReactChildren.map` that were
+	 * previously relying on the fact that we guarded against null children.
+	 *
+	 * @param {?*} children Children tree container.
+	 * @param {function(*, int)} mapFunction.
+	 * @param {*} mapContext Context for mapFunction.
+	 * @return {object} Object containing the ordered map of results.
+	 */
+	function mapChildren(children, func, context) {
+	  if (children == null) {
+	    return children;
+	  }
+	
+	  var mapResult = {};
+	  var traverseContext = MapBookKeeping.getPooled(mapResult, func, context);
+	  traverseAllChildren(children, mapSingleChildIntoContext, traverseContext);
+	  MapBookKeeping.release(traverseContext);
+	  return mapResult;
+	}
+	
+	function forEachSingleChildDummy(traverseContext, child, name, i) {
+	  return null;
+	}
+	
+	/**
+	 * Count the number of children that are typically specified as
+	 * `props.children`.
+	 *
+	 * @param {?*} children Children tree container.
+	 * @return {number} The number of children.
+	 */
+	function countChildren(children, context) {
+	  return traverseAllChildren(children, forEachSingleChildDummy, null);
+	}
+	
+	var ReactChildren = {
+	  forEach: forEachChildren,
+	  map: mapChildren,
+	  count: countChildren
+	};
+	
+	module.exports = ReactChildren;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 23 */
 /*!************************************************!*\
   !*** ./~/react/lib/ReactCompositeComponent.js ***!
   \************************************************/
@@ -13463,29 +13671,29 @@
 	"use strict";
 	
 	var ReactComponent = __webpack_require__(/*! ./ReactComponent */ 21);
-	var ReactContext = __webpack_require__(/*! ./ReactContext */ 23);
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactElementValidator = __webpack_require__(/*! ./ReactElementValidator */ 26);
-	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 72);
-	var ReactErrorUtils = __webpack_require__(/*! ./ReactErrorUtils */ 71);
-	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 31);
-	var ReactOwner = __webpack_require__(/*! ./ReactOwner */ 68);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
-	var ReactPropTransferer = __webpack_require__(/*! ./ReactPropTransferer */ 73);
-	var ReactPropTypeLocations = __webpack_require__(/*! ./ReactPropTypeLocations */ 74);
-	var ReactPropTypeLocationNames = __webpack_require__(/*! ./ReactPropTypeLocationNames */ 75);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var ReactContext = __webpack_require__(/*! ./ReactContext */ 24);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactElementValidator = __webpack_require__(/*! ./ReactElementValidator */ 27);
+	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 69);
+	var ReactErrorUtils = __webpack_require__(/*! ./ReactErrorUtils */ 70);
+	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 32);
+	var ReactOwner = __webpack_require__(/*! ./ReactOwner */ 71);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
+	var ReactPropTransferer = __webpack_require__(/*! ./ReactPropTransferer */ 72);
+	var ReactPropTypeLocations = __webpack_require__(/*! ./ReactPropTypeLocations */ 73);
+	var ReactPropTypeLocationNames = __webpack_require__(/*! ./ReactPropTypeLocationNames */ 74);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
 	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 76);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var keyMirror = __webpack_require__(/*! ./keyMirror */ 70);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
-	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 78);
-	var mapObject = __webpack_require__(/*! ./mapObject */ 79);
-	var shouldUpdateReactComponent = __webpack_require__(/*! ./shouldUpdateReactComponent */ 80);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var keyMirror = __webpack_require__(/*! ./keyMirror */ 77);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
+	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 79);
+	var mapObject = __webpack_require__(/*! ./mapObject */ 80);
+	var shouldUpdateReactComponent = __webpack_require__(/*! ./shouldUpdateReactComponent */ 81);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var MIXINS_KEY = keyOf({mixins: null});
 	
@@ -14886,10 +15094,10 @@
 	
 	module.exports = ReactCompositeComponent;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 23 */
+/* 24 */
 /*!*************************************!*\
   !*** ./~/react/lib/ReactContext.js ***!
   \*************************************/
@@ -14958,7 +15166,7 @@
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /*!******************************************!*\
   !*** ./~/react/lib/ReactCurrentOwner.js ***!
   \******************************************/
@@ -14999,7 +15207,7 @@
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /*!*************************************!*\
   !*** ./~/react/lib/ReactElement.js ***!
   \*************************************/
@@ -15018,10 +15226,10 @@
 	
 	"use strict";
 	
-	var ReactContext = __webpack_require__(/*! ./ReactContext */ 23);
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
+	var ReactContext = __webpack_require__(/*! ./ReactContext */ 24);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
 	
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var RESERVED_PROPS = {
 	  key: true,
@@ -15248,10 +15456,10 @@
 	
 	module.exports = ReactElement;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 26 */
+/* 27 */
 /*!**********************************************!*\
   !*** ./~/react/lib/ReactElementValidator.js ***!
   \**********************************************/
@@ -15277,12 +15485,12 @@
 	
 	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactPropTypeLocations = __webpack_require__(/*! ./ReactPropTypeLocations */ 74);
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactPropTypeLocations = __webpack_require__(/*! ./ReactPropTypeLocations */ 73);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
 	
-	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 78);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 79);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	/**
 	 * Warn if there's no key explicitly set on dynamic arrays of children or
@@ -15536,10 +15744,10 @@
 	
 	module.exports = ReactElementValidator;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 27 */
+/* 28 */
 /*!*********************************!*\
   !*** ./~/react/lib/ReactDOM.js ***!
   \*********************************/
@@ -15559,11 +15767,11 @@
 	
 	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactElementValidator = __webpack_require__(/*! ./ReactElementValidator */ 26);
-	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 31);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactElementValidator = __webpack_require__(/*! ./ReactElementValidator */ 27);
+	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 32);
 	
-	var mapObject = __webpack_require__(/*! ./mapObject */ 79);
+	var mapObject = __webpack_require__(/*! ./mapObject */ 80);
 	
 	/**
 	 * Create a factory that creates HTML tag elements.
@@ -15725,10 +15933,10 @@
 	
 	module.exports = ReactDOM;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 28 */
+/* 29 */
 /*!******************************************!*\
   !*** ./~/react/lib/ReactDOMComponent.js ***!
   \******************************************/
@@ -15748,22 +15956,22 @@
 	
 	"use strict";
 	
-	var CSSPropertyOperations = __webpack_require__(/*! ./CSSPropertyOperations */ 82);
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
-	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 18);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
+	var CSSPropertyOperations = __webpack_require__(/*! ./CSSPropertyOperations */ 83);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
+	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 20);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
 	var ReactComponent = __webpack_require__(/*! ./ReactComponent */ 21);
 	var ReactBrowserEventEmitter = __webpack_require__(/*! ./ReactBrowserEventEmitter */ 84);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactMultiChild = __webpack_require__(/*! ./ReactMultiChild */ 33);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactMultiChild = __webpack_require__(/*! ./ReactMultiChild */ 34);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var escapeTextForBrowser = __webpack_require__(/*! ./escapeTextForBrowser */ 63);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var escapeTextForBrowser = __webpack_require__(/*! ./escapeTextForBrowser */ 64);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	var isEventSupported = __webpack_require__(/*! ./isEventSupported */ 85);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
-	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 78);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
+	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 79);
 	
 	var deleteListener = ReactBrowserEventEmitter.deleteListener;
 	var listenTo = ReactBrowserEventEmitter.listenTo;
@@ -16218,10 +16426,10 @@
 	
 	module.exports = ReactDOMComponent;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 29 */
+/* 30 */
 /*!**********************************************!*\
   !*** ./~/react/lib/ReactDefaultInjection.js ***!
   \**********************************************/
@@ -16240,20 +16448,20 @@
 	
 	"use strict";
 	
-	var BeforeInputEventPlugin = __webpack_require__(/*! ./BeforeInputEventPlugin */ 86);
-	var ChangeEventPlugin = __webpack_require__(/*! ./ChangeEventPlugin */ 87);
+	var BeforeInputEventPlugin = __webpack_require__(/*! ./BeforeInputEventPlugin */ 87);
+	var ChangeEventPlugin = __webpack_require__(/*! ./ChangeEventPlugin */ 86);
 	var ClientReactRootIndex = __webpack_require__(/*! ./ClientReactRootIndex */ 88);
 	var CompositionEventPlugin = __webpack_require__(/*! ./CompositionEventPlugin */ 89);
 	var DefaultEventPluginOrder = __webpack_require__(/*! ./DefaultEventPluginOrder */ 90);
 	var EnterLeaveEventPlugin = __webpack_require__(/*! ./EnterLeaveEventPlugin */ 91);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	var HTMLDOMPropertyConfig = __webpack_require__(/*! ./HTMLDOMPropertyConfig */ 92);
 	var MobileSafariClickEventPlugin = __webpack_require__(/*! ./MobileSafariClickEventPlugin */ 93);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
 	var ReactComponentBrowserEnvironment =
 	  __webpack_require__(/*! ./ReactComponentBrowserEnvironment */ 94);
 	var ReactDefaultBatchingStrategy = __webpack_require__(/*! ./ReactDefaultBatchingStrategy */ 95);
-	var ReactDOMComponent = __webpack_require__(/*! ./ReactDOMComponent */ 28);
+	var ReactDOMComponent = __webpack_require__(/*! ./ReactDOMComponent */ 29);
 	var ReactDOMButton = __webpack_require__(/*! ./ReactDOMButton */ 96);
 	var ReactDOMForm = __webpack_require__(/*! ./ReactDOMForm */ 97);
 	var ReactDOMImg = __webpack_require__(/*! ./ReactDOMImg */ 98);
@@ -16263,8 +16471,8 @@
 	var ReactDOMTextarea = __webpack_require__(/*! ./ReactDOMTextarea */ 102);
 	var ReactEventListener = __webpack_require__(/*! ./ReactEventListener */ 103);
 	var ReactInjection = __webpack_require__(/*! ./ReactInjection */ 104);
-	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 30);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
+	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 31);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
 	var SelectEventPlugin = __webpack_require__(/*! ./SelectEventPlugin */ 105);
 	var ServerReactRootIndex = __webpack_require__(/*! ./ServerReactRootIndex */ 106);
 	var SimpleEventPlugin = __webpack_require__(/*! ./SimpleEventPlugin */ 107);
@@ -16353,10 +16561,10 @@
 	  inject: inject
 	};
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 30 */
+/* 31 */
 /*!*********************************************!*\
   !*** ./~/react/lib/ReactInstanceHandles.js ***!
   \*********************************************/
@@ -16376,9 +16584,9 @@
 	
 	"use strict";
 	
-	var ReactRootIndex = __webpack_require__(/*! ./ReactRootIndex */ 81);
+	var ReactRootIndex = __webpack_require__(/*! ./ReactRootIndex */ 111);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	var SEPARATOR = '.';
 	var SEPARATOR_LENGTH = SEPARATOR.length;
@@ -16694,10 +16902,10 @@
 	
 	module.exports = ReactInstanceHandles;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 31 */
+/* 32 */
 /*!*******************************************!*\
   !*** ./~/react/lib/ReactLegacyElement.js ***!
   \*******************************************/
@@ -16716,11 +16924,11 @@
 	
 	"use strict";
 	
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 78);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var monitorCodeUse = __webpack_require__(/*! ./monitorCodeUse */ 79);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var legacyFactoryLogs = {};
 	function warnForLegacyFactoryCall() {
@@ -16947,10 +17155,10 @@
 	
 	module.exports = ReactLegacyElementFactory;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 32 */
+/* 33 */
 /*!***********************************!*\
   !*** ./~/react/lib/ReactMount.js ***!
   \***********************************/
@@ -16969,21 +17177,21 @@
 	
 	"use strict";
 	
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
 	var ReactBrowserEventEmitter = __webpack_require__(/*! ./ReactBrowserEventEmitter */ 84);
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 31);
-	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 30);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 32);
+	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 31);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
 	
-	var containsNode = __webpack_require__(/*! ./containsNode */ 111);
-	var deprecated = __webpack_require__(/*! ./deprecated */ 39);
-	var getReactRootElementInContainer = __webpack_require__(/*! ./getReactRootElementInContainer */ 112);
+	var containsNode = __webpack_require__(/*! ./containsNode */ 114);
+	var deprecated = __webpack_require__(/*! ./deprecated */ 40);
+	var getReactRootElementInContainer = __webpack_require__(/*! ./getReactRootElementInContainer */ 115);
 	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 76);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var shouldUpdateReactComponent = __webpack_require__(/*! ./shouldUpdateReactComponent */ 80);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var shouldUpdateReactComponent = __webpack_require__(/*! ./shouldUpdateReactComponent */ 81);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var createElement = ReactLegacyElement.wrapCreateElement(
 	  ReactElement.createElement
@@ -17651,10 +17859,10 @@
 	
 	module.exports = ReactMount;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 33 */
+/* 34 */
 /*!****************************************!*\
   !*** ./~/react/lib/ReactMultiChild.js ***!
   \****************************************/
@@ -17675,11 +17883,11 @@
 	"use strict";
 	
 	var ReactComponent = __webpack_require__(/*! ./ReactComponent */ 21);
-	var ReactMultiChildUpdateTypes = __webpack_require__(/*! ./ReactMultiChildUpdateTypes */ 115);
+	var ReactMultiChildUpdateTypes = __webpack_require__(/*! ./ReactMultiChildUpdateTypes */ 116);
 	
-	var flattenChildren = __webpack_require__(/*! ./flattenChildren */ 116);
+	var flattenChildren = __webpack_require__(/*! ./flattenChildren */ 117);
 	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 76);
-	var shouldUpdateReactComponent = __webpack_require__(/*! ./shouldUpdateReactComponent */ 80);
+	var shouldUpdateReactComponent = __webpack_require__(/*! ./shouldUpdateReactComponent */ 81);
 	
 	/**
 	 * Updating children of a component may trigger recursive updates. The depth is
@@ -18089,7 +18297,7 @@
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /*!**********************************!*\
   !*** ./~/react/lib/ReactPerf.js ***!
   \**********************************/
@@ -18176,10 +18384,96 @@
 	
 	module.exports = ReactPerf;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 35 */
+/* 36 */
+/*!*********************************************!*\
+  !*** ./~/react/lib/ReactServerRendering.js ***!
+  \*********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @typechecks static-only
+	 * @providesModule ReactServerRendering
+	 */
+	"use strict";
+	
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 31);
+	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 112);
+	var ReactServerRenderingTransaction =
+	  __webpack_require__(/*! ./ReactServerRenderingTransaction */ 113);
+	
+	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 76);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	
+	/**
+	 * @param {ReactElement} element
+	 * @return {string} the HTML markup
+	 */
+	function renderToString(element) {
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    ReactElement.isValidElement(element),
+	    'renderToString(): You must pass a valid ReactElement.'
+	  ) : invariant(ReactElement.isValidElement(element)));
+	
+	  var transaction;
+	  try {
+	    var id = ReactInstanceHandles.createReactRootID();
+	    transaction = ReactServerRenderingTransaction.getPooled(false);
+	
+	    return transaction.perform(function() {
+	      var componentInstance = instantiateReactComponent(element, null);
+	      var markup = componentInstance.mountComponent(id, transaction, 0);
+	      return ReactMarkupChecksum.addChecksumToMarkup(markup);
+	    }, null);
+	  } finally {
+	    ReactServerRenderingTransaction.release(transaction);
+	  }
+	}
+	
+	/**
+	 * @param {ReactElement} element
+	 * @return {string} the HTML markup, without the extra React ID and checksum
+	 * (for generating static pages)
+	 */
+	function renderToStaticMarkup(element) {
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    ReactElement.isValidElement(element),
+	    'renderToStaticMarkup(): You must pass a valid ReactElement.'
+	  ) : invariant(ReactElement.isValidElement(element)));
+	
+	  var transaction;
+	  try {
+	    var id = ReactInstanceHandles.createReactRootID();
+	    transaction = ReactServerRenderingTransaction.getPooled(true);
+	
+	    return transaction.perform(function() {
+	      var componentInstance = instantiateReactComponent(element, null);
+	      return componentInstance.mountComponent(id, transaction, 0);
+	    }, null);
+	  } finally {
+	    ReactServerRenderingTransaction.release(transaction);
+	  }
+	}
+	
+	module.exports = {
+	  renderToString: renderToString,
+	  renderToStaticMarkup: renderToStaticMarkup
+	};
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 37 */
 /*!***************************************!*\
   !*** ./~/react/lib/ReactPropTypes.js ***!
   \***************************************/
@@ -18198,11 +18492,11 @@
 	
 	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactPropTypeLocationNames = __webpack_require__(/*! ./ReactPropTypeLocationNames */ 75);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactPropTypeLocationNames = __webpack_require__(/*! ./ReactPropTypeLocationNames */ 74);
 	
-	var deprecated = __webpack_require__(/*! ./deprecated */ 39);
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
+	var deprecated = __webpack_require__(/*! ./deprecated */ 40);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
 	
 	/**
 	 * Collection of methods that allow declaration and validation of props that are
@@ -18540,93 +18834,61 @@
 
 
 /***/ },
-/* 36 */
-/*!*********************************************!*\
-  !*** ./~/react/lib/ReactServerRendering.js ***!
-  \*********************************************/
+/* 38 */
+/*!**************************************!*\
+  !*** ./~/react/lib/Object.assign.js ***!
+  \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2014, Facebook, Inc.
+	/**
+	 * Copyright 2014, Facebook, Inc.
 	 * All rights reserved.
 	 *
 	 * This source code is licensed under the BSD-style license found in the
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @typechecks static-only
-	 * @providesModule ReactServerRendering
+	 * @providesModule Object.assign
 	 */
-	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 30);
-	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 114);
-	var ReactServerRenderingTransaction =
-	  __webpack_require__(/*! ./ReactServerRenderingTransaction */ 113);
+	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
 	
-	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 76);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	
-	/**
-	 * @param {ReactElement} element
-	 * @return {string} the HTML markup
-	 */
-	function renderToString(element) {
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    ReactElement.isValidElement(element),
-	    'renderToString(): You must pass a valid ReactElement.'
-	  ) : invariant(ReactElement.isValidElement(element)));
-	
-	  var transaction;
-	  try {
-	    var id = ReactInstanceHandles.createReactRootID();
-	    transaction = ReactServerRenderingTransaction.getPooled(false);
-	
-	    return transaction.perform(function() {
-	      var componentInstance = instantiateReactComponent(element, null);
-	      var markup = componentInstance.mountComponent(id, transaction, 0);
-	      return ReactMarkupChecksum.addChecksumToMarkup(markup);
-	    }, null);
-	  } finally {
-	    ReactServerRenderingTransaction.release(transaction);
+	function assign(target, sources) {
+	  if (target == null) {
+	    throw new TypeError('Object.assign target cannot be null or undefined');
 	  }
-	}
 	
-	/**
-	 * @param {ReactElement} element
-	 * @return {string} the HTML markup, without the extra React ID and checksum
-	 * (for generating static pages)
-	 */
-	function renderToStaticMarkup(element) {
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    ReactElement.isValidElement(element),
-	    'renderToStaticMarkup(): You must pass a valid ReactElement.'
-	  ) : invariant(ReactElement.isValidElement(element)));
+	  var to = Object(target);
+	  var hasOwnProperty = Object.prototype.hasOwnProperty;
 	
-	  var transaction;
-	  try {
-	    var id = ReactInstanceHandles.createReactRootID();
-	    transaction = ReactServerRenderingTransaction.getPooled(true);
+	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
+	    var nextSource = arguments[nextIndex];
+	    if (nextSource == null) {
+	      continue;
+	    }
 	
-	    return transaction.perform(function() {
-	      var componentInstance = instantiateReactComponent(element, null);
-	      return componentInstance.mountComponent(id, transaction, 0);
-	    }, null);
-	  } finally {
-	    ReactServerRenderingTransaction.release(transaction);
+	    var from = Object(nextSource);
+	
+	    // We don't currently support accessors nor proxies. Therefore this
+	    // copy cannot throw. If we ever supported this then we must handle
+	    // exceptions and side-effects. We don't support symbols so they won't
+	    // be transferred.
+	
+	    for (var key in from) {
+	      if (hasOwnProperty.call(from, key)) {
+	        to[key] = from[key];
+	      }
+	    }
 	  }
-	}
 	
-	module.exports = {
-	  renderToString: renderToString,
-	  renderToStaticMarkup: renderToStaticMarkup
+	  return to;
 	};
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	module.exports = assign;
+
 
 /***/ },
-/* 37 */
+/* 39 */
 /*!*******************************************!*\
   !*** ./~/react/lib/ReactTextComponent.js ***!
   \*******************************************/
@@ -18646,12 +18908,12 @@
 	
 	"use strict";
 	
-	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 18);
+	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 20);
 	var ReactComponent = __webpack_require__(/*! ./ReactComponent */ 21);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var escapeTextForBrowser = __webpack_require__(/*! ./escapeTextForBrowser */ 63);
+	var escapeTextForBrowser = __webpack_require__(/*! ./escapeTextForBrowser */ 64);
 	
 	/**
 	 * Text nodes violate a couple assumptions that React makes about components:
@@ -18739,61 +19001,7 @@
 
 
 /***/ },
-/* 38 */
-/*!**************************************!*\
-  !*** ./~/react/lib/Object.assign.js ***!
-  \**************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Object.assign
-	 */
-	
-	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
-	
-	function assign(target, sources) {
-	  if (target == null) {
-	    throw new TypeError('Object.assign target cannot be null or undefined');
-	  }
-	
-	  var to = Object(target);
-	  var hasOwnProperty = Object.prototype.hasOwnProperty;
-	
-	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
-	    var nextSource = arguments[nextIndex];
-	    if (nextSource == null) {
-	      continue;
-	    }
-	
-	    var from = Object(nextSource);
-	
-	    // We don't currently support accessors nor proxies. Therefore this
-	    // copy cannot throw. If we ever supported this then we must handle
-	    // exceptions and side-effects. We don't support symbols so they won't
-	    // be transferred.
-	
-	    for (var key in from) {
-	      if (hasOwnProperty.call(from, key)) {
-	        to[key] = from[key];
-	      }
-	    }
-	  }
-	
-	  return to;
-	};
-	
-	module.exports = assign;
-
-
-/***/ },
-/* 39 */
+/* 40 */
 /*!***********************************!*\
   !*** ./~/react/lib/deprecated.js ***!
   \***********************************/
@@ -18811,7 +19019,7 @@
 	 */
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	/**
 	 * This will log a single deprecation notice per function and forward the call
@@ -18847,10 +19055,10 @@
 	
 	module.exports = deprecated;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 40 */
+/* 41 */
 /*!**********************************!*\
   !*** ./~/react/lib/onlyChild.js ***!
   \**********************************/
@@ -18868,9 +19076,9 @@
 	 */
 	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Returns the first child in a collection of children and verifies that there
@@ -18893,10 +19101,10 @@
 	
 	module.exports = onlyChild;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 41 */
+/* 42 */
 /*!*********************************************!*\
   !*** ./~/react/lib/ExecutionEnvironment.js ***!
   \*********************************************/
@@ -18948,7 +19156,7 @@
 
 
 /***/ },
-/* 42 */
+/* 43 */
 /*!********************************************!*\
   !*** ./~/fluxxor/~/eventemitter3/index.js ***!
   \********************************************/
@@ -19186,7 +19394,7 @@
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /*!******************************************!*\
   !*** ./~/fluxxor/~/object-path/index.js ***!
   \******************************************/
@@ -19435,7 +19643,39 @@
 	});
 
 /***/ },
-/* 44 */
+/* 45 */
+/*!**************************************************!*\
+  !*** ./~/fluxxor/~/inherits/inherits_browser.js ***!
+  \**************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	if (typeof Object.create === 'function') {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
+	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor
+	    var TempCtor = function () {}
+	    TempCtor.prototype = superCtor.prototype
+	    ctor.prototype = new TempCtor()
+	    ctor.prototype.constructor = ctor
+	  }
+	}
+
+
+/***/ },
+/* 46 */
 /*!**********************************************************!*\
   !*** (webpack)/~/node-libs-browser/~/process/browser.js ***!
   \**********************************************************/
@@ -19530,219 +19770,167 @@
 
 
 /***/ },
-/* 45 */
-/*!**************************************************!*\
-  !*** ./~/fluxxor/~/inherits/inherits_browser.js ***!
-  \**************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	if (typeof Object.create === 'function') {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor
-	    var TempCtor = function () {}
-	    TempCtor.prototype = superCtor.prototype
-	    ctor.prototype = new TempCtor()
-	    ctor.prototype.constructor = ctor
-	  }
-	}
-
-
-/***/ },
-/* 46 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/mapValues.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 123),
-	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 118);
-	
-	/**
-	 * Creates an object with the same keys as `object` and values generated by
-	 * running each own enumerable property of `object` through `iteratee`. The
-	 * iteratee function is bound to `thisArg` and invoked with three arguments;
-	 * (value, key, object).
-	 *
-	 * If a property name is provided for `iteratee` the created `_.property`
-	 * style callback returns the property value of the given element.
-	 *
-	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
-	 * style callback returns `true` for elements that have a matching property
-	 * value, else `false`.
-	 *
-	 * If an object is provided for `iteratee` the created `_.matches` style
-	 * callback returns `true` for elements that have the properties of the given
-	 * object, else `false`.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
-	 *  per iteration.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Object} Returns the new mapped object.
-	 * @example
-	 *
-	 * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
-	 *   return n * 3;
-	 * });
-	 * // => { 'a': 3, 'b': 6 }
-	 *
-	 * var users = {
-	 *   'fred':    { 'user': 'fred',    'age': 40 },
-	 *   'pebbles': { 'user': 'pebbles', 'age': 1 }
-	 * };
-	 *
-	 * // using the `_.property` callback shorthand
-	 * _.mapValues(users, 'age');
-	 * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
-	 */
-	function mapValues(object, iteratee, thisArg) {
-	  var result = {};
-	  iteratee = baseCallback(iteratee, thisArg, 3);
-	
-	  baseForOwn(object, function(value, key, object) {
-	    result[key] = iteratee(value, key, object);
-	  });
-	  return result;
-	}
-	
-	module.exports = mapValues;
-
-
-/***/ },
 /* 47 */
-/*!*********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/forOwn.js ***!
-  \*********************************************************/
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/reduce.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 118),
-	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 119);
+	var arrayReduce = __webpack_require__(/*! ../internal/arrayReduce */ 127),
+	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 121),
+	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 123),
+	    baseReduce = __webpack_require__(/*! ../internal/baseReduce */ 128),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119);
 	
 	/**
-	 * Iterates over own enumerable properties of an object invoking `iteratee`
-	 * for each property. The `iteratee` is bound to `thisArg` and invoked with
-	 * three arguments; (value, key, object). Iterator functions may exit iteration
-	 * early by explicitly returning `false`.
+	 * Reduces `collection` to a value which is the accumulated result of running
+	 * each element in `collection` through `iteratee`, where each successive
+	 * invocation is supplied the return value of the previous. If `accumulator`
+	 * is not provided the first element of `collection` is used as the initial
+	 * value. The `iteratee` is bound to `thisArg`and invoked with four arguments;
+	 * (accumulator, value, index|key, collection).
+	 *
+	 * Many lodash methods are guarded to work as interatees for methods like
+	 * `_.reduce`, `_.reduceRight`, and `_.transform`.
+	 *
+	 * The guarded methods are:
+	 * `assign`, `defaults`, `merge`, and `sortAllBy`
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to iterate over.
+	 * @alias foldl, inject
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
 	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [accumulator] The initial value.
 	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Object} Returns `object`.
+	 * @returns {*} Returns the accumulated value.
 	 * @example
 	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 *   this.b = 2;
-	 * }
-	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.forOwn(new Foo, function(value, key) {
-	 *   console.log(key);
+	 * _.reduce([1, 2], function(sum, n) {
+	 *   return sum + n;
 	 * });
-	 * // => logs 'a' and 'b' (iteration order is not guaranteed)
+	 * // => 3
+	 *
+	 * _.reduce({ 'a': 1, 'b': 2 }, function(result, n, key) {
+	 *   result[key] = n * 3;
+	 *   return result;
+	 * }, {});
+	 * // => { 'a': 3, 'b': 6 } (iteration order is not guaranteed)
 	 */
-	function forOwn(object, iteratee, thisArg) {
-	  if (typeof iteratee != 'function' || typeof thisArg != 'undefined') {
-	    iteratee = bindCallback(iteratee, thisArg, 3);
-	  }
-	  return baseForOwn(object, iteratee);
+	function reduce(collection, iteratee, accumulator, thisArg) {
+	  var func = isArray(collection) ? arrayReduce : baseReduce;
+	  return func(collection, baseCallback(iteratee, thisArg, 4), accumulator, arguments.length < 3, baseEach);
 	}
 	
-	module.exports = forOwn;
+	module.exports = reduce;
 
 
 /***/ },
 /* 48 */
-/*!*******************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/keys.js ***!
-  \*******************************************************/
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/forEach.js ***!
+  \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 121),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 120),
-	    isObject = __webpack_require__(/*! ../lang/isObject */ 59),
-	    shimKeys = __webpack_require__(/*! ../internal/shimKeys */ 122);
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
+	var arrayEach = __webpack_require__(/*! ../internal/arrayEach */ 124),
+	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 123),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 125),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119);
 	
 	/**
-	 * Creates an array of the own enumerable property names of `object`.
+	 * Iterates over elements of `collection` invoking `iteratee` for each element.
+	 * The `iteratee` is bound to `thisArg` and invoked with three arguments;
+	 * (value, index|key, collection). Iterator functions may exit iteration early
+	 * by explicitly returning `false`.
 	 *
-	 * **Note:** Non-object values are coerced to objects. See the
-	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.keys)
-	 * for more details.
+	 * **Note:** As with other "Collections" methods, objects with a `length` property
+	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+	 * may be used for object iteration.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to inspect.
-	 * @returns {Array} Returns the array of property names.
+	 * @alias each
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Array|Object|string} Returns `collection`.
 	 * @example
 	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 *   this.b = 2;
-	 * }
+	 * _([1, 2]).forEach(function(n) {
+	 *   console.log(n);
+	 * }).value();
+	 * // => logs each value from left to right and returns the array
 	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.keys(new Foo);
-	 * // => ['a', 'b'] (iteration order is not guaranteed)
-	 *
-	 * _.keys('hi');
-	 * // => ['0', '1']
+	 * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
+	 *   console.log(n, key);
+	 * });
+	 * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
 	 */
-	var keys = !nativeKeys ? shimKeys : function(object) {
-	  if (object) {
-	    var Ctor = object.constructor,
-	        length = object.length;
-	  }
-	  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
-	     (typeof object != 'function' && (length && isLength(length)))) {
-	    return shimKeys(object);
-	  }
-	  return isObject(object) ? nativeKeys(object) : [];
-	};
+	function forEach(collection, iteratee, thisArg) {
+	  return (typeof iteratee == 'function' && typeof thisArg == 'undefined' && isArray(collection))
+	    ? arrayEach(collection, iteratee)
+	    : baseEach(collection, bindCallback(iteratee, thisArg, 3));
+	}
 	
-	module.exports = keys;
+	module.exports = forEach;
 
 
 /***/ },
 /* 49 */
+/*!***********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/size.js ***!
+  \***********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 126),
+	    keys = __webpack_require__(/*! ../object/keys */ 55);
+	
+	/**
+	 * Gets the size of `collection` by returning `collection.length` for
+	 * array-like values or the number of own enumerable properties for objects.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to inspect.
+	 * @returns {number} Returns the size of `collection`.
+	 * @example
+	 *
+	 * _.size([1, 2, 3]);
+	 * // => 3
+	 *
+	 * _.size({ 'a': 1, 'b': 2 });
+	 * // => 2
+	 *
+	 * _.size('pebbles');
+	 * // => 7
+	 */
+	function size(collection) {
+	  var length = collection ? collection.length : 0;
+	  return isLength(length) ? length : keys(collection).length;
+	}
+	
+	module.exports = size;
+
+
+/***/ },
+/* 50 */
 /*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/object/findKey.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/collection/map.js ***!
   \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 123),
-	    baseFind = __webpack_require__(/*! ../internal/baseFind */ 124),
-	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 118);
+	var arrayMap = __webpack_require__(/*! ../internal/arrayMap */ 120),
+	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 121),
+	    baseMap = __webpack_require__(/*! ../internal/baseMap */ 122),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119);
 	
 	/**
-	 * This method is like `_.findIndex` except that it returns the key of the
-	 * first element `predicate` returns truthy for, instead of the element itself.
+	 * Creates an array of values by running each element in `collection` through
+	 * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
+	 * arguments; (value, index|key, collection).
 	 *
 	 * If a property name is provided for `predicate` the created `_.property`
 	 * style callback returns the property value of the given element.
@@ -19755,57 +19943,110 @@
 	 * callback returns `true` for elements that have the properties of the given
 	 * object, else `false`.
 	 *
+	 * Many lodash methods are guarded to work as interatees for methods like
+	 * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
+	 *
+	 * The guarded methods are:
+	 * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`, `drop`,
+	 * `dropRight`, `fill`, `flatten`, `invert`, `max`, `min`, `parseInt`, `slice`,
+	 * `sortBy`, `take`, `takeRight`, `template`, `trim`, `trimLeft`, `trimRight`,
+	 * `trunc`, `random`, `range`, `sample`, `uniq`, and `words`
+	 *
 	 * @static
 	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to search.
-	 * @param {Function|Object|string} [predicate=_.identity] The function invoked
+	 * @alias collect
+	 * @category Collection
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
 	 *  per iteration.
-	 * @param {*} [thisArg] The `this` binding of `predicate`.
-	 * @returns {string|undefined} Returns the key of the matched element, else `undefined`.
+	 *  create a `_.property` or `_.matches` style callback respectively.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Array} Returns the new mapped array.
 	 * @example
 	 *
-	 * var users = {
-	 *   'barney':  { 'age': 36, 'active': true },
-	 *   'fred':    { 'age': 40, 'active': false },
-	 *   'pebbles': { 'age': 1,  'active': true }
-	 * };
+	 * function timesThree(n) {
+	 *   return n * 3;
+	 * }
 	 *
-	 * _.findKey(users, function(chr) {
-	 *   return chr.age < 40;
-	 * });
-	 * // => 'barney' (iteration order is not guaranteed)
+	 * _.map([1, 2], timesThree);
+	 * // => [3, 6]
 	 *
-	 * // using the `_.matches` callback shorthand
-	 * _.findKey(users, { 'age': 1, 'active': true });
-	 * // => 'pebbles'
+	 * _.map({ 'a': 1, 'b': 2 }, timesThree);
+	 * // => [3, 6] (iteration order is not guaranteed)
 	 *
-	 * // using the `_.matchesProperty` callback shorthand
-	 * _.findKey(users, 'active', false);
-	 * // => 'fred'
+	 * var users = [
+	 *   { 'user': 'barney' },
+	 *   { 'user': 'fred' }
+	 * ];
 	 *
 	 * // using the `_.property` callback shorthand
-	 * _.findKey(users, 'active');
-	 * // => 'barney'
+	 * _.map(users, 'user');
+	 * // => ['barney', 'fred']
 	 */
-	function findKey(object, predicate, thisArg) {
-	  predicate = baseCallback(predicate, thisArg, 3);
-	  return baseFind(object, predicate, baseForOwn, true);
+	function map(collection, iteratee, thisArg) {
+	  var func = isArray(collection) ? arrayMap : baseMap;
+	  iteratee = baseCallback(iteratee, thisArg, 3);
+	  return func(collection, iteratee);
 	}
 	
-	module.exports = findKey;
+	module.exports = map;
 
 
 /***/ },
-/* 50 */
+/* 51 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isString.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 140);
+	
+	/** `Object#toString` result references. */
+	var stringTag = '[object String]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/**
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
+	 */
+	var objToString = objectProto.toString;
+	
+	/**
+	 * Checks if `value` is classified as a `String` primitive or object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @example
+	 *
+	 * _.isString('abc');
+	 * // => true
+	 *
+	 * _.isString(1);
+	 * // => false
+	 */
+	function isString(value) {
+	  return typeof value == 'string' || (isObjectLike(value) && objToString.call(value) == stringTag) || false;
+	}
+	
+	module.exports = isString;
+
+
+/***/ },
+/* 52 */
 /*!******************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/clone.js ***!
   \******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseClone = __webpack_require__(/*! ../internal/baseClone */ 134),
-	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 119),
-	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 135);
+	var baseClone = __webpack_require__(/*! ../internal/baseClone */ 141),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 125),
+	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 133);
 	
 	/**
 	 * Creates a clone of `value`. If `isDeep` is `true` nested objects are cloned,
@@ -19875,14 +20116,14 @@
 
 
 /***/ },
-/* 51 */
+/* 53 */
 /*!***********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isFunction.js ***!
   \***********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var baseIsFunction = __webpack_require__(/*! ../internal/baseIsFunction */ 132),
-	    isNative = __webpack_require__(/*! ./isNative */ 120);
+	/* WEBPACK VAR INJECTION */(function(global) {var baseIsFunction = __webpack_require__(/*! ../internal/baseIsFunction */ 142),
+	    isNative = __webpack_require__(/*! ./isNative */ 130);
 	
 	/** `Object#toString` result references. */
 	var funcTag = '[object Function]';
@@ -19928,62 +20169,252 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 52 */
-/*!*********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/lang/isString.js ***!
-  \*********************************************************/
+/* 54 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/mapValues.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 133);
-	
-	/** `Object#toString` result references. */
-	var stringTag = '[object String]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 121),
+	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 129);
 	
 	/**
-	 * Used to resolve the `toStringTag` of values.
-	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
-	 * for more details.
-	 */
-	var objToString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is classified as a `String` primitive or object.
+	 * Creates an object with the same keys as `object` and values generated by
+	 * running each own enumerable property of `object` through `iteratee`. The
+	 * iteratee function is bound to `thisArg` and invoked with three arguments;
+	 * (value, key, object).
+	 *
+	 * If a property name is provided for `iteratee` the created `_.property`
+	 * style callback returns the property value of the given element.
+	 *
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `iteratee` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
 	 *
 	 * @static
 	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @category Object
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+	 *  per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Object} Returns the new mapped object.
 	 * @example
 	 *
-	 * _.isString('abc');
-	 * // => true
+	 * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
+	 *   return n * 3;
+	 * });
+	 * // => { 'a': 3, 'b': 6 }
 	 *
-	 * _.isString(1);
-	 * // => false
+	 * var users = {
+	 *   'fred':    { 'user': 'fred',    'age': 40 },
+	 *   'pebbles': { 'user': 'pebbles', 'age': 1 }
+	 * };
+	 *
+	 * // using the `_.property` callback shorthand
+	 * _.mapValues(users, 'age');
+	 * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
 	 */
-	function isString(value) {
-	  return typeof value == 'string' || (isObjectLike(value) && objToString.call(value) == stringTag) || false;
+	function mapValues(object, iteratee, thisArg) {
+	  var result = {};
+	  iteratee = baseCallback(iteratee, thisArg, 3);
+	
+	  baseForOwn(object, function(value, key, object) {
+	    result[key] = iteratee(value, key, object);
+	  });
+	  return result;
 	}
 	
-	module.exports = isString;
+	module.exports = mapValues;
 
 
 /***/ },
-/* 53 */
+/* 55 */
+/*!*******************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/keys.js ***!
+  \*******************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 126),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 130),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 60),
+	    shimKeys = __webpack_require__(/*! ../internal/shimKeys */ 131);
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
+	
+	/**
+	 * Creates an array of the own enumerable property names of `object`.
+	 *
+	 * **Note:** Non-object values are coerced to objects. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.keys)
+	 * for more details.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to inspect.
+	 * @returns {Array} Returns the array of property names.
+	 * @example
+	 *
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.keys(new Foo);
+	 * // => ['a', 'b'] (iteration order is not guaranteed)
+	 *
+	 * _.keys('hi');
+	 * // => ['0', '1']
+	 */
+	var keys = !nativeKeys ? shimKeys : function(object) {
+	  if (object) {
+	    var Ctor = object.constructor,
+	        length = object.length;
+	  }
+	  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+	     (typeof object != 'function' && (length && isLength(length)))) {
+	    return shimKeys(object);
+	  }
+	  return isObject(object) ? nativeKeys(object) : [];
+	};
+	
+	module.exports = keys;
+
+
+/***/ },
+/* 56 */
+/*!*********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/forOwn.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 129),
+	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 125);
+	
+	/**
+	 * Iterates over own enumerable properties of an object invoking `iteratee`
+	 * for each property. The `iteratee` is bound to `thisArg` and invoked with
+	 * three arguments; (value, key, object). Iterator functions may exit iteration
+	 * early by explicitly returning `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @param {*} [thisArg] The `this` binding of `iteratee`.
+	 * @returns {Object} Returns `object`.
+	 * @example
+	 *
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.forOwn(new Foo, function(value, key) {
+	 *   console.log(key);
+	 * });
+	 * // => logs 'a' and 'b' (iteration order is not guaranteed)
+	 */
+	function forOwn(object, iteratee, thisArg) {
+	  if (typeof iteratee != 'function' || typeof thisArg != 'undefined') {
+	    iteratee = bindCallback(iteratee, thisArg, 3);
+	  }
+	  return baseForOwn(object, iteratee);
+	}
+	
+	module.exports = forOwn;
+
+
+/***/ },
+/* 57 */
+/*!**********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/object/findKey.js ***!
+  \**********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 121),
+	    baseFind = __webpack_require__(/*! ../internal/baseFind */ 132),
+	    baseForOwn = __webpack_require__(/*! ../internal/baseForOwn */ 129);
+	
+	/**
+	 * This method is like `_.findIndex` except that it returns the key of the
+	 * first element `predicate` returns truthy for, instead of the element itself.
+	 *
+	 * If a property name is provided for `predicate` the created `_.property`
+	 * style callback returns the property value of the given element.
+	 *
+	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
+	 * style callback returns `true` for elements that have a matching property
+	 * value, else `false`.
+	 *
+	 * If an object is provided for `predicate` the created `_.matches` style
+	 * callback returns `true` for elements that have the properties of the given
+	 * object, else `false`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The object to search.
+	 * @param {Function|Object|string} [predicate=_.identity] The function invoked
+	 *  per iteration.
+	 * @param {*} [thisArg] The `this` binding of `predicate`.
+	 * @returns {string|undefined} Returns the key of the matched element, else `undefined`.
+	 * @example
+	 *
+	 * var users = {
+	 *   'barney':  { 'age': 36, 'active': true },
+	 *   'fred':    { 'age': 40, 'active': false },
+	 *   'pebbles': { 'age': 1,  'active': true }
+	 * };
+	 *
+	 * _.findKey(users, function(chr) {
+	 *   return chr.age < 40;
+	 * });
+	 * // => 'barney' (iteration order is not guaranteed)
+	 *
+	 * // using the `_.matches` callback shorthand
+	 * _.findKey(users, { 'age': 1, 'active': true });
+	 * // => 'pebbles'
+	 *
+	 * // using the `_.matchesProperty` callback shorthand
+	 * _.findKey(users, 'active', false);
+	 * // => 'fred'
+	 *
+	 * // using the `_.property` callback shorthand
+	 * _.findKey(users, 'active');
+	 * // => 'barney'
+	 */
+	function findKey(object, predicate, thisArg) {
+	  predicate = baseCallback(predicate, thisArg, 3);
+	  return baseFind(object, predicate, baseForOwn, true);
+	}
+	
+	module.exports = findKey;
+
+
+/***/ },
+/* 58 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/array/intersection.js ***!
   \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIndexOf = __webpack_require__(/*! ../internal/baseIndexOf */ 136),
-	    cacheIndexOf = __webpack_require__(/*! ../internal/cacheIndexOf */ 137),
-	    createCache = __webpack_require__(/*! ../internal/createCache */ 138),
-	    isArguments = __webpack_require__(/*! ../lang/isArguments */ 139),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
+	var baseIndexOf = __webpack_require__(/*! ../internal/baseIndexOf */ 134),
+	    cacheIndexOf = __webpack_require__(/*! ../internal/cacheIndexOf */ 135),
+	    createCache = __webpack_require__(/*! ../internal/createCache */ 136),
+	    isArguments = __webpack_require__(/*! ../lang/isArguments */ 137),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119);
 	
 	/**
 	 * Creates an array of unique values in all provided arrays using `SameValueZero`
@@ -20049,16 +20480,16 @@
 
 
 /***/ },
-/* 54 */
+/* 59 */
 /*!******************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/array/uniq.js ***!
   \******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 123),
-	    baseUniq = __webpack_require__(/*! ../internal/baseUniq */ 140),
-	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 135),
-	    sortedUniq = __webpack_require__(/*! ../internal/sortedUniq */ 141);
+	var baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 121),
+	    baseUniq = __webpack_require__(/*! ../internal/baseUniq */ 138),
+	    isIterateeCall = __webpack_require__(/*! ../internal/isIterateeCall */ 133),
+	    sortedUniq = __webpack_require__(/*! ../internal/sortedUniq */ 139);
 	
 	/**
 	 * Creates a duplicate-value-free version of an array using `SameValueZero`
@@ -20132,230 +20563,7 @@
 
 
 /***/ },
-/* 55 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/forEach.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var arrayEach = __webpack_require__(/*! ../internal/arrayEach */ 127),
-	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 126),
-	    bindCallback = __webpack_require__(/*! ../internal/bindCallback */ 119),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
-	
-	/**
-	 * Iterates over elements of `collection` invoking `iteratee` for each element.
-	 * The `iteratee` is bound to `thisArg` and invoked with three arguments;
-	 * (value, index|key, collection). Iterator functions may exit iteration early
-	 * by explicitly returning `false`.
-	 *
-	 * **Note:** As with other "Collections" methods, objects with a `length` property
-	 * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
-	 * may be used for object iteration.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias each
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Array|Object|string} Returns `collection`.
-	 * @example
-	 *
-	 * _([1, 2]).forEach(function(n) {
-	 *   console.log(n);
-	 * }).value();
-	 * // => logs each value from left to right and returns the array
-	 *
-	 * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
-	 *   console.log(n, key);
-	 * });
-	 * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
-	 */
-	function forEach(collection, iteratee, thisArg) {
-	  return (typeof iteratee == 'function' && typeof thisArg == 'undefined' && isArray(collection))
-	    ? arrayEach(collection, iteratee)
-	    : baseEach(collection, bindCallback(iteratee, thisArg, 3));
-	}
-	
-	module.exports = forEach;
-
-
-/***/ },
-/* 56 */
-/*!**********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/map.js ***!
-  \**********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var arrayMap = __webpack_require__(/*! ../internal/arrayMap */ 128),
-	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 123),
-	    baseMap = __webpack_require__(/*! ../internal/baseMap */ 129),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
-	
-	/**
-	 * Creates an array of values by running each element in `collection` through
-	 * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
-	 * arguments; (value, index|key, collection).
-	 *
-	 * If a property name is provided for `predicate` the created `_.property`
-	 * style callback returns the property value of the given element.
-	 *
-	 * If a value is also provided for `thisArg` the created `_.matchesProperty`
-	 * style callback returns `true` for elements that have a matching property
-	 * value, else `false`.
-	 *
-	 * If an object is provided for `predicate` the created `_.matches` style
-	 * callback returns `true` for elements that have the properties of the given
-	 * object, else `false`.
-	 *
-	 * Many lodash methods are guarded to work as interatees for methods like
-	 * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
-	 *
-	 * The guarded methods are:
-	 * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`, `drop`,
-	 * `dropRight`, `fill`, `flatten`, `invert`, `max`, `min`, `parseInt`, `slice`,
-	 * `sortBy`, `take`, `takeRight`, `template`, `trim`, `trimLeft`, `trimRight`,
-	 * `trunc`, `random`, `range`, `sample`, `uniq`, and `words`
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias collect
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function|Object|string} [iteratee=_.identity] The function invoked
-	 *  per iteration.
-	 *  create a `_.property` or `_.matches` style callback respectively.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {Array} Returns the new mapped array.
-	 * @example
-	 *
-	 * function timesThree(n) {
-	 *   return n * 3;
-	 * }
-	 *
-	 * _.map([1, 2], timesThree);
-	 * // => [3, 6]
-	 *
-	 * _.map({ 'a': 1, 'b': 2 }, timesThree);
-	 * // => [3, 6] (iteration order is not guaranteed)
-	 *
-	 * var users = [
-	 *   { 'user': 'barney' },
-	 *   { 'user': 'fred' }
-	 * ];
-	 *
-	 * // using the `_.property` callback shorthand
-	 * _.map(users, 'user');
-	 * // => ['barney', 'fred']
-	 */
-	function map(collection, iteratee, thisArg) {
-	  var func = isArray(collection) ? arrayMap : baseMap;
-	  iteratee = baseCallback(iteratee, thisArg, 3);
-	  return func(collection, iteratee);
-	}
-	
-	module.exports = map;
-
-
-/***/ },
-/* 57 */
-/*!***********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/size.js ***!
-  \***********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 121),
-	    keys = __webpack_require__(/*! ../object/keys */ 48);
-	
-	/**
-	 * Gets the size of `collection` by returning `collection.length` for
-	 * array-like values or the number of own enumerable properties for objects.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to inspect.
-	 * @returns {number} Returns the size of `collection`.
-	 * @example
-	 *
-	 * _.size([1, 2, 3]);
-	 * // => 3
-	 *
-	 * _.size({ 'a': 1, 'b': 2 });
-	 * // => 2
-	 *
-	 * _.size('pebbles');
-	 * // => 7
-	 */
-	function size(collection) {
-	  var length = collection ? collection.length : 0;
-	  return isLength(length) ? length : keys(collection).length;
-	}
-	
-	module.exports = size;
-
-
-/***/ },
-/* 58 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/collection/reduce.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var arrayReduce = __webpack_require__(/*! ../internal/arrayReduce */ 130),
-	    baseCallback = __webpack_require__(/*! ../internal/baseCallback */ 123),
-	    baseEach = __webpack_require__(/*! ../internal/baseEach */ 126),
-	    baseReduce = __webpack_require__(/*! ../internal/baseReduce */ 131),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125);
-	
-	/**
-	 * Reduces `collection` to a value which is the accumulated result of running
-	 * each element in `collection` through `iteratee`, where each successive
-	 * invocation is supplied the return value of the previous. If `accumulator`
-	 * is not provided the first element of `collection` is used as the initial
-	 * value. The `iteratee` is bound to `thisArg`and invoked with four arguments;
-	 * (accumulator, value, index|key, collection).
-	 *
-	 * Many lodash methods are guarded to work as interatees for methods like
-	 * `_.reduce`, `_.reduceRight`, and `_.transform`.
-	 *
-	 * The guarded methods are:
-	 * `assign`, `defaults`, `merge`, and `sortAllBy`
-	 *
-	 * @static
-	 * @memberOf _
-	 * @alias foldl, inject
-	 * @category Collection
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
-	 * @param {*} [accumulator] The initial value.
-	 * @param {*} [thisArg] The `this` binding of `iteratee`.
-	 * @returns {*} Returns the accumulated value.
-	 * @example
-	 *
-	 * _.reduce([1, 2], function(sum, n) {
-	 *   return sum + n;
-	 * });
-	 * // => 3
-	 *
-	 * _.reduce({ 'a': 1, 'b': 2 }, function(result, n, key) {
-	 *   result[key] = n * 3;
-	 *   return result;
-	 * }, {});
-	 * // => { 'a': 3, 'b': 6 } (iteration order is not guaranteed)
-	 */
-	function reduce(collection, iteratee, accumulator, thisArg) {
-	  var func = isArray(collection) ? arrayReduce : baseReduce;
-	  return func(collection, baseCallback(iteratee, thisArg, 4), accumulator, arguments.length < 3, baseEach);
-	}
-	
-	module.exports = reduce;
-
-
-/***/ },
-/* 59 */
+/* 60 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isObject.js ***!
   \*********************************************************/
@@ -20394,7 +20602,149 @@
 
 
 /***/ },
-/* 60 */
+/* 61 */
+/*!***************************************!*\
+  !*** ./~/react/lib/EventConstants.js ***!
+  \***************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule EventConstants
+	 */
+	
+	"use strict";
+	
+	var keyMirror = __webpack_require__(/*! ./keyMirror */ 77);
+	
+	var PropagationPhases = keyMirror({bubbled: null, captured: null});
+	
+	/**
+	 * Types of raw signals from the browser caught at the top level.
+	 */
+	var topLevelTypes = keyMirror({
+	  topBlur: null,
+	  topChange: null,
+	  topClick: null,
+	  topCompositionEnd: null,
+	  topCompositionStart: null,
+	  topCompositionUpdate: null,
+	  topContextMenu: null,
+	  topCopy: null,
+	  topCut: null,
+	  topDoubleClick: null,
+	  topDrag: null,
+	  topDragEnd: null,
+	  topDragEnter: null,
+	  topDragExit: null,
+	  topDragLeave: null,
+	  topDragOver: null,
+	  topDragStart: null,
+	  topDrop: null,
+	  topError: null,
+	  topFocus: null,
+	  topInput: null,
+	  topKeyDown: null,
+	  topKeyPress: null,
+	  topKeyUp: null,
+	  topLoad: null,
+	  topMouseDown: null,
+	  topMouseMove: null,
+	  topMouseOut: null,
+	  topMouseOver: null,
+	  topMouseUp: null,
+	  topPaste: null,
+	  topReset: null,
+	  topScroll: null,
+	  topSelectionChange: null,
+	  topSubmit: null,
+	  topTextInput: null,
+	  topTouchCancel: null,
+	  topTouchEnd: null,
+	  topTouchMove: null,
+	  topTouchStart: null,
+	  topWheel: null
+	});
+	
+	var EventConstants = {
+	  topLevelTypes: topLevelTypes,
+	  PropagationPhases: PropagationPhases
+	};
+	
+	module.exports = EventConstants;
+
+
+/***/ },
+/* 62 */
+/*!**********************************!*\
+  !*** ./~/react/lib/invariant.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule invariant
+	 */
+	
+	"use strict";
+	
+	/**
+	 * Use invariant() to assert state which your program assumes to be true.
+	 *
+	 * Provide sprintf-style format (only %s is supported) and arguments
+	 * to provide information about what broke and what you were
+	 * expecting.
+	 *
+	 * The invariant message will be stripped in production, but the invariant
+	 * will remain to ensure logic does not differ in production.
+	 */
+	
+	var invariant = function(condition, format, a, b, c, d, e, f) {
+	  if ("production" !== process.env.NODE_ENV) {
+	    if (format === undefined) {
+	      throw new Error('invariant requires an error message argument');
+	    }
+	  }
+	
+	  if (!condition) {
+	    var error;
+	    if (format === undefined) {
+	      error = new Error(
+	        'Minified exception occurred; use the non-minified dev environment ' +
+	        'for the full error message and additional helpful warnings.'
+	      );
+	    } else {
+	      var args = [a, b, c, d, e, f];
+	      var argIndex = 0;
+	      error = new Error(
+	        'Invariant Violation: ' +
+	        format.replace(/%s/g, function() { return args[argIndex++]; })
+	      );
+	    }
+	
+	    error.framesToPop = 1; // we don't care about invariant's own frame
+	    throw error;
+	  }
+	};
+	
+	module.exports = invariant;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 63 */
 /*!************************************!*\
   !*** ./~/react/lib/DOMProperty.js ***!
   \************************************/
@@ -20416,7 +20766,7 @@
 	
 	"use strict";
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	function checkMask(value, bitmask) {
 	  return (value & bitmask) === bitmask;
@@ -20696,102 +21046,10 @@
 	
 	module.exports = DOMProperty;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 61 */
-/*!********************************!*\
-  !*** ./~/react/lib/warning.js ***!
-  \********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule warning
-	 */
-	
-	"use strict";
-	
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
-	
-	/**
-	 * Similar to invariant but only logs a warning if the condition is not met.
-	 * This can be used to log issues in development environments in critical
-	 * paths. Removing the logging code for production environments will keep the
-	 * same logic and follow the same code paths.
-	 */
-	
-	var warning = emptyFunction;
-	
-	if ("production" !== process.env.NODE_ENV) {
-	  warning = function(condition, format ) {for (var args=[],$__0=2,$__1=arguments.length;$__0<$__1;$__0++) args.push(arguments[$__0]);
-	    if (format === undefined) {
-	      throw new Error(
-	        '`warning(condition, format, ...args)` requires a warning ' +
-	        'message argument'
-	      );
-	    }
-	
-	    if (!condition) {
-	      var argIndex = 0;
-	      console.warn('Warning: ' + format.replace(/%s/g, function()  {return args[argIndex++];}));
-	    }
-	  };
-	}
-	
-	module.exports = warning;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 62 */
-/*!******************************************!*\
-  !*** ./~/react/lib/memoizeStringOnly.js ***!
-  \******************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule memoizeStringOnly
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	/**
-	 * Memoizes the return value of a function that accepts one string argument.
-	 *
-	 * @param {function} callback
-	 * @return {function}
-	 */
-	function memoizeStringOnly(callback) {
-	  var cache = {};
-	  return function(string) {
-	    if (cache.hasOwnProperty(string)) {
-	      return cache[string];
-	    } else {
-	      return cache[string] = callback.call(this, string);
-	    }
-	  };
-	}
-	
-	module.exports = memoizeStringOnly;
-
-
-/***/ },
-/* 63 */
+/* 64 */
 /*!*********************************************!*\
   !*** ./~/react/lib/escapeTextForBrowser.js ***!
   \*********************************************/
@@ -20839,92 +21097,13 @@
 
 
 /***/ },
-/* 64 */
-/*!***************************************!*\
-  !*** ./~/react/lib/EventConstants.js ***!
-  \***************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule EventConstants
-	 */
-	
-	"use strict";
-	
-	var keyMirror = __webpack_require__(/*! ./keyMirror */ 70);
-	
-	var PropagationPhases = keyMirror({bubbled: null, captured: null});
-	
-	/**
-	 * Types of raw signals from the browser caught at the top level.
-	 */
-	var topLevelTypes = keyMirror({
-	  topBlur: null,
-	  topChange: null,
-	  topClick: null,
-	  topCompositionEnd: null,
-	  topCompositionStart: null,
-	  topCompositionUpdate: null,
-	  topContextMenu: null,
-	  topCopy: null,
-	  topCut: null,
-	  topDoubleClick: null,
-	  topDrag: null,
-	  topDragEnd: null,
-	  topDragEnter: null,
-	  topDragExit: null,
-	  topDragLeave: null,
-	  topDragOver: null,
-	  topDragStart: null,
-	  topDrop: null,
-	  topError: null,
-	  topFocus: null,
-	  topInput: null,
-	  topKeyDown: null,
-	  topKeyPress: null,
-	  topKeyUp: null,
-	  topLoad: null,
-	  topMouseDown: null,
-	  topMouseMove: null,
-	  topMouseOut: null,
-	  topMouseOver: null,
-	  topMouseUp: null,
-	  topPaste: null,
-	  topReset: null,
-	  topScroll: null,
-	  topSelectionChange: null,
-	  topSubmit: null,
-	  topTextInput: null,
-	  topTouchCancel: null,
-	  topTouchEnd: null,
-	  topTouchMove: null,
-	  topTouchStart: null,
-	  topWheel: null
-	});
-	
-	var EventConstants = {
-	  topLevelTypes: topLevelTypes,
-	  PropagationPhases: PropagationPhases
-	};
-	
-	module.exports = EventConstants;
-
-
-/***/ },
 /* 65 */
-/*!**********************************!*\
-  !*** ./~/react/lib/invariant.js ***!
-  \**********************************/
+/*!******************************************!*\
+  !*** ./~/react/lib/memoizeStringOnly.js ***!
+  \******************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {/**
+	/**
 	 * Copyright 2013-2014, Facebook, Inc.
 	 * All rights reserved.
 	 *
@@ -20932,56 +21111,85 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule invariant
+	 * @providesModule memoizeStringOnly
+	 * @typechecks static-only
 	 */
 	
 	"use strict";
 	
 	/**
-	 * Use invariant() to assert state which your program assumes to be true.
+	 * Memoizes the return value of a function that accepts one string argument.
 	 *
-	 * Provide sprintf-style format (only %s is supported) and arguments
-	 * to provide information about what broke and what you were
-	 * expecting.
-	 *
-	 * The invariant message will be stripped in production, but the invariant
-	 * will remain to ensure logic does not differ in production.
+	 * @param {function} callback
+	 * @return {function}
 	 */
-	
-	var invariant = function(condition, format, a, b, c, d, e, f) {
-	  if ("production" !== process.env.NODE_ENV) {
-	    if (format === undefined) {
-	      throw new Error('invariant requires an error message argument');
-	    }
-	  }
-	
-	  if (!condition) {
-	    var error;
-	    if (format === undefined) {
-	      error = new Error(
-	        'Minified exception occurred; use the non-minified dev environment ' +
-	        'for the full error message and additional helpful warnings.'
-	      );
+	function memoizeStringOnly(callback) {
+	  var cache = {};
+	  return function(string) {
+	    if (cache.hasOwnProperty(string)) {
+	      return cache[string];
 	    } else {
-	      var args = [a, b, c, d, e, f];
-	      var argIndex = 0;
-	      error = new Error(
-	        'Invariant Violation: ' +
-	        format.replace(/%s/g, function() { return args[argIndex++]; })
-	      );
+	      return cache[string] = callback.call(this, string);
 	    }
+	  };
+	}
 	
-	    error.framesToPop = 1; // we don't care about invariant's own frame
-	    throw error;
-	  }
-	};
-	
-	module.exports = invariant;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	module.exports = memoizeStringOnly;
+
 
 /***/ },
 /* 66 */
+/*!********************************!*\
+  !*** ./~/react/lib/warning.js ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule warning
+	 */
+	
+	"use strict";
+	
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
+	
+	/**
+	 * Similar to invariant but only logs a warning if the condition is not met.
+	 * This can be used to log issues in development environments in critical
+	 * paths. Removing the logging code for production environments will keep the
+	 * same logic and follow the same code paths.
+	 */
+	
+	var warning = emptyFunction;
+	
+	if ("production" !== process.env.NODE_ENV) {
+	  warning = function(condition, format ) {for (var args=[],$__0=2,$__1=arguments.length;$__0<$__1;$__0++) args.push(arguments[$__0]);
+	    if (format === undefined) {
+	      throw new Error(
+	        '`warning(condition, format, ...args)` requires a warning ' +
+	        'message argument'
+	      );
+	    }
+	
+	    if (!condition) {
+	      var argIndex = 0;
+	      console.warn('Warning: ' + format.replace(/%s/g, function()  {return args[argIndex++];}));
+	    }
+	  };
+	}
+	
+	module.exports = warning;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 67 */
 /*!************************************!*\
   !*** ./~/react/lib/PooledClass.js ***!
   \************************************/
@@ -21000,7 +21208,7 @@
 	
 	"use strict";
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Static poolers. Several custom versions for each potential number of
@@ -21100,10 +21308,10 @@
 	
 	module.exports = PooledClass;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 67 */
+/* 68 */
 /*!********************************************!*\
   !*** ./~/react/lib/traverseAllChildren.js ***!
   \********************************************/
@@ -21122,10 +21330,10 @@
 	
 	"use strict";
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 30);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 31);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	var SEPARATOR = ReactInstanceHandles.SEPARATOR;
 	var SUBSEPARATOR = ':';
@@ -21289,10 +21497,132 @@
 	
 	module.exports = traverseAllChildren;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 68 */
+/* 69 */
+/*!********************************************!*\
+  !*** ./~/react/lib/ReactEmptyComponent.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactEmptyComponent
+	 */
+	
+	"use strict";
+	
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	
+	var component;
+	// This registry keeps track of the React IDs of the components that rendered to
+	// `null` (in reality a placeholder such as `noscript`)
+	var nullComponentIdsRegistry = {};
+	
+	var ReactEmptyComponentInjection = {
+	  injectEmptyComponent: function(emptyComponent) {
+	    component = ReactElement.createFactory(emptyComponent);
+	  }
+	};
+	
+	/**
+	 * @return {ReactComponent} component The injected empty component.
+	 */
+	function getEmptyComponent() {
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    component,
+	    'Trying to return null from a render, but no null placeholder component ' +
+	    'was injected.'
+	  ) : invariant(component));
+	  return component();
+	}
+	
+	/**
+	 * Mark the component as having rendered to null.
+	 * @param {string} id Component's `_rootNodeID`.
+	 */
+	function registerNullComponentID(id) {
+	  nullComponentIdsRegistry[id] = true;
+	}
+	
+	/**
+	 * Unmark the component as having rendered to null: it renders to something now.
+	 * @param {string} id Component's `_rootNodeID`.
+	 */
+	function deregisterNullComponentID(id) {
+	  delete nullComponentIdsRegistry[id];
+	}
+	
+	/**
+	 * @param {string} id Component's `_rootNodeID`.
+	 * @return {boolean} True if the component is rendered to null.
+	 */
+	function isNullComponentID(id) {
+	  return nullComponentIdsRegistry[id];
+	}
+	
+	var ReactEmptyComponent = {
+	  deregisterNullComponentID: deregisterNullComponentID,
+	  getEmptyComponent: getEmptyComponent,
+	  injection: ReactEmptyComponentInjection,
+	  isNullComponentID: isNullComponentID,
+	  registerNullComponentID: registerNullComponentID
+	};
+	
+	module.exports = ReactEmptyComponent;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 70 */
+/*!****************************************!*\
+  !*** ./~/react/lib/ReactErrorUtils.js ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactErrorUtils
+	 * @typechecks
+	 */
+	
+	"use strict";
+	
+	var ReactErrorUtils = {
+	  /**
+	   * Creates a guarded version of a function. This is supposed to make debugging
+	   * of event handlers easier. To aid debugging with the browser's debugger,
+	   * this currently simply returns the original function.
+	   *
+	   * @param {function} func Function to be executed
+	   * @param {string} name The name of the guard
+	   * @return {function}
+	   */
+	  guard: function(func, name) {
+	    return func;
+	  }
+	};
+	
+	module.exports = ReactErrorUtils;
+
+
+/***/ },
+/* 71 */
 /*!***********************************!*\
   !*** ./~/react/lib/ReactOwner.js ***!
   \***********************************/
@@ -21311,8 +21641,8 @@
 	
 	"use strict";
 	
-	var emptyObject = __webpack_require__(/*! ./emptyObject */ 142);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var emptyObject = __webpack_require__(/*! ./emptyObject */ 143);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * ReactOwners are capable of storing references to owned components.
@@ -21451,10 +21781,248 @@
 	
 	module.exports = ReactOwner;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 69 */
+/* 72 */
+/*!********************************************!*\
+  !*** ./~/react/lib/ReactPropTransferer.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactPropTransferer
+	 */
+	
+	"use strict";
+	
+	var assign = __webpack_require__(/*! ./Object.assign */ 38);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var joinClasses = __webpack_require__(/*! ./joinClasses */ 163);
+	var warning = __webpack_require__(/*! ./warning */ 66);
+	
+	var didWarn = false;
+	
+	/**
+	 * Creates a transfer strategy that will merge prop values using the supplied
+	 * `mergeStrategy`. If a prop was previously unset, this just sets it.
+	 *
+	 * @param {function} mergeStrategy
+	 * @return {function}
+	 */
+	function createTransferStrategy(mergeStrategy) {
+	  return function(props, key, value) {
+	    if (!props.hasOwnProperty(key)) {
+	      props[key] = value;
+	    } else {
+	      props[key] = mergeStrategy(props[key], value);
+	    }
+	  };
+	}
+	
+	var transferStrategyMerge = createTransferStrategy(function(a, b) {
+	  // `merge` overrides the first object's (`props[key]` above) keys using the
+	  // second object's (`value`) keys. An object's style's existing `propA` would
+	  // get overridden. Flip the order here.
+	  return assign({}, b, a);
+	});
+	
+	/**
+	 * Transfer strategies dictate how props are transferred by `transferPropsTo`.
+	 * NOTE: if you add any more exceptions to this list you should be sure to
+	 * update `cloneWithProps()` accordingly.
+	 */
+	var TransferStrategies = {
+	  /**
+	   * Never transfer `children`.
+	   */
+	  children: emptyFunction,
+	  /**
+	   * Transfer the `className` prop by merging them.
+	   */
+	  className: createTransferStrategy(joinClasses),
+	  /**
+	   * Transfer the `style` prop (which is an object) by merging them.
+	   */
+	  style: transferStrategyMerge
+	};
+	
+	/**
+	 * Mutates the first argument by transferring the properties from the second
+	 * argument.
+	 *
+	 * @param {object} props
+	 * @param {object} newProps
+	 * @return {object}
+	 */
+	function transferInto(props, newProps) {
+	  for (var thisKey in newProps) {
+	    if (!newProps.hasOwnProperty(thisKey)) {
+	      continue;
+	    }
+	
+	    var transferStrategy = TransferStrategies[thisKey];
+	
+	    if (transferStrategy && TransferStrategies.hasOwnProperty(thisKey)) {
+	      transferStrategy(props, thisKey, newProps[thisKey]);
+	    } else if (!props.hasOwnProperty(thisKey)) {
+	      props[thisKey] = newProps[thisKey];
+	    }
+	  }
+	  return props;
+	}
+	
+	/**
+	 * ReactPropTransferer are capable of transferring props to another component
+	 * using a `transferPropsTo` method.
+	 *
+	 * @class ReactPropTransferer
+	 */
+	var ReactPropTransferer = {
+	
+	  TransferStrategies: TransferStrategies,
+	
+	  /**
+	   * Merge two props objects using TransferStrategies.
+	   *
+	   * @param {object} oldProps original props (they take precedence)
+	   * @param {object} newProps new props to merge in
+	   * @return {object} a new object containing both sets of props merged.
+	   */
+	  mergeProps: function(oldProps, newProps) {
+	    return transferInto(assign({}, oldProps), newProps);
+	  },
+	
+	  /**
+	   * @lends {ReactPropTransferer.prototype}
+	   */
+	  Mixin: {
+	
+	    /**
+	     * Transfer props from this component to a target component.
+	     *
+	     * Props that do not have an explicit transfer strategy will be transferred
+	     * only if the target component does not already have the prop set.
+	     *
+	     * This is usually used to pass down props to a returned root component.
+	     *
+	     * @param {ReactElement} element Component receiving the properties.
+	     * @return {ReactElement} The supplied `component`.
+	     * @final
+	     * @protected
+	     */
+	    transferPropsTo: function(element) {
+	      ("production" !== process.env.NODE_ENV ? invariant(
+	        element._owner === this,
+	        '%s: You can\'t call transferPropsTo() on a component that you ' +
+	        'don\'t own, %s. This usually means you are calling ' +
+	        'transferPropsTo() on a component passed in as props or children.',
+	        this.constructor.displayName,
+	        typeof element.type === 'string' ?
+	        element.type :
+	        element.type.displayName
+	      ) : invariant(element._owner === this));
+	
+	      if ("production" !== process.env.NODE_ENV) {
+	        if (!didWarn) {
+	          didWarn = true;
+	          ("production" !== process.env.NODE_ENV ? warning(
+	            false,
+	            'transferPropsTo is deprecated. ' +
+	            'See http://fb.me/react-transferpropsto for more information.'
+	          ) : null);
+	        }
+	      }
+	
+	      // Because elements are immutable we have to merge into the existing
+	      // props object rather than clone it.
+	      transferInto(element.props, this.props);
+	
+	      return element;
+	    }
+	
+	  }
+	};
+	
+	module.exports = ReactPropTransferer;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 73 */
+/*!***********************************************!*\
+  !*** ./~/react/lib/ReactPropTypeLocations.js ***!
+  \***********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactPropTypeLocations
+	 */
+	
+	"use strict";
+	
+	var keyMirror = __webpack_require__(/*! ./keyMirror */ 77);
+	
+	var ReactPropTypeLocations = keyMirror({
+	  prop: null,
+	  context: null,
+	  childContext: null
+	});
+	
+	module.exports = ReactPropTypeLocations;
+
+
+/***/ },
+/* 74 */
+/*!***************************************************!*\
+  !*** ./~/react/lib/ReactPropTypeLocationNames.js ***!
+  \***************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactPropTypeLocationNames
+	 */
+	
+	"use strict";
+	
+	var ReactPropTypeLocationNames = {};
+	
+	if ("production" !== process.env.NODE_ENV) {
+	  ReactPropTypeLocationNames = {
+	    prop: 'prop',
+	    context: 'context',
+	    childContext: 'child context'
+	  };
+	}
+	
+	module.exports = ReactPropTypeLocationNames;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 75 */
 /*!*************************************!*\
   !*** ./~/react/lib/ReactUpdates.js ***!
   \*************************************/
@@ -21473,15 +22041,15 @@
 	
 	"use strict";
 	
-	var CallbackQueue = __webpack_require__(/*! ./CallbackQueue */ 143);
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
-	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 24);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
-	var Transaction = __webpack_require__(/*! ./Transaction */ 144);
+	var CallbackQueue = __webpack_require__(/*! ./CallbackQueue */ 145);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
+	var ReactCurrentOwner = __webpack_require__(/*! ./ReactCurrentOwner */ 25);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
+	var Transaction = __webpack_require__(/*! ./Transaction */ 146);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var dirtyComponents = [];
 	var asapCallbackQueue = CallbackQueue.getPooled();
@@ -21747,428 +22315,7 @@
 	
 	module.exports = ReactUpdates;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 70 */
-/*!**********************************!*\
-  !*** ./~/react/lib/keyMirror.js ***!
-  \**********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule keyMirror
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	
-	/**
-	 * Constructs an enumeration with keys equal to their value.
-	 *
-	 * For example:
-	 *
-	 *   var COLORS = keyMirror({blue: null, red: null});
-	 *   var myColor = COLORS.blue;
-	 *   var isColorValid = !!COLORS[myColor];
-	 *
-	 * The last line could not be performed if the values of the generated enum were
-	 * not equal to their keys.
-	 *
-	 *   Input:  {key1: val1, key2: val2}
-	 *   Output: {key1: key1, key2: key2}
-	 *
-	 * @param {object} obj
-	 * @return {object}
-	 */
-	var keyMirror = function(obj) {
-	  var ret = {};
-	  var key;
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    obj instanceof Object && !Array.isArray(obj),
-	    'keyMirror(...): Argument must be an object.'
-	  ) : invariant(obj instanceof Object && !Array.isArray(obj)));
-	  for (key in obj) {
-	    if (!obj.hasOwnProperty(key)) {
-	      continue;
-	    }
-	    ret[key] = key;
-	  }
-	  return ret;
-	};
-	
-	module.exports = keyMirror;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 71 */
-/*!****************************************!*\
-  !*** ./~/react/lib/ReactErrorUtils.js ***!
-  \****************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactErrorUtils
-	 * @typechecks
-	 */
-	
-	"use strict";
-	
-	var ReactErrorUtils = {
-	  /**
-	   * Creates a guarded version of a function. This is supposed to make debugging
-	   * of event handlers easier. To aid debugging with the browser's debugger,
-	   * this currently simply returns the original function.
-	   *
-	   * @param {function} func Function to be executed
-	   * @param {string} name The name of the guard
-	   * @return {function}
-	   */
-	  guard: function(func, name) {
-	    return func;
-	  }
-	};
-	
-	module.exports = ReactErrorUtils;
-
-
-/***/ },
-/* 72 */
-/*!********************************************!*\
-  !*** ./~/react/lib/ReactEmptyComponent.js ***!
-  \********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactEmptyComponent
-	 */
-	
-	"use strict";
-	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	
-	var component;
-	// This registry keeps track of the React IDs of the components that rendered to
-	// `null` (in reality a placeholder such as `noscript`)
-	var nullComponentIdsRegistry = {};
-	
-	var ReactEmptyComponentInjection = {
-	  injectEmptyComponent: function(emptyComponent) {
-	    component = ReactElement.createFactory(emptyComponent);
-	  }
-	};
-	
-	/**
-	 * @return {ReactComponent} component The injected empty component.
-	 */
-	function getEmptyComponent() {
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    component,
-	    'Trying to return null from a render, but no null placeholder component ' +
-	    'was injected.'
-	  ) : invariant(component));
-	  return component();
-	}
-	
-	/**
-	 * Mark the component as having rendered to null.
-	 * @param {string} id Component's `_rootNodeID`.
-	 */
-	function registerNullComponentID(id) {
-	  nullComponentIdsRegistry[id] = true;
-	}
-	
-	/**
-	 * Unmark the component as having rendered to null: it renders to something now.
-	 * @param {string} id Component's `_rootNodeID`.
-	 */
-	function deregisterNullComponentID(id) {
-	  delete nullComponentIdsRegistry[id];
-	}
-	
-	/**
-	 * @param {string} id Component's `_rootNodeID`.
-	 * @return {boolean} True if the component is rendered to null.
-	 */
-	function isNullComponentID(id) {
-	  return nullComponentIdsRegistry[id];
-	}
-	
-	var ReactEmptyComponent = {
-	  deregisterNullComponentID: deregisterNullComponentID,
-	  getEmptyComponent: getEmptyComponent,
-	  injection: ReactEmptyComponentInjection,
-	  isNullComponentID: isNullComponentID,
-	  registerNullComponentID: registerNullComponentID
-	};
-	
-	module.exports = ReactEmptyComponent;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 73 */
-/*!********************************************!*\
-  !*** ./~/react/lib/ReactPropTransferer.js ***!
-  \********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactPropTransferer
-	 */
-	
-	"use strict";
-	
-	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var joinClasses = __webpack_require__(/*! ./joinClasses */ 145);
-	var warning = __webpack_require__(/*! ./warning */ 61);
-	
-	var didWarn = false;
-	
-	/**
-	 * Creates a transfer strategy that will merge prop values using the supplied
-	 * `mergeStrategy`. If a prop was previously unset, this just sets it.
-	 *
-	 * @param {function} mergeStrategy
-	 * @return {function}
-	 */
-	function createTransferStrategy(mergeStrategy) {
-	  return function(props, key, value) {
-	    if (!props.hasOwnProperty(key)) {
-	      props[key] = value;
-	    } else {
-	      props[key] = mergeStrategy(props[key], value);
-	    }
-	  };
-	}
-	
-	var transferStrategyMerge = createTransferStrategy(function(a, b) {
-	  // `merge` overrides the first object's (`props[key]` above) keys using the
-	  // second object's (`value`) keys. An object's style's existing `propA` would
-	  // get overridden. Flip the order here.
-	  return assign({}, b, a);
-	});
-	
-	/**
-	 * Transfer strategies dictate how props are transferred by `transferPropsTo`.
-	 * NOTE: if you add any more exceptions to this list you should be sure to
-	 * update `cloneWithProps()` accordingly.
-	 */
-	var TransferStrategies = {
-	  /**
-	   * Never transfer `children`.
-	   */
-	  children: emptyFunction,
-	  /**
-	   * Transfer the `className` prop by merging them.
-	   */
-	  className: createTransferStrategy(joinClasses),
-	  /**
-	   * Transfer the `style` prop (which is an object) by merging them.
-	   */
-	  style: transferStrategyMerge
-	};
-	
-	/**
-	 * Mutates the first argument by transferring the properties from the second
-	 * argument.
-	 *
-	 * @param {object} props
-	 * @param {object} newProps
-	 * @return {object}
-	 */
-	function transferInto(props, newProps) {
-	  for (var thisKey in newProps) {
-	    if (!newProps.hasOwnProperty(thisKey)) {
-	      continue;
-	    }
-	
-	    var transferStrategy = TransferStrategies[thisKey];
-	
-	    if (transferStrategy && TransferStrategies.hasOwnProperty(thisKey)) {
-	      transferStrategy(props, thisKey, newProps[thisKey]);
-	    } else if (!props.hasOwnProperty(thisKey)) {
-	      props[thisKey] = newProps[thisKey];
-	    }
-	  }
-	  return props;
-	}
-	
-	/**
-	 * ReactPropTransferer are capable of transferring props to another component
-	 * using a `transferPropsTo` method.
-	 *
-	 * @class ReactPropTransferer
-	 */
-	var ReactPropTransferer = {
-	
-	  TransferStrategies: TransferStrategies,
-	
-	  /**
-	   * Merge two props objects using TransferStrategies.
-	   *
-	   * @param {object} oldProps original props (they take precedence)
-	   * @param {object} newProps new props to merge in
-	   * @return {object} a new object containing both sets of props merged.
-	   */
-	  mergeProps: function(oldProps, newProps) {
-	    return transferInto(assign({}, oldProps), newProps);
-	  },
-	
-	  /**
-	   * @lends {ReactPropTransferer.prototype}
-	   */
-	  Mixin: {
-	
-	    /**
-	     * Transfer props from this component to a target component.
-	     *
-	     * Props that do not have an explicit transfer strategy will be transferred
-	     * only if the target component does not already have the prop set.
-	     *
-	     * This is usually used to pass down props to a returned root component.
-	     *
-	     * @param {ReactElement} element Component receiving the properties.
-	     * @return {ReactElement} The supplied `component`.
-	     * @final
-	     * @protected
-	     */
-	    transferPropsTo: function(element) {
-	      ("production" !== process.env.NODE_ENV ? invariant(
-	        element._owner === this,
-	        '%s: You can\'t call transferPropsTo() on a component that you ' +
-	        'don\'t own, %s. This usually means you are calling ' +
-	        'transferPropsTo() on a component passed in as props or children.',
-	        this.constructor.displayName,
-	        typeof element.type === 'string' ?
-	        element.type :
-	        element.type.displayName
-	      ) : invariant(element._owner === this));
-	
-	      if ("production" !== process.env.NODE_ENV) {
-	        if (!didWarn) {
-	          didWarn = true;
-	          ("production" !== process.env.NODE_ENV ? warning(
-	            false,
-	            'transferPropsTo is deprecated. ' +
-	            'See http://fb.me/react-transferpropsto for more information.'
-	          ) : null);
-	        }
-	      }
-	
-	      // Because elements are immutable we have to merge into the existing
-	      // props object rather than clone it.
-	      transferInto(element.props, this.props);
-	
-	      return element;
-	    }
-	
-	  }
-	};
-	
-	module.exports = ReactPropTransferer;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 74 */
-/*!***********************************************!*\
-  !*** ./~/react/lib/ReactPropTypeLocations.js ***!
-  \***********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactPropTypeLocations
-	 */
-	
-	"use strict";
-	
-	var keyMirror = __webpack_require__(/*! ./keyMirror */ 70);
-	
-	var ReactPropTypeLocations = keyMirror({
-	  prop: null,
-	  context: null,
-	  childContext: null
-	});
-	
-	module.exports = ReactPropTypeLocations;
-
-
-/***/ },
-/* 75 */
-/*!***************************************************!*\
-  !*** ./~/react/lib/ReactPropTypeLocationNames.js ***!
-  \***************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactPropTypeLocationNames
-	 */
-	
-	"use strict";
-	
-	var ReactPropTypeLocationNames = {};
-	
-	if ("production" !== process.env.NODE_ENV) {
-	  ReactPropTypeLocationNames = {
-	    prop: 'prop',
-	    context: 'context',
-	    childContext: 'child context'
-	  };
-	}
-	
-	module.exports = ReactPropTypeLocationNames;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 76 */
@@ -22191,12 +22338,12 @@
 	
 	"use strict";
 	
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 31);
-	var ReactNativeComponent = __webpack_require__(/*! ./ReactNativeComponent */ 146);
-	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 72);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactLegacyElement = __webpack_require__(/*! ./ReactLegacyElement */ 32);
+	var ReactNativeComponent = __webpack_require__(/*! ./ReactNativeComponent */ 144);
+	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 69);
 	
 	/**
 	 * Given an `element` create an instance that will actually be mounted.
@@ -22288,10 +22435,71 @@
 	
 	module.exports = instantiateReactComponent;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 77 */
+/*!**********************************!*\
+  !*** ./~/react/lib/keyMirror.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule keyMirror
+	 * @typechecks static-only
+	 */
+	
+	"use strict";
+	
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	
+	/**
+	 * Constructs an enumeration with keys equal to their value.
+	 *
+	 * For example:
+	 *
+	 *   var COLORS = keyMirror({blue: null, red: null});
+	 *   var myColor = COLORS.blue;
+	 *   var isColorValid = !!COLORS[myColor];
+	 *
+	 * The last line could not be performed if the values of the generated enum were
+	 * not equal to their keys.
+	 *
+	 *   Input:  {key1: val1, key2: val2}
+	 *   Output: {key1: key1, key2: key2}
+	 *
+	 * @param {object} obj
+	 * @return {object}
+	 */
+	var keyMirror = function(obj) {
+	  var ret = {};
+	  var key;
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    obj instanceof Object && !Array.isArray(obj),
+	    'keyMirror(...): Argument must be an object.'
+	  ) : invariant(obj instanceof Object && !Array.isArray(obj)));
+	  for (key in obj) {
+	    if (!obj.hasOwnProperty(key)) {
+	      continue;
+	    }
+	    ret[key] = key;
+	  }
+	  return ret;
+	};
+	
+	module.exports = keyMirror;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 78 */
 /*!******************************!*\
   !*** ./~/react/lib/keyOf.js ***!
   \******************************/
@@ -22334,7 +22542,7 @@
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /*!***************************************!*\
   !*** ./~/react/lib/monitorCodeUse.js ***!
   \***************************************/
@@ -22353,7 +22561,7 @@
 	
 	"use strict";
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Provides open-source compatible instrumentation for monitoring certain API
@@ -22371,10 +22579,10 @@
 	
 	module.exports = monitorCodeUse;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 79 */
+/* 80 */
 /*!**********************************!*\
   !*** ./~/react/lib/mapObject.js ***!
   \**********************************/
@@ -22434,7 +22642,7 @@
 
 
 /***/ },
-/* 80 */
+/* 81 */
 /*!***************************************************!*\
   !*** ./~/react/lib/shouldUpdateReactComponent.js ***!
   \***************************************************/
@@ -22479,13 +22687,13 @@
 
 
 /***/ },
-/* 81 */
-/*!***************************************!*\
-  !*** ./~/react/lib/ReactRootIndex.js ***!
-  \***************************************/
+/* 82 */
+/*!***************************************************!*\
+  !*** ./~/react/lib/ReactBrowserComponentMixin.js ***!
+  \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
+	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2014, Facebook, Inc.
 	 * All rights reserved.
 	 *
@@ -22493,31 +22701,42 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule ReactRootIndex
-	 * @typechecks
+	 * @providesModule ReactBrowserComponentMixin
 	 */
 	
 	"use strict";
 	
-	var ReactRootIndexInjection = {
+	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 69);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	
+	var ReactBrowserComponentMixin = {
 	  /**
-	   * @param {function} _createReactRootIndex
+	   * Returns the DOM node rendered by this component.
+	   *
+	   * @return {DOMElement} The root node of this component.
+	   * @final
+	   * @protected
 	   */
-	  injectCreateReactRootIndex: function(_createReactRootIndex) {
-	    ReactRootIndex.createReactRootIndex = _createReactRootIndex;
+	  getDOMNode: function() {
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      this.isMounted(),
+	      'getDOMNode(): A component must be mounted to have a DOM node.'
+	    ) : invariant(this.isMounted()));
+	    if (ReactEmptyComponent.isNullComponentID(this._rootNodeID)) {
+	      return null;
+	    }
+	    return ReactMount.getNode(this._rootNodeID);
 	  }
 	};
 	
-	var ReactRootIndex = {
-	  createReactRootIndex: null,
-	  injection: ReactRootIndexInjection
-	};
+	module.exports = ReactBrowserComponentMixin;
 	
-	module.exports = ReactRootIndex;
-
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 82 */
+/* 83 */
 /*!**********************************************!*\
   !*** ./~/react/lib/CSSPropertyOperations.js ***!
   \**********************************************/
@@ -22538,13 +22757,13 @@
 	"use strict";
 	
 	var CSSProperty = __webpack_require__(/*! ./CSSProperty */ 147);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
 	var camelizeStyleName = __webpack_require__(/*! ./camelizeStyleName */ 148);
 	var dangerousStyleValue = __webpack_require__(/*! ./dangerousStyleValue */ 149);
 	var hyphenateStyleName = __webpack_require__(/*! ./hyphenateStyleName */ 150);
-	var memoizeStringOnly = __webpack_require__(/*! ./memoizeStringOnly */ 62);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var memoizeStringOnly = __webpack_require__(/*! ./memoizeStringOnly */ 65);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var processStyleName = memoizeStringOnly(function(styleName) {
 	  return hyphenateStyleName(styleName);
@@ -22655,56 +22874,7 @@
 	
 	module.exports = CSSPropertyOperations;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 83 */
-/*!***************************************************!*\
-  !*** ./~/react/lib/ReactBrowserComponentMixin.js ***!
-  \***************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactBrowserComponentMixin
-	 */
-	
-	"use strict";
-	
-	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 72);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	
-	var ReactBrowserComponentMixin = {
-	  /**
-	   * Returns the DOM node rendered by this component.
-	   *
-	   * @return {DOMElement} The root node of this component.
-	   * @final
-	   * @protected
-	   */
-	  getDOMNode: function() {
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      this.isMounted(),
-	      'getDOMNode(): A component must be mounted to have a DOM node.'
-	    ) : invariant(this.isMounted()));
-	    if (ReactEmptyComponent.isNullComponentID(this._rootNodeID)) {
-	      return null;
-	    }
-	    return ReactMount.getNode(this._rootNodeID);
-	  }
-	};
-	
-	module.exports = ReactBrowserComponentMixin;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 84 */
@@ -22727,7 +22897,7 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPluginHub = __webpack_require__(/*! ./EventPluginHub */ 151);
 	var EventPluginRegistry = __webpack_require__(/*! ./EventPluginRegistry */ 152);
 	var ReactEventEmitterMixin = __webpack_require__(/*! ./ReactEventEmitterMixin */ 153);
@@ -23088,7 +23258,7 @@
 	
 	"use strict";
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
 	var useHasFeature;
 	if (ExecutionEnvironment.canUseDOM) {
@@ -23142,235 +23312,6 @@
 
 /***/ },
 /* 86 */
-/*!***********************************************!*\
-  !*** ./~/react/lib/BeforeInputEventPlugin.js ***!
-  \***********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013 Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule BeforeInputEventPlugin
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
-	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
-	var SyntheticInputEvent = __webpack_require__(/*! ./SyntheticInputEvent */ 156);
-	
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
-	
-	var canUseTextInputEvent = (
-	  ExecutionEnvironment.canUseDOM &&
-	  'TextEvent' in window &&
-	  !('documentMode' in document || isPresto())
-	);
-	
-	/**
-	 * Opera <= 12 includes TextEvent in window, but does not fire
-	 * text input events. Rely on keypress instead.
-	 */
-	function isPresto() {
-	  var opera = window.opera;
-	  return (
-	    typeof opera === 'object' &&
-	    typeof opera.version === 'function' &&
-	    parseInt(opera.version(), 10) <= 12
-	  );
-	}
-	
-	var SPACEBAR_CODE = 32;
-	var SPACEBAR_CHAR = String.fromCharCode(SPACEBAR_CODE);
-	
-	var topLevelTypes = EventConstants.topLevelTypes;
-	
-	// Events and their corresponding property names.
-	var eventTypes = {
-	  beforeInput: {
-	    phasedRegistrationNames: {
-	      bubbled: keyOf({onBeforeInput: null}),
-	      captured: keyOf({onBeforeInputCapture: null})
-	    },
-	    dependencies: [
-	      topLevelTypes.topCompositionEnd,
-	      topLevelTypes.topKeyPress,
-	      topLevelTypes.topTextInput,
-	      topLevelTypes.topPaste
-	    ]
-	  }
-	};
-	
-	// Track characters inserted via keypress and composition events.
-	var fallbackChars = null;
-	
-	// Track whether we've ever handled a keypress on the space key.
-	var hasSpaceKeypress = false;
-	
-	/**
-	 * Return whether a native keypress event is assumed to be a command.
-	 * This is required because Firefox fires `keypress` events for key commands
-	 * (cut, copy, select-all, etc.) even though no character is inserted.
-	 */
-	function isKeypressCommand(nativeEvent) {
-	  return (
-	    (nativeEvent.ctrlKey || nativeEvent.altKey || nativeEvent.metaKey) &&
-	    // ctrlKey && altKey is equivalent to AltGr, and is not a command.
-	    !(nativeEvent.ctrlKey && nativeEvent.altKey)
-	  );
-	}
-	
-	/**
-	 * Create an `onBeforeInput` event to match
-	 * http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105/#events-inputevents.
-	 *
-	 * This event plugin is based on the native `textInput` event
-	 * available in Chrome, Safari, Opera, and IE. This event fires after
-	 * `onKeyPress` and `onCompositionEnd`, but before `onInput`.
-	 *
-	 * `beforeInput` is spec'd but not implemented in any browsers, and
-	 * the `input` event does not provide any useful information about what has
-	 * actually been added, contrary to the spec. Thus, `textInput` is the best
-	 * available event to identify the characters that have actually been inserted
-	 * into the target node.
-	 */
-	var BeforeInputEventPlugin = {
-	
-	  eventTypes: eventTypes,
-	
-	  /**
-	   * @param {string} topLevelType Record from `EventConstants`.
-	   * @param {DOMEventTarget} topLevelTarget The listening component root node.
-	   * @param {string} topLevelTargetID ID of `topLevelTarget`.
-	   * @param {object} nativeEvent Native browser event.
-	   * @return {*} An accumulation of synthetic events.
-	   * @see {EventPluginHub.extractEvents}
-	   */
-	  extractEvents: function(
-	      topLevelType,
-	      topLevelTarget,
-	      topLevelTargetID,
-	      nativeEvent) {
-	
-	    var chars;
-	
-	    if (canUseTextInputEvent) {
-	      switch (topLevelType) {
-	        case topLevelTypes.topKeyPress:
-	          /**
-	           * If native `textInput` events are available, our goal is to make
-	           * use of them. However, there is a special case: the spacebar key.
-	           * In Webkit, preventing default on a spacebar `textInput` event
-	           * cancels character insertion, but it *also* causes the browser
-	           * to fall back to its default spacebar behavior of scrolling the
-	           * page.
-	           *
-	           * Tracking at:
-	           * https://code.google.com/p/chromium/issues/detail?id=355103
-	           *
-	           * To avoid this issue, use the keypress event as if no `textInput`
-	           * event is available.
-	           */
-	          var which = nativeEvent.which;
-	          if (which !== SPACEBAR_CODE) {
-	            return;
-	          }
-	
-	          hasSpaceKeypress = true;
-	          chars = SPACEBAR_CHAR;
-	          break;
-	
-	        case topLevelTypes.topTextInput:
-	          // Record the characters to be added to the DOM.
-	          chars = nativeEvent.data;
-	
-	          // If it's a spacebar character, assume that we have already handled
-	          // it at the keypress level and bail immediately. Android Chrome
-	          // doesn't give us keycodes, so we need to blacklist it.
-	          if (chars === SPACEBAR_CHAR && hasSpaceKeypress) {
-	            return;
-	          }
-	
-	          // Otherwise, carry on.
-	          break;
-	
-	        default:
-	          // For other native event types, do nothing.
-	          return;
-	      }
-	    } else {
-	      switch (topLevelType) {
-	        case topLevelTypes.topPaste:
-	          // If a paste event occurs after a keypress, throw out the input
-	          // chars. Paste events should not lead to BeforeInput events.
-	          fallbackChars = null;
-	          break;
-	        case topLevelTypes.topKeyPress:
-	          /**
-	           * As of v27, Firefox may fire keypress events even when no character
-	           * will be inserted. A few possibilities:
-	           *
-	           * - `which` is `0`. Arrow keys, Esc key, etc.
-	           *
-	           * - `which` is the pressed key code, but no char is available.
-	           *   Ex: 'AltGr + d` in Polish. There is no modified character for
-	           *   this key combination and no character is inserted into the
-	           *   document, but FF fires the keypress for char code `100` anyway.
-	           *   No `input` event will occur.
-	           *
-	           * - `which` is the pressed key code, but a command combination is
-	           *   being used. Ex: `Cmd+C`. No character is inserted, and no
-	           *   `input` event will occur.
-	           */
-	          if (nativeEvent.which && !isKeypressCommand(nativeEvent)) {
-	            fallbackChars = String.fromCharCode(nativeEvent.which);
-	          }
-	          break;
-	        case topLevelTypes.topCompositionEnd:
-	          fallbackChars = nativeEvent.data;
-	          break;
-	      }
-	
-	      // If no changes have occurred to the fallback string, no relevant
-	      // event has fired and we're done.
-	      if (fallbackChars === null) {
-	        return;
-	      }
-	
-	      chars = fallbackChars;
-	    }
-	
-	    // If no characters are being inserted, no BeforeInput event should
-	    // be fired.
-	    if (!chars) {
-	      return;
-	    }
-	
-	    var event = SyntheticInputEvent.getPooled(
-	      eventTypes.beforeInput,
-	      topLevelTargetID,
-	      nativeEvent
-	    );
-	
-	    event.data = chars;
-	    fallbackChars = null;
-	    EventPropagators.accumulateTwoPhaseDispatches(event);
-	    return event;
-	  }
-	};
-	
-	module.exports = BeforeInputEventPlugin;
-
-
-/***/ },
-/* 87 */
 /*!******************************************!*\
   !*** ./~/react/lib/ChangeEventPlugin.js ***!
   \******************************************/
@@ -23389,16 +23330,16 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPluginHub = __webpack_require__(/*! ./EventPluginHub */ 151);
 	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
 	
 	var isEventSupported = __webpack_require__(/*! ./isEventSupported */ 85);
-	var isTextInputElement = __webpack_require__(/*! ./isTextInputElement */ 158);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
+	var isTextInputElement = __webpack_require__(/*! ./isTextInputElement */ 157);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
 	
 	var topLevelTypes = EventConstants.topLevelTypes;
 	
@@ -23759,6 +23700,235 @@
 
 
 /***/ },
+/* 87 */
+/*!***********************************************!*\
+  !*** ./~/react/lib/BeforeInputEventPlugin.js ***!
+  \***********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013 Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule BeforeInputEventPlugin
+	 * @typechecks static-only
+	 */
+	
+	"use strict";
+	
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
+	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
+	var SyntheticInputEvent = __webpack_require__(/*! ./SyntheticInputEvent */ 158);
+	
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
+	
+	var canUseTextInputEvent = (
+	  ExecutionEnvironment.canUseDOM &&
+	  'TextEvent' in window &&
+	  !('documentMode' in document || isPresto())
+	);
+	
+	/**
+	 * Opera <= 12 includes TextEvent in window, but does not fire
+	 * text input events. Rely on keypress instead.
+	 */
+	function isPresto() {
+	  var opera = window.opera;
+	  return (
+	    typeof opera === 'object' &&
+	    typeof opera.version === 'function' &&
+	    parseInt(opera.version(), 10) <= 12
+	  );
+	}
+	
+	var SPACEBAR_CODE = 32;
+	var SPACEBAR_CHAR = String.fromCharCode(SPACEBAR_CODE);
+	
+	var topLevelTypes = EventConstants.topLevelTypes;
+	
+	// Events and their corresponding property names.
+	var eventTypes = {
+	  beforeInput: {
+	    phasedRegistrationNames: {
+	      bubbled: keyOf({onBeforeInput: null}),
+	      captured: keyOf({onBeforeInputCapture: null})
+	    },
+	    dependencies: [
+	      topLevelTypes.topCompositionEnd,
+	      topLevelTypes.topKeyPress,
+	      topLevelTypes.topTextInput,
+	      topLevelTypes.topPaste
+	    ]
+	  }
+	};
+	
+	// Track characters inserted via keypress and composition events.
+	var fallbackChars = null;
+	
+	// Track whether we've ever handled a keypress on the space key.
+	var hasSpaceKeypress = false;
+	
+	/**
+	 * Return whether a native keypress event is assumed to be a command.
+	 * This is required because Firefox fires `keypress` events for key commands
+	 * (cut, copy, select-all, etc.) even though no character is inserted.
+	 */
+	function isKeypressCommand(nativeEvent) {
+	  return (
+	    (nativeEvent.ctrlKey || nativeEvent.altKey || nativeEvent.metaKey) &&
+	    // ctrlKey && altKey is equivalent to AltGr, and is not a command.
+	    !(nativeEvent.ctrlKey && nativeEvent.altKey)
+	  );
+	}
+	
+	/**
+	 * Create an `onBeforeInput` event to match
+	 * http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105/#events-inputevents.
+	 *
+	 * This event plugin is based on the native `textInput` event
+	 * available in Chrome, Safari, Opera, and IE. This event fires after
+	 * `onKeyPress` and `onCompositionEnd`, but before `onInput`.
+	 *
+	 * `beforeInput` is spec'd but not implemented in any browsers, and
+	 * the `input` event does not provide any useful information about what has
+	 * actually been added, contrary to the spec. Thus, `textInput` is the best
+	 * available event to identify the characters that have actually been inserted
+	 * into the target node.
+	 */
+	var BeforeInputEventPlugin = {
+	
+	  eventTypes: eventTypes,
+	
+	  /**
+	   * @param {string} topLevelType Record from `EventConstants`.
+	   * @param {DOMEventTarget} topLevelTarget The listening component root node.
+	   * @param {string} topLevelTargetID ID of `topLevelTarget`.
+	   * @param {object} nativeEvent Native browser event.
+	   * @return {*} An accumulation of synthetic events.
+	   * @see {EventPluginHub.extractEvents}
+	   */
+	  extractEvents: function(
+	      topLevelType,
+	      topLevelTarget,
+	      topLevelTargetID,
+	      nativeEvent) {
+	
+	    var chars;
+	
+	    if (canUseTextInputEvent) {
+	      switch (topLevelType) {
+	        case topLevelTypes.topKeyPress:
+	          /**
+	           * If native `textInput` events are available, our goal is to make
+	           * use of them. However, there is a special case: the spacebar key.
+	           * In Webkit, preventing default on a spacebar `textInput` event
+	           * cancels character insertion, but it *also* causes the browser
+	           * to fall back to its default spacebar behavior of scrolling the
+	           * page.
+	           *
+	           * Tracking at:
+	           * https://code.google.com/p/chromium/issues/detail?id=355103
+	           *
+	           * To avoid this issue, use the keypress event as if no `textInput`
+	           * event is available.
+	           */
+	          var which = nativeEvent.which;
+	          if (which !== SPACEBAR_CODE) {
+	            return;
+	          }
+	
+	          hasSpaceKeypress = true;
+	          chars = SPACEBAR_CHAR;
+	          break;
+	
+	        case topLevelTypes.topTextInput:
+	          // Record the characters to be added to the DOM.
+	          chars = nativeEvent.data;
+	
+	          // If it's a spacebar character, assume that we have already handled
+	          // it at the keypress level and bail immediately. Android Chrome
+	          // doesn't give us keycodes, so we need to blacklist it.
+	          if (chars === SPACEBAR_CHAR && hasSpaceKeypress) {
+	            return;
+	          }
+	
+	          // Otherwise, carry on.
+	          break;
+	
+	        default:
+	          // For other native event types, do nothing.
+	          return;
+	      }
+	    } else {
+	      switch (topLevelType) {
+	        case topLevelTypes.topPaste:
+	          // If a paste event occurs after a keypress, throw out the input
+	          // chars. Paste events should not lead to BeforeInput events.
+	          fallbackChars = null;
+	          break;
+	        case topLevelTypes.topKeyPress:
+	          /**
+	           * As of v27, Firefox may fire keypress events even when no character
+	           * will be inserted. A few possibilities:
+	           *
+	           * - `which` is `0`. Arrow keys, Esc key, etc.
+	           *
+	           * - `which` is the pressed key code, but no char is available.
+	           *   Ex: 'AltGr + d` in Polish. There is no modified character for
+	           *   this key combination and no character is inserted into the
+	           *   document, but FF fires the keypress for char code `100` anyway.
+	           *   No `input` event will occur.
+	           *
+	           * - `which` is the pressed key code, but a command combination is
+	           *   being used. Ex: `Cmd+C`. No character is inserted, and no
+	           *   `input` event will occur.
+	           */
+	          if (nativeEvent.which && !isKeypressCommand(nativeEvent)) {
+	            fallbackChars = String.fromCharCode(nativeEvent.which);
+	          }
+	          break;
+	        case topLevelTypes.topCompositionEnd:
+	          fallbackChars = nativeEvent.data;
+	          break;
+	      }
+	
+	      // If no changes have occurred to the fallback string, no relevant
+	      // event has fired and we're done.
+	      if (fallbackChars === null) {
+	        return;
+	      }
+	
+	      chars = fallbackChars;
+	    }
+	
+	    // If no characters are being inserted, no BeforeInput event should
+	    // be fired.
+	    if (!chars) {
+	      return;
+	    }
+	
+	    var event = SyntheticInputEvent.getPooled(
+	      eventTypes.beforeInput,
+	      topLevelTargetID,
+	      nativeEvent
+	    );
+	
+	    event.data = chars;
+	    fallbackChars = null;
+	    EventPropagators.accumulateTwoPhaseDispatches(event);
+	    return event;
+	  }
+	};
+	
+	module.exports = BeforeInputEventPlugin;
+
+
+/***/ },
 /* 88 */
 /*!*********************************************!*\
   !*** ./~/react/lib/ClientReactRootIndex.js ***!
@@ -23811,14 +23981,14 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	var ReactInputSelection = __webpack_require__(/*! ./ReactInputSelection */ 159);
 	var SyntheticCompositionEvent = __webpack_require__(/*! ./SyntheticCompositionEvent */ 160);
 	
 	var getTextContentAccessor = __webpack_require__(/*! ./getTextContentAccessor */ 161);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
 	
 	var END_KEYCODES = [9, 13, 27, 32]; // Tab, Return, Esc, Space
 	var START_KEYCODE = 229;
@@ -24076,7 +24246,7 @@
 	
 	"use strict";
 	
-	 var keyOf = __webpack_require__(/*! ./keyOf */ 77);
+	 var keyOf = __webpack_require__(/*! ./keyOf */ 78);
 	
 	/**
 	 * Module that is injectable into `EventPluginHub`, that specifies a
@@ -24124,12 +24294,12 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
 	var SyntheticMouseEvent = __webpack_require__(/*! ./SyntheticMouseEvent */ 162);
 	
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
 	
 	var topLevelTypes = EventConstants.topLevelTypes;
 	var getFirstReactDOM = ReactMount.getFirstReactDOM;
@@ -24272,8 +24442,8 @@
 	
 	"use strict";
 	
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
 	var MUST_USE_ATTRIBUTE = DOMProperty.injection.MUST_USE_ATTRIBUTE;
 	var MUST_USE_PROPERTY = DOMProperty.injection.MUST_USE_PROPERTY;
@@ -24470,9 +24640,9 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
 	
 	var topLevelTypes = EventConstants.topLevelTypes;
 	
@@ -24536,15 +24706,15 @@
 	
 	"use strict";
 	
-	var ReactDOMIDOperations = __webpack_require__(/*! ./ReactDOMIDOperations */ 163);
-	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 114);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
-	var ReactReconcileTransaction = __webpack_require__(/*! ./ReactReconcileTransaction */ 164);
+	var ReactDOMIDOperations = __webpack_require__(/*! ./ReactDOMIDOperations */ 164);
+	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 112);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
+	var ReactReconcileTransaction = __webpack_require__(/*! ./ReactReconcileTransaction */ 165);
 	
-	var getReactRootElementInContainer = __webpack_require__(/*! ./getReactRootElementInContainer */ 112);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var setInnerHTML = __webpack_require__(/*! ./setInnerHTML */ 165);
+	var getReactRootElementInContainer = __webpack_require__(/*! ./getReactRootElementInContainer */ 115);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var setInnerHTML = __webpack_require__(/*! ./setInnerHTML */ 166);
 	
 	
 	var ELEMENT_NODE_TYPE = 1;
@@ -24640,7 +24810,7 @@
 	
 	module.exports = ReactComponentBrowserEnvironment;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 95 */
@@ -24662,11 +24832,11 @@
 	
 	"use strict";
 	
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
-	var Transaction = __webpack_require__(/*! ./Transaction */ 144);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
+	var Transaction = __webpack_require__(/*! ./Transaction */ 146);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
 	
 	var RESET_BATCHED_UPDATES = {
 	  initialize: emptyFunction,
@@ -24742,13 +24912,13 @@
 	
 	"use strict";
 	
-	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 167);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
+	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 168);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
 	
-	var keyMirror = __webpack_require__(/*! ./keyMirror */ 70);
+	var keyMirror = __webpack_require__(/*! ./keyMirror */ 77);
 	
 	// Store a reference to the <button> `ReactDOMComponent`. TODO: use string
 	var button = ReactElement.createFactory(ReactDOM.button.type);
@@ -24814,12 +24984,12 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
-	var LocalEventTrapMixin = __webpack_require__(/*! ./LocalEventTrapMixin */ 166);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
+	var LocalEventTrapMixin = __webpack_require__(/*! ./LocalEventTrapMixin */ 167);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
 	
 	// Store a reference to the <form> `ReactDOMComponent`. TODO: use string
 	var form = ReactElement.createFactory(ReactDOM.form.type);
@@ -24871,12 +25041,12 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
-	var LocalEventTrapMixin = __webpack_require__(/*! ./LocalEventTrapMixin */ 166);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
+	var LocalEventTrapMixin = __webpack_require__(/*! ./LocalEventTrapMixin */ 167);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
 	
 	// Store a reference to the <img> `ReactDOMComponent`. TODO: use string
 	var img = ReactElement.createFactory(ReactDOM.img.type);
@@ -24926,18 +25096,18 @@
 	
 	"use strict";
 	
-	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 167);
-	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 18);
-	var LinkedValueUtils = __webpack_require__(/*! ./LinkedValueUtils */ 168);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 168);
+	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 20);
+	var LinkedValueUtils = __webpack_require__(/*! ./LinkedValueUtils */ 169);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	// Store a reference to the <input> `ReactDOMComponent`. TODO: use string
 	var input = ReactElement.createFactory(ReactDOM.input.type);
@@ -25088,7 +25258,7 @@
 	
 	module.exports = ReactDOMInput;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 100 */
@@ -25110,12 +25280,12 @@
 	
 	"use strict";
 	
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
 	
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	// Store a reference to the <option> `ReactDOMComponent`. TODO: use string
 	var option = ReactElement.createFactory(ReactDOM.option.type);
@@ -25147,7 +25317,7 @@
 	
 	module.exports = ReactDOMOption;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 101 */
@@ -25169,13 +25339,13 @@
 	
 	"use strict";
 	
-	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 167);
-	var LinkedValueUtils = __webpack_require__(/*! ./LinkedValueUtils */ 168);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 168);
+	var LinkedValueUtils = __webpack_require__(/*! ./LinkedValueUtils */ 169);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
 	
@@ -25360,19 +25530,19 @@
 	
 	"use strict";
 	
-	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 167);
-	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 18);
-	var LinkedValueUtils = __webpack_require__(/*! ./LinkedValueUtils */ 168);
-	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 83);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
-	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 27);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var AutoFocusMixin = __webpack_require__(/*! ./AutoFocusMixin */ 168);
+	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 20);
+	var LinkedValueUtils = __webpack_require__(/*! ./LinkedValueUtils */ 169);
+	var ReactBrowserComponentMixin = __webpack_require__(/*! ./ReactBrowserComponentMixin */ 82);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
+	var ReactDOM = __webpack_require__(/*! ./ReactDOM */ 28);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	// Store a reference to the <textarea> `ReactDOMComponent`. TODO: use string
 	var textarea = ReactElement.createFactory(ReactDOM.textarea.type);
@@ -25485,7 +25655,7 @@
 	
 	module.exports = ReactDOMTextarea;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 103 */
@@ -25508,16 +25678,16 @@
 	
 	"use strict";
 	
-	var EventListener = __webpack_require__(/*! ./EventListener */ 169);
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
-	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 30);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var EventListener = __webpack_require__(/*! ./EventListener */ 170);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
+	var ReactInstanceHandles = __webpack_require__(/*! ./ReactInstanceHandles */ 31);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var getEventTarget = __webpack_require__(/*! ./getEventTarget */ 170);
-	var getUnboundedScrollPosition = __webpack_require__(/*! ./getUnboundedScrollPosition */ 171);
+	var getEventTarget = __webpack_require__(/*! ./getEventTarget */ 171);
+	var getUnboundedScrollPosition = __webpack_require__(/*! ./getUnboundedScrollPosition */ 172);
 	
 	/**
 	 * Finds the parent React component of `node`.
@@ -25698,16 +25868,16 @@
 	
 	"use strict";
 	
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
 	var EventPluginHub = __webpack_require__(/*! ./EventPluginHub */ 151);
 	var ReactComponent = __webpack_require__(/*! ./ReactComponent */ 21);
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 72);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactEmptyComponent = __webpack_require__(/*! ./ReactEmptyComponent */ 69);
 	var ReactBrowserEventEmitter = __webpack_require__(/*! ./ReactBrowserEventEmitter */ 84);
-	var ReactNativeComponent = __webpack_require__(/*! ./ReactNativeComponent */ 146);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
-	var ReactRootIndex = __webpack_require__(/*! ./ReactRootIndex */ 81);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 69);
+	var ReactNativeComponent = __webpack_require__(/*! ./ReactNativeComponent */ 144);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
+	var ReactRootIndex = __webpack_require__(/*! ./ReactRootIndex */ 111);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 75);
 	
 	var ReactInjection = {
 	  Component: ReactComponent.injection,
@@ -25745,15 +25915,15 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
 	var ReactInputSelection = __webpack_require__(/*! ./ReactInputSelection */ 159);
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
 	
-	var getActiveElement = __webpack_require__(/*! ./getActiveElement */ 172);
-	var isTextInputElement = __webpack_require__(/*! ./isTextInputElement */ 158);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
-	var shallowEqual = __webpack_require__(/*! ./shallowEqual */ 173);
+	var getActiveElement = __webpack_require__(/*! ./getActiveElement */ 173);
+	var isTextInputElement = __webpack_require__(/*! ./isTextInputElement */ 157);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
+	var shallowEqual = __webpack_require__(/*! ./shallowEqual */ 174);
 	
 	var topLevelTypes = EventConstants.topLevelTypes;
 	
@@ -25985,24 +26155,24 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPluginUtils = __webpack_require__(/*! ./EventPluginUtils */ 19);
 	var EventPropagators = __webpack_require__(/*! ./EventPropagators */ 155);
-	var SyntheticClipboardEvent = __webpack_require__(/*! ./SyntheticClipboardEvent */ 174);
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
-	var SyntheticFocusEvent = __webpack_require__(/*! ./SyntheticFocusEvent */ 175);
-	var SyntheticKeyboardEvent = __webpack_require__(/*! ./SyntheticKeyboardEvent */ 176);
+	var SyntheticClipboardEvent = __webpack_require__(/*! ./SyntheticClipboardEvent */ 175);
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
+	var SyntheticFocusEvent = __webpack_require__(/*! ./SyntheticFocusEvent */ 176);
+	var SyntheticKeyboardEvent = __webpack_require__(/*! ./SyntheticKeyboardEvent */ 177);
 	var SyntheticMouseEvent = __webpack_require__(/*! ./SyntheticMouseEvent */ 162);
-	var SyntheticDragEvent = __webpack_require__(/*! ./SyntheticDragEvent */ 177);
-	var SyntheticTouchEvent = __webpack_require__(/*! ./SyntheticTouchEvent */ 178);
-	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 179);
-	var SyntheticWheelEvent = __webpack_require__(/*! ./SyntheticWheelEvent */ 180);
+	var SyntheticDragEvent = __webpack_require__(/*! ./SyntheticDragEvent */ 178);
+	var SyntheticTouchEvent = __webpack_require__(/*! ./SyntheticTouchEvent */ 179);
+	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 180);
+	var SyntheticWheelEvent = __webpack_require__(/*! ./SyntheticWheelEvent */ 181);
 	
-	var getEventCharCode = __webpack_require__(/*! ./getEventCharCode */ 181);
+	var getEventCharCode = __webpack_require__(/*! ./getEventCharCode */ 182);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var keyOf = __webpack_require__(/*! ./keyOf */ 77);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var keyOf = __webpack_require__(/*! ./keyOf */ 78);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	var topLevelTypes = EventConstants.topLevelTypes;
 	
@@ -26397,7 +26567,7 @@
 	
 	module.exports = SimpleEventPlugin;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 108 */
@@ -26421,7 +26591,7 @@
 	
 	"use strict";
 	
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
 	
 	var MUST_USE_ATTRIBUTE = DOMProperty.injection.MUST_USE_ATTRIBUTE;
 	
@@ -26520,10 +26690,10 @@
 	"use strict";
 	
 	// Defeat circular references by requiring this directly.
-	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 22);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 25);
+	var ReactCompositeComponent = __webpack_require__(/*! ./ReactCompositeComponent */ 23);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 26);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Create a component that will throw an exception when unmounted.
@@ -26563,7 +26733,7 @@
 	
 	module.exports = createFullPageComponent;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 110 */
@@ -26586,12 +26756,12 @@
 	
 	"use strict";
 	
-	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 60);
-	var ReactDefaultPerfAnalysis = __webpack_require__(/*! ./ReactDefaultPerfAnalysis */ 183);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
+	var DOMProperty = __webpack_require__(/*! ./DOMProperty */ 63);
+	var ReactDefaultPerfAnalysis = __webpack_require__(/*! ./ReactDefaultPerfAnalysis */ 184);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
 	
-	var performanceNow = __webpack_require__(/*! ./performanceNow */ 184);
+	var performanceNow = __webpack_require__(/*! ./performanceNow */ 185);
 	
 	function roundFloat(val) {
 	  return Math.floor(val * 100) / 100;
@@ -26834,9 +27004,9 @@
 
 /***/ },
 /* 111 */
-/*!*************************************!*\
-  !*** ./~/react/lib/containsNode.js ***!
-  \*************************************/
+/*!***************************************!*\
+  !*** ./~/react/lib/ReactRootIndex.js ***!
+  \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26847,82 +27017,82 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule containsNode
+	 * @providesModule ReactRootIndex
 	 * @typechecks
-	 */
-	
-	var isTextNode = __webpack_require__(/*! ./isTextNode */ 182);
-	
-	/*jslint bitwise:true */
-	
-	/**
-	 * Checks if a given DOM node contains or is another DOM node.
-	 *
-	 * @param {?DOMNode} outerNode Outer DOM node.
-	 * @param {?DOMNode} innerNode Inner DOM node.
-	 * @return {boolean} True if `outerNode` contains or is `innerNode`.
-	 */
-	function containsNode(outerNode, innerNode) {
-	  if (!outerNode || !innerNode) {
-	    return false;
-	  } else if (outerNode === innerNode) {
-	    return true;
-	  } else if (isTextNode(outerNode)) {
-	    return false;
-	  } else if (isTextNode(innerNode)) {
-	    return containsNode(outerNode, innerNode.parentNode);
-	  } else if (outerNode.contains) {
-	    return outerNode.contains(innerNode);
-	  } else if (outerNode.compareDocumentPosition) {
-	    return !!(outerNode.compareDocumentPosition(innerNode) & 16);
-	  } else {
-	    return false;
-	  }
-	}
-	
-	module.exports = containsNode;
-
-
-/***/ },
-/* 112 */
-/*!*******************************************************!*\
-  !*** ./~/react/lib/getReactRootElementInContainer.js ***!
-  \*******************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule getReactRootElementInContainer
 	 */
 	
 	"use strict";
 	
-	var DOC_NODE_TYPE = 9;
+	var ReactRootIndexInjection = {
+	  /**
+	   * @param {function} _createReactRootIndex
+	   */
+	  injectCreateReactRootIndex: function(_createReactRootIndex) {
+	    ReactRootIndex.createReactRootIndex = _createReactRootIndex;
+	  }
+	};
 	
+	var ReactRootIndex = {
+	  createReactRootIndex: null,
+	  injection: ReactRootIndexInjection
+	};
+	
+	module.exports = ReactRootIndex;
+
+
+/***/ },
+/* 112 */
+/*!********************************************!*\
+  !*** ./~/react/lib/ReactMarkupChecksum.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
 	/**
-	 * @param {DOMElement|DOMDocument} container DOM element that may contain
-	 *                                           a React component
-	 * @return {?*} DOM element that may have the reactRoot ID, or null.
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactMarkupChecksum
 	 */
-	function getReactRootElementInContainer(container) {
-	  if (!container) {
-	    return null;
-	  }
 	
-	  if (container.nodeType === DOC_NODE_TYPE) {
-	    return container.documentElement;
-	  } else {
-	    return container.firstChild;
-	  }
-	}
+	"use strict";
 	
-	module.exports = getReactRootElementInContainer;
+	var adler32 = __webpack_require__(/*! ./adler32 */ 183);
+	
+	var ReactMarkupChecksum = {
+	  CHECKSUM_ATTR_NAME: 'data-react-checksum',
+	
+	  /**
+	   * @param {string} markup Markup string
+	   * @return {string} Markup string with checksum attribute attached
+	   */
+	  addChecksumToMarkup: function(markup) {
+	    var checksum = adler32(markup);
+	    return markup.replace(
+	      '>',
+	      ' ' + ReactMarkupChecksum.CHECKSUM_ATTR_NAME + '="' + checksum + '">'
+	    );
+	  },
+	
+	  /**
+	   * @param {string} markup to use
+	   * @param {DOMElement} element root React element
+	   * @returns {boolean} whether or not the markup is the same
+	   */
+	  canReuseMarkup: function(markup, element) {
+	    var existingChecksum = element.getAttribute(
+	      ReactMarkupChecksum.CHECKSUM_ATTR_NAME
+	    );
+	    existingChecksum = existingChecksum && parseInt(existingChecksum, 10);
+	    var markupChecksum = adler32(markup);
+	    return markupChecksum === existingChecksum;
+	  }
+	};
+	
+	module.exports = ReactMarkupChecksum;
 
 
 /***/ },
@@ -26946,13 +27116,13 @@
 	
 	"use strict";
 	
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
-	var CallbackQueue = __webpack_require__(/*! ./CallbackQueue */ 143);
-	var ReactPutListenerQueue = __webpack_require__(/*! ./ReactPutListenerQueue */ 185);
-	var Transaction = __webpack_require__(/*! ./Transaction */ 144);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
+	var CallbackQueue = __webpack_require__(/*! ./CallbackQueue */ 145);
+	var ReactPutListenerQueue = __webpack_require__(/*! ./ReactPutListenerQueue */ 186);
+	var Transaction = __webpack_require__(/*! ./Transaction */ 146);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
 	
 	/**
 	 * Provides a `CallbackQueue` queue for collecting `onDOMReady` callbacks
@@ -27047,9 +27217,9 @@
 
 /***/ },
 /* 114 */
-/*!********************************************!*\
-  !*** ./~/react/lib/ReactMarkupChecksum.js ***!
-  \********************************************/
+/*!*************************************!*\
+  !*** ./~/react/lib/containsNode.js ***!
+  \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -27060,48 +27230,86 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule ReactMarkupChecksum
+	 * @providesModule containsNode
+	 * @typechecks
 	 */
 	
-	"use strict";
+	var isTextNode = __webpack_require__(/*! ./isTextNode */ 187);
 	
-	var adler32 = __webpack_require__(/*! ./adler32 */ 186);
+	/*jslint bitwise:true */
 	
-	var ReactMarkupChecksum = {
-	  CHECKSUM_ATTR_NAME: 'data-react-checksum',
-	
-	  /**
-	   * @param {string} markup Markup string
-	   * @return {string} Markup string with checksum attribute attached
-	   */
-	  addChecksumToMarkup: function(markup) {
-	    var checksum = adler32(markup);
-	    return markup.replace(
-	      '>',
-	      ' ' + ReactMarkupChecksum.CHECKSUM_ATTR_NAME + '="' + checksum + '">'
-	    );
-	  },
-	
-	  /**
-	   * @param {string} markup to use
-	   * @param {DOMElement} element root React element
-	   * @returns {boolean} whether or not the markup is the same
-	   */
-	  canReuseMarkup: function(markup, element) {
-	    var existingChecksum = element.getAttribute(
-	      ReactMarkupChecksum.CHECKSUM_ATTR_NAME
-	    );
-	    existingChecksum = existingChecksum && parseInt(existingChecksum, 10);
-	    var markupChecksum = adler32(markup);
-	    return markupChecksum === existingChecksum;
+	/**
+	 * Checks if a given DOM node contains or is another DOM node.
+	 *
+	 * @param {?DOMNode} outerNode Outer DOM node.
+	 * @param {?DOMNode} innerNode Inner DOM node.
+	 * @return {boolean} True if `outerNode` contains or is `innerNode`.
+	 */
+	function containsNode(outerNode, innerNode) {
+	  if (!outerNode || !innerNode) {
+	    return false;
+	  } else if (outerNode === innerNode) {
+	    return true;
+	  } else if (isTextNode(outerNode)) {
+	    return false;
+	  } else if (isTextNode(innerNode)) {
+	    return containsNode(outerNode, innerNode.parentNode);
+	  } else if (outerNode.contains) {
+	    return outerNode.contains(innerNode);
+	  } else if (outerNode.compareDocumentPosition) {
+	    return !!(outerNode.compareDocumentPosition(innerNode) & 16);
+	  } else {
+	    return false;
 	  }
-	};
+	}
 	
-	module.exports = ReactMarkupChecksum;
+	module.exports = containsNode;
 
 
 /***/ },
 /* 115 */
+/*!*******************************************************!*\
+  !*** ./~/react/lib/getReactRootElementInContainer.js ***!
+  \*******************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule getReactRootElementInContainer
+	 */
+	
+	"use strict";
+	
+	var DOC_NODE_TYPE = 9;
+	
+	/**
+	 * @param {DOMElement|DOMDocument} container DOM element that may contain
+	 *                                           a React component
+	 * @return {?*} DOM element that may have the reactRoot ID, or null.
+	 */
+	function getReactRootElementInContainer(container) {
+	  if (!container) {
+	    return null;
+	  }
+	
+	  if (container.nodeType === DOC_NODE_TYPE) {
+	    return container.documentElement;
+	  } else {
+	    return container.firstChild;
+	  }
+	}
+	
+	module.exports = getReactRootElementInContainer;
+
+
+/***/ },
+/* 116 */
 /*!***************************************************!*\
   !*** ./~/react/lib/ReactMultiChildUpdateTypes.js ***!
   \***************************************************/
@@ -27120,7 +27328,7 @@
 	
 	"use strict";
 	
-	var keyMirror = __webpack_require__(/*! ./keyMirror */ 70);
+	var keyMirror = __webpack_require__(/*! ./keyMirror */ 77);
 	
 	/**
 	 * When a component's children are updated, a series of update configuration
@@ -27141,7 +27349,7 @@
 
 
 /***/ },
-/* 116 */
+/* 117 */
 /*!****************************************!*\
   !*** ./~/react/lib/flattenChildren.js ***!
   \****************************************/
@@ -27160,10 +27368,10 @@
 	
 	"use strict";
 	
-	var ReactTextComponent = __webpack_require__(/*! ./ReactTextComponent */ 37);
+	var ReactTextComponent = __webpack_require__(/*! ./ReactTextComponent */ 39);
 	
-	var traverseAllChildren = __webpack_require__(/*! ./traverseAllChildren */ 67);
-	var warning = __webpack_require__(/*! ./warning */ 61);
+	var traverseAllChildren = __webpack_require__(/*! ./traverseAllChildren */ 68);
+	var warning = __webpack_require__(/*! ./warning */ 66);
 	
 	/**
 	 * @param {function} traverseContext Context passed through traversal.
@@ -27213,10 +27421,10 @@
 	
 	module.exports = flattenChildren;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 117 */
+/* 118 */
 /*!**************************************!*\
   !*** ./~/react/lib/emptyFunction.js ***!
   \**************************************/
@@ -27257,39 +27465,237 @@
 
 
 /***/ },
-/* 118 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseForOwn.js ***!
-  \***************************************************************/
+/* 119 */
+/*!********************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArray.js ***!
+  \********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFor = __webpack_require__(/*! ./baseFor */ 188),
-	    keys = __webpack_require__(/*! ../object/keys */ 48);
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 126),
+	    isNative = __webpack_require__(/*! ./isNative */ 130),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 140);
+	
+	/** `Object#toString` result references. */
+	var arrayTag = '[object Array]';
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
 	
 	/**
-	 * The base implementation of `_.forOwn` without support for callback
-	 * shorthands and `this` binding.
-	 *
-	 * @private
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Object} Returns `object`.
+	 * Used to resolve the `toStringTag` of values.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+	 * for more details.
 	 */
-	function baseForOwn(object, iteratee) {
-	  return baseFor(object, iteratee, keys);
-	}
+	var objToString = objectProto.toString;
 	
-	module.exports = baseForOwn;
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
+	
+	/**
+	 * Checks if `value` is classified as an `Array` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	 * @example
+	 *
+	 * _.isArray([1, 2, 3]);
+	 * // => true
+	 *
+	 * _.isArray(function() { return arguments; }());
+	 * // => false
+	 */
+	var isArray = nativeIsArray || function(value) {
+	  return (isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag) || false;
+	};
+	
+	module.exports = isArray;
 
 
 /***/ },
-/* 119 */
+/* 120 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayMap.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.map` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function arrayMap(array, iteratee) {
+	  var index = -1,
+	      length = array.length,
+	      result = Array(length);
+	
+	  while (++index < length) {
+	    result[index] = iteratee(array[index], index, array);
+	  }
+	  return result;
+	}
+	
+	module.exports = arrayMap;
+
+
+/***/ },
+/* 121 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseCallback.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseMatches = __webpack_require__(/*! ./baseMatches */ 188),
+	    baseMatchesProperty = __webpack_require__(/*! ./baseMatchesProperty */ 189),
+	    baseProperty = __webpack_require__(/*! ./baseProperty */ 190),
+	    bindCallback = __webpack_require__(/*! ./bindCallback */ 125),
+	    identity = __webpack_require__(/*! ../utility/identity */ 192),
+	    isBindable = __webpack_require__(/*! ./isBindable */ 191);
+	
+	/**
+	 * The base implementation of `_.callback` which supports specifying the
+	 * number of arguments to provide to `func`.
+	 *
+	 * @private
+	 * @param {*} [func=_.identity] The value to convert to a callback.
+	 * @param {*} [thisArg] The `this` binding of `func`.
+	 * @param {number} [argCount] The number of arguments to provide to `func`.
+	 * @returns {Function} Returns the callback.
+	 */
+	function baseCallback(func, thisArg, argCount) {
+	  var type = typeof func;
+	  if (type == 'function') {
+	    return (typeof thisArg != 'undefined' && isBindable(func))
+	      ? bindCallback(func, thisArg, argCount)
+	      : func;
+	  }
+	  if (func == null) {
+	    return identity;
+	  }
+	  if (type == 'object') {
+	    return baseMatches(func);
+	  }
+	  return typeof thisArg == 'undefined'
+	    ? baseProperty(func + '')
+	    : baseMatchesProperty(func + '', thisArg);
+	}
+	
+	module.exports = baseCallback;
+
+
+/***/ },
+/* 122 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMap.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseEach = __webpack_require__(/*! ./baseEach */ 123);
+	
+	/**
+	 * The base implementation of `_.map` without support for callback shorthands
+	 * or `this` binding.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function baseMap(collection, iteratee) {
+	  var result = [];
+	  baseEach(collection, function(value, key, collection) {
+	    result.push(iteratee(value, key, collection));
+	  });
+	  return result;
+	}
+	
+	module.exports = baseMap;
+
+
+/***/ },
+/* 123 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseEach.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseForOwn = __webpack_require__(/*! ./baseForOwn */ 129),
+	    isLength = __webpack_require__(/*! ./isLength */ 126),
+	    toObject = __webpack_require__(/*! ./toObject */ 193);
+	
+	/**
+	 * The base implementation of `_.forEach` without support for callback
+	 * shorthands and `this` binding.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array|Object|string} Returns `collection`.
+	 */
+	function baseEach(collection, iteratee) {
+	  var length = collection ? collection.length : 0;
+	  if (!isLength(length)) {
+	    return baseForOwn(collection, iteratee);
+	  }
+	  var index = -1,
+	      iterable = toObject(collection);
+	
+	  while (++index < length) {
+	    if (iteratee(iterable[index], index, iterable) === false) {
+	      break;
+	    }
+	  }
+	  return collection;
+	}
+	
+	module.exports = baseEach;
+
+
+/***/ },
+/* 124 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayEach.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.forEach` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns `array`.
+	 */
+	function arrayEach(array, iteratee) {
+	  var index = -1,
+	      length = array.length;
+	
+	  while (++index < length) {
+	    if (iteratee(array[index], index, array) === false) {
+	      break;
+	    }
+	  }
+	  return array;
+	}
+	
+	module.exports = arrayEach;
+
+
+/***/ },
+/* 125 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/bindCallback.js ***!
   \*****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var identity = __webpack_require__(/*! ../utility/identity */ 187);
+	var identity = __webpack_require__(/*! ../utility/identity */ 192);
 	
 	/**
 	 * A specialized version of `baseCallback` which only supports `this` binding
@@ -27331,14 +27737,140 @@
 
 
 /***/ },
-/* 120 */
+/* 126 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isLength.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Used as the maximum length of an array-like value.
+	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+	 * for more details.
+	 */
+	var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+	
+	/**
+	 * Checks if `value` is a valid array-like length.
+	 *
+	 * **Note:** This function is based on ES `ToLength`. See the
+	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
+	 * for more details.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+	 */
+	function isLength(value) {
+	  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	}
+	
+	module.exports = isLength;
+
+
+/***/ },
+/* 127 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayReduce.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A specialized version of `_.reduce` for arrays without support for callback
+	 * shorthands or `this` binding.
+	 *
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {*} [accumulator] The initial value.
+	 * @param {boolean} [initFromArray] Specify using the first element of `array`
+	 *  as the initial value.
+	 * @returns {*} Returns the accumulated value.
+	 */
+	function arrayReduce(array, iteratee, accumulator, initFromArray) {
+	  var index = -1,
+	      length = array.length;
+	
+	  if (initFromArray && length) {
+	    accumulator = array[++index];
+	  }
+	  while (++index < length) {
+	    accumulator = iteratee(accumulator, array[index], index, array);
+	  }
+	  return accumulator;
+	}
+	
+	module.exports = arrayReduce;
+
+
+/***/ },
+/* 128 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseReduce.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * The base implementation of `_.reduce` and `_.reduceRight` without support
+	 * for callback shorthands or `this` binding, which iterates over `collection`
+	 * using the provided `eachFunc`.
+	 *
+	 * @private
+	 * @param {Array|Object|string} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @param {*} accumulator The initial value.
+	 * @param {boolean} initFromCollection Specify using the first or last element
+	 *  of `collection` as the initial value.
+	 * @param {Function} eachFunc The function to iterate over `collection`.
+	 * @returns {*} Returns the accumulated value.
+	 */
+	function baseReduce(collection, iteratee, accumulator, initFromCollection, eachFunc) {
+	  eachFunc(collection, function(value, index, collection) {
+	    accumulator = initFromCollection
+	      ? (initFromCollection = false, value)
+	      : iteratee(accumulator, value, index, collection);
+	  });
+	  return accumulator;
+	}
+	
+	module.exports = baseReduce;
+
+
+/***/ },
+/* 129 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseForOwn.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseFor = __webpack_require__(/*! ./baseFor */ 194),
+	    keys = __webpack_require__(/*! ../object/keys */ 55);
+	
+	/**
+	 * The base implementation of `_.forOwn` without support for callback
+	 * shorthands and `this` binding.
+	 *
+	 * @private
+	 * @param {Object} object The object to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Object} Returns `object`.
+	 */
+	function baseForOwn(object, iteratee) {
+	  return baseFor(object, iteratee, keys);
+	}
+	
+	module.exports = baseForOwn;
+
+
+/***/ },
+/* 130 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isNative.js ***!
   \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var escapeRegExp = __webpack_require__(/*! ../string/escapeRegExp */ 189),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 133);
+	var escapeRegExp = __webpack_require__(/*! ../string/escapeRegExp */ 195),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 140);
 	
 	/** `Object#toString` result references. */
 	var funcTag = '[object Function]';
@@ -27395,50 +27927,18 @@
 
 
 /***/ },
-/* 121 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isLength.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Used as the maximum length of an array-like value.
-	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
-	 * for more details.
-	 */
-	var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
-	
-	/**
-	 * Checks if `value` is a valid array-like length.
-	 *
-	 * **Note:** This function is based on ES `ToLength`. See the
-	 * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
-	 * for more details.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
-	 */
-	function isLength(value) {
-	  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-	}
-	
-	module.exports = isLength;
-
-
-/***/ },
-/* 122 */
+/* 131 */
 /*!*************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/shimKeys.js ***!
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 139),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
-	    isIndex = __webpack_require__(/*! ./isIndex */ 190),
-	    isLength = __webpack_require__(/*! ./isLength */ 121),
-	    keysIn = __webpack_require__(/*! ../object/keysIn */ 191),
-	    support = __webpack_require__(/*! ../support */ 192);
+	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 137),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119),
+	    isIndex = __webpack_require__(/*! ./isIndex */ 196),
+	    isLength = __webpack_require__(/*! ./isLength */ 126),
+	    keysIn = __webpack_require__(/*! ../object/keysIn */ 197),
+	    support = __webpack_require__(/*! ../support */ 198);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -27478,52 +27978,7 @@
 
 
 /***/ },
-/* 123 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseCallback.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseMatches = __webpack_require__(/*! ./baseMatches */ 193),
-	    baseMatchesProperty = __webpack_require__(/*! ./baseMatchesProperty */ 194),
-	    baseProperty = __webpack_require__(/*! ./baseProperty */ 195),
-	    bindCallback = __webpack_require__(/*! ./bindCallback */ 119),
-	    identity = __webpack_require__(/*! ../utility/identity */ 187),
-	    isBindable = __webpack_require__(/*! ./isBindable */ 196);
-	
-	/**
-	 * The base implementation of `_.callback` which supports specifying the
-	 * number of arguments to provide to `func`.
-	 *
-	 * @private
-	 * @param {*} [func=_.identity] The value to convert to a callback.
-	 * @param {*} [thisArg] The `this` binding of `func`.
-	 * @param {number} [argCount] The number of arguments to provide to `func`.
-	 * @returns {Function} Returns the callback.
-	 */
-	function baseCallback(func, thisArg, argCount) {
-	  var type = typeof func;
-	  if (type == 'function') {
-	    return (typeof thisArg != 'undefined' && isBindable(func))
-	      ? bindCallback(func, thisArg, argCount)
-	      : func;
-	  }
-	  if (func == null) {
-	    return identity;
-	  }
-	  if (type == 'object') {
-	    return baseMatches(func);
-	  }
-	  return typeof thisArg == 'undefined'
-	    ? baseProperty(func + '')
-	    : baseMatchesProperty(func + '', thisArg);
-	}
-	
-	module.exports = baseCallback;
-
-
-/***/ },
-/* 124 */
+/* 132 */
 /*!*************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFind.js ***!
   \*************************************************************/
@@ -27557,18 +28012,151 @@
 
 
 /***/ },
-/* 125 */
-/*!********************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArray.js ***!
-  \********************************************************/
+/* 133 */
+/*!*******************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isIterateeCall.js ***!
+  \*******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 121),
-	    isNative = __webpack_require__(/*! ./isNative */ 120),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 133);
+	var isIndex = __webpack_require__(/*! ./isIndex */ 196),
+	    isLength = __webpack_require__(/*! ./isLength */ 126),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 60);
+	
+	/**
+	 * Checks if the provided arguments are from an iteratee call.
+	 *
+	 * @private
+	 * @param {*} value The potential iteratee value argument.
+	 * @param {*} index The potential iteratee index or key argument.
+	 * @param {*} object The potential iteratee object argument.
+	 * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
+	 */
+	function isIterateeCall(value, index, object) {
+	  if (!isObject(object)) {
+	    return false;
+	  }
+	  var type = typeof index;
+	  if (type == 'number') {
+	    var length = object.length,
+	        prereq = isLength(length) && isIndex(index, length);
+	  } else {
+	    prereq = type == 'string' && index in object;
+	  }
+	  var other = object[index];
+	  return prereq && (value === value ? value === other : other !== other);
+	}
+	
+	module.exports = isIterateeCall;
+
+
+/***/ },
+/* 134 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIndexOf.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var indexOfNaN = __webpack_require__(/*! ./indexOfNaN */ 199);
+	
+	/**
+	 * The base implementation of `_.indexOf` without support for binary searches.
+	 *
+	 * @private
+	 * @param {Array} array The array to search.
+	 * @param {*} value The value to search for.
+	 * @param {number} [fromIndex=0] The index to search from.
+	 * @returns {number} Returns the index of the matched value, else `-1`.
+	 */
+	function baseIndexOf(array, value, fromIndex) {
+	  if (value !== value) {
+	    return indexOfNaN(array, fromIndex);
+	  }
+	  var index = (fromIndex || 0) - 1,
+	      length = array.length;
+	
+	  while (++index < length) {
+	    if (array[index] === value) {
+	      return index;
+	    }
+	  }
+	  return -1;
+	}
+	
+	module.exports = baseIndexOf;
+
+
+/***/ },
+/* 135 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/cacheIndexOf.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 60);
+	
+	/**
+	 * Checks if `value` is in `cache` mimicking the return signature of
+	 * `_.indexOf` by returning `0` if the value is found, else `-1`.
+	 *
+	 * @private
+	 * @param {Object} cache The cache to search.
+	 * @param {*} value The value to search for.
+	 * @returns {number} Returns `0` if `value` is found, else `-1`.
+	 */
+	function cacheIndexOf(cache, value) {
+	  var data = cache.data,
+	      result = (typeof value == 'string' || isObject(value)) ? data.set.has(value) : data.hash[value];
+	
+	  return result ? 0 : -1;
+	}
+	
+	module.exports = cacheIndexOf;
+
+
+/***/ },
+/* 136 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/createCache.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {var SetCache = __webpack_require__(/*! ./SetCache */ 201),
+	    constant = __webpack_require__(/*! ../utility/constant */ 200),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 130);
+	
+	/** Native method references. */
+	var Set = isNative(Set = global.Set) && Set;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+	
+	/**
+	 * Creates a `Set` cache object to optimize linear searches of large arrays.
+	 *
+	 * @private
+	 * @param {Array} [values] The values to cache.
+	 * @returns {null|Object} Returns the new cache object if `Set` is supported, else `null`.
+	 */
+	var createCache = !(nativeCreate && Set) ? constant(null) : function(values) {
+	  return new SetCache(values);
+	};
+	
+	module.exports = createCache;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 137 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArguments.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 126),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 140);
 	
 	/** `Object#toString` result references. */
-	var arrayTag = '[object Array]';
+	var argsTag = '[object Arguments]';
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -27580,11 +28168,8 @@
 	 */
 	var objToString = objectProto.toString;
 	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
-	
 	/**
-	 * Checks if `value` is classified as an `Array` object.
+	 * Checks if `value` is classified as an `arguments` object.
 	 *
 	 * @static
 	 * @memberOf _
@@ -27593,242 +28178,126 @@
 	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
 	 * @example
 	 *
-	 * _.isArray([1, 2, 3]);
+	 * _.isArguments(function() { return arguments; }());
 	 * // => true
 	 *
-	 * _.isArray(function() { return arguments; }());
+	 * _.isArguments([1, 2, 3]);
 	 * // => false
 	 */
-	var isArray = nativeIsArray || function(value) {
-	  return (isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag) || false;
-	};
+	function isArguments(value) {
+	  var length = isObjectLike(value) ? value.length : undefined;
+	  return (isLength(length) && objToString.call(value) == argsTag) || false;
+	}
 	
-	module.exports = isArray;
+	module.exports = isArguments;
 
 
 /***/ },
-/* 126 */
+/* 138 */
 /*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseEach.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseUniq.js ***!
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseForOwn = __webpack_require__(/*! ./baseForOwn */ 118),
-	    isLength = __webpack_require__(/*! ./isLength */ 121),
-	    toObject = __webpack_require__(/*! ./toObject */ 197);
+	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 134),
+	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 135),
+	    createCache = __webpack_require__(/*! ./createCache */ 136);
 	
 	/**
-	 * The base implementation of `_.forEach` without support for callback
-	 * shorthands and `this` binding.
+	 * The base implementation of `_.uniq` without support for callback shorthands
+	 * and `this` binding.
 	 *
 	 * @private
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array|Object|string} Returns `collection`.
+	 * @param {Array} array The array to inspect.
+	 * @param {Function} [iteratee] The function invoked per iteration.
+	 * @returns {Array} Returns the new duplicate-value-free array.
 	 */
-	function baseEach(collection, iteratee) {
-	  var length = collection ? collection.length : 0;
-	  if (!isLength(length)) {
-	    return baseForOwn(collection, iteratee);
-	  }
+	function baseUniq(array, iteratee) {
 	  var index = -1,
-	      iterable = toObject(collection);
-	
-	  while (++index < length) {
-	    if (iteratee(iterable[index], index, iterable) === false) {
-	      break;
-	    }
-	  }
-	  return collection;
-	}
-	
-	module.exports = baseEach;
-
-
-/***/ },
-/* 127 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayEach.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * A specialized version of `_.forEach` for arrays without support for callback
-	 * shorthands or `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns `array`.
-	 */
-	function arrayEach(array, iteratee) {
-	  var index = -1,
-	      length = array.length;
-	
-	  while (++index < length) {
-	    if (iteratee(array[index], index, array) === false) {
-	      break;
-	    }
-	  }
-	  return array;
-	}
-	
-	module.exports = arrayEach;
-
-
-/***/ },
-/* 128 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayMap.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * A specialized version of `_.map` for arrays without support for callback
-	 * shorthands or `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns the new mapped array.
-	 */
-	function arrayMap(array, iteratee) {
-	  var index = -1,
+	      indexOf = baseIndexOf,
 	      length = array.length,
-	      result = Array(length);
+	      isCommon = true,
+	      isLarge = isCommon && length >= 200,
+	      seen = isLarge && createCache(),
+	      result = [];
 	
+	  if (seen) {
+	    indexOf = cacheIndexOf;
+	    isCommon = false;
+	  } else {
+	    isLarge = false;
+	    seen = iteratee ? [] : result;
+	  }
+	  outer:
 	  while (++index < length) {
-	    result[index] = iteratee(array[index], index, array);
+	    var value = array[index],
+	        computed = iteratee ? iteratee(value, index, array) : value;
+	
+	    if (isCommon && value === value) {
+	      var seenIndex = seen.length;
+	      while (seenIndex--) {
+	        if (seen[seenIndex] === computed) {
+	          continue outer;
+	        }
+	      }
+	      if (iteratee) {
+	        seen.push(computed);
+	      }
+	      result.push(value);
+	    }
+	    else if (indexOf(seen, computed) < 0) {
+	      if (iteratee || isLarge) {
+	        seen.push(computed);
+	      }
+	      result.push(value);
+	    }
 	  }
 	  return result;
 	}
 	
-	module.exports = arrayMap;
+	module.exports = baseUniq;
 
 
 /***/ },
-/* 129 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMap.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseEach = __webpack_require__(/*! ./baseEach */ 126);
-	
-	/**
-	 * The base implementation of `_.map` without support for callback shorthands
-	 * or `this` binding.
-	 *
-	 * @private
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns the new mapped array.
-	 */
-	function baseMap(collection, iteratee) {
-	  var result = [];
-	  baseEach(collection, function(value, key, collection) {
-	    result.push(iteratee(value, key, collection));
-	  });
-	  return result;
-	}
-	
-	module.exports = baseMap;
-
-
-/***/ },
-/* 130 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayReduce.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * A specialized version of `_.reduce` for arrays without support for callback
-	 * shorthands or `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @param {*} [accumulator] The initial value.
-	 * @param {boolean} [initFromArray] Specify using the first element of `array`
-	 *  as the initial value.
-	 * @returns {*} Returns the accumulated value.
-	 */
-	function arrayReduce(array, iteratee, accumulator, initFromArray) {
-	  var index = -1,
-	      length = array.length;
-	
-	  if (initFromArray && length) {
-	    accumulator = array[++index];
-	  }
-	  while (++index < length) {
-	    accumulator = iteratee(accumulator, array[index], index, array);
-	  }
-	  return accumulator;
-	}
-	
-	module.exports = arrayReduce;
-
-
-/***/ },
-/* 131 */
+/* 139 */
 /*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseReduce.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/sortedUniq.js ***!
   \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * The base implementation of `_.reduce` and `_.reduceRight` without support
-	 * for callback shorthands or `this` binding, which iterates over `collection`
-	 * using the provided `eachFunc`.
+	 * An implementation of `_.uniq` optimized for sorted arrays without support
+	 * for callback shorthands and `this` binding.
 	 *
 	 * @private
-	 * @param {Array|Object|string} collection The collection to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @param {*} accumulator The initial value.
-	 * @param {boolean} initFromCollection Specify using the first or last element
-	 *  of `collection` as the initial value.
-	 * @param {Function} eachFunc The function to iterate over `collection`.
-	 * @returns {*} Returns the accumulated value.
+	 * @param {Array} array The array to inspect.
+	 * @param {Function} [iteratee] The function invoked per iteration.
+	 * @returns {Array} Returns the new duplicate-value-free array.
 	 */
-	function baseReduce(collection, iteratee, accumulator, initFromCollection, eachFunc) {
-	  eachFunc(collection, function(value, index, collection) {
-	    accumulator = initFromCollection
-	      ? (initFromCollection = false, value)
-	      : iteratee(accumulator, value, index, collection);
-	  });
-	  return accumulator;
+	function sortedUniq(array, iteratee) {
+	  var seen,
+	      index = -1,
+	      length = array.length,
+	      resIndex = -1,
+	      result = [];
+	
+	  while (++index < length) {
+	    var value = array[index],
+	        computed = iteratee ? iteratee(value, index, array) : value;
+	
+	    if (!index || seen !== computed) {
+	      seen = computed;
+	      result[++resIndex] = value;
+	    }
+	  }
+	  return result;
 	}
 	
-	module.exports = baseReduce;
+	module.exports = sortedUniq;
 
 
 /***/ },
-/* 132 */
-/*!*******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsFunction.js ***!
-  \*******************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * The base implementation of `_.isFunction` without support for environments
-	 * with incorrect `typeof` results.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 */
-	function baseIsFunction(value) {
-	  // Avoid a Chakra JIT bug in compatibility modes of IE 11.
-	  // See https://github.com/jashkenas/underscore/issues/1621 for more details.
-	  return typeof value == 'function' || false;
-	}
-	
-	module.exports = baseIsFunction;
-
-
-/***/ },
-/* 133 */
+/* 140 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/isObjectLike.js ***!
   \*****************************************************************/
@@ -27849,22 +28318,22 @@
 
 
 /***/ },
-/* 134 */
+/* 141 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseClone.js ***!
   \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayCopy = __webpack_require__(/*! ./arrayCopy */ 198),
-	    arrayEach = __webpack_require__(/*! ./arrayEach */ 127),
-	    baseCopy = __webpack_require__(/*! ./baseCopy */ 199),
-	    baseForOwn = __webpack_require__(/*! ./baseForOwn */ 118),
-	    initCloneArray = __webpack_require__(/*! ./initCloneArray */ 200),
-	    initCloneByTag = __webpack_require__(/*! ./initCloneByTag */ 201),
-	    initCloneObject = __webpack_require__(/*! ./initCloneObject */ 202),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
-	    isObject = __webpack_require__(/*! ../lang/isObject */ 59),
-	    keys = __webpack_require__(/*! ../object/keys */ 48);
+	var arrayCopy = __webpack_require__(/*! ./arrayCopy */ 202),
+	    arrayEach = __webpack_require__(/*! ./arrayEach */ 124),
+	    baseCopy = __webpack_require__(/*! ./baseCopy */ 203),
+	    baseForOwn = __webpack_require__(/*! ./baseForOwn */ 129),
+	    initCloneArray = __webpack_require__(/*! ./initCloneArray */ 204),
+	    initCloneByTag = __webpack_require__(/*! ./initCloneByTag */ 205),
+	    initCloneObject = __webpack_require__(/*! ./initCloneObject */ 206),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 60),
+	    keys = __webpack_require__(/*! ../object/keys */ 55);
 	
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -27988,292 +28457,31 @@
 
 
 /***/ },
-/* 135 */
+/* 142 */
 /*!*******************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isIterateeCall.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsFunction.js ***!
   \*******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isIndex = __webpack_require__(/*! ./isIndex */ 190),
-	    isLength = __webpack_require__(/*! ./isLength */ 121),
-	    isObject = __webpack_require__(/*! ../lang/isObject */ 59);
-	
 	/**
-	 * Checks if the provided arguments are from an iteratee call.
+	 * The base implementation of `_.isFunction` without support for environments
+	 * with incorrect `typeof` results.
 	 *
 	 * @private
-	 * @param {*} value The potential iteratee value argument.
-	 * @param {*} index The potential iteratee index or key argument.
-	 * @param {*} object The potential iteratee object argument.
-	 * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
-	 */
-	function isIterateeCall(value, index, object) {
-	  if (!isObject(object)) {
-	    return false;
-	  }
-	  var type = typeof index;
-	  if (type == 'number') {
-	    var length = object.length,
-	        prereq = isLength(length) && isIndex(index, length);
-	  } else {
-	    prereq = type == 'string' && index in object;
-	  }
-	  var other = object[index];
-	  return prereq && (value === value ? value === other : other !== other);
-	}
-	
-	module.exports = isIterateeCall;
-
-
-/***/ },
-/* 136 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIndexOf.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var indexOfNaN = __webpack_require__(/*! ./indexOfNaN */ 205);
-	
-	/**
-	 * The base implementation of `_.indexOf` without support for binary searches.
-	 *
-	 * @private
-	 * @param {Array} array The array to search.
-	 * @param {*} value The value to search for.
-	 * @param {number} [fromIndex=0] The index to search from.
-	 * @returns {number} Returns the index of the matched value, else `-1`.
-	 */
-	function baseIndexOf(array, value, fromIndex) {
-	  if (value !== value) {
-	    return indexOfNaN(array, fromIndex);
-	  }
-	  var index = (fromIndex || 0) - 1,
-	      length = array.length;
-	
-	  while (++index < length) {
-	    if (array[index] === value) {
-	      return index;
-	    }
-	  }
-	  return -1;
-	}
-	
-	module.exports = baseIndexOf;
-
-
-/***/ },
-/* 137 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/cacheIndexOf.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isObject = __webpack_require__(/*! ../lang/isObject */ 59);
-	
-	/**
-	 * Checks if `value` is in `cache` mimicking the return signature of
-	 * `_.indexOf` by returning `0` if the value is found, else `-1`.
-	 *
-	 * @private
-	 * @param {Object} cache The cache to search.
-	 * @param {*} value The value to search for.
-	 * @returns {number} Returns `0` if `value` is found, else `-1`.
-	 */
-	function cacheIndexOf(cache, value) {
-	  var data = cache.data,
-	      result = (typeof value == 'string' || isObject(value)) ? data.set.has(value) : data.hash[value];
-	
-	  return result ? 0 : -1;
-	}
-	
-	module.exports = cacheIndexOf;
-
-
-/***/ },
-/* 138 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/createCache.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {var SetCache = __webpack_require__(/*! ./SetCache */ 203),
-	    constant = __webpack_require__(/*! ../utility/constant */ 204),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 120);
-	
-	/** Native method references. */
-	var Set = isNative(Set = global.Set) && Set;
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
-	
-	/**
-	 * Creates a `Set` cache object to optimize linear searches of large arrays.
-	 *
-	 * @private
-	 * @param {Array} [values] The values to cache.
-	 * @returns {null|Object} Returns the new cache object if `Set` is supported, else `null`.
-	 */
-	var createCache = !(nativeCreate && Set) ? constant(null) : function(values) {
-	  return new SetCache(values);
-	};
-	
-	module.exports = createCache;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 139 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/lang/isArguments.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 121),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 133);
-	
-	/** `Object#toString` result references. */
-	var argsTag = '[object Arguments]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the `toStringTag` of values.
-	 * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
-	 * for more details.
-	 */
-	var objToString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is classified as an `arguments` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
 	 * @param {*} value The value to check.
 	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isArguments(function() { return arguments; }());
-	 * // => true
-	 *
-	 * _.isArguments([1, 2, 3]);
-	 * // => false
 	 */
-	function isArguments(value) {
-	  var length = isObjectLike(value) ? value.length : undefined;
-	  return (isLength(length) && objToString.call(value) == argsTag) || false;
+	function baseIsFunction(value) {
+	  // Avoid a Chakra JIT bug in compatibility modes of IE 11.
+	  // See https://github.com/jashkenas/underscore/issues/1621 for more details.
+	  return typeof value == 'function' || false;
 	}
 	
-	module.exports = isArguments;
+	module.exports = baseIsFunction;
 
 
 /***/ },
-/* 140 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseUniq.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseIndexOf = __webpack_require__(/*! ./baseIndexOf */ 136),
-	    cacheIndexOf = __webpack_require__(/*! ./cacheIndexOf */ 137),
-	    createCache = __webpack_require__(/*! ./createCache */ 138);
-	
-	/**
-	 * The base implementation of `_.uniq` without support for callback shorthands
-	 * and `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to inspect.
-	 * @param {Function} [iteratee] The function invoked per iteration.
-	 * @returns {Array} Returns the new duplicate-value-free array.
-	 */
-	function baseUniq(array, iteratee) {
-	  var index = -1,
-	      indexOf = baseIndexOf,
-	      length = array.length,
-	      isCommon = true,
-	      isLarge = isCommon && length >= 200,
-	      seen = isLarge && createCache(),
-	      result = [];
-	
-	  if (seen) {
-	    indexOf = cacheIndexOf;
-	    isCommon = false;
-	  } else {
-	    isLarge = false;
-	    seen = iteratee ? [] : result;
-	  }
-	  outer:
-	  while (++index < length) {
-	    var value = array[index],
-	        computed = iteratee ? iteratee(value, index, array) : value;
-	
-	    if (isCommon && value === value) {
-	      var seenIndex = seen.length;
-	      while (seenIndex--) {
-	        if (seen[seenIndex] === computed) {
-	          continue outer;
-	        }
-	      }
-	      if (iteratee) {
-	        seen.push(computed);
-	      }
-	      result.push(value);
-	    }
-	    else if (indexOf(seen, computed) < 0) {
-	      if (iteratee || isLarge) {
-	        seen.push(computed);
-	      }
-	      result.push(value);
-	    }
-	  }
-	  return result;
-	}
-	
-	module.exports = baseUniq;
-
-
-/***/ },
-/* 141 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/sortedUniq.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * An implementation of `_.uniq` optimized for sorted arrays without support
-	 * for callback shorthands and `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to inspect.
-	 * @param {Function} [iteratee] The function invoked per iteration.
-	 * @returns {Array} Returns the new duplicate-value-free array.
-	 */
-	function sortedUniq(array, iteratee) {
-	  var seen,
-	      index = -1,
-	      length = array.length,
-	      resIndex = -1,
-	      result = [];
-	
-	  while (++index < length) {
-	    var value = array[index],
-	        computed = iteratee ? iteratee(value, index, array) : value;
-	
-	    if (!index || seen !== computed) {
-	      seen = computed;
-	      result[++resIndex] = value;
-	    }
-	  }
-	  return result;
-	}
-	
-	module.exports = sortedUniq;
-
-
-/***/ },
-/* 142 */
+/* 143 */
 /*!************************************!*\
   !*** ./~/react/lib/emptyObject.js ***!
   \************************************/
@@ -28300,10 +28508,89 @@
 	
 	module.exports = emptyObject;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 143 */
+/* 144 */
+/*!*********************************************!*\
+  !*** ./~/react/lib/ReactNativeComponent.js ***!
+  \*********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactNativeComponent
+	 */
+	
+	"use strict";
+	
+	var assign = __webpack_require__(/*! ./Object.assign */ 38);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	
+	var genericComponentClass = null;
+	// This registry keeps track of wrapper classes around native tags
+	var tagToComponentClass = {};
+	
+	var ReactNativeComponentInjection = {
+	  // This accepts a class that receives the tag string. This is a catch all
+	  // that can render any kind of tag.
+	  injectGenericComponentClass: function(componentClass) {
+	    genericComponentClass = componentClass;
+	  },
+	  // This accepts a keyed object with classes as values. Each key represents a
+	  // tag. That particular tag will use this class instead of the generic one.
+	  injectComponentClasses: function(componentClasses) {
+	    assign(tagToComponentClass, componentClasses);
+	  }
+	};
+	
+	/**
+	 * Create an internal class for a specific tag.
+	 *
+	 * @param {string} tag The tag for which to create an internal instance.
+	 * @param {any} props The props passed to the instance constructor.
+	 * @return {ReactComponent} component The injected empty component.
+	 */
+	function createInstanceForTag(tag, props, parentType) {
+	  var componentClass = tagToComponentClass[tag];
+	  if (componentClass == null) {
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      genericComponentClass,
+	      'There is no registered component for the tag %s',
+	      tag
+	    ) : invariant(genericComponentClass));
+	    return new genericComponentClass(tag, props);
+	  }
+	  if (parentType === tag) {
+	    // Avoid recursion
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      genericComponentClass,
+	      'There is no registered component for the tag %s',
+	      tag
+	    ) : invariant(genericComponentClass));
+	    return new genericComponentClass(tag, props);
+	  }
+	  // Unwrap legacy factories
+	  return new componentClass.type(props);
+	}
+	
+	var ReactNativeComponent = {
+	  createInstanceForTag: createInstanceForTag,
+	  injection: ReactNativeComponentInjection
+	};
+	
+	module.exports = ReactNativeComponent;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
+
+/***/ },
+/* 145 */
 /*!**************************************!*\
   !*** ./~/react/lib/CallbackQueue.js ***!
   \**************************************/
@@ -28322,10 +28609,10 @@
 	
 	"use strict";
 	
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * A specialized pseudo-event module to help keep track of components waiting to
@@ -28406,10 +28693,10 @@
 	
 	module.exports = CallbackQueue;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 144 */
+/* 146 */
 /*!************************************!*\
   !*** ./~/react/lib/Transaction.js ***!
   \************************************/
@@ -28428,7 +28715,7 @@
 	
 	"use strict";
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * `Transaction` creates a black box that is able to wrap any method such that
@@ -28653,134 +28940,7 @@
 	
 	module.exports = Transaction;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
-
-/***/ },
-/* 145 */
-/*!************************************!*\
-  !*** ./~/react/lib/joinClasses.js ***!
-  \************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      if (nextClass) {
-	        className = (className ? className + ' ' : '') + nextClass;
-	      }
-	    }
-	  }
-	  return className;
-	}
-	
-	module.exports = joinClasses;
-
-
-/***/ },
-/* 146 */
-/*!*********************************************!*\
-  !*** ./~/react/lib/ReactNativeComponent.js ***!
-  \*********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactNativeComponent
-	 */
-	
-	"use strict";
-	
-	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	
-	var genericComponentClass = null;
-	// This registry keeps track of wrapper classes around native tags
-	var tagToComponentClass = {};
-	
-	var ReactNativeComponentInjection = {
-	  // This accepts a class that receives the tag string. This is a catch all
-	  // that can render any kind of tag.
-	  injectGenericComponentClass: function(componentClass) {
-	    genericComponentClass = componentClass;
-	  },
-	  // This accepts a keyed object with classes as values. Each key represents a
-	  // tag. That particular tag will use this class instead of the generic one.
-	  injectComponentClasses: function(componentClasses) {
-	    assign(tagToComponentClass, componentClasses);
-	  }
-	};
-	
-	/**
-	 * Create an internal class for a specific tag.
-	 *
-	 * @param {string} tag The tag for which to create an internal instance.
-	 * @param {any} props The props passed to the instance constructor.
-	 * @return {ReactComponent} component The injected empty component.
-	 */
-	function createInstanceForTag(tag, props, parentType) {
-	  var componentClass = tagToComponentClass[tag];
-	  if (componentClass == null) {
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      genericComponentClass,
-	      'There is no registered component for the tag %s',
-	      tag
-	    ) : invariant(genericComponentClass));
-	    return new genericComponentClass(tag, props);
-	  }
-	  if (parentType === tag) {
-	    // Avoid recursion
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      genericComponentClass,
-	      'There is no registered component for the tag %s',
-	      tag
-	    ) : invariant(genericComponentClass));
-	    return new genericComponentClass(tag, props);
-	  }
-	  // Unwrap legacy factories
-	  return new componentClass.type(props);
-	}
-	
-	var ReactNativeComponent = {
-	  createInstanceForTag: createInstanceForTag,
-	  injection: ReactNativeComponentInjection
-	};
-	
-	module.exports = ReactNativeComponent;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 147 */
@@ -28929,7 +29089,7 @@
 	
 	"use strict";
 	
-	var camelize = __webpack_require__(/*! ./camelize */ 206);
+	var camelize = __webpack_require__(/*! ./camelize */ 207);
 	
 	var msPattern = /^-ms-/;
 	
@@ -29043,7 +29203,7 @@
 	
 	"use strict";
 	
-	var hyphenate = __webpack_require__(/*! ./hyphenate */ 207);
+	var hyphenate = __webpack_require__(/*! ./hyphenate */ 208);
 	
 	var msPattern = /^ms-/;
 	
@@ -29093,9 +29253,9 @@
 	var EventPluginRegistry = __webpack_require__(/*! ./EventPluginRegistry */ 152);
 	var EventPluginUtils = __webpack_require__(/*! ./EventPluginUtils */ 19);
 	
-	var accumulateInto = __webpack_require__(/*! ./accumulateInto */ 208);
-	var forEachAccumulated = __webpack_require__(/*! ./forEachAccumulated */ 209);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var accumulateInto = __webpack_require__(/*! ./accumulateInto */ 209);
+	var forEachAccumulated = __webpack_require__(/*! ./forEachAccumulated */ 210);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Internal store for event listeners
@@ -29350,7 +29510,7 @@
 	
 	module.exports = EventPluginHub;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 152 */
@@ -29373,7 +29533,7 @@
 	
 	"use strict";
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Injectable ordering of event plugins.
@@ -29636,7 +29796,7 @@
 	
 	module.exports = EventPluginRegistry;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 153 */
@@ -29715,7 +29875,7 @@
 	
 	"use strict";
 	
-	var getUnboundedScrollPosition = __webpack_require__(/*! ./getUnboundedScrollPosition */ 171);
+	var getUnboundedScrollPosition = __webpack_require__(/*! ./getUnboundedScrollPosition */ 172);
 	
 	var ViewportMetrics = {
 	
@@ -29754,11 +29914,11 @@
 	
 	"use strict";
 	
-	var EventConstants = __webpack_require__(/*! ./EventConstants */ 64);
+	var EventConstants = __webpack_require__(/*! ./EventConstants */ 61);
 	var EventPluginHub = __webpack_require__(/*! ./EventPluginHub */ 151);
 	
-	var accumulateInto = __webpack_require__(/*! ./accumulateInto */ 208);
-	var forEachAccumulated = __webpack_require__(/*! ./forEachAccumulated */ 209);
+	var accumulateInto = __webpack_require__(/*! ./accumulateInto */ 209);
+	var forEachAccumulated = __webpack_require__(/*! ./forEachAccumulated */ 210);
 	
 	var PropagationPhases = EventConstants.PropagationPhases;
 	var getListener = EventPluginHub.getListener;
@@ -29880,64 +30040,10 @@
 	
 	module.exports = EventPropagators;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
 /* 156 */
-/*!********************************************!*\
-  !*** ./~/react/lib/SyntheticInputEvent.js ***!
-  \********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013 Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule SyntheticInputEvent
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
-	
-	/**
-	 * @interface Event
-	 * @see http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105
-	 *      /#events-inputevents
-	 */
-	var InputEventInterface = {
-	  data: null
-	};
-	
-	/**
-	 * @param {object} dispatchConfig Configuration used to dispatch this event.
-	 * @param {string} dispatchMarker Marker identifying the event target.
-	 * @param {object} nativeEvent Native browser event.
-	 * @extends {SyntheticUIEvent}
-	 */
-	function SyntheticInputEvent(
-	  dispatchConfig,
-	  dispatchMarker,
-	  nativeEvent) {
-	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
-	}
-	
-	SyntheticEvent.augmentClass(
-	  SyntheticInputEvent,
-	  InputEventInterface
-	);
-	
-	module.exports = SyntheticInputEvent;
-	
-
-
-/***/ },
-/* 157 */
 /*!***************************************!*\
   !*** ./~/react/lib/SyntheticEvent.js ***!
   \***************************************/
@@ -29957,11 +30063,11 @@
 	
 	"use strict";
 	
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
-	var getEventTarget = __webpack_require__(/*! ./getEventTarget */ 170);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
+	var getEventTarget = __webpack_require__(/*! ./getEventTarget */ 171);
 	
 	/**
 	 * @interface Event
@@ -30102,7 +30208,7 @@
 
 
 /***/ },
-/* 158 */
+/* 157 */
 /*!*******************************************!*\
   !*** ./~/react/lib/isTextInputElement.js ***!
   \*******************************************/
@@ -30153,6 +30259,60 @@
 
 
 /***/ },
+/* 158 */
+/*!********************************************!*\
+  !*** ./~/react/lib/SyntheticInputEvent.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013 Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule SyntheticInputEvent
+	 * @typechecks static-only
+	 */
+	
+	"use strict";
+	
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
+	
+	/**
+	 * @interface Event
+	 * @see http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105
+	 *      /#events-inputevents
+	 */
+	var InputEventInterface = {
+	  data: null
+	};
+	
+	/**
+	 * @param {object} dispatchConfig Configuration used to dispatch this event.
+	 * @param {string} dispatchMarker Marker identifying the event target.
+	 * @param {object} nativeEvent Native browser event.
+	 * @extends {SyntheticUIEvent}
+	 */
+	function SyntheticInputEvent(
+	  dispatchConfig,
+	  dispatchMarker,
+	  nativeEvent) {
+	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
+	}
+	
+	SyntheticEvent.augmentClass(
+	  SyntheticInputEvent,
+	  InputEventInterface
+	);
+	
+	module.exports = SyntheticInputEvent;
+	
+
+
+/***/ },
 /* 159 */
 /*!********************************************!*\
   !*** ./~/react/lib/ReactInputSelection.js ***!
@@ -30172,11 +30332,11 @@
 	
 	"use strict";
 	
-	var ReactDOMSelection = __webpack_require__(/*! ./ReactDOMSelection */ 210);
+	var ReactDOMSelection = __webpack_require__(/*! ./ReactDOMSelection */ 211);
 	
-	var containsNode = __webpack_require__(/*! ./containsNode */ 111);
-	var focusNode = __webpack_require__(/*! ./focusNode */ 211);
-	var getActiveElement = __webpack_require__(/*! ./getActiveElement */ 172);
+	var containsNode = __webpack_require__(/*! ./containsNode */ 114);
+	var focusNode = __webpack_require__(/*! ./focusNode */ 212);
+	var getActiveElement = __webpack_require__(/*! ./getActiveElement */ 173);
 	
 	function isInDocument(node) {
 	  return containsNode(document.documentElement, node);
@@ -30316,7 +30476,7 @@
 	
 	"use strict";
 	
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
 	
 	/**
 	 * @interface Event
@@ -30368,7 +30528,7 @@
 	
 	"use strict";
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
 	var contentKey = null;
 	
@@ -30413,7 +30573,7 @@
 	
 	"use strict";
 	
-	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 179);
+	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 180);
 	var ViewportMetrics = __webpack_require__(/*! ./ViewportMetrics */ 154);
 	
 	var getEventModifierState = __webpack_require__(/*! ./getEventModifierState */ 213);
@@ -30484,6 +30644,54 @@
 
 /***/ },
 /* 163 */
+/*!************************************!*\
+  !*** ./~/react/lib/joinClasses.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule joinClasses
+	 * @typechecks static-only
+	 */
+	
+	"use strict";
+	
+	/**
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
+	 */
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      if (nextClass) {
+	        className = (className ? className + ' ' : '') + nextClass;
+	      }
+	    }
+	  }
+	  return className;
+	}
+	
+	module.exports = joinClasses;
+
+
+/***/ },
+/* 164 */
 /*!*********************************************!*\
   !*** ./~/react/lib/ReactDOMIDOperations.js ***!
   \*********************************************/
@@ -30505,14 +30713,14 @@
 	
 	"use strict";
 	
-	var CSSPropertyOperations = __webpack_require__(/*! ./CSSPropertyOperations */ 82);
-	var DOMChildrenOperations = __webpack_require__(/*! ./DOMChildrenOperations */ 212);
-	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 18);
-	var ReactMount = __webpack_require__(/*! ./ReactMount */ 32);
-	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 34);
+	var CSSPropertyOperations = __webpack_require__(/*! ./CSSPropertyOperations */ 83);
+	var DOMChildrenOperations = __webpack_require__(/*! ./DOMChildrenOperations */ 214);
+	var DOMPropertyOperations = __webpack_require__(/*! ./DOMPropertyOperations */ 20);
+	var ReactMount = __webpack_require__(/*! ./ReactMount */ 33);
+	var ReactPerf = __webpack_require__(/*! ./ReactPerf */ 35);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
-	var setInnerHTML = __webpack_require__(/*! ./setInnerHTML */ 165);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
+	var setInnerHTML = __webpack_require__(/*! ./setInnerHTML */ 166);
 	
 	/**
 	 * Errors for properties that should not be updated with `updatePropertyById()`.
@@ -30672,10 +30880,10 @@
 	
 	module.exports = ReactDOMIDOperations;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 164 */
+/* 165 */
 /*!**************************************************!*\
   !*** ./~/react/lib/ReactReconcileTransaction.js ***!
   \**************************************************/
@@ -30695,12 +30903,12 @@
 	
 	"use strict";
 	
-	var CallbackQueue = __webpack_require__(/*! ./CallbackQueue */ 143);
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
+	var CallbackQueue = __webpack_require__(/*! ./CallbackQueue */ 145);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
 	var ReactBrowserEventEmitter = __webpack_require__(/*! ./ReactBrowserEventEmitter */ 84);
 	var ReactInputSelection = __webpack_require__(/*! ./ReactInputSelection */ 159);
-	var ReactPutListenerQueue = __webpack_require__(/*! ./ReactPutListenerQueue */ 185);
-	var Transaction = __webpack_require__(/*! ./Transaction */ 144);
+	var ReactPutListenerQueue = __webpack_require__(/*! ./ReactPutListenerQueue */ 186);
+	var Transaction = __webpack_require__(/*! ./Transaction */ 146);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
 	
@@ -30858,7 +31066,7 @@
 
 
 /***/ },
-/* 165 */
+/* 166 */
 /*!*************************************!*\
   !*** ./~/react/lib/setInnerHTML.js ***!
   \*************************************/
@@ -30877,7 +31085,7 @@
 	
 	"use strict";
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
 	var WHITESPACE_TEST = /^[ \r\n\t\f]/;
 	var NONVISIBLE_TEST = /<(!--|link|noscript|meta|script|style)[ \r\n\t\f\/>]/;
@@ -30943,7 +31151,7 @@
 
 
 /***/ },
-/* 166 */
+/* 167 */
 /*!********************************************!*\
   !*** ./~/react/lib/LocalEventTrapMixin.js ***!
   \********************************************/
@@ -30964,9 +31172,9 @@
 	
 	var ReactBrowserEventEmitter = __webpack_require__(/*! ./ReactBrowserEventEmitter */ 84);
 	
-	var accumulateInto = __webpack_require__(/*! ./accumulateInto */ 208);
-	var forEachAccumulated = __webpack_require__(/*! ./forEachAccumulated */ 209);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var accumulateInto = __webpack_require__(/*! ./accumulateInto */ 209);
+	var forEachAccumulated = __webpack_require__(/*! ./forEachAccumulated */ 210);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	function remove(event) {
 	  event.remove();
@@ -30996,10 +31204,10 @@
 	
 	module.exports = LocalEventTrapMixin;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 167 */
+/* 168 */
 /*!***************************************!*\
   !*** ./~/react/lib/AutoFocusMixin.js ***!
   \***************************************/
@@ -31019,7 +31227,7 @@
 	
 	"use strict";
 	
-	var focusNode = __webpack_require__(/*! ./focusNode */ 211);
+	var focusNode = __webpack_require__(/*! ./focusNode */ 212);
 	
 	var AutoFocusMixin = {
 	  componentDidMount: function() {
@@ -31033,7 +31241,7 @@
 
 
 /***/ },
-/* 168 */
+/* 169 */
 /*!*****************************************!*\
   !*** ./~/react/lib/LinkedValueUtils.js ***!
   \*****************************************/
@@ -31053,9 +31261,9 @@
 	
 	"use strict";
 	
-	var ReactPropTypes = __webpack_require__(/*! ./ReactPropTypes */ 35);
+	var ReactPropTypes = __webpack_require__(/*! ./ReactPropTypes */ 37);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	var hasReadOnlyValue = {
 	  'button': true,
@@ -31192,10 +31400,10 @@
 	
 	module.exports = LinkedValueUtils;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 169 */
+/* 170 */
 /*!**************************************!*\
   !*** ./~/react/lib/EventListener.js ***!
   \**************************************/
@@ -31220,7 +31428,7 @@
 	 * @typechecks
 	 */
 	
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
 	
 	/**
 	 * Upstream version of event listener. Does not take into account specific
@@ -31288,10 +31496,10 @@
 	
 	module.exports = EventListener;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 170 */
+/* 171 */
 /*!***************************************!*\
   !*** ./~/react/lib/getEventTarget.js ***!
   \***************************************/
@@ -31329,7 +31537,7 @@
 
 
 /***/ },
-/* 171 */
+/* 172 */
 /*!***************************************************!*\
   !*** ./~/react/lib/getUnboundedScrollPosition.js ***!
   \***************************************************/
@@ -31376,7 +31584,7 @@
 
 
 /***/ },
-/* 172 */
+/* 173 */
 /*!*****************************************!*\
   !*** ./~/react/lib/getActiveElement.js ***!
   \*****************************************/
@@ -31412,7 +31620,7 @@
 
 
 /***/ },
-/* 173 */
+/* 174 */
 /*!*************************************!*\
   !*** ./~/react/lib/shallowEqual.js ***!
   \*************************************/
@@ -31463,7 +31671,7 @@
 
 
 /***/ },
-/* 174 */
+/* 175 */
 /*!************************************************!*\
   !*** ./~/react/lib/SyntheticClipboardEvent.js ***!
   \************************************************/
@@ -31483,7 +31691,7 @@
 	
 	"use strict";
 	
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
 	
 	/**
 	 * @interface Event
@@ -31516,7 +31724,7 @@
 
 
 /***/ },
-/* 175 */
+/* 176 */
 /*!********************************************!*\
   !*** ./~/react/lib/SyntheticFocusEvent.js ***!
   \********************************************/
@@ -31536,7 +31744,7 @@
 	
 	"use strict";
 	
-	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 179);
+	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 180);
 	
 	/**
 	 * @interface FocusEvent
@@ -31562,7 +31770,7 @@
 
 
 /***/ },
-/* 176 */
+/* 177 */
 /*!***********************************************!*\
   !*** ./~/react/lib/SyntheticKeyboardEvent.js ***!
   \***********************************************/
@@ -31582,10 +31790,10 @@
 	
 	"use strict";
 	
-	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 179);
+	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 180);
 	
-	var getEventCharCode = __webpack_require__(/*! ./getEventCharCode */ 181);
-	var getEventKey = __webpack_require__(/*! ./getEventKey */ 214);
+	var getEventCharCode = __webpack_require__(/*! ./getEventCharCode */ 182);
+	var getEventKey = __webpack_require__(/*! ./getEventKey */ 215);
 	var getEventModifierState = __webpack_require__(/*! ./getEventModifierState */ 213);
 	
 	/**
@@ -31656,7 +31864,7 @@
 
 
 /***/ },
-/* 177 */
+/* 178 */
 /*!*******************************************!*\
   !*** ./~/react/lib/SyntheticDragEvent.js ***!
   \*******************************************/
@@ -31702,7 +31910,7 @@
 
 
 /***/ },
-/* 178 */
+/* 179 */
 /*!********************************************!*\
   !*** ./~/react/lib/SyntheticTouchEvent.js ***!
   \********************************************/
@@ -31722,7 +31930,7 @@
 	
 	"use strict";
 	
-	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 179);
+	var SyntheticUIEvent = __webpack_require__(/*! ./SyntheticUIEvent */ 180);
 	
 	var getEventModifierState = __webpack_require__(/*! ./getEventModifierState */ 213);
 	
@@ -31757,7 +31965,7 @@
 
 
 /***/ },
-/* 179 */
+/* 180 */
 /*!*****************************************!*\
   !*** ./~/react/lib/SyntheticUIEvent.js ***!
   \*****************************************/
@@ -31777,9 +31985,9 @@
 	
 	"use strict";
 	
-	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 157);
+	var SyntheticEvent = __webpack_require__(/*! ./SyntheticEvent */ 156);
 	
-	var getEventTarget = __webpack_require__(/*! ./getEventTarget */ 170);
+	var getEventTarget = __webpack_require__(/*! ./getEventTarget */ 171);
 	
 	/**
 	 * @interface UIEvent
@@ -31826,7 +32034,7 @@
 
 
 /***/ },
-/* 180 */
+/* 181 */
 /*!********************************************!*\
   !*** ./~/react/lib/SyntheticWheelEvent.js ***!
   \********************************************/
@@ -31894,7 +32102,7 @@
 
 
 /***/ },
-/* 181 */
+/* 182 */
 /*!*****************************************!*\
   !*** ./~/react/lib/getEventCharCode.js ***!
   \*****************************************/
@@ -31953,10 +32161,10 @@
 
 
 /***/ },
-/* 182 */
-/*!***********************************!*\
-  !*** ./~/react/lib/isTextNode.js ***!
-  \***********************************/
+/* 183 */
+/*!********************************!*\
+  !*** ./~/react/lib/adler32.js ***!
+  \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -31967,25 +32175,34 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule isTextNode
-	 * @typechecks
+	 * @providesModule adler32
 	 */
 	
-	var isNode = __webpack_require__(/*! ./isNode */ 215);
+	/* jslint bitwise:true */
 	
-	/**
-	 * @param {*} object The object to check.
-	 * @return {boolean} Whether or not the object is a DOM text node.
-	 */
-	function isTextNode(object) {
-	  return isNode(object) && object.nodeType == 3;
+	"use strict";
+	
+	var MOD = 65521;
+	
+	// This is a clean-room implementation of adler32 designed for detecting
+	// if markup is not what we expect it to be. It does not need to be
+	// cryptographically strong, only reasonably good at detecting if markup
+	// generated on the server is different than that on the client.
+	function adler32(data) {
+	  var a = 1;
+	  var b = 0;
+	  for (var i = 0; i < data.length; i++) {
+	    a = (a + data.charCodeAt(i)) % MOD;
+	    b = (b + a) % MOD;
+	  }
+	  return a | (b << 16);
 	}
 	
-	module.exports = isTextNode;
+	module.exports = adler32;
 
 
 /***/ },
-/* 183 */
+/* 184 */
 /*!*************************************************!*\
   !*** ./~/react/lib/ReactDefaultPerfAnalysis.js ***!
   \*************************************************/
@@ -32198,7 +32415,7 @@
 
 
 /***/ },
-/* 184 */
+/* 185 */
 /*!***************************************!*\
   !*** ./~/react/lib/performanceNow.js ***!
   \***************************************/
@@ -32233,7 +32450,7 @@
 
 
 /***/ },
-/* 185 */
+/* 186 */
 /*!**********************************************!*\
   !*** ./~/react/lib/ReactPutListenerQueue.js ***!
   \**********************************************/
@@ -32252,7 +32469,7 @@
 	
 	"use strict";
 	
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 66);
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 67);
 	var ReactBrowserEventEmitter = __webpack_require__(/*! ./ReactBrowserEventEmitter */ 84);
 	
 	var assign = __webpack_require__(/*! ./Object.assign */ 38);
@@ -32296,10 +32513,10 @@
 
 
 /***/ },
-/* 186 */
-/*!********************************!*\
-  !*** ./~/react/lib/adler32.js ***!
-  \********************************/
+/* 187 */
+/*!***********************************!*\
+  !*** ./~/react/lib/isTextNode.js ***!
+  \***********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -32310,34 +32527,182 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule adler32
+	 * @providesModule isTextNode
+	 * @typechecks
 	 */
 	
-	/* jslint bitwise:true */
+	var isNode = __webpack_require__(/*! ./isNode */ 217);
 	
-	"use strict";
-	
-	var MOD = 65521;
-	
-	// This is a clean-room implementation of adler32 designed for detecting
-	// if markup is not what we expect it to be. It does not need to be
-	// cryptographically strong, only reasonably good at detecting if markup
-	// generated on the server is different than that on the client.
-	function adler32(data) {
-	  var a = 1;
-	  var b = 0;
-	  for (var i = 0; i < data.length; i++) {
-	    a = (a + data.charCodeAt(i)) % MOD;
-	    b = (b + a) % MOD;
-	  }
-	  return a | (b << 16);
+	/**
+	 * @param {*} object The object to check.
+	 * @return {boolean} Whether or not the object is a DOM text node.
+	 */
+	function isTextNode(object) {
+	  return isNode(object) && object.nodeType == 3;
 	}
 	
-	module.exports = adler32;
+	module.exports = isTextNode;
 
 
 /***/ },
-/* 187 */
+/* 188 */
+/*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMatches.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsMatch = __webpack_require__(/*! ./baseIsMatch */ 218),
+	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 219),
+	    keys = __webpack_require__(/*! ../object/keys */ 55);
+	
+	/** Used for native method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * The base implementation of `_.matches` which does not clone `source`.
+	 *
+	 * @private
+	 * @param {Object} source The object of property values to match.
+	 * @returns {Function} Returns the new function.
+	 */
+	function baseMatches(source) {
+	  var props = keys(source),
+	      length = props.length;
+	
+	  if (length == 1) {
+	    var key = props[0],
+	        value = source[key];
+	
+	    if (isStrictComparable(value)) {
+	      return function(object) {
+	        return object != null && object[key] === value && hasOwnProperty.call(object, key);
+	      };
+	    }
+	  }
+	  var values = Array(length),
+	      strictCompareFlags = Array(length);
+	
+	  while (length--) {
+	    value = source[props[length]];
+	    values[length] = value;
+	    strictCompareFlags[length] = isStrictComparable(value);
+	  }
+	  return function(object) {
+	    return baseIsMatch(object, props, values, strictCompareFlags);
+	  };
+	}
+	
+	module.exports = baseMatches;
+
+
+/***/ },
+/* 189 */
+/*!************************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMatchesProperty.js ***!
+  \************************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsEqual = __webpack_require__(/*! ./baseIsEqual */ 221),
+	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 219);
+	
+	/**
+	 * The base implementation of `_.matchesProperty` which does not coerce `key`
+	 * to a string.
+	 *
+	 * @private
+	 * @param {string} key The key of the property to get.
+	 * @param {*} value The value to compare.
+	 * @returns {Function} Returns the new function.
+	 */
+	function baseMatchesProperty(key, value) {
+	  if (isStrictComparable(value)) {
+	    return function(object) {
+	      return object != null && object[key] === value;
+	    };
+	  }
+	  return function(object) {
+	    return object != null && baseIsEqual(value, object[key], null, true);
+	  };
+	}
+	
+	module.exports = baseMatchesProperty;
+
+
+/***/ },
+/* 190 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseProperty.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * The base implementation of `_.property` which does not coerce `key` to a string.
+	 *
+	 * @private
+	 * @param {string} key The key of the property to get.
+	 * @returns {Function} Returns the new function.
+	 */
+	function baseProperty(key) {
+	  return function(object) {
+	    return object == null ? undefined : object[key];
+	  };
+	}
+	
+	module.exports = baseProperty;
+
+
+/***/ },
+/* 191 */
+/*!***************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isBindable.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseSetData = __webpack_require__(/*! ./baseSetData */ 220),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 130),
+	    support = __webpack_require__(/*! ../support */ 198);
+	
+	/** Used to detect named functions. */
+	var reFuncName = /^\s*function[ \n\r\t]+\w/;
+	
+	/** Used to detect functions containing a `this` reference. */
+	var reThis = /\bthis\b/;
+	
+	/** Used to resolve the decompiled source of functions. */
+	var fnToString = Function.prototype.toString;
+	
+	/**
+	 * Checks if `func` is eligible for `this` binding.
+	 *
+	 * @private
+	 * @param {Function} func The function to check.
+	 * @returns {boolean} Returns `true` if `func` is eligible, else `false`.
+	 */
+	function isBindable(func) {
+	  var result = !(support.funcNames ? func.name : support.funcDecomp);
+	
+	  if (!result) {
+	    var source = fnToString.call(func);
+	    if (!support.funcNames) {
+	      result = !reFuncName.test(source);
+	    }
+	    if (!result) {
+	      // Check if `func` references the `this` keyword and store the result.
+	      result = reThis.test(source) || isNative(func);
+	      baseSetData(func, result);
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = isBindable;
+
+
+/***/ },
+/* 192 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/utility/identity.js ***!
   \************************************************************/
@@ -32366,13 +32731,36 @@
 
 
 /***/ },
-/* 188 */
+/* 193 */
+/*!*************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/toObject.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 60);
+	
+	/**
+	 * Converts `value` to an object if it is not one.
+	 *
+	 * @private
+	 * @param {*} value The value to process.
+	 * @returns {Object} Returns the object.
+	 */
+	function toObject(value) {
+	  return isObject(value) ? value : Object(value);
+	}
+	
+	module.exports = toObject;
+
+
+/***/ },
+/* 194 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseFor.js ***!
   \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(/*! ./toObject */ 197);
+	var toObject = __webpack_require__(/*! ./toObject */ 193);
 	
 	/**
 	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
@@ -32405,7 +32793,7 @@
 
 
 /***/ },
-/* 189 */
+/* 195 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/string/escapeRegExp.js ***!
   \***************************************************************/
@@ -32446,7 +32834,7 @@
 
 
 /***/ },
-/* 190 */
+/* 196 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/isIndex.js ***!
   \************************************************************/
@@ -32477,18 +32865,18 @@
 
 
 /***/ },
-/* 191 */
+/* 197 */
 /*!*********************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/object/keysIn.js ***!
   \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 139),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
-	    isIndex = __webpack_require__(/*! ../internal/isIndex */ 190),
-	    isLength = __webpack_require__(/*! ../internal/isLength */ 121),
-	    isObject = __webpack_require__(/*! ../lang/isObject */ 59),
-	    support = __webpack_require__(/*! ../support */ 192);
+	var isArguments = __webpack_require__(/*! ../lang/isArguments */ 137),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119),
+	    isIndex = __webpack_require__(/*! ../internal/isIndex */ 196),
+	    isLength = __webpack_require__(/*! ../internal/isLength */ 126),
+	    isObject = __webpack_require__(/*! ../lang/isObject */ 60),
+	    support = __webpack_require__(/*! ../support */ 198);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -32551,13 +32939,13 @@
 
 
 /***/ },
-/* 192 */
+/* 198 */
 /*!***************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/support.js ***!
   \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ./lang/isNative */ 120);
+	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ./lang/isNative */ 130);
 	
 	/** Used to detect functions containing a `this` reference. */
 	var reThis = /\bthis\b/;
@@ -32636,187 +33024,111 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 193 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMatches.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseIsMatch = __webpack_require__(/*! ./baseIsMatch */ 219),
-	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 218),
-	    keys = __webpack_require__(/*! ../object/keys */ 48);
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/** Used to check objects for own properties. */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/**
-	 * The base implementation of `_.matches` which does not clone `source`.
-	 *
-	 * @private
-	 * @param {Object} source The object of property values to match.
-	 * @returns {Function} Returns the new function.
-	 */
-	function baseMatches(source) {
-	  var props = keys(source),
-	      length = props.length;
-	
-	  if (length == 1) {
-	    var key = props[0],
-	        value = source[key];
-	
-	    if (isStrictComparable(value)) {
-	      return function(object) {
-	        return object != null && object[key] === value && hasOwnProperty.call(object, key);
-	      };
-	    }
-	  }
-	  var values = Array(length),
-	      strictCompareFlags = Array(length);
-	
-	  while (length--) {
-	    value = source[props[length]];
-	    values[length] = value;
-	    strictCompareFlags[length] = isStrictComparable(value);
-	  }
-	  return function(object) {
-	    return baseIsMatch(object, props, values, strictCompareFlags);
-	  };
-	}
-	
-	module.exports = baseMatches;
-
-
-/***/ },
-/* 194 */
-/*!************************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseMatchesProperty.js ***!
-  \************************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseIsEqual = __webpack_require__(/*! ./baseIsEqual */ 217),
-	    isStrictComparable = __webpack_require__(/*! ./isStrictComparable */ 218);
-	
-	/**
-	 * The base implementation of `_.matchesProperty` which does not coerce `key`
-	 * to a string.
-	 *
-	 * @private
-	 * @param {string} key The key of the property to get.
-	 * @param {*} value The value to compare.
-	 * @returns {Function} Returns the new function.
-	 */
-	function baseMatchesProperty(key, value) {
-	  if (isStrictComparable(value)) {
-	    return function(object) {
-	      return object != null && object[key] === value;
-	    };
-	  }
-	  return function(object) {
-	    return object != null && baseIsEqual(value, object[key], null, true);
-	  };
-	}
-	
-	module.exports = baseMatchesProperty;
-
-
-/***/ },
-/* 195 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseProperty.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * The base implementation of `_.property` which does not coerce `key` to a string.
-	 *
-	 * @private
-	 * @param {string} key The key of the property to get.
-	 * @returns {Function} Returns the new function.
-	 */
-	function baseProperty(key) {
-	  return function(object) {
-	    return object == null ? undefined : object[key];
-	  };
-	}
-	
-	module.exports = baseProperty;
-
-
-/***/ },
-/* 196 */
+/* 199 */
 /*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isBindable.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/indexOfNaN.js ***!
   \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseSetData = __webpack_require__(/*! ./baseSetData */ 220),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 120),
-	    support = __webpack_require__(/*! ../support */ 192);
-	
-	/** Used to detect named functions. */
-	var reFuncName = /^\s*function[ \n\r\t]+\w/;
-	
-	/** Used to detect functions containing a `this` reference. */
-	var reThis = /\bthis\b/;
-	
-	/** Used to resolve the decompiled source of functions. */
-	var fnToString = Function.prototype.toString;
-	
 	/**
-	 * Checks if `func` is eligible for `this` binding.
+	 * Gets the index at which the first occurrence of `NaN` is found in `array`.
+	 * If `fromRight` is provided elements of `array` are iterated from right to left.
 	 *
 	 * @private
-	 * @param {Function} func The function to check.
-	 * @returns {boolean} Returns `true` if `func` is eligible, else `false`.
+	 * @param {Array} array The array to search.
+	 * @param {number} [fromIndex] The index to search from.
+	 * @param {boolean} [fromRight] Specify iterating from right to left.
+	 * @returns {number} Returns the index of the matched `NaN`, else `-1`.
 	 */
-	function isBindable(func) {
-	  var result = !(support.funcNames ? func.name : support.funcDecomp);
+	function indexOfNaN(array, fromIndex, fromRight) {
+	  var length = array.length,
+	      index = fromRight ? (fromIndex || length) : ((fromIndex || 0) - 1);
 	
-	  if (!result) {
-	    var source = fnToString.call(func);
-	    if (!support.funcNames) {
-	      result = !reFuncName.test(source);
-	    }
-	    if (!result) {
-	      // Check if `func` references the `this` keyword and store the result.
-	      result = reThis.test(source) || isNative(func);
-	      baseSetData(func, result);
+	  while ((fromRight ? index-- : ++index < length)) {
+	    var other = array[index];
+	    if (other !== other) {
+	      return index;
 	    }
 	  }
-	  return result;
+	  return -1;
 	}
 	
-	module.exports = isBindable;
+	module.exports = indexOfNaN;
 
 
 /***/ },
-/* 197 */
+/* 200 */
+/*!************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/utility/constant.js ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Creates a function that returns `value`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Utility
+	 * @param {*} value The value to return from the new function.
+	 * @returns {Function} Returns the new function.
+	 * @example
+	 *
+	 * var object = { 'user': 'fred' };
+	 * var getter = _.constant(object);
+	 *
+	 * getter() === object;
+	 * // => true
+	 */
+	function constant(value) {
+	  return function() {
+	    return value;
+	  };
+	}
+	
+	module.exports = constant;
+
+
+/***/ },
+/* 201 */
 /*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/toObject.js ***!
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/SetCache.js ***!
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(/*! ../lang/isObject */ 59);
+	/* WEBPACK VAR INJECTION */(function(global) {var cachePush = __webpack_require__(/*! ./cachePush */ 223),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 130);
+	
+	/** Native method references. */
+	var Set = isNative(Set = global.Set) && Set;
+	
+	/* Native method references for those with the same name as other `lodash` methods. */
+	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
 	
 	/**
-	 * Converts `value` to an object if it is not one.
+	 *
+	 * Creates a cache object to store unique values.
 	 *
 	 * @private
-	 * @param {*} value The value to process.
-	 * @returns {Object} Returns the object.
+	 * @param {Array} [values] The values to cache.
 	 */
-	function toObject(value) {
-	  return isObject(value) ? value : Object(value);
+	function SetCache(values) {
+	  var length = values ? values.length : 0;
+	
+	  this.data = { 'hash': nativeCreate(null), 'set': new Set };
+	  while (length--) {
+	    this.push(values[length]);
+	  }
 	}
 	
-	module.exports = toObject;
-
+	// Add functions to the `Set` cache.
+	SetCache.prototype.push = cachePush;
+	
+	module.exports = SetCache;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 198 */
+/* 202 */
 /*!**************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/arrayCopy.js ***!
   \**************************************************************/
@@ -32845,7 +33157,7 @@
 
 
 /***/ },
-/* 199 */
+/* 203 */
 /*!*************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseCopy.js ***!
   \*************************************************************/
@@ -32879,7 +33191,7 @@
 
 
 /***/ },
-/* 200 */
+/* 204 */
 /*!*******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/initCloneArray.js ***!
   \*******************************************************************/
@@ -32914,13 +33226,13 @@
 
 
 /***/ },
-/* 201 */
+/* 205 */
 /*!*******************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/initCloneByTag.js ***!
   \*******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var bufferClone = __webpack_require__(/*! ./bufferClone */ 221);
+	var bufferClone = __webpack_require__(/*! ./bufferClone */ 224);
 	
 	/** `Object#toString` result references. */
 	var boolTag = '[object Boolean]',
@@ -32987,7 +33299,7 @@
 
 
 /***/ },
-/* 202 */
+/* 206 */
 /*!********************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/initCloneObject.js ***!
   \********************************************************************/
@@ -33012,111 +33324,7 @@
 
 
 /***/ },
-/* 203 */
-/*!*************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/SetCache.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {var cachePush = __webpack_require__(/*! ./cachePush */ 223),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 120);
-	
-	/** Native method references. */
-	var Set = isNative(Set = global.Set) && Set;
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
-	
-	/**
-	 *
-	 * Creates a cache object to store unique values.
-	 *
-	 * @private
-	 * @param {Array} [values] The values to cache.
-	 */
-	function SetCache(values) {
-	  var length = values ? values.length : 0;
-	
-	  this.data = { 'hash': nativeCreate(null), 'set': new Set };
-	  while (length--) {
-	    this.push(values[length]);
-	  }
-	}
-	
-	// Add functions to the `Set` cache.
-	SetCache.prototype.push = cachePush;
-	
-	module.exports = SetCache;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 204 */
-/*!************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/utility/constant.js ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Creates a function that returns `value`.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Utility
-	 * @param {*} value The value to return from the new function.
-	 * @returns {Function} Returns the new function.
-	 * @example
-	 *
-	 * var object = { 'user': 'fred' };
-	 * var getter = _.constant(object);
-	 *
-	 * getter() === object;
-	 * // => true
-	 */
-	function constant(value) {
-	  return function() {
-	    return value;
-	  };
-	}
-	
-	module.exports = constant;
-
-
-/***/ },
-/* 205 */
-/*!***************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/indexOfNaN.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Gets the index at which the first occurrence of `NaN` is found in `array`.
-	 * If `fromRight` is provided elements of `array` are iterated from right to left.
-	 *
-	 * @private
-	 * @param {Array} array The array to search.
-	 * @param {number} [fromIndex] The index to search from.
-	 * @param {boolean} [fromRight] Specify iterating from right to left.
-	 * @returns {number} Returns the index of the matched `NaN`, else `-1`.
-	 */
-	function indexOfNaN(array, fromIndex, fromRight) {
-	  var length = array.length,
-	      index = fromRight ? (fromIndex || length) : ((fromIndex || 0) - 1);
-	
-	  while ((fromRight ? index-- : ++index < length)) {
-	    var other = array[index];
-	    if (other !== other) {
-	      return index;
-	    }
-	  }
-	  return -1;
-	}
-	
-	module.exports = indexOfNaN;
-
-
-/***/ },
-/* 206 */
+/* 207 */
 /*!*********************************!*\
   !*** ./~/react/lib/camelize.js ***!
   \*********************************/
@@ -33155,7 +33363,7 @@
 
 
 /***/ },
-/* 207 */
+/* 208 */
 /*!**********************************!*\
   !*** ./~/react/lib/hyphenate.js ***!
   \**********************************/
@@ -33195,7 +33403,7 @@
 
 
 /***/ },
-/* 208 */
+/* 209 */
 /*!***************************************!*\
   !*** ./~/react/lib/accumulateInto.js ***!
   \***************************************/
@@ -33214,7 +33422,7 @@
 	
 	"use strict";
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 *
@@ -33264,10 +33472,10 @@
 	
 	module.exports = accumulateInto;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 209 */
+/* 210 */
 /*!*******************************************!*\
   !*** ./~/react/lib/forEachAccumulated.js ***!
   \*******************************************/
@@ -33305,7 +33513,7 @@
 
 
 /***/ },
-/* 210 */
+/* 211 */
 /*!******************************************!*\
   !*** ./~/react/lib/ReactDOMSelection.js ***!
   \******************************************/
@@ -33324,9 +33532,9 @@
 	
 	"use strict";
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
-	var getNodeForCharacterOffset = __webpack_require__(/*! ./getNodeForCharacterOffset */ 224);
+	var getNodeForCharacterOffset = __webpack_require__(/*! ./getNodeForCharacterOffset */ 225);
 	var getTextContentAccessor = __webpack_require__(/*! ./getTextContentAccessor */ 161);
 	
 	/**
@@ -33521,7 +33729,7 @@
 
 
 /***/ },
-/* 211 */
+/* 212 */
 /*!**********************************!*\
   !*** ./~/react/lib/focusNode.js ***!
   \**********************************/
@@ -33557,7 +33765,61 @@
 
 
 /***/ },
-/* 212 */
+/* 213 */
+/*!**********************************************!*\
+  !*** ./~/react/lib/getEventModifierState.js ***!
+  \**********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013 Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule getEventModifierState
+	 * @typechecks static-only
+	 */
+	
+	"use strict";
+	
+	/**
+	 * Translation from modifier key to the associated property in the event.
+	 * @see http://www.w3.org/TR/DOM-Level-3-Events/#keys-Modifiers
+	 */
+	
+	var modifierKeyToProp = {
+	  'Alt': 'altKey',
+	  'Control': 'ctrlKey',
+	  'Meta': 'metaKey',
+	  'Shift': 'shiftKey'
+	};
+	
+	// IE8 does not implement getModifierState so we simply map it to the only
+	// modifier keys exposed by the event itself, does not support Lock-keys.
+	// Currently, all major browsers except Chrome seems to support Lock-keys.
+	function modifierStateGetter(keyArg) {
+	  /*jshint validthis:true */
+	  var syntheticEvent = this;
+	  var nativeEvent = syntheticEvent.nativeEvent;
+	  if (nativeEvent.getModifierState) {
+	    return nativeEvent.getModifierState(keyArg);
+	  }
+	  var keyProp = modifierKeyToProp[keyArg];
+	  return keyProp ? !!nativeEvent[keyProp] : false;
+	}
+	
+	function getEventModifierState(nativeEvent) {
+	  return modifierStateGetter;
+	}
+	
+	module.exports = getEventModifierState;
+
+
+/***/ },
+/* 214 */
 /*!**********************************************!*\
   !*** ./~/react/lib/DOMChildrenOperations.js ***!
   \**********************************************/
@@ -33577,11 +33839,11 @@
 	
 	"use strict";
 	
-	var Danger = __webpack_require__(/*! ./Danger */ 225);
-	var ReactMultiChildUpdateTypes = __webpack_require__(/*! ./ReactMultiChildUpdateTypes */ 115);
+	var Danger = __webpack_require__(/*! ./Danger */ 226);
+	var ReactMultiChildUpdateTypes = __webpack_require__(/*! ./ReactMultiChildUpdateTypes */ 116);
 	
 	var getTextContentAccessor = __webpack_require__(/*! ./getTextContentAccessor */ 161);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * The DOM property to use when setting text content.
@@ -33735,64 +33997,10 @@
 	
 	module.exports = DOMChildrenOperations;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 213 */
-/*!**********************************************!*\
-  !*** ./~/react/lib/getEventModifierState.js ***!
-  \**********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013 Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule getEventModifierState
-	 * @typechecks static-only
-	 */
-	
-	"use strict";
-	
-	/**
-	 * Translation from modifier key to the associated property in the event.
-	 * @see http://www.w3.org/TR/DOM-Level-3-Events/#keys-Modifiers
-	 */
-	
-	var modifierKeyToProp = {
-	  'Alt': 'altKey',
-	  'Control': 'ctrlKey',
-	  'Meta': 'metaKey',
-	  'Shift': 'shiftKey'
-	};
-	
-	// IE8 does not implement getModifierState so we simply map it to the only
-	// modifier keys exposed by the event itself, does not support Lock-keys.
-	// Currently, all major browsers except Chrome seems to support Lock-keys.
-	function modifierStateGetter(keyArg) {
-	  /*jshint validthis:true */
-	  var syntheticEvent = this;
-	  var nativeEvent = syntheticEvent.nativeEvent;
-	  if (nativeEvent.getModifierState) {
-	    return nativeEvent.getModifierState(keyArg);
-	  }
-	  var keyProp = modifierKeyToProp[keyArg];
-	  return keyProp ? !!nativeEvent[keyProp] : false;
-	}
-	
-	function getEventModifierState(nativeEvent) {
-	  return modifierStateGetter;
-	}
-	
-	module.exports = getEventModifierState;
-
-
-/***/ },
-/* 214 */
+/* 215 */
 /*!************************************!*\
   !*** ./~/react/lib/getEventKey.js ***!
   \************************************/
@@ -33812,7 +34020,7 @@
 	
 	"use strict";
 	
-	var getEventCharCode = __webpack_require__(/*! ./getEventCharCode */ 181);
+	var getEventCharCode = __webpack_require__(/*! ./getEventCharCode */ 182);
 	
 	/**
 	 * Normalization of deprecated HTML5 `key` values
@@ -33904,7 +34112,42 @@
 
 
 /***/ },
-/* 215 */
+/* 216 */
+/*!************************************!*\
+  !*** ./~/react/lib/performance.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2014, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule performance
+	 * @typechecks
+	 */
+	
+	"use strict";
+	
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
+	
+	var performance;
+	
+	if (ExecutionEnvironment.canUseDOM) {
+	  performance =
+	    window.performance ||
+	    window.msPerformance ||
+	    window.webkitPerformance;
+	}
+	
+	module.exports = performance || {};
+
+
+/***/ },
+/* 217 */
 /*!*******************************!*\
   !*** ./~/react/lib/isNode.js ***!
   \*******************************/
@@ -33939,115 +34182,13 @@
 
 
 /***/ },
-/* 216 */
-/*!************************************!*\
-  !*** ./~/react/lib/performance.js ***!
-  \************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule performance
-	 * @typechecks
-	 */
-	
-	"use strict";
-	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
-	
-	var performance;
-	
-	if (ExecutionEnvironment.canUseDOM) {
-	  performance =
-	    window.performance ||
-	    window.msPerformance ||
-	    window.webkitPerformance;
-	}
-	
-	module.exports = performance || {};
-
-
-/***/ },
-/* 217 */
-/*!****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsEqual.js ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseIsEqualDeep = __webpack_require__(/*! ./baseIsEqualDeep */ 226);
-	
-	/**
-	 * The base implementation of `_.isEqual` without support for `this` binding
-	 * `customizer` functions.
-	 *
-	 * @private
-	 * @param {*} value The value to compare.
-	 * @param {*} other The other value to compare.
-	 * @param {Function} [customizer] The function to customize comparing values.
-	 * @param {boolean} [isWhere] Specify performing partial comparisons.
-	 * @param {Array} [stackA] Tracks traversed `value` objects.
-	 * @param {Array} [stackB] Tracks traversed `other` objects.
-	 * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-	 */
-	function baseIsEqual(value, other, customizer, isWhere, stackA, stackB) {
-	  // Exit early for identical values.
-	  if (value === other) {
-	    // Treat `+0` vs. `-0` as not equal.
-	    return value !== 0 || (1 / value == 1 / other);
-	  }
-	  var valType = typeof value,
-	      othType = typeof other;
-	
-	  // Exit early for unlike primitive values.
-	  if ((valType != 'function' && valType != 'object' && othType != 'function' && othType != 'object') ||
-	      value == null || other == null) {
-	    // Return `false` unless both values are `NaN`.
-	    return value !== value && other !== other;
-	  }
-	  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isWhere, stackA, stackB);
-	}
-	
-	module.exports = baseIsEqual;
-
-
-/***/ },
 /* 218 */
-/*!***********************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/isStrictComparable.js ***!
-  \***********************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isObject = __webpack_require__(/*! ../lang/isObject */ 59);
-	
-	/**
-	 * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` if suitable for strict
-	 *  equality comparisons, else `false`.
-	 */
-	function isStrictComparable(value) {
-	  return value === value && (value === 0 ? ((1 / value) > 0) : !isObject(value));
-	}
-	
-	module.exports = isStrictComparable;
-
-
-/***/ },
-/* 219 */
 /*!****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsMatch.js ***!
   \****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIsEqual = __webpack_require__(/*! ./baseIsEqual */ 217);
+	var baseIsEqual = __webpack_require__(/*! ./baseIsEqual */ 221);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -34108,14 +34249,38 @@
 
 
 /***/ },
+/* 219 */
+/*!***********************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/isStrictComparable.js ***!
+  \***********************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 60);
+	
+	/**
+	 * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` if suitable for strict
+	 *  equality comparisons, else `false`.
+	 */
+	function isStrictComparable(value) {
+	  return value === value && (value === 0 ? ((1 / value) > 0) : !isObject(value));
+	}
+	
+	module.exports = isStrictComparable;
+
+
+/***/ },
 /* 220 */
 /*!****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseSetData.js ***!
   \****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var identity = __webpack_require__(/*! ../utility/identity */ 187),
-	    metaMap = __webpack_require__(/*! ./metaMap */ 227);
+	var identity = __webpack_require__(/*! ../utility/identity */ 192),
+	    metaMap = __webpack_require__(/*! ./metaMap */ 228);
 	
 	/**
 	 * The base implementation of `setData` without support for hot loop detection.
@@ -34136,12 +34301,109 @@
 /***/ },
 /* 221 */
 /*!****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsEqual.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsEqualDeep = __webpack_require__(/*! ./baseIsEqualDeep */ 227);
+	
+	/**
+	 * The base implementation of `_.isEqual` without support for `this` binding
+	 * `customizer` functions.
+	 *
+	 * @private
+	 * @param {*} value The value to compare.
+	 * @param {*} other The other value to compare.
+	 * @param {Function} [customizer] The function to customize comparing values.
+	 * @param {boolean} [isWhere] Specify performing partial comparisons.
+	 * @param {Array} [stackA] Tracks traversed `value` objects.
+	 * @param {Array} [stackB] Tracks traversed `other` objects.
+	 * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+	 */
+	function baseIsEqual(value, other, customizer, isWhere, stackA, stackB) {
+	  // Exit early for identical values.
+	  if (value === other) {
+	    // Treat `+0` vs. `-0` as not equal.
+	    return value !== 0 || (1 / value == 1 / other);
+	  }
+	  var valType = typeof value,
+	      othType = typeof other;
+	
+	  // Exit early for unlike primitive values.
+	  if ((valType != 'function' && valType != 'object' && othType != 'function' && othType != 'object') ||
+	      value == null || other == null) {
+	    // Return `false` unless both values are `NaN`.
+	    return value !== value && other !== other;
+	  }
+	  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isWhere, stackA, stackB);
+	}
+	
+	module.exports = baseIsEqual;
+
+
+/***/ },
+/* 222 */
+/*!*****************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseToString.js ***!
+  \*****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Converts `value` to a string if it is not one. An empty string is returned
+	 * for `null` or `undefined` values.
+	 *
+	 * @private
+	 * @param {*} value The value to process.
+	 * @returns {string} Returns the string.
+	 */
+	function baseToString(value) {
+	  if (typeof value == 'string') {
+	    return value;
+	  }
+	  return value == null ? '' : (value + '');
+	}
+	
+	module.exports = baseToString;
+
+
+/***/ },
+/* 223 */
+/*!**************************************************************!*\
+  !*** ./~/fluxxor/~/lodash-node/modern/internal/cachePush.js ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ../lang/isObject */ 60);
+	
+	/**
+	 * Adds `value` to the cache.
+	 *
+	 * @private
+	 * @name push
+	 * @memberOf SetCache
+	 * @param {*} value The value to cache.
+	 */
+	function cachePush(value) {
+	  var data = this.data;
+	  if (typeof value == 'string' || isObject(value)) {
+	    data.set.add(value);
+	  } else {
+	    data.hash[value] = true;
+	  }
+	}
+	
+	module.exports = cachePush;
+
+
+/***/ },
+/* 224 */
+/*!****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/bufferClone.js ***!
   \****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var constant = __webpack_require__(/*! ../utility/constant */ 204),
-	    isNative = __webpack_require__(/*! ../lang/isNative */ 120);
+	/* WEBPACK VAR INJECTION */(function(global) {var constant = __webpack_require__(/*! ../utility/constant */ 200),
+	    isNative = __webpack_require__(/*! ../lang/isNative */ 130);
 	
 	/** Native method references. */
 	var ArrayBuffer = isNative(ArrayBuffer = global.ArrayBuffer) && ArrayBuffer,
@@ -34199,61 +34461,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 222 */
-/*!*****************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/baseToString.js ***!
-  \*****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Converts `value` to a string if it is not one. An empty string is returned
-	 * for `null` or `undefined` values.
-	 *
-	 * @private
-	 * @param {*} value The value to process.
-	 * @returns {string} Returns the string.
-	 */
-	function baseToString(value) {
-	  if (typeof value == 'string') {
-	    return value;
-	  }
-	  return value == null ? '' : (value + '');
-	}
-	
-	module.exports = baseToString;
-
-
-/***/ },
-/* 223 */
-/*!**************************************************************!*\
-  !*** ./~/fluxxor/~/lodash-node/modern/internal/cachePush.js ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var isObject = __webpack_require__(/*! ../lang/isObject */ 59);
-	
-	/**
-	 * Adds `value` to the cache.
-	 *
-	 * @private
-	 * @name push
-	 * @memberOf SetCache
-	 * @param {*} value The value to cache.
-	 */
-	function cachePush(value) {
-	  var data = this.data;
-	  if (typeof value == 'string' || isObject(value)) {
-	    data.set.add(value);
-	  } else {
-	    data.hash[value] = true;
-	  }
-	}
-	
-	module.exports = cachePush;
-
-
-/***/ },
-/* 224 */
+/* 225 */
 /*!**************************************************!*\
   !*** ./~/react/lib/getNodeForCharacterOffset.js ***!
   \**************************************************/
@@ -34335,7 +34543,7 @@
 
 
 /***/ },
-/* 225 */
+/* 226 */
 /*!*******************************!*\
   !*** ./~/react/lib/Danger.js ***!
   \*******************************/
@@ -34357,12 +34565,12 @@
 	
 	"use strict";
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
-	var createNodesFromMarkup = __webpack_require__(/*! ./createNodesFromMarkup */ 228);
-	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 117);
-	var getMarkupWrap = __webpack_require__(/*! ./getMarkupWrap */ 229);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var createNodesFromMarkup = __webpack_require__(/*! ./createNodesFromMarkup */ 229);
+	var emptyFunction = __webpack_require__(/*! ./emptyFunction */ 118);
+	var getMarkupWrap = __webpack_require__(/*! ./getMarkupWrap */ 230);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	var OPEN_TAG_NAME_EXP = /^(<[^ \/>]+)/;
 	var RESULT_INDEX_ATTR = 'data-danger-index';
@@ -34524,20 +34732,20 @@
 	
 	module.exports = Danger;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 226 */
+/* 227 */
 /*!********************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/baseIsEqualDeep.js ***!
   \********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var equalArrays = __webpack_require__(/*! ./equalArrays */ 230),
-	    equalByTag = __webpack_require__(/*! ./equalByTag */ 231),
-	    equalObjects = __webpack_require__(/*! ./equalObjects */ 232),
-	    isArray = __webpack_require__(/*! ../lang/isArray */ 125),
-	    isTypedArray = __webpack_require__(/*! ../lang/isTypedArray */ 233);
+	var equalArrays = __webpack_require__(/*! ./equalArrays */ 231),
+	    equalByTag = __webpack_require__(/*! ./equalByTag */ 232),
+	    equalObjects = __webpack_require__(/*! ./equalObjects */ 233),
+	    isArray = __webpack_require__(/*! ../lang/isArray */ 119),
+	    isTypedArray = __webpack_require__(/*! ../lang/isTypedArray */ 234);
 	
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -34637,13 +34845,13 @@
 
 
 /***/ },
-/* 227 */
+/* 228 */
 /*!************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/metaMap.js ***!
   \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ../lang/isNative */ 120);
+	/* WEBPACK VAR INJECTION */(function(global) {var isNative = __webpack_require__(/*! ../lang/isNative */ 130);
 	
 	/** Native method references. */
 	var WeakMap = isNative(WeakMap = global.WeakMap) && WeakMap;
@@ -34656,7 +34864,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 228 */
+/* 229 */
 /*!**********************************************!*\
   !*** ./~/react/lib/createNodesFromMarkup.js ***!
   \**********************************************/
@@ -34676,11 +34884,11 @@
 	
 	/*jslint evil: true, sub: true */
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
-	var createArrayFrom = __webpack_require__(/*! ./createArrayFrom */ 234);
-	var getMarkupWrap = __webpack_require__(/*! ./getMarkupWrap */ 229);
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var createArrayFrom = __webpack_require__(/*! ./createArrayFrom */ 235);
+	var getMarkupWrap = __webpack_require__(/*! ./getMarkupWrap */ 230);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Dummy container used to render all markup.
@@ -34749,10 +34957,10 @@
 	
 	module.exports = createNodesFromMarkup;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 229 */
+/* 230 */
 /*!**************************************!*\
   !*** ./~/react/lib/getMarkupWrap.js ***!
   \**************************************/
@@ -34769,9 +34977,9 @@
 	 * @providesModule getMarkupWrap
 	 */
 	
-	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 41);
+	var ExecutionEnvironment = __webpack_require__(/*! ./ExecutionEnvironment */ 42);
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Dummy container used to detect which wraps are necessary.
@@ -34872,10 +35080,10 @@
 	
 	module.exports = getMarkupWrap;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ },
-/* 230 */
+/* 231 */
 /*!****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/equalArrays.js ***!
   \****************************************************************/
@@ -34938,7 +35146,7 @@
 
 
 /***/ },
-/* 231 */
+/* 232 */
 /*!***************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/equalByTag.js ***!
   \***************************************************************/
@@ -34996,13 +35204,13 @@
 
 
 /***/ },
-/* 232 */
+/* 233 */
 /*!*****************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/internal/equalObjects.js ***!
   \*****************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var keys = __webpack_require__(/*! ../object/keys */ 48);
+	var keys = __webpack_require__(/*! ../object/keys */ 55);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -35077,14 +35285,14 @@
 
 
 /***/ },
-/* 233 */
+/* 234 */
 /*!*************************************************************!*\
   !*** ./~/fluxxor/~/lodash-node/modern/lang/isTypedArray.js ***!
   \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isLength = __webpack_require__(/*! ../internal/isLength */ 121),
-	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 133);
+	var isLength = __webpack_require__(/*! ../internal/isLength */ 126),
+	    isObjectLike = __webpack_require__(/*! ../internal/isObjectLike */ 140);
 	
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -35161,7 +35369,7 @@
 
 
 /***/ },
-/* 234 */
+/* 235 */
 /*!****************************************!*\
   !*** ./~/react/lib/createArrayFrom.js ***!
   \****************************************/
@@ -35179,7 +35387,7 @@
 	 * @typechecks
 	 */
 	
-	var toArray = __webpack_require__(/*! ./toArray */ 235);
+	var toArray = __webpack_require__(/*! ./toArray */ 236);
 	
 	/**
 	 * Perform a heuristic test to determine if an object is "array-like".
@@ -35254,7 +35462,7 @@
 
 
 /***/ },
-/* 235 */
+/* 236 */
 /*!********************************!*\
   !*** ./~/react/lib/toArray.js ***!
   \********************************/
@@ -35272,7 +35480,7 @@
 	 * @typechecks
 	 */
 	
-	var invariant = __webpack_require__(/*! ./invariant */ 65);
+	var invariant = __webpack_require__(/*! ./invariant */ 62);
 	
 	/**
 	 * Convert array-like objects to arrays.
@@ -35329,7 +35537,7 @@
 	
 	module.exports = toArray;
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 44)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 46)))
 
 /***/ }
 /******/ ])

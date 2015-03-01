@@ -472,13 +472,16 @@ var R_TabWindowList = React.createClass({
     var managedWindows = [];
     var unmanagedWindows = [];
 
-    var currentWindow = this.props.currentWindow;
+    // var currentWindow = this.props.currentWindow;
+    // TODO: put back currentWindow, but get that state via Flux
+    var currentWindow = null;
+
     var tabWindows = this.state.tabWindows;
     for (var i=0; i < tabWindows.length; i++) {
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
       if (tabWindow) {
-          var isCurrent = tabWindow.open && tabWindow.chromeWindow.id == currentWindow.id;
+          var isCurrent = tabWindow.open && currentWindow && tabWindow.chromeWindow.id == currentWindow.id;
           var isManaged = tabWindow.isManaged();
 
           var windowElem = <R_TabWindow tabWindow={tabWindow} key={id} />;
@@ -505,13 +508,10 @@ var R_TabWindowList = React.createClass({
   }
 }); 
 
-function renderReact(tabWindows,currentWindow) {
-  React.render(
-    <R_TabWindowList flux={bgw.tabMan.flux} currentWindow={currentWindow} />,
-    document.getElementById('windowList-region')
-  );
-}
-
+/*
+ * currently unused
+ * TODO: put sort by this back in R_TabWindowList
+ */
 function windowCmpFn( tabWindowA, tabWindowB ) {
   // open windows first:
   if ( tabWindowA.open != tabWindowB.open ) {
@@ -526,42 +526,27 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
 }
 
 function renderPopup() {
-  chrome.bookmarks.getTree( function ( tree ) {
-    console.log( "Bookmarks tree: ", tree );
-  });
-
-  function syncAndRender( windowList ) {
-    chrome.windows.getCurrent( null, function ( currentWindow ) {
-      console.log( "in windows.getCurrent:" );
-      console.log( "Chrome Windows: ", windowList );
-      logWrap( bgw.tabMan.syncWindowList )( windowList );
-      console.log("After syncWindowList");
-      var tabWindows = bgw.tabMan.winStore.getAll();
-      tabWindows.sort( windowCmpFn );
-      console.log( "tabWindows:", tabWindows );
-      if (tabWindows.length > 0) {
-        logWrap( renderReact )( tabWindows, currentWindow );
-      }
-
-    } );
-  }
-
-  // wrapper to log exceptions
-  function logWrap( f ) {
-    function wf() {
-      try {
-        var ret = f.apply( this, arguments );
-      } catch( e ) {
-        console.error( "logWrap: caught exception invoking function: " );
-        console.error( e.stack );
-        throw e;
-      }
-      return ret;
-    }
-    return wf;
-  }
-
-  chrome.windows.getAll( {populate: true}, logWrap( syncAndRender ) );
+  bgw.tabMan.flux.actions.syncWindowList();
+  window.onload = function() {
+    var elemId = document.getElementById('windowList-region');
+    var windowList = <R_TabWindowList flux={bgw.tabMan.flux} />;
+    // console.log("renderPopup: ", document, windowList, elemId, bgw.tabMan.flux );
+    React.render( windowList, elemId );
+  } 
 }
 
+// wrapper to log exceptions
+function logWrap( f ) {
+  function wf() {
+    try {
+      var ret = f.apply( this, arguments );
+    } catch( e ) {
+      console.error( "logWrap: caught exception invoking function: " );
+      console.error( e.stack );
+      throw e;
+    }
+    return ret;
+  }
+  return wf;
+}
 renderPopup();

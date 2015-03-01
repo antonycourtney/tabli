@@ -1,14 +1,16 @@
 /*
  * A Flux store for TabWindows
  */
- 'use strict';
- var Fluxxor = require('fluxxor');
- var constants = require('./constants.js');
+'use strict';
+var Fluxxor = require('fluxxor');
+var constants = require('./constants.js');
 
- var windowIdMap = {};
- var tabWindows = [];
+var TabWindow = require('./tabWindow.js');
 
- var bgw = chrome.extension.getBackgroundPage();
+var windowIdMap = {};
+var tabWindows = [];
+
+var bgw = chrome.extension.getBackgroundPage();
 
 /*
  * add a new Tab window to global maps:
@@ -169,6 +171,42 @@ function attachChromeWindow(tabWindow,chromeWindow) {
   windowIdMap[ chromeWindow.id ] = tabWindow;
 }
 
+/**
+ * synchronize windows from chrome.windows.getAll with internal map of
+ * managed and unmanaged tab windows
+ */
+function syncWindowList( chromeWindowList ) {
+  // To GC any closed windows:
+  for ( var i = 0; i < tabWindows.length; i++ ) {
+    var tabWindow = tabWindows[ i ];
+    if( tabWindow )
+      tabWindow.open = false;
+  }
+  for ( var i = 0; i < chromeWindowList.length; i++ ) {
+    var chromeWindow = chromeWindowList[ i ];
+    var tabWindow = windowIdMap[chromeWindow.id];
+    if( !tabWindow ) {
+      console.log( "syncWindowList: new window id: ", chromeWindow.id );
+      tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
+      addTabWindow(tabWindow);
+    } else {
+      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+      // Set chromeWindow to current snapshot of tab contents:
+      tabWindow.chromeWindow = chromeWindow;
+      tabWindow.open = true;
+    }
+  }
+  // GC any closed, unmanaged windows:
+  for ( var i = 0; i < tabWindows.length; i++ ) {
+    tabWindow = tabWindows[ i ];
+    if( tabWindow && !( tabWindow._managed ) && !( tabWindow.open ) ) {
+      console.log( "syncWindowList: detected closed window: ", tabWindow );
+      removeTabWindow(tabWindow);
+    }
+  }
+  console.log("syncWindowList: complete");
+}   
+
 var TabWindowStore = Fluxxor.createStore({
   initialize: function() {
     this.bindActions(
@@ -179,7 +217,8 @@ var TabWindowStore = Fluxxor.createStore({
       constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
       constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
       constants.ACTIVATE_TAB, this.onActivateTab,
-      constants.CLOSE_TAB, this.onCloseTab
+      constants.CLOSE_TAB, this.onCloseTab,
+      constants.SYNC_WINDOW_LIST, this.onSyncWindowList
       );
   },
 
@@ -234,6 +273,11 @@ var TabWindowStore = Fluxxor.createStore({
     activateTab(payload.tabWindow,payload.tab,payload.tabIndex,function() {
       self.emit("change");
     });
+  },
+
+  onSyncWindowList: function(payload) {
+    syncWindowList(payload.windowList);
+    this.emit("change");
   },
 
   getAll: function() {

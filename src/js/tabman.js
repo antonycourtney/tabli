@@ -75,44 +75,6 @@ function unmanageWindow( tabWindow ) {
   tabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
 }
 
-/**
- * synchronize windows from chrome.windows.getAll with internal map of
- * managed and unmanaged tab windows
- * returns:
- *   - array of all tab Windows
- */
-function syncWindowList( chromeWindowList ) {
-  var tabWindows = winStore.getAll();
-
-  // To GC any closed windows:
-  for ( var i = 0; i < tabWindows.length; i++ ) {
-    var tabWindow = tabWindows[ i ];
-    if( tabWindow )
-      tabWindow.open = false;
-  }
-  for ( var i = 0; i < chromeWindowList.length; i++ ) {
-    var chromeWindow = chromeWindowList[ i ];
-    var tabWindow = winStore.getTabWindowByChromeId(chromeWindow.id);
-    if( !tabWindow ) {
-      console.log( "syncWindowList: new window id: ", chromeWindow.id );
-      tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
-      flux.actions.addTabWindow( tabWindow );
-    } else {
-      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
-      // Set chromeWindow to current snapshot of tab contents:
-      tabWindow.chromeWindow = chromeWindow;
-      tabWindow.open = true;
-    }
-  }
-  // GC any closed, unmanaged windows:
-  for ( var i = 0; i < tabWindows.length; i++ ) {
-    tabWindow = tabWindows[ i ];
-    if( tabWindow && !( tabWindow._managed ) && !( tabWindow.open ) ) {
-      console.log( "syncWindowList: detected closed window: ", tabWindow );
-      flux.actions.removeTabWindow(tabWindow);
-    }
-  }
-}   
 
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows( tabManFolder ) {
@@ -120,7 +82,6 @@ function loadManagedWindows( tabManFolder ) {
     var folderWindow = TabWindow.makeFolderTabWindow( winFolder );
     flux.actions.addTabWindow( folderWindow );
   }
-
   for( var i = 0; i < tabManFolder.children.length; i++ ) {
     var windowFolder = tabManFolder.children[ i ];
     if( windowFolder.title[0] === "_" ) {
@@ -199,7 +160,10 @@ function initBookmarks() {
       ensureChildFolder( tabManFolder, archiveFolderTitle, function( archiveFolder ) {
         console.log( "archive folder acquired." );
         archiveFolderId = archiveFolder.id;
-        loadManagedWindows( tabManFolder );
+        chrome.bookmarks.getSubTree(tabManFolder.id,function (subTreeNodes) {
+          console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
+          loadManagedWindows(subTreeNodes[0]);
+        });
       })
     });
   });
@@ -229,19 +193,18 @@ function main() {
           console.log("[Dispatch]", type, payload);
       }
   });
+  window.tabMan.flux = flux;
+  window.tabMan.winStore = winStore; 
+
 
   initBookmarks();
 
-  window.tabMan.flux = flux;
-  window.tabMan.winStore = winStore; 
   console.log("tabman: main complete.");
 }
-
 
 // Function export, Chrome-extension style:
 window.tabMan = {
   parseURL: parseURL,
-  syncWindowList: syncWindowList,
   manageWindow: manageWindow,
   unmanageWindow: unmanageWindow
 };
