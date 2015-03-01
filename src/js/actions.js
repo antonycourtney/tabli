@@ -40,19 +40,97 @@ var actions = {
     this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
   },
 
-  openTabWindow: function(tabWindow) {
-    var payload = { tabWindow: tabWindow };
-    this.dispatch(constants.OPEN_TAB_WINDOW, payload);
+
+  restoreBookmarkWindow: function(tabWindow) {
+    var self = this;
+    function resyncCallback() {
+      self.flux.actions.syncWindowList();
+    }    
+    chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
+      var urls = [];
+      var tabs = tabWindow.getTabItems();
+      var urls = tabs.map( function (item) { return item.url; } );
+      function cf( chromeWindow ) {
+        console.log("restoreBookmarkWindow: cf");
+        self.flux.actions.attachChromeWindow(tabWindow,chromeWindow);
+      }
+      console.log( "current chrome window: ", currentChromeWindow );
+      if ((currentChromeWindow.tabs.length===1) &&
+          (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
+        console.log("found new window -- replacing contents");
+        var origTabId = currentChromeWindow.tabs[0].id;
+        // new window -- replace contents with urls:
+        for ( var i = 0; i < urls.length; i++ ) {
+          // First use our existing tab:
+          if (i==0) {
+            chrome.tabs.update( origTabId, { url: urls[i] } );
+          } else {
+            var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
+            chrome.tabs.create( tabInfo );
+          }
+        }
+      } else {
+        // normal case -- create a new window for these urls:
+        chrome.windows.create( { url: urls, focused: true, type: 'normal'}, cf );
+      }
+    });
   },
+
+  openTabWindow: function(tabWindow) {
+    var self = this;
+    function resyncCallback() {
+      self.flux.actions.syncWindowList();
+    }
+
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+    if (tabWindow.open) {
+      // existing window -- just transfer focus
+      chrome.windows.update( windowId, { focused: true }, resyncCallback );
+    } else {
+      // bookmarked window -- need to open it!
+      self.flux.actions.restoreBookmarkWindow(tabWindow);      
+    }    
+  },
+
   // associate a Chrome window with a given tabWindow:
   attachChromeWindow: function(tabWindow,chromeWindow) {
     var payload = { tabWindow: tabWindow, chromeWindow: chromeWindow };
     this.dispatch(constants.ATTACH_CHROME_WINDOW, payload);
   },
+
   // activate a specific tab:
   activateTab: function(tabWindow,tab,tabIndex) {
-    var payload = { tabWindow: tabWindow, tab: tab, tabIndex: tabIndex };
-    this.dispatch(constants.ACTIVATE_TAB, payload);
+    var self = this;
+    function resyncCallback() {
+      self.flux.actions.syncWindowList();
+    }
+
+    console.log("activateTab: ", tabWindow, tab );
+    if( tabWindow.open ) {
+      // OK, so we know this window is open.  What about the specific tab?
+      if (tab.open) { 
+        // Tab is already open, just make it active:
+        console.log("making tab active");
+        chrome.tabs.update( tab.id, { active: true }, function () {
+          console.log("making tab's window active");
+          chrome.windows.update( tabWindow.chromeWindow.id, { focused: true }, resyncCallback);
+        });
+      } else {
+        // restore this bookmarked tab:
+        var createOpts = {
+          windowId: tabWindow.chromeWindow.id, 
+          url: tab.url,
+          index: tabIndex,
+          active: true
+        };
+        console.log("restoring bookmarked tab")
+        chrome.tabs.create( createOpts, callback );
+      }
+    } else {
+      console.log("activateTab: opening non-open window");
+      self.flux.actions.openTabWindow(tabWindow);
+      // TODO: activate chosen tab after opening window!
+    }        
   },
 
   closeTab: function(tab) {
