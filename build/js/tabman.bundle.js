@@ -280,7 +280,6 @@
 	  OPEN_TAB_WINDOW: "OPEN_TAB_WINDOW",
 	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW",
 	  ACTIVATE_TAB: "ACTIVATE_TAB",
-	  CLOSE_TAB: "CLOSE_TAB",
 	  SYNC_WINDOW_LIST: "SYNC_WINDOW_LIST"
 	};
 	
@@ -307,8 +306,22 @@
 	  },
 	
 	  closeTabWindow: function(tabWindow) {
-	    var payload = { tabWindow: tabWindow };
-	    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+	    console.log("closeTabWindow: ", tabWindow);
+	    if (!tabWindow.open) {
+	      console.log("closeTabWindow: request to close non-open window, ignoring...");
+	      return;
+	    }
+	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	    if (!windowId) {
+	      console.log("closeTabWindow: no valid chrome window, ignoring....");
+	      return;
+	    }
+	    var self = this;
+	    chrome.windows.remove( windowId, function() {
+	      tabWindow.open = false;
+	      var payload = { tabWindow: tabWindow };
+	      self.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+	    });
 	  },
 	
 	  revertTabWindow: function(tabWindow) {
@@ -335,9 +348,16 @@
 	    var payload = { tabWindow: tabWindow, tab: tab, tabIndex: tabIndex };
 	    this.dispatch(constants.ACTIVATE_TAB, payload);
 	  },
+	
 	  closeTab: function(tab) {
-	    var payload = { tab: tab };
-	    this.dispatch(constants.CLOSE_TAB, payload);
+	    console.log("closeTab: closing ", tab, this);
+	    var self = this;
+	    chrome.tabs.remove( tab.id, function() {
+	      console.log("closeTab: closed.  syncing");
+	      // TODO: we could probably sync just the one window
+	      // Note:  Flux plays games with 'this', so we can't do this.syncWindowList()
+	      self.flux.actions.syncWindowList();
+	    });
 	  },
 	
 	  syncWindowList: function() {
@@ -383,7 +403,15 @@
 	  tabWindows.push( tabWindow );     
 	}
 	
+	function clearMapEntry(tabWindow) {
+	  console.log("clearMapEntry: ", tabWindow);
+	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+	  if ( windowId ) 
+	    delete windowIdMap[ windowId ];  
+	}
+	
 	function removeTabWindow(tabWindow) {
+	  console.log("removeTabWindow: ", tabWindow);
 	  // could keep an inverse map instead of doing a linear search...
 	  for (var i = 0; i < tabWindows.length; i++) {
 	    if (tabWindows[i]===tabWindow)
@@ -394,31 +422,18 @@
 	  } else {
 	    console.log("removeTabWindow: request to remove window not in collection", tabWindow);
 	  }
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  if ( windowId ) 
-	    delete windowIdMap[ windowId ];
+	  clearMapEntry(tabWindow);
 	}
 	
 	function closeTabWindow(tabWindow, cb) {
-	  console.log("closeTabWindow: ", tabWindow);
-	  if (!tabWindow.open) {
-	    console.log("closeTabWindow: request to close non-open window, ignoring...");
-	    return;
+	  console.log("store closeTabWindow: ", tabWindow);
+	  if (!tabWindow.isManaged()) {
+	    console.log("unmanaged window -- removing");
+	    removeTabWindow(tabWindow);
+	  } else {
+	    clearMapEntry(tabWindow);
 	  }
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  chrome.windows.remove( windowId, function() {
-	    tabWindow.open = false;
-	    delete windowIdMap[ windowId ];
-	    if (!tabWindow.isManaged()) {
-	      console.log("unmanaged window -- removing");
-	      removeTabWindow(tabWindow);
-	    }
-	    cb();    
-	  });
-	}
-	
-	function closeTab(tab,cb) {
-	  chrome.tabs.remove( tab.id, cb );
+	  cb();      
 	}
 	
 	function revertTabWindow( tabWindow, callback ) {
@@ -577,7 +592,6 @@
 	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
 	      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
 	      constants.ACTIVATE_TAB, this.onActivateTab,
-	      constants.CLOSE_TAB, this.onCloseTab,
 	      constants.SYNC_WINDOW_LIST, this.onSyncWindowList
 	      );
 	  },
@@ -687,7 +701,7 @@
 	 */
 	function getManagedOpenTabInfo(openTabs,bookmarks) {
 	  var urlMap = {};
-	  tabs = openTabs.map( function ( ot ) { 
+	  var tabs = openTabs.map( function ( ot ) { 
 	    var item = makeOpenTabItem( ot); 
 	    urlMap[ ot.url ] = item;
 	    return item;

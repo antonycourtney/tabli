@@ -23,7 +23,15 @@ function addTabWindow( tabWindow ) {
   tabWindows.push( tabWindow );     
 }
 
+function clearMapEntry(tabWindow) {
+  console.log("clearMapEntry: ", tabWindow);
+  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+  if ( windowId ) 
+    delete windowIdMap[ windowId ];  
+}
+
 function removeTabWindow(tabWindow) {
+  console.log("removeTabWindow: ", tabWindow);
   // could keep an inverse map instead of doing a linear search...
   for (var i = 0; i < tabWindows.length; i++) {
     if (tabWindows[i]===tabWindow)
@@ -34,31 +42,18 @@ function removeTabWindow(tabWindow) {
   } else {
     console.log("removeTabWindow: request to remove window not in collection", tabWindow);
   }
-  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-  if ( windowId ) 
-    delete windowIdMap[ windowId ];
+  clearMapEntry(tabWindow);
 }
 
 function closeTabWindow(tabWindow, cb) {
-  console.log("closeTabWindow: ", tabWindow);
-  if (!tabWindow.open) {
-    console.log("closeTabWindow: request to close non-open window, ignoring...");
-    return;
+  console.log("store closeTabWindow: ", tabWindow);
+  if (!tabWindow.isManaged()) {
+    console.log("unmanaged window -- removing");
+    removeTabWindow(tabWindow);
+  } else {
+    clearMapEntry(tabWindow);
   }
-  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-  chrome.windows.remove( windowId, function() {
-    tabWindow.open = false;
-    delete windowIdMap[ windowId ];
-    if (!tabWindow.isManaged()) {
-      console.log("unmanaged window -- removing");
-      removeTabWindow(tabWindow);
-    }
-    cb();    
-  });
-}
-
-function closeTab(tab,cb) {
-  chrome.tabs.remove( tab.id, cb );
+  cb();      
 }
 
 function revertTabWindow( tabWindow, callback ) {
@@ -217,7 +212,6 @@ var TabWindowStore = Fluxxor.createStore({
       constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
       constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
       constants.ACTIVATE_TAB, this.onActivateTab,
-      constants.CLOSE_TAB, this.onCloseTab,
       constants.SYNC_WINDOW_LIST, this.onSyncWindowList
       );
   },

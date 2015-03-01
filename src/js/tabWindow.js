@@ -26,7 +26,7 @@ function makeOpenTabItem(ot) {
  */
 function getManagedOpenTabInfo(openTabs,bookmarks) {
   var urlMap = {};
-  tabs = openTabs.map( function ( ot ) { 
+  var tabs = openTabs.map( function ( ot ) { 
     var item = makeOpenTabItem( ot); 
     urlMap[ ot.url ] = item;
     return item;

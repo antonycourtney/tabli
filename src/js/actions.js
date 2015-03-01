@@ -12,8 +12,22 @@ var actions = {
   },
 
   closeTabWindow: function(tabWindow) {
-    var payload = { tabWindow: tabWindow };
-    this.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+    console.log("closeTabWindow: ", tabWindow);
+    if (!tabWindow.open) {
+      console.log("closeTabWindow: request to close non-open window, ignoring...");
+      return;
+    }
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+    if (!windowId) {
+      console.log("closeTabWindow: no valid chrome window, ignoring....");
+      return;
+    }
+    var self = this;
+    chrome.windows.remove( windowId, function() {
+      tabWindow.open = false;
+      var payload = { tabWindow: tabWindow };
+      self.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+    });
   },
 
   revertTabWindow: function(tabWindow) {
@@ -40,9 +54,16 @@ var actions = {
     var payload = { tabWindow: tabWindow, tab: tab, tabIndex: tabIndex };
     this.dispatch(constants.ACTIVATE_TAB, payload);
   },
+
   closeTab: function(tab) {
-    var payload = { tab: tab };
-    this.dispatch(constants.CLOSE_TAB, payload);
+    console.log("closeTab: closing ", tab, this);
+    var self = this;
+    chrome.tabs.remove( tab.id, function() {
+      console.log("closeTab: closed.  syncing");
+      // TODO: we could probably sync just the one window
+      // Note:  Flux plays games with 'this', so we can't do this.syncWindowList()
+      self.flux.actions.syncWindowList();
+    });
   },
 
   syncWindowList: function() {
