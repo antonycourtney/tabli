@@ -495,16 +495,12 @@ var R_TabWindowList = React.createClass({
     var managedWindows = [];
     var unmanagedWindows = [];
 
-    // var currentWindow = this.props.currentWindow;
-    // TODO: put back currentWindow, but get that state via Flux
-    var currentWindow = null;
-
     var tabWindows = this.state.tabWindows;
     for (var i=0; i < tabWindows.length; i++) {
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
       if (tabWindow) {
-          var isCurrent = tabWindow.open && currentWindow && tabWindow.chromeWindow.id == currentWindow.id;
+          var isCurrent = tabWindow.isCurrent();
           var isManaged = tabWindow.isManaged();
 
           var windowElem = <R_TabWindow tabWindow={tabWindow} key={id} />;

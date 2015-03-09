@@ -147,9 +147,11 @@ var actions = {
   syncWindowList: function() {
     var self = this;
     chrome.windows.getAll( {populate: true}, function (windowList) {
-      var payload = { windowList: windowList };
-      self.dispatch(constants.SYNC_WINDOW_LIST, payload);
-    });
+        chrome.windows.getCurrent(null, function (currentWindow) { 
+          var payload = { windowList: windowList, currentWindow: currentWindow };
+          self.dispatch(constants.SYNC_WINDOW_LIST, payload);
+        });
+     });
   }
 };
 

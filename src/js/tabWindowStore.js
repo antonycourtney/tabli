@@ -90,12 +90,15 @@ function attachChromeWindow(tabWindow,chromeWindow) {
  * synchronize windows from chrome.windows.getAll with internal map of
  * managed and unmanaged tab windows
  */
-function syncWindowList( chromeWindowList ) {
+function syncWindowList( chromeWindowList, currentWindow ) {
+  console.log("syncWindowList: windows: ", chromeWindowList);
   // To GC any closed windows:
   for ( var i = 0; i < tabWindows.length; i++ ) {
     var tabWindow = tabWindows[ i ];
-    if( tabWindow )
+    if( tabWindow ) {
       tabWindow.open = false;
+      tabWindow._current = false;
+    }
   }
   for ( var i = 0; i < chromeWindowList.length; i++ ) {
     var chromeWindow = chromeWindowList[ i ];
@@ -119,6 +122,10 @@ function syncWindowList( chromeWindowList ) {
       removeTabWindow(tabWindow);
     }
   }
+  // mark current window:
+  var currentTabWindow = windowIdMap[currentWindow.id];
+  currentTabWindow._current = true;
+
   console.log("syncWindowList: complete");
 }   
 
@@ -173,7 +180,8 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   onSyncWindowList: function(payload) {
-    syncWindowList(payload.windowList);
+    console.log("onSyncWindowList: ", payload);
+    syncWindowList(payload.windowList,payload.currentWindow);
     this.emit("change");
   },
 
