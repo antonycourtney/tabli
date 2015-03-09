@@ -449,6 +449,23 @@ var R_TabWindow = React.createClass({
 });
 
 /*
+ * sort criteria for window list:
+ *   open windows first, then alpha by title
+ */
+function windowCmpFn( tabWindowA, tabWindowB ) {
+  // open windows first:
+  if ( tabWindowA.open != tabWindowB.open ) {
+    if ( tabWindowA.open )
+      return -1;
+    else
+      return 1;
+  }
+  var tA = tabWindowA.getTitle();
+  var tB = tabWindowB.getTitle();
+  return tA.localeCompare( tB );
+}
+
+/*
  * top-level element for all tab windows
  */
 var R_TabWindowList = React.createClass({
@@ -461,13 +478,19 @@ var R_TabWindowList = React.createClass({
   getStateFromFlux: function() {
     var store = bgw.tabMan.winStore;
 
+    var tabWindows = store.getAll();
+
+    var sortedWindows = tabWindows.sort(windowCmpFn);
+
+    console.log("R_TabWindowList: ", tabWindows, sortedWindows);
+
     return {
-      tabWindows: store.getAll()
+      tabWindows: sortedWindows
     };
   },
 
   render: function() {
-    console.log("TabWindowList: render");
+    console.log("TabWindowList: render test");
     var currentWindowElem = [];
     var managedWindows = [];
     var unmanagedWindows = [];
@@ -508,24 +531,9 @@ var R_TabWindowList = React.createClass({
   }
 }); 
 
-/*
- * currently unused
- * TODO: put sort by this back in R_TabWindowList
- */
-function windowCmpFn( tabWindowA, tabWindowB ) {
-  // open windows first:
-  if ( tabWindowA.open != tabWindowB.open ) {
-    if ( tabWindowA.open )
-      return -1;
-    else
-      return 1;
-  }
-  var tA = tabWindowA.getTitle();
-  var tB = tabWindowB.getTitle();
-  return tA.localeCompare( tB );
-}
 
 function renderPopup() {
+  console.log("renderPopup");
   bgw.tabMan.flux.actions.syncWindowList();
   window.onload = function() {
     var elemId = document.getElementById('windowList-region');

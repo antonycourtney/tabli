@@ -178,7 +178,7 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   getAll: function() {
-    return tabWindows;
+    return tabWindows.slice();
   },
 
   // returns a tabWindow or undefined

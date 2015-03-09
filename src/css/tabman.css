@@ -4,18 +4,18 @@
 body {  background: white;
       font-family: sans-serif;
       width: 350px;
-      // max-width: 400px;
-      // overflow-x: hidden;
+      /* max-width: 400px; */
+      /* overflow-x: hidden; */
       font-size:12px;
       cursor: default;
-      overflow: hidden;      
+      overflow: auto;
    }
 h1, h2, h3 {font-family: sans-serif;}
 h1 { font-size: 16px; }
 h2 {   font-size: 16px; 
       margin-top: 12px;
       margin-bottom: 2px;
-      // text-decoration: underline;
+      /* text-decoration: underline; */
   }
 h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px } 
 hr {margin-top: 0in; padding: 0px}
