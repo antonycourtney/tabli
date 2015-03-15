@@ -146,8 +146,11 @@ var actions = {
 
   syncWindowList: function() {
     var self = this;
+    var t_start = performance.now();
     chrome.windows.getAll( {populate: true}, function (windowList) {
         chrome.windows.getCurrent(null, function (currentWindow) { 
+          var t_finish = performance.now();
+          console.log("syncWindowList: gathering window state took ", t_finish - t_start, " ms");
           var payload = { windowList: windowList, currentWindow: currentWindow };
           self.dispatch(constants.SYNC_WINDOW_LIST, payload);
         });

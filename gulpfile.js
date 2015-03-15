@@ -56,6 +56,13 @@ gulp.task('build_css', function() {
         .pipe(gulp.dest('build/css'));
 });
 
+gulp.task('build_popup_wrap', function() {
+    gutil.log("copy css to build");
+
+    return gulp.src('src/js/popupWrap.js')
+        .pipe(gulp.dest('build/js'));
+});
+
 gulp.task('build_html', ['build_css'], function() {
     gutil.log("copy html and css to build");
 
@@ -78,7 +85,7 @@ gulp.task('build_bootstrap', function() {
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('build_assets',['build_bootstrap','build_html','build_images']);
+gulp.task('build_assets',['build_bootstrap','build_html','build_images','build_popup_wrap']);
 
 // Build and watch cycle (another option for development)
 // Advantage: No server required, can run app from filesystem

@@ -298,7 +298,7 @@ var R_TabItem = React.createClass({
     var tab = this.props.tab;
     var tabIndex = this.props.tabIndex;
 
-    console.log("R_TabItem: handleClick: tab: ", tab);
+    // console.log("R_TabItem: handleClick: tab: ", tab);
 
     bgw.tabMan.flux.actions.activateTab(tabWindow,tab,tabIndex);
   },
@@ -375,17 +375,17 @@ var R_TabWindow = React.createClass({
   },
 
   handleOpen: function() {
-    console.log("handleOpen");
+    // console.log("handleOpen");
     bgw.tabMan.flux.actions.openTabWindow(this.props.tabWindow);
   },
 
   handleClose: function(event) {
-    console.log("handleClose");
+    // console.log("handleClose");
     bgw.tabMan.flux.actions.closeTabWindow(this.props.tabWindow);
   },
 
   handleRevert: function(event) {
-    console.log("handleRevert");
+    // console.log("handleRevert");
     bgw.tabMan.flux.actions.revertTabWindow(this.props.tabWindow);
   },
 
@@ -425,8 +425,17 @@ var R_TabWindow = React.createClass({
   render: function () {
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.getTabItems();
-    var tabItems = this.renderTabItems(tabWindow,tabs);
+    /*
+     * optimization:  Let's only render tabItems if expanded
+     */
     var expanded = this.getExpandedState();
+    var tabItems = null;
+    if (expanded) {
+      tabItems = this.renderTabItems(tabWindow,tabs);
+    } else {
+      // render empty list of tab items to get -ve margin rollup layout right...
+      tabItems = this.renderTabItems(tabWindow,[]);
+    }
     var windowHeader = 
       <R_WindowHeader tabWindow={tabWindow} 
           expanded={expanded} 
@@ -482,7 +491,7 @@ var R_TabWindowList = React.createClass({
 
     var sortedWindows = tabWindows.sort(windowCmpFn);
 
-    console.log("R_TabWindowList: ", tabWindows, sortedWindows);
+    // console.log("R_TabWindowList: ", tabWindows, sortedWindows);
 
     return {
       tabWindows: sortedWindows
@@ -527,18 +536,6 @@ var R_TabWindowList = React.createClass({
   }
 }); 
 
-
-function renderPopup() {
-  console.log("renderPopup");
-  bgw.tabMan.flux.actions.syncWindowList();
-  window.onload = function() {
-    var elemId = document.getElementById('windowList-region');
-    var windowList = <R_TabWindowList flux={bgw.tabMan.flux} />;
-    // console.log("renderPopup: ", document, windowList, elemId, bgw.tabMan.flux );
-    React.render( windowList, elemId );
-  } 
-}
-
 // wrapper to log exceptions
 function logWrap( f ) {
   function wf() {
@@ -553,4 +550,26 @@ function logWrap( f ) {
   }
   return wf;
 }
-renderPopup();
+
+function renderPopup() {
+  var t_start = performance.now();
+  console.log("renderPopup");
+  var windows = chrome.extension.getViews({type : "popup"});
+  if (windows) { // If popup is actually open
+    var popup = windows[0]; // This is the window object for the popup page
+    var elemId = popup.document.getElementById('windowList-region');
+    console.log("renderPopup: elemId: ", elemId);
+    var windowList = <R_TabWindowList flux={bgw.tabMan.flux} />;
+    console.log("renderPopup: ", document, windowList, elemId, bgw.tabMan.flux );
+    React.render( windowList, elemId ); 
+  }
+  var t_render = performance.now();
+  console.log("initial render complete (", t_render - t_start, " ms) calling syncWindowList");
+  bgw.tabMan.flux.actions.syncWindowList();
+  var t_finish = performance.now();
+  console.log("renderPopup took ", t_finish - t_start, " ms");
+}
+
+module.exports = {
+  renderPopup: renderPopup
+};
