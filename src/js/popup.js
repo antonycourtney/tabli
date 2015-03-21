@@ -239,6 +239,17 @@ var R_HeaderButton = React.createClass({
 
 var R_WindowHeader = React.createClass({
   mixins:[Hoverable],
+
+  handleUnmanageClick: function(event) {
+    console.log("unamange: ", this.props.tabWindow);
+    event.stopPropagation();
+  },
+
+  handleManageClick: function(event) {
+    console.log("manage: ", this.props.tabWindow);
+      event.stopPropagation();
+  },
+
   render: function() {
     var tabWindow = this.props.tabWindow;
     var managed = tabWindow.isManaged();
@@ -250,11 +261,15 @@ var R_WindowHeader = React.createClass({
     var windowCheckItem;
 
     if( managed ) {
-      windowCheckItem =  <button style={m(styles.headerButton,styles.windowManagedButton)} title="Stop managing this window" />;
+      windowCheckItem =  <button style={m(styles.headerButton,styles.windowManagedButton)} 
+                            title="Stop managing this window" onClick={this.handleUnmanageClick} />;
       // TODO: callbacks!
     } else {
       var checkStyle = m(styles.headerButton,hoverStyle,styles.headerCheckBox);
-      windowCheckItem = <input style={checkStyle} type="checkbox" title="Bookmark this window (and all its tabs)" />;
+      windowCheckItem = <input style={checkStyle} type="checkbox" 
+                          title="Bookmark this window (and all its tabs)" 
+                          onClick={this.handleManageClick}
+                          />;
     }
 
     var windowTitle = tabWindow.getTitle();   
