@@ -1,7 +1,8 @@
 // webpack.config.js
 module.exports = {
     entry: {
-        tabman: "./src/js/tabman.js"
+        tabman: "./src/js/tabman.js",
+        popup: "./src/js/popup.js"
     },
     output: {
         path: "./build/js",

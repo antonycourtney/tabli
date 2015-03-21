@@ -8,8 +8,6 @@ var TabWindowStore = require('./tabWindowStore.js');
 
 var TabWindow = require('./tabWindow.js');
 
-var popup = require('./popup.js');
-
 'use strict';
 var CONTEXT_MENU_ID = 99;
 
@@ -208,8 +206,7 @@ function main() {
 window.tabMan = {
   parseURL: parseURL,
   manageWindow: manageWindow,
-  unmanageWindow: unmanageWindow,
-  renderPopup: popup.renderPopup
+  unmanageWindow: unmanageWindow
 };
 
 main();

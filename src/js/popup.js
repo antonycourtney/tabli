@@ -585,6 +585,4 @@ function renderPopup() {
   console.log("renderPopup took ", t_finish - t_start, " ms");
 }
 
-module.exports = {
-  renderPopup: renderPopup
-};
+renderPopup();
