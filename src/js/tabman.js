@@ -1,14 +1,22 @@
+/**
+ * 
+ * High level routines for initialization and synchronization of window and tab state before
+ * rendering.
+ * Used to run as a background page, but there seems to be a critical performance issue when
+ * a popup talks to a bg page that makes popup rendering extremely slow.
+ */
 
-$ = require('jquery');
+'use strict';
 
+var $ = require('jquery');
+
+var _ = require('underscore');
 var Fluxxor = require('fluxxor');
 var constants = require('./constants.js');
 var actions = require('./actions.js');
 var TabWindowStore = require('./tabWindowStore.js');
 
 var TabWindow = require('./tabWindow.js');
-
-'use strict';
 var CONTEXT_MENU_ID = 99;
 
 var contextMenuCreated = false;
@@ -23,9 +31,8 @@ var archiveFolderId = null;
 var archiveFolderTitle = "_Archive";
 
 /*
-* begin managing the specified tab window
-*
-*/
+ * begin managing the specified tab window
+ */
 function manageWindow( tabWindow, opts ) {
   // and write out a Bookmarks folder for this newly managed window:
   if( !tabmanFolderId ) {
@@ -150,7 +157,7 @@ function ensureChildFolder( parentNode, childFolderName, callback ) {
   chrome.bookmarks.create( folderObj, callback );
 }
 
-function initBookmarks() {
+function initBookmarks(cb) {
   chrome.bookmarks.getTree(function(tree){
     var otherBookmarksNode = tree[0].children[1]; 
     console.log( "otherBookmarksNode: ", otherBookmarksNode );
@@ -163,6 +170,7 @@ function initBookmarks() {
         chrome.bookmarks.getSubTree(tabManFolder.id,function (subTreeNodes) {
           console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
           loadManagedWindows(subTreeNodes[0]);
+          cb();
         });
       })
     });
@@ -180,8 +188,8 @@ function initContextMenu() {
   });
 }
 
-function main() {
-  console.log("tabman: main");
+function init(cb) {
+  console.log("tabman: init");
   var stores = {
     TabWindowStore: new TabWindowStore()
   };
@@ -193,20 +201,17 @@ function main() {
           console.log("[Dispatch]", type, payload);
       }
   });
-  window.tabMan.flux = flux;
-  window.tabMan.winStore = winStore; 
-
-
-  initBookmarks();
-
-  console.log("tabman: main complete.");
+  module.exports.flux = flux;
+  module.exports.winStore = winStore;
+  initBookmarks(function () {
+    console.log("tabman: init complete.");
+    cb();   // TODO: could pass winStore...
+  });
 }
 
-// Function export, Chrome-extension style:
-window.tabMan = {
+module.exports = {
   parseURL: parseURL,
   manageWindow: manageWindow,
-  unmanageWindow: unmanageWindow
+  unmanageWindow: unmanageWindow,
+  init: init,    
 };
-
-main();

@@ -3,8 +3,6 @@
  */
 'use strict';
 
-
-
 function makeBookmarkedTabItem( bm ) {
   var ret = Object.create( bm );
   ret.bookmarked = true;

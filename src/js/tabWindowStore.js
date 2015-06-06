@@ -10,8 +10,6 @@ var TabWindow = require('./tabWindow.js');
 var windowIdMap = {};
 var tabWindows = [];
 
-var bgw = chrome.extension.getBackgroundPage();
-
 /*
  * add a new Tab window to global maps:
  */
@@ -186,6 +184,7 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   getAll: function() {
+    console.log("Flux store - tabWindows.getAll: ", tabWindows);
     return tabWindows.slice();
   },
 

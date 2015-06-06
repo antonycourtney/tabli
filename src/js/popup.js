@@ -15,6 +15,9 @@ var Fluxxor = require('fluxxor');
 var constants = require('./constants.js');
 var actions = require('./actions.js');
 var TabWindowStore = require('./tabWindowStore.js');
+var TabWindow = require('./tabWindow.js');
+
+var TabMan = require('./tabman.js');
 
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
@@ -177,8 +180,6 @@ function m() {
   return res;
 }
 
-var bgw = chrome.extension.getBackgroundPage();
-
 // expand / contract button for a window
 var R_ExpanderButton = React.createClass({
   handleClicked: function(event) {
@@ -252,8 +253,10 @@ var R_WindowHeader = React.createClass({
 
   render: function() {
     var tabWindow = this.props.tabWindow;
+
     var managed = tabWindow.isManaged();
     var windowTitle = tabWindow.getTitle();
+
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 
     var hoverStyle = this.state.hovering ? styles.visible : styles.hidden;
@@ -315,11 +318,11 @@ var R_TabItem = React.createClass({
 
     // console.log("R_TabItem: handleClick: tab: ", tab);
 
-    bgw.tabMan.flux.actions.activateTab(tabWindow,tab,tabIndex);
+    TabMan.flux.actions.activateTab(tabWindow,tab,tabIndex);
   },
 
   handleClose: function() {
-    bgw.tabMan.flux.actions.closeTab(this.props.tab);
+    TabMan.flux.actions.closeTab(this.props.tab);
   }, 
 
   render: function() {
@@ -391,17 +394,17 @@ var R_TabWindow = React.createClass({
 
   handleOpen: function() {
     // console.log("handleOpen");
-    bgw.tabMan.flux.actions.openTabWindow(this.props.tabWindow);
+    TabMan.flux.actions.openTabWindow(this.props.tabWindow);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    bgw.tabMan.flux.actions.closeTabWindow(this.props.tabWindow);
+    TabMan.flux.actions.closeTabWindow(this.props.tabWindow);
   },
 
   handleRevert: function(event) {
     // console.log("handleRevert");
-    bgw.tabMan.flux.actions.revertTabWindow(this.props.tabWindow);
+    TabMan.flux.actions.revertTabWindow(this.props.tabWindow);
   },
 
 
@@ -440,6 +443,7 @@ var R_TabWindow = React.createClass({
   render: function () {
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.getTabItems();
+
     /*
      * optimization:  Let's only render tabItems if expanded
      */
@@ -490,36 +494,16 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
 }
 
 /*
- * top-level element for all tab windows
+ * top-level element for all tab windows; pure renderer
  */
 var R_TabWindowList = React.createClass({
-  mixins: [FluxMixin, StoreWatchMixin("TabWindowStore")],
-
-  getInitialState: function() {
-    return {};
-  },
-
-  getStateFromFlux: function() {
-    var store = bgw.tabMan.winStore;
-
-    var tabWindows = store.getAll();
-
-    var sortedWindows = tabWindows.sort(windowCmpFn);
-
-    // console.log("R_TabWindowList: ", tabWindows, sortedWindows);
-
-    return {
-      tabWindows: sortedWindows
-    };
-  },
-
   render: function() {
-    console.log("TabWindowList: render test");
+    console.log("TabWindowList: render");
     var currentWindowElem = [];
     var managedWindows = [];
     var unmanagedWindows = [];
 
-    var tabWindows = this.state.tabWindows;
+    var tabWindows = this.props.tabWindows;
     for (var i=0; i < tabWindows.length; i++) {
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
@@ -551,6 +535,49 @@ var R_TabWindowList = React.createClass({
   }
 }); 
 
+/*
+ * TabWindowListElement that pulls from Flux store:
+ */
+/*
+ * top-level element for all tab windows
+ */
+var R_FluxTabWindowList = React.createClass({
+  mixins: [FluxMixin, StoreWatchMixin("TabWindowStore")],
+
+/*
+  getInitialState: function() {
+    return this.getStateFromFlux();
+  },
+*/
+
+  getStateFromFlux: function() {
+    var t_start = performance.now();
+    var store = TabMan.winStore;
+
+    var tabWindows = store.getAll();
+
+    var sortedWindows = tabWindows.sort(windowCmpFn);
+
+    // console.log("R_TabWindowList: ", tabWindows, sortedWindows);
+
+    var fluxState = {
+      tabWindows: sortedWindows
+    };
+
+    // console.log("getStateFromFlux:");
+    // console.log(JSON.stringify(fluxState,null,2));
+
+    var t_finish = performance.now();
+    console.log("FluxTabWindowList.getStateFromFlux: ", t_finish - t_start, " ms");
+    return fluxState;
+  },
+
+  render: function() {
+    console.log("R_FluxTabWindowList: render");
+    return <R_TabWindowList tabWindows={this.state.tabWindows} />;
+  }
+});
+
 // wrapper to log exceptions
 function logWrap( f ) {
   function wf() {
@@ -566,23 +593,27 @@ function logWrap( f ) {
   return wf;
 }
 
+/**
+ * Initialize tab manager and flux store, and then render popup from Flux store.
+ */
 function renderPopup() {
   var t_start = performance.now();
   console.log("renderPopup");
-  var windows = chrome.extension.getViews({type : "popup"});
-  if (windows) { // If popup is actually open
-    var popup = windows[0]; // This is the window object for the popup page
-    var elemId = popup.document.getElementById('windowList-region');
+
+  TabMan.init(function () {
+    console.log("renderPopup: done with TabMan.init, rendering...:");
+    var elemId = document.getElementById('windowList-region');
     console.log("renderPopup: elemId: ", elemId);
-    var windowList = <R_TabWindowList flux={bgw.tabMan.flux} />;
-    console.log("renderPopup: ", document, windowList, elemId, bgw.tabMan.flux );
+    var windowList = <R_FluxTabWindowList flux={TabMan.flux} />;
+    console.log("renderPopup: ", document, windowList, elemId, TabMan.flux );
     React.render( windowList, elemId ); 
-  }
-  var t_render = performance.now();
-  console.log("initial render complete (", t_render - t_start, " ms) calling syncWindowList");
-  bgw.tabMan.flux.actions.syncWindowList();
-  var t_finish = performance.now();
-  console.log("renderPopup took ", t_finish - t_start, " ms");
+
+    var t_render = performance.now();
+    console.log("initial render complete (", t_render - t_start, " ms) calling syncWindowList");
+    TabMan.flux.actions.syncWindowList();
+    var t_finish = performance.now();
+    console.log("renderPopup took ", t_finish - t_start, " ms");    
+  });
 }
 
 renderPopup();
