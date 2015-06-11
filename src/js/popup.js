@@ -601,24 +601,15 @@ function renderPopup() {
      * register a one-time onChange event handler to be invoked after syncWindowList action
      * completes
      */
-    winStore.once('change', function() {
-      var t_postSync = performance.now();
-      console.log("sync time: ", t_postSync - t_init, " ms");
-      console.log("**** renderPopup - got one-off change event on winStore");
-      var elemId = document.getElementById('windowList-region');
-      console.log("renderPopup: elemId: ", elemId);
-      var windowList = <R_FluxTabWindowList flux={TabMan.flux} />;
-      console.log("renderPopup: ", document, windowList, elemId, TabMan.flux );
-      React.render( windowList, elemId ); 
+    var elemId = document.getElementById('windowList-region');
+    console.log("renderPopup: elemId: ", elemId);
+    var windowList = <R_FluxTabWindowList flux={TabMan.flux} />;
+    console.log("renderPopup: ", document, windowList, elemId, TabMan.flux );
+    React.render( windowList, elemId ); 
 
-      var t_render = performance.now();
-      console.log("initial render complete. render time: (", t_render - t_postSync, " ms)");
-      console.log("renderPopup took ", t_render - t_start, " ms");
-
-      var tabWindows = winStore.getAll();
-      console.log("All tab windows: ", tabWindows);    
-    });
-    TabMan.flux.actions.syncWindowList();
+    var t_render = performance.now();
+    console.log("initial render complete. render time: (", t_render - t_init, " ms)");
+    console.log("renderPopup took ", t_render - t_start, " ms");
   });
 }
 
