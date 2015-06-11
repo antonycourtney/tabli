@@ -163,7 +163,20 @@ function makeFolderTabWindow( bookmarkFolder ) {
   return ret;
 }
 
+/*
+ * deserialize a TabWindow from its payload:
+ */
+function deserialize(payload) {
+  // assume _managed for now:
+  if (payload._managed) {
+    return makeFolderTabWindow(payload.bookmarkFolder);
+  } else {
+    throw new Error("Attempt to de-serialize non-managed window: " + payload.toString() );
+  }
+} 
+
 module.exports = {
   makeChromeTabWindow: makeChromeTabWindow,
-  makeFolderTabWindow: makeFolderTabWindow
+  makeFolderTabWindow: makeFolderTabWindow,
+  deserialize: deserialize
 };

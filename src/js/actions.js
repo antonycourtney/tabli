@@ -6,9 +6,9 @@
 var constants = require('./constants.js');
 
 var actions = {
-  addTabWindow: function(tabWindow) {
-    var payload = { tabWindow: tabWindow };
-    this.dispatch(constants.ADD_TAB_WINDOW, payload);
+  addTabWindows: function(tabWindows) {
+    var payload = { tabWindows: tabWindows };
+    this.dispatch(constants.ADD_TAB_WINDOWS, payload);
   },
 
   closeTabWindow: function(tabWindow) {

@@ -83,12 +83,10 @@ function unmanageWindow( tabWindow ) {
 }
 
 
+
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows( tabManFolder ) {
-  function loadWindow( winFolder ) {
-    var folderWindow = TabWindow.makeFolderTabWindow( winFolder );
-    flux.actions.addTabWindow( folderWindow );
-  }
+  var folderTabWindows = [];
   for( var i = 0; i < tabManFolder.children.length; i++ ) {
     var windowFolder = tabManFolder.children[ i ];
     if( windowFolder.title[0] === "_" ) {
@@ -99,8 +97,9 @@ function loadManagedWindows( tabManFolder ) {
       console.log( "Found bookmarks folder with no children, skipping: ", fc );
       continue;
     }
-    loadWindow( windowFolder );
+    folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder));
   }
+  flux.actions.addTabWindows(folderTabWindows);
 }
 
 
@@ -177,6 +176,12 @@ function initBookmarks(cb) {
   });
 }
 
+function initStored(winStore,payloads,cb) {
+  var tabWindows = payloads.map(TabWindow.deserialize);
+  flux.actions.addTabWindows(tabWindows);    
+  cb(winStore);
+}
+
 function initContextMenu() {
   var sendToMenuItem = { type: "normal",
                      id: CONTEXT_MENU_ID,
@@ -188,8 +193,7 @@ function initContextMenu() {
   });
 }
 
-function init(cb) {
-  console.log("tabman: init");
+function initFluxStore() {
   var stores = {
     TabWindowStore: new TabWindowStore()
   };
@@ -203,9 +207,32 @@ function init(cb) {
   });
   module.exports.flux = flux;
   module.exports.winStore = winStore;
+  return winStore;    
+}
+
+/**
+ * init doing full read of bookmarks (for bgHelper)
+ */
+function init(cb) {
+  console.log("tabman: init");
+  var winStore = initFluxStore();
   initBookmarks(function () {
     console.log("tabman: init complete.");
-    cb();   // TODO: could pass winStore...
+    cb(winStore);
+  });
+}
+
+/**
+ * init for popup by reading from local storage and using
+ * that to re-constitute Flux
+ */
+function initPopup(cb) {
+  console.log("renderPopup: About to read from local storage");
+  chrome.storage.local.get('contents', function (container) {
+    console.log("renderPopup: read container ", container);
+    var tabWindows = container.contents.contents;
+    var winStore = initFluxStore();
+    initStored(winStore,tabWindows, cb);
   });
 }
 
@@ -213,5 +240,6 @@ module.exports = {
   parseURL: parseURL,
   manageWindow: manageWindow,
   unmanageWindow: unmanageWindow,
-  init: init,    
+  init: init,
+  initPopup: initPopup    
 };

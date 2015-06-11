@@ -1,7 +1,8 @@
 // webpack.config.js
 module.exports = {
     entry: {
-        popup: "./src/js/popup.js"
+        popup: "./src/js/popup.js",
+        bgHelper: "./src/js/bgHelper.js"
     },
     output: {
         path: "./build/js",
