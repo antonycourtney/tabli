@@ -17,8 +17,6 @@ var actions = require('./actions.js');
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
 
-var TabMan = require('./tabman.js');
-
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
@@ -318,11 +316,11 @@ var R_TabItem = React.createClass({
 
     // console.log("R_TabItem: handleClick: tab: ", tab);
 
-    TabMan.flux.actions.activateTab(tabWindow,tab,tabIndex);
+    actions.activateTab(tabWindow,tab,tabIndex);
   },
 
   handleClose: function() {
-    TabMan.flux.actions.closeTab(this.props.tab);
+    actions.closeTab(this.props.tab);
   }, 
 
   render: function() {
@@ -394,17 +392,17 @@ var R_TabWindow = React.createClass({
 
   handleOpen: function() {
     // console.log("handleOpen");
-    TabMan.flux.actions.openTabWindow(this.props.tabWindow);
+    actions.openTabWindow(this.props.tabWindow);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    TabMan.flux.actions.closeTabWindow(this.props.tabWindow);
+    actions.closeTabWindow(this.props.tabWindow);
   },
 
   handleRevert: function(event) {
     // console.log("handleRevert");
-    TabMan.flux.actions.revertTabWindow(this.props.tabWindow);
+    actions.revertTabWindow(this.props.tabWindow);
   },
 
 
@@ -546,7 +544,7 @@ var R_FluxTabWindowList = React.createClass({
 
   getStateFromFlux: function() {
     var t_start = performance.now();
-    var store = TabMan.winStore;
+    var store = this.props.winStore;
 
     var tabWindows = store.getAll();
 
@@ -587,30 +585,37 @@ function logWrap( f ) {
   return wf;
 }
 
+
+/**
+ * Call React.render with flux state
+ */
+function renderPopup(flux,winStore) {
+  var t_init = performance.now();
+  var elemId = document.getElementById('windowList-region');
+  console.log("renderPopup: elemId: ", elemId);
+  var windowList = <R_FluxTabWindowList flux={flux} winStore={winStore} />;
+  console.log("renderPopup: ", document, windowList, elemId, flux, winStore );
+  React.render( windowList, elemId ); 
+  var t_render = performance.now();
+  console.log("initial render complete. render time: (", t_render - t_init, " ms)");
+} 
+
 /**
  * Initialize tab manager and flux store, and then render popup from Flux store.
  */
-function renderPopup() {
+function main() {
   var t_start = performance.now();
-  console.log("renderPopup");
+  console.log("popup main");
 
-  TabMan.initPopup(function (winStore) {
-    var t_init = performance.now();
-    console.log("renderPopup: done with TabMan.popupInit: (", t_init - t_start, " ms)");
-    /**
-     * register a one-time onChange event handler to be invoked after syncWindowList action
-     * completes
-     */
-    var elemId = document.getElementById('windowList-region');
-    console.log("renderPopup: elemId: ", elemId);
-    var windowList = <R_FluxTabWindowList flux={TabMan.flux} />;
-    console.log("renderPopup: ", document, windowList, elemId, TabMan.flux );
-    React.render( windowList, elemId ); 
-
-    var t_render = performance.now();
-    console.log("initial render complete. render time: (", t_render - t_init, " ms)");
-    console.log("renderPopup took ", t_render - t_start, " ms");
+  chrome.storage.local.get('contents', function (container) {
+    console.log("popup main: read container ", container);
+    var serializedWindows = container.contents.contents;
+    var fluxState = TabWindowStore.init();
+    var tabWindows = serializedWindows.map(TabWindow.deserialize);
+    fluxState.flux.actions.addTabWindows(tabWindows);
+    console.log("popup main: fluxState: ", fluxState);
+    renderPopup(fluxState.flux,fluxState.winStore);        
   });
 }
 
-renderPopup();
+main();

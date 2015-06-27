@@ -5,7 +5,7 @@
 var Fluxxor = require('fluxxor');
 var _ = require('underscore');
 var constants = require('./constants.js');
-
+var actions = require('./actions.js');
 var TabWindow = require('./tabWindow.js');
 
 var TabWindowStore = Fluxxor.createStore({
@@ -188,10 +188,35 @@ var TabWindowStore = Fluxxor.createStore({
     return this.tabWindows.slice();
   },
 
+  serializeAll: function() {
+    return this.getAll();
+  },
+
   // returns a tabWindow or undefined
   getTabWindowByChromeId: function(chromeId) {
     return this.windowIdMap[chromeId];
   }
 });
 
-module.exports = TabWindowStore;
+/*
+ * initialize Flux state and empty window store and return it
+ */
+function init() {
+  var stores = {
+    TabWindowStore: new TabWindowStore()
+  };
+
+  var flux = new Fluxxor.Flux(stores, actions);
+  var winStore = stores.TabWindowStore;
+  flux.on("dispatch", function(type, payload) {
+      if (console && console.log) {
+          console.log("[Dispatch]", type, payload);
+      }
+  });
+  return {
+    flux: flux,
+    winStore: winStore
+  };
+}
+
+module.exports.init = init;
