@@ -4,8 +4,6 @@
  */
 'use strict';
 
-
-
 // This function creates a new anchor element and uses location
 // properties (inherent) to get the desired URL data. Some String
 // operations are used (to normalize results across browsers).

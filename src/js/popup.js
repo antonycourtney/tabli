@@ -16,6 +16,7 @@ var constants = require('./constants.js');
 var actions = require('./actions.js');
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
+var HelperMessages = require('./helperMessages.js');
 
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
@@ -600,6 +601,20 @@ function renderPopup(flux,winStore) {
   console.log("initial render complete. render time: (", t_render - t_init, " ms)");
 } 
 
+function handleFullUpdate(fluxState,msg) {
+  var serializedWindows = msg.contents;
+  var tabWindows = serializedWindows.map(TabWindow.deserialize);
+  fluxState.flux.actions.replaceWindowState(tabWindows);
+}
+
+function handleHelperMessage(fluxState,port,msg) {
+  switch (msg.messageType) {
+    case HelperMessages.RESP_FULL_UPDATE:
+      handleFullUpdate(fluxState,msg);
+  }
+}
+
+
 /**
  * Initialize tab manager and flux store, and then render popup from Flux store.
  */
@@ -607,15 +622,32 @@ function main() {
   var t_start = performance.now();
   console.log("popup main");
 
+  var fluxState = TabWindowStore.init();
+  // Render a once event handler to make the initial call to React.render; 
+  // Flux Mixins should ensure re-rendering on all subsequent change events
+  fluxState.winStore.once("change", function() {
+    console.log("Got once change event on store, rendering...:");
+    renderPopup(fluxState.flux,fluxState.winStore);
+  });
+  console.log("Registered change event on Flux store");
+  var port = chrome.runtime.connect({name: "helperPort"});
+  port.onMessage.addListener(function(msg) {
+    console.log("Got message from background page: ", msg);
+    handleHelperMessage(fluxState,port,msg)
+  });
+
+  port.postMessage(HelperMessages.hello())
+/*
   chrome.storage.local.get('contents', function (container) {
     console.log("popup main: read container ", container);
     var serializedWindows = container.contents.contents;
-    var fluxState = TabWindowStore.init();
     var tabWindows = serializedWindows.map(TabWindow.deserialize);
     fluxState.flux.actions.addTabWindows(tabWindows);
     console.log("popup main: fluxState: ", fluxState);
     renderPopup(fluxState.flux,fluxState.winStore);        
   });
+*/
+
 }
 
 main();

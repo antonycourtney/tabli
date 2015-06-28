@@ -8,6 +8,8 @@
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
 
+var HelperMessages = require('./helperMessages.js');
+
 var popupPort = null;
 var tabmanFolderId = null;
 var tabmanFolderTitle = "Subjective Tab Manager";
@@ -126,20 +128,43 @@ function initBookmarks(flux,cb) {
   });
 }
 
+/**
+ * serialize current window store state and send to popup
+ */
+function sendFullUpdate(fluxState,port) {
+  var encodedStore = fluxState.winStore.serializeAll();
+
+  var msg = HelperMessages.fullUpdate(encodedStore);
+  port.postMessage(msg);
+}
+
+/**
+ * handle message received on port from popup
+ */
+function handlePopupMessage(fluxState,port,msg) {
+  console.log("handlePopupMessage: Got message from popup: ", msg);
+  switch (msg.messageType) {
+    case HelperMessages.REQ_HELLO:
+      sendFullUpdate(fluxState,port);
+      break;
+    default:
+      console.error("bgHelper: Unexpected message type: ", msg.messageType);
+  }
+}
 
 
 function main() {
   console.log("Hello from background page!");
+  var fluxState = TabWindowStore.init();
 
   chrome.runtime.onConnect.addListener(function (port) {
     console.log("Background page accepted connection on port ", port.name);
     popupPort = port;
     port.onMessage.addListener(function (msg) {
-      console.log("bg page got message from popup: ", msg);
+      handlePopupMessage(fluxState,port,msg);
     });
   });
 
-  var fluxState = TabWindowStore.init();
   initBookmarks(fluxState.flux,function () {
     console.log("init: done reading bookmarks, now syncing windows...");
     /**

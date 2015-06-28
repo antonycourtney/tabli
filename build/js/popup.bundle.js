@@ -65,6 +65,7 @@
 	var actions = __webpack_require__(/*! ./actions.js */ 2);
 	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 3);
 	var TabWindow = __webpack_require__(/*! ./tabWindow.js */ 4);
+	var HelperMessages = __webpack_require__(/*! ./helperMessages.js */ 250);
 	
 	var FluxMixin = Fluxxor.FluxMixin(React),
 	    StoreWatchMixin = Fluxxor.StoreWatchMixin;
@@ -649,6 +650,20 @@
 	  console.log("initial render complete. render time: (", t_render - t_init, " ms)");
 	} 
 	
+	function handleFullUpdate(fluxState,msg) {
+	  var serializedWindows = msg.contents;
+	  var tabWindows = serializedWindows.map(TabWindow.deserialize);
+	  fluxState.flux.actions.replaceWindowState(tabWindows);
+	}
+	
+	function handleHelperMessage(fluxState,port,msg) {
+	  switch (msg.messageType) {
+	    case HelperMessages.RESP_FULL_UPDATE:
+	      handleFullUpdate(fluxState,msg);
+	  }
+	}
+	
+	
 	/**
 	 * Initialize tab manager and flux store, and then render popup from Flux store.
 	 */
@@ -656,15 +671,32 @@
 	  var t_start = performance.now();
 	  console.log("popup main");
 	
+	  var fluxState = TabWindowStore.init();
+	  // Render a once event handler to make the initial call to React.render; 
+	  // Flux Mixins should ensure re-rendering on all subsequent change events
+	  fluxState.winStore.once("change", function() {
+	    console.log("Got once change event on store, rendering...:");
+	    renderPopup(fluxState.flux,fluxState.winStore);
+	  });
+	  console.log("Registered change event on Flux store");
+	  var port = chrome.runtime.connect({name: "helperPort"});
+	  port.onMessage.addListener(function(msg) {
+	    console.log("Got message from background page: ", msg);
+	    handleHelperMessage(fluxState,port,msg)
+	  });
+	
+	  port.postMessage(HelperMessages.hello())
+	/*
 	  chrome.storage.local.get('contents', function (container) {
 	    console.log("popup main: read container ", container);
 	    var serializedWindows = container.contents.contents;
-	    var fluxState = TabWindowStore.init();
 	    var tabWindows = serializedWindows.map(TabWindow.deserialize);
 	    fluxState.flux.actions.addTabWindows(tabWindows);
 	    console.log("popup main: fluxState: ", fluxState);
 	    renderPopup(fluxState.flux,fluxState.winStore);        
 	  });
+	*/
+	
 	}
 	
 	main();
@@ -686,6 +718,7 @@
 	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
 	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
 	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  REPLACE_WINDOW_STATE: "REPLACE_WINDOW_STATE",
 	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW",
 	  SYNC_WINDOW_LIST: "SYNC_WINDOW_LIST"
 	};
@@ -710,6 +743,11 @@
 	  addTabWindows: function(tabWindows) {
 	    var payload = { tabWindows: tabWindows };
 	    this.dispatch(constants.ADD_TAB_WINDOWS, payload);
+	  },
+	
+	  replaceWindowState: function(tabWindows) {
+	    var payload = { tabWindows: tabWindows };
+	    this.dispatch(constants.REPLACE_WINDOW_STATE, payload);
 	  },
 	
 	  closeTabWindow: function(tabWindow) {
@@ -880,16 +918,21 @@
 	
 	var TabWindowStore = Fluxxor.createStore({
 	  initialize: function() {
-	    this.windowIdMap = {};
-	    this.tabWindows = [];
+	    this.resetState();
 	    this.bindActions(
 	      constants.ADD_TAB_WINDOWS, this.onAddTabWindows,
 	      constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
 	      constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
 	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
 	      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
-	      constants.SYNC_WINDOW_LIST, this.onSyncWindowList
+	      constants.SYNC_WINDOW_LIST, this.onSyncWindowList,
+	      constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState
 	      );
+	  },
+	
+	  resetState: function() {
+	    this.windowIdMap = {};
+	    this.tabWindows = [];
 	  },
 	
 	  /*
@@ -1021,6 +1064,12 @@
 	  onAddTabWindows: function(payload) {
 	    _.each(payload.tabWindows, this.addTabWindow);
 	    this.emit("change");
+	  },
+	
+	  onReplaceWindowState: function(payload) {
+	    // clear all state and then add tab windows from payload
+	    this.resetState();
+	    this.onAddTabWindows(payload);
 	  },
 	
 	  onCloseTabWindow: function(payload) {
@@ -37147,6 +37196,45 @@
 	module.exports = toArray;
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 42)))
+
+/***/ },
+/* 249 */,
+/* 250 */
+/*!**********************************!*\
+  !*** ./src/js/helperMessages.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * messages on port between helper and popup
+	 */
+	'use strict';
+	
+	var _ = __webpack_require__(/*! underscore */ 8);
+	
+	module.exports = {
+	  /* requests (from popup to helper): */
+	  REQ_HELLO: "REQ_HELLO",
+	
+	  /* responses (helper to popup): */
+	  RESP_FULL_UPDATE: "RESP_FULL_UPDATE",
+	
+	  mkMessage: function(msgType,payload) {
+	    return {
+	      messageType: msgType,
+	      contents: payload
+	    };
+	  },
+	
+	  fullUpdate: function(encodedStore) {
+	    return this.mkMessage(this.RESP_FULL_UPDATE,encodedStore);
+	  },
+	
+	  hello: function() {
+	    return this.mkMessage(this.REQ_HELLO,null);
+	  }
+	};
+
 
 /***/ }
 /******/ ]);

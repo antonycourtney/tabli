@@ -57,6 +57,8 @@
 	var TabWindowStore = __webpack_require__(/*! ./tabWindowStore.js */ 3);
 	var TabWindow = __webpack_require__(/*! ./tabWindow.js */ 4);
 	
+	var HelperMessages = __webpack_require__(/*! ./helperMessages.js */ 250);
+	
 	var popupPort = null;
 	var tabmanFolderId = null;
 	var tabmanFolderTitle = "Subjective Tab Manager";
@@ -175,20 +177,43 @@
 	  });
 	}
 	
+	/**
+	 * serialize current window store state and send to popup
+	 */
+	function sendFullUpdate(fluxState,port) {
+	  var encodedStore = fluxState.winStore.serializeAll();
+	
+	  var msg = HelperMessages.fullUpdate(encodedStore);
+	  port.postMessage(msg);
+	}
+	
+	/**
+	 * handle message received on port from popup
+	 */
+	function handlePopupMessage(fluxState,port,msg) {
+	  console.log("handlePopupMessage: Got message from popup: ", msg);
+	  switch (msg.messageType) {
+	    case HelperMessages.REQ_HELLO:
+	      sendFullUpdate(fluxState,port);
+	      break;
+	    default:
+	      console.error("bgHelper: Unexpected message type: ", msg.messageType);
+	  }
+	}
 	
 	
 	function main() {
 	  console.log("Hello from background page!");
+	  var fluxState = TabWindowStore.init();
 	
 	  chrome.runtime.onConnect.addListener(function (port) {
 	    console.log("Background page accepted connection on port ", port.name);
 	    popupPort = port;
 	    port.onMessage.addListener(function (msg) {
-	      console.log("bg page got message from popup: ", msg);
+	      handlePopupMessage(fluxState,port,msg);
 	    });
 	  });
 	
-	  var fluxState = TabWindowStore.init();
 	  initBookmarks(fluxState.flux,function () {
 	    console.log("init: done reading bookmarks, now syncing windows...");
 	    /**
@@ -233,6 +258,7 @@
 	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
 	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
 	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
+	  REPLACE_WINDOW_STATE: "REPLACE_WINDOW_STATE",
 	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW",
 	  SYNC_WINDOW_LIST: "SYNC_WINDOW_LIST"
 	};
@@ -257,6 +283,11 @@
 	  addTabWindows: function(tabWindows) {
 	    var payload = { tabWindows: tabWindows };
 	    this.dispatch(constants.ADD_TAB_WINDOWS, payload);
+	  },
+	
+	  replaceWindowState: function(tabWindows) {
+	    var payload = { tabWindows: tabWindows };
+	    this.dispatch(constants.REPLACE_WINDOW_STATE, payload);
 	  },
 	
 	  closeTabWindow: function(tabWindow) {
@@ -427,16 +458,21 @@
 	
 	var TabWindowStore = Fluxxor.createStore({
 	  initialize: function() {
-	    this.windowIdMap = {};
-	    this.tabWindows = [];
+	    this.resetState();
 	    this.bindActions(
 	      constants.ADD_TAB_WINDOWS, this.onAddTabWindows,
 	      constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
 	      constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
 	      constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
 	      constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
-	      constants.SYNC_WINDOW_LIST, this.onSyncWindowList
+	      constants.SYNC_WINDOW_LIST, this.onSyncWindowList,
+	      constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState
 	      );
+	  },
+	
+	  resetState: function() {
+	    this.windowIdMap = {};
+	    this.tabWindows = [];
 	  },
 	
 	  /*
@@ -568,6 +604,12 @@
 	  onAddTabWindows: function(payload) {
 	    _.each(payload.tabWindows, this.addTabWindow);
 	    this.emit("change");
+	  },
+	
+	  onReplaceWindowState: function(payload) {
+	    // clear all state and then add tab windows from payload
+	    this.resetState();
+	    this.onAddTabWindows(payload);
 	  },
 	
 	  onCloseTabWindow: function(payload) {
@@ -6851,6 +6893,46 @@
 	}
 	
 	module.exports = isTypedArray;
+
+
+/***/ },
+/* 248 */,
+/* 249 */,
+/* 250 */
+/*!**********************************!*\
+  !*** ./src/js/helperMessages.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * messages on port between helper and popup
+	 */
+	'use strict';
+	
+	var _ = __webpack_require__(/*! underscore */ 8);
+	
+	module.exports = {
+	  /* requests (from popup to helper): */
+	  REQ_HELLO: "REQ_HELLO",
+	
+	  /* responses (helper to popup): */
+	  RESP_FULL_UPDATE: "RESP_FULL_UPDATE",
+	
+	  mkMessage: function(msgType,payload) {
+	    return {
+	      messageType: msgType,
+	      contents: payload
+	    };
+	  },
+	
+	  fullUpdate: function(encodedStore) {
+	    return this.mkMessage(this.RESP_FULL_UPDATE,encodedStore);
+	  },
+	
+	  hello: function() {
+	    return this.mkMessage(this.REQ_HELLO,null);
+	  }
+	};
 
 
 /***/ }

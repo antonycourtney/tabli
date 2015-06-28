@@ -10,16 +10,21 @@ var TabWindow = require('./tabWindow.js');
 
 var TabWindowStore = Fluxxor.createStore({
   initialize: function() {
-    this.windowIdMap = {};
-    this.tabWindows = [];
+    this.resetState();
     this.bindActions(
       constants.ADD_TAB_WINDOWS, this.onAddTabWindows,
       constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow,
       constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow,
       constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
       constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
-      constants.SYNC_WINDOW_LIST, this.onSyncWindowList
+      constants.SYNC_WINDOW_LIST, this.onSyncWindowList,
+      constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState
       );
+  },
+
+  resetState: function() {
+    this.windowIdMap = {};
+    this.tabWindows = [];
   },
 
   /*
@@ -151,6 +156,12 @@ var TabWindowStore = Fluxxor.createStore({
   onAddTabWindows: function(payload) {
     _.each(payload.tabWindows, this.addTabWindow);
     this.emit("change");
+  },
+
+  onReplaceWindowState: function(payload) {
+    // clear all state and then add tab windows from payload
+    this.resetState();
+    this.onAddTabWindows(payload);
   },
 
   onCloseTabWindow: function(payload) {
