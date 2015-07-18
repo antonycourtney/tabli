@@ -11,10 +11,6 @@ var actions = {
     this.dispatch(constants.ADD_TAB_WINDOWS, payload);
   },
 
-  replaceWindowState: function(tabWindows) {
-    var payload = { tabWindows: tabWindows };
-    this.dispatch(constants.REPLACE_WINDOW_STATE, payload);
-  },
 
   closeTabWindow: function(tabWindow) {
     console.log("closeTabWindow: ", tabWindow);

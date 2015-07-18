@@ -12,11 +12,12 @@ window.React = require('react');
 var objectAssign = require('object-assign');
 
 var Fluxxor = require('fluxxor');
-var constants = require('./constants.js');
-var actions = require('./actions.js');
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
-var HelperMessages = require('./helperMessages.js');
+var ProtocolConstants = require('./protocolConstants')
+var ProtocolMessages = require('./protocolMessages');
+
+var mkPopupActions = require('./popupActions');
 
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
@@ -317,11 +318,11 @@ var R_TabItem = React.createClass({
 
     // console.log("R_TabItem: handleClick: tab: ", tab);
 
-    actions.activateTab(tabWindow,tab,tabIndex);
+    this.props.flux.actions.activateTab(tabWindow,tab,tabIndex);
   },
 
   handleClose: function() {
-    actions.closeTab(this.props.tab);
+    this.props.flux.actions.closeTab(this.props.tab);
   }, 
 
   render: function() {
@@ -364,7 +365,7 @@ var R_TabItem = React.createClass({
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
-    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
+    var closeButton = <R_HeaderButton flux={this.props.flux} baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
                           hoverStyle={styles.closeButtonHover} title="Close Tab" 
                           onClick={this.handleClose} />
 
@@ -392,18 +393,18 @@ var R_TabWindow = React.createClass({
   },
 
   handleOpen: function() {
-    // console.log("handleOpen");
-    actions.openTabWindow(this.props.tabWindow);
+    console.log("handleOpen", this, this.props);
+    this.props.flux.actions.openTabWindow(this.props.tabWindow);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    actions.closeTabWindow(this.props.tabWindow);
+    this.props.flux.actions.closeTabWindow(this.props.tabWindow);
   },
 
   handleRevert: function(event) {
     // console.log("handleRevert");
-    actions.revertTabWindow(this.props.tabWindow);
+    this.props.flux.actions.revertTabWindow(this.props.tabWindow);
   },
 
 
@@ -422,7 +423,7 @@ var R_TabWindow = React.createClass({
     var items = [];
     for (var i = 0; i < tabs.length; i++ ) {
       var id = "tabItem-" + i;
-      var tabItem = <R_TabItem tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
+      var tabItem = <R_TabItem flux={this.props.flux} tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
       items.push(tabItem);
     };
 
@@ -443,6 +444,8 @@ var R_TabWindow = React.createClass({
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.getTabItems();
 
+    console.log("TabWindow.render: ", this.props.flux, this.props);
+
     /*
      * optimization:  Let's only render tabItems if expanded
      */
@@ -455,7 +458,8 @@ var R_TabWindow = React.createClass({
       tabItems = this.renderTabItems(tabWindow,[]);
     }
     var windowHeader = 
-      <R_WindowHeader tabWindow={tabWindow} 
+      <R_WindowHeader flux={this.props.flux}
+          tabWindow={tabWindow} 
           expanded={expanded} 
           onExpand={this.handleExpand} 
           onOpen={this.handleOpen}
@@ -493,54 +497,9 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
 }
 
 /*
- * top-level element for all tab windows; pure renderer
+ * top-level element for all tab windows that pulls window list from Flux store
  */
 var R_TabWindowList = React.createClass({
-  render: function() {
-    console.log("TabWindowList: render");
-    var currentWindowElem = [];
-    var managedWindows = [];
-    var unmanagedWindows = [];
-
-    var tabWindows = this.props.tabWindows;
-    for (var i=0; i < tabWindows.length; i++) {
-      var tabWindow = tabWindows[i];
-      var id = "tabWindow" + i;
-      if (tabWindow) {
-          var isCurrent = tabWindow.isCurrent();
-          var isManaged = tabWindow.isManaged();
-
-          var windowElem = <R_TabWindow tabWindow={tabWindow} key={id} />;
-          if (isCurrent) {
-            currentWindowElem = windowElem;
-          } else if (isManaged) {
-            managedWindows.push(windowElem);
-          } else {
-            unmanagedWindows.push(windowElem);
-          }
-      }
-    }
-
-    return (
-      <div>
-        <hr/>
-        {currentWindowElem}
-        <hr/>
-        {managedWindows}
-        <hr/>
-        {unmanagedWindows}
-      </div>
-    );    
-  }
-}); 
-
-/*
- * TabWindowListElement that pulls from Flux store:
- */
-/*
- * top-level element for all tab windows
- */
-var R_FluxTabWindowList = React.createClass({
   mixins: [FluxMixin, StoreWatchMixin("TabWindowStore")],
 
   getStateFromFlux: function() {
@@ -561,13 +520,45 @@ var R_FluxTabWindowList = React.createClass({
     // console.log(JSON.stringify(fluxState,null,2));
 
     var t_finish = performance.now();
-    console.log("FluxTabWindowList.getStateFromFlux: ", t_finish - t_start, " ms");
+    console.log("TabWindowList.getStateFromFlux: ", t_finish - t_start, " ms");
     return fluxState;
   },
 
   render: function() {
-    console.log("R_FluxTabWindowList: render");
-    return <R_TabWindowList tabWindows={this.state.tabWindows} />;
+    console.log("TabWindowList: render");
+    var currentWindowElem = [];
+    var managedWindows = [];
+    var unmanagedWindows = [];
+
+    var tabWindows = this.state.tabWindows;
+    for (var i=0; i < tabWindows.length; i++) {
+      var tabWindow = tabWindows[i];
+      var id = "tabWindow" + i;
+      if (tabWindow) {
+          var isCurrent = tabWindow.isCurrent();
+          var isManaged = tabWindow.isManaged();
+
+          var windowElem = <R_TabWindow flux={this.props.flux} tabWindow={tabWindow} key={id} />;
+          if (isCurrent) {
+            currentWindowElem = windowElem;
+          } else if (isManaged) {
+            managedWindows.push(windowElem);
+          } else {
+            unmanagedWindows.push(windowElem);
+          }
+      }
+    }
+
+    return (
+      <div>
+        <hr/>
+        {currentWindowElem}
+        <hr/>
+        {managedWindows}
+        <hr/>
+        {unmanagedWindows}
+      </div>
+    );    
   }
 });
 
@@ -594,7 +585,7 @@ function renderPopup(flux,winStore) {
   var t_init = performance.now();
   var elemId = document.getElementById('windowList-region');
   console.log("renderPopup: elemId: ", elemId);
-  var windowList = <R_FluxTabWindowList flux={flux} winStore={winStore} />;
+  var windowList = <R_TabWindowList flux={flux} winStore={winStore} />;
   console.log("renderPopup: ", document, windowList, elemId, flux, winStore );
   React.render( windowList, elemId ); 
   var t_render = performance.now();
@@ -609,7 +600,7 @@ function handleFullUpdate(fluxState,msg) {
 
 function handleHelperMessage(fluxState,port,msg) {
   switch (msg.messageType) {
-    case HelperMessages.RESP_FULL_UPDATE:
+    case ProtocolConstants.RESP_FULL_UPDATE:
       handleFullUpdate(fluxState,msg);
   }
 }
@@ -622,7 +613,14 @@ function main() {
   var t_start = performance.now();
   console.log("popup main");
 
-  var fluxState = TabWindowStore.init();
+  var port = chrome.runtime.connect({name: "helperPort"});
+
+  var actions = mkPopupActions(port);
+
+  var fluxState = TabWindowStore.init(actions);
+
+  console.log("popup.main: ", actions, fluxState);
+
   // Render a once event handler to make the initial call to React.render; 
   // Flux Mixins should ensure re-rendering on all subsequent change events
   fluxState.winStore.once("change", function() {
@@ -630,13 +628,12 @@ function main() {
     renderPopup(fluxState.flux,fluxState.winStore);
   });
   console.log("Registered change event on Flux store");
-  var port = chrome.runtime.connect({name: "helperPort"});
   port.onMessage.addListener(function(msg) {
     console.log("Got message from background page: ", msg);
     handleHelperMessage(fluxState,port,msg)
   });
 
-  port.postMessage(HelperMessages.hello())
+  port.postMessage(ProtocolMessages.hello())
 /*
   chrome.storage.local.get('contents', function (container) {
     console.log("popup main: read container ", container);

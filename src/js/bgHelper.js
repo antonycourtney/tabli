@@ -8,7 +8,10 @@
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
 
-var HelperMessages = require('./helperMessages.js');
+var ProtocolConstants = require('./protocolConstants');
+var ProtocolMessages = require('./protocolMessages');
+
+var helperActions = require('./helperActions');
 
 var popupPort = null;
 var tabmanFolderId = null;
@@ -31,7 +34,7 @@ function manageWindow( tabWindow, opts ) {
   chrome.bookmarks.create( windowFolder, function( windowFolderNode ) {
     console.log( "succesfully created bookmarks folder ", windowFolderNode );
     console.log( "for window: ", tabWindow );
-    var tabs = tabWindow.chromeWindow.tabs;
+    var tabs = TabWindow.chromeWindow.tabs;
     for( var i = 0; i < tabs.length; i++ ) {
       var tab = tabs[ i ];
       // bookmark for this tab:
@@ -43,7 +46,7 @@ function manageWindow( tabWindow, opts ) {
     // Now do an explicit get of subtree to get node populated with children
     chrome.bookmarks.getSubTree( windowFolderNode.id, function ( folderNodes ) {
       var fullFolderNode = folderNodes[ 0 ];
-      tabWindow.bookmarkFolder = fullFolderNode;
+      TabWindow.bookmarkFolder = fullFolderNode;
 
       // Note: Only now do we actually change the state to managed!
       // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
@@ -51,22 +54,22 @@ function manageWindow( tabWindow, opts ) {
       // There might still be a race condition here since
       // the bookmarks for children may not have been created yet.
       // Haven't seen evidence of this so far.
-      tabWindow._managed = true;
-      tabWindow._managedTitle = opts.title;
+      TabWindow._managed = true;
+      TabWindow._managedTitle = opts.title;
     } );
   } );
 }
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
 function unmanageWindow( tabWindow ) {
-  tabWindow._managed = false;
+  TabWindow._managed = false;
 
   if( !archiveFolderId ) {
     alert( "could not move managed window folder to archive -- no archive folder" );
     return;
   }
-  chrome.bookmarks.move( tabWindow.bookmarkFolder.id, { parentId: archiveFolderId } );
-  tabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
+  chrome.bookmarks.move( TabWindow.bookmarkFolder.id, { parentId: archiveFolderId } );
+  TabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
 }
 
 /* On startup load managed windows from bookmarks folder */
@@ -134,9 +137,10 @@ function initBookmarks(flux,cb) {
 function sendFullUpdate(fluxState,port) {
   var encodedStore = fluxState.winStore.serializeAll();
 
-  var msg = HelperMessages.fullUpdate(encodedStore);
+  var msg = ProtocolMessages.fullUpdate(encodedStore);
   port.postMessage(msg);
 }
+
 
 /**
  * handle message received on port from popup
@@ -144,8 +148,12 @@ function sendFullUpdate(fluxState,port) {
 function handlePopupMessage(fluxState,port,msg) {
   console.log("handlePopupMessage: Got message from popup: ", msg);
   switch (msg.messageType) {
-    case HelperMessages.REQ_HELLO:
+    case ProtocolConstants.REQ_HELLO:
       sendFullUpdate(fluxState,port);
+      break;
+    case ProtocolConstants.REQ_OPEN_WINDOW:
+      var tabWindow = fluxState.winStore.getTabWindowByEncodedId(msg.contents.windowId);
+      fluxState.flux.actions.openTabWindow(tabWindow);      
       break;
     default:
       console.error("bgHelper: Unexpected message type: ", msg.messageType);
@@ -155,7 +163,7 @@ function handlePopupMessage(fluxState,port,msg) {
 
 function main() {
   console.log("Hello from background page!");
-  var fluxState = TabWindowStore.init();
+  var fluxState = TabWindowStore.init(helperActions);
 
   chrome.runtime.onConnect.addListener(function (port) {
     console.log("Background page accepted connection on port ", port.name);
@@ -163,29 +171,16 @@ function main() {
     port.onMessage.addListener(function (msg) {
       handlePopupMessage(fluxState,port,msg);
     });
+    console.log("registering change listener on Flux store");
+    fluxState.winStore.on('change', function() {
+      console.log("bgHelper: sending full update to popup on port: ", port);
+      sendFullUpdate(fluxState,port);
+    });
+    console.log("done registering change listener.");
   });
 
   initBookmarks(fluxState.flux,function () {
-    console.log("init: done reading bookmarks, now syncing windows...");
-    /**
-     * register a one-time onChange event handler to be invoked after syncWindowList action
-     * completes
-     */
-    fluxState.winStore.once('change', function() {
-      console.log("init: done sync'ing windows");
-
-      console.log("bgHelper: initialization complete.");
-      var encodedStore = fluxState.winStore.serializeAll();
-
-      var storeState = {
-          'formatVersion': '0.1',
-          'contents': encodedStore
-      };
-      chrome.storage.local.set({'contents': storeState}, function () {
-          console.log("Wrote bookmark state to local storage");
-      });
-      console.log("winStore: ", fluxState.winStore);
-    });
+    console.log("init: done reading bookmarks.");
     fluxState.flux.actions.syncWindowList();
   });
 }

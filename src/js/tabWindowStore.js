@@ -5,7 +5,6 @@
 var Fluxxor = require('fluxxor');
 var _ = require('underscore');
 var constants = require('./constants.js');
-var actions = require('./actions.js');
 var TabWindow = require('./tabWindow.js');
 
 var TabWindowStore = Fluxxor.createStore({
@@ -24,6 +23,7 @@ var TabWindowStore = Fluxxor.createStore({
 
   resetState: function() {
     this.windowIdMap = {};
+    this.bookmarkIdMap = {};
     this.tabWindows = [];
   },
 
@@ -32,8 +32,12 @@ var TabWindowStore = Fluxxor.createStore({
    */
   addTabWindow: function(tabWindow) {
     var chromeWindow = tabWindow.chromeWindow;
-    if( chromeWindow ) {
+    if (chromeWindow) {
       this.windowIdMap[ chromeWindow.id ] = tabWindow;
+    }
+    var bookmarkFolder = tabWindow.bookmarkFolder;
+    if (bookmarkFolder) {
+        this.bookmarkIdMap[bookmarkFolder.id] = tabWindow;
     }
     this.tabWindows.push( tabWindow );     
   },
@@ -41,8 +45,11 @@ var TabWindowStore = Fluxxor.createStore({
   clearMapEntry: function(tabWindow) {
     console.log("clearMapEntry: ", tabWindow);
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-    if ( windowId ) 
-      delete this.windowIdMap[ windowId ];  
+    if (windowId) 
+      delete this.windowIdMap[ windowId ];
+    var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
+    if (bookmarkId)
+      delete this.bookmarkIdMap[ bookmarkId ];
   },
 
   removeTabWindow: function(tabWindow) {
@@ -206,18 +213,32 @@ var TabWindowStore = Fluxxor.createStore({
   // returns a tabWindow or undefined
   getTabWindowByChromeId: function(chromeId) {
     return this.windowIdMap[chromeId];
+  },
+
+  getTabWindowByBookmarkId: function(bookmarkId) {
+    return this.bookmarkIdMap[bookmarkId];
+  },
+
+  getTabWindowByEncodedId: function(encodedId) {
+    if (encodedId.idType=="bookmark") {
+      return this.getTabWindowByBookmarkId(encodedId.id);
+    } else {
+      return this.getTabWindowByChromeId(encodedId.id);
+    }
   }
 });
 
 /*
  * initialize Flux state and empty window store and return it
  */
-function init() {
+function init(actions) {
   var stores = {
     TabWindowStore: new TabWindowStore()
   };
 
+  console.log("TabWindowStore.init: actions: ", actions);
   var flux = new Fluxxor.Flux(stores, actions);
+  console.log("TabWindowStore.init: flux: ", flux);
   var winStore = stores.TabWindowStore;
   flux.on("dispatch", function(type, payload) {
       if (console && console.log) {

@@ -139,6 +139,23 @@ var tabWindowPrototype = {
     }
 
     return tabs;
+  },
+
+  /*
+   * return bookmark Id or chrome Id dependending on tabWindow type
+   */
+  getEncodedId: function() {
+    var idType;
+    var id;
+
+    if (this.bookmarkFolder) {
+      idType = "bookmark";
+      id = this.bookmarkFolder.id;
+    } else {
+      idType = "window";
+      id = this.chromeWindow.id;
+    }
+    return { idType: idType, id: id };
   }
 };
 
