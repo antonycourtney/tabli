@@ -633,7 +633,8 @@ function main() {
     handleHelperMessage(fluxState,port,msg)
   });
 
-  port.postMessage(ProtocolMessages.hello())
+  // port.postMessage(ProtocolMessages.hello())
+  fluxState.flux.actions.sendHello();
 /*
   chrome.storage.local.get('contents', function (container) {
     console.log("popup main: read container ", container);
