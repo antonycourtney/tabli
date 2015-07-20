@@ -10,7 +10,7 @@
   },
   "background": {
     "scripts": ["js/bgHelper.bundle.js"],
-    "persistent": false
+    "persistent": true
   },  
   "permissions": [
     "storage", "tabs", "bookmarks", "contextMenus", "<all_urls>"

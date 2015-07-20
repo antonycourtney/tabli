@@ -8,10 +8,7 @@
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
 
-var ProtocolConstants = require('./protocolConstants');
-var ProtocolMessages = require('./protocolMessages');
-
-var helperActions = require('./helperActions');
+var actions = require('./actions');
 
 var popupPort = null;
 var tabmanFolderId = null;
@@ -131,54 +128,11 @@ function initBookmarks(flux,cb) {
   });
 }
 
-/**
- * serialize current window store state and send to popup
- */
-function sendFullUpdate(fluxState,port) {
-  var encodedStore = fluxState.winStore.serializeAll();
-
-  var msg = ProtocolMessages.fullUpdate(encodedStore);
-  port.postMessage(msg);
-}
-
-
-/**
- * handle message received on port from popup
- */
-function handlePopupMessage(fluxState,port,msg) {
-  console.log("handlePopupMessage: Got message from popup: ", msg);
-  switch (msg.messageType) {
-    case ProtocolConstants.REQ_HELLO:
-      sendFullUpdate(fluxState,port);
-      break;
-    case ProtocolConstants.REQ_OPEN_WINDOW:
-      var tabWindow = fluxState.winStore.getTabWindowByEncodedId(msg.contents.windowId);
-      fluxState.flux.actions.openTabWindow(tabWindow);      
-      break;
-    default:
-      console.error("bgHelper: Unexpected message type: ", msg.messageType);
-  }
-}
-
-
 function main() {
   console.log("Hello from background page!");
-  var fluxState = TabWindowStore.init(helperActions);
+  var fluxState = TabWindowStore.init(actions);
 
-  chrome.runtime.onConnect.addListener(function (port) {
-    console.log("Background page accepted connection on port ", port.name);
-    popupPort = port;
-    port.onMessage.addListener(function (msg) {
-      handlePopupMessage(fluxState,port,msg);
-    });
-    console.log("registering change listener on Flux store");
-    fluxState.winStore.on('change', function() {
-      console.log("bgHelper: sending full update to popup on port: ", port);
-      sendFullUpdate(fluxState,port);
-    });
-    console.log("done registering change listener.");
-  });
-
+  window.fluxState = fluxState;
   initBookmarks(fluxState.flux,function () {
     console.log("init: done reading bookmarks.");
     fluxState.flux.actions.syncWindowList();

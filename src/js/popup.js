@@ -14,10 +14,6 @@ var objectAssign = require('object-assign');
 var Fluxxor = require('fluxxor');
 var TabWindowStore = require('./tabWindowStore.js');
 var TabWindow = require('./tabWindow.js');
-var ProtocolConstants = require('./protocolConstants')
-var ProtocolMessages = require('./protocolMessages');
-
-var mkPopupActions = require('./popupActions');
 
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
@@ -592,60 +588,32 @@ function renderPopup(flux,winStore) {
   console.log("initial render complete. render time: (", t_render - t_init, " ms)");
 } 
 
-function handleFullUpdate(fluxState,msg) {
-  var serializedWindows = msg.contents;
-  var tabWindows = serializedWindows.map(TabWindow.deserialize);
-  fluxState.flux.actions.replaceWindowState(tabWindows);
-}
+/*
+ * Perform our React rendering *after* the load event for the popup
+ * because we observe that Chrome's http cache will not attempt to
+ * re-validate cached resources accessed after the load event.
+ *
+ * See https://code.google.com/p/chromium/issues/detail?id=511699
+ *
+ */
 
-function handleHelperMessage(fluxState,port,msg) {
-  switch (msg.messageType) {
-    case ProtocolConstants.RESP_FULL_UPDATE:
-      handleFullUpdate(fluxState,msg);
-  }
-}
+var t_start = performance.now();
 
+function postLoadRender() {
+  var t_load = performance.now();
+  console.log("postLoadRender: (", t_load - t_start, " ms)");
+  var bgw = chrome.extension.getBackgroundPage();
+  var fluxState = bgw.fluxState;
+  renderPopup(fluxState.flux,fluxState.winStore);
+}
 
 /**
  * Initialize tab manager and flux store, and then render popup from Flux store.
  */
 function main() {
-  var t_start = performance.now();
   console.log("popup main");
 
-  var port = chrome.runtime.connect({name: "helperPort"});
-
-  var actions = mkPopupActions(port);
-
-  var fluxState = TabWindowStore.init(actions);
-
-  console.log("popup.main: ", actions, fluxState);
-
-  // Render a once event handler to make the initial call to React.render; 
-  // Flux Mixins should ensure re-rendering on all subsequent change events
-  fluxState.winStore.once("change", function() {
-    console.log("Got once change event on store, rendering...:");
-    renderPopup(fluxState.flux,fluxState.winStore);
-  });
-  console.log("Registered change event on Flux store");
-  port.onMessage.addListener(function(msg) {
-    console.log("Got message from background page: ", msg);
-    handleHelperMessage(fluxState,port,msg)
-  });
-
-  // port.postMessage(ProtocolMessages.hello())
-  fluxState.flux.actions.sendHello();
-/*
-  chrome.storage.local.get('contents', function (container) {
-    console.log("popup main: read container ", container);
-    var serializedWindows = container.contents.contents;
-    var tabWindows = serializedWindows.map(TabWindow.deserialize);
-    fluxState.flux.actions.addTabWindows(tabWindows);
-    console.log("popup main: fluxState: ", fluxState);
-    renderPopup(fluxState.flux,fluxState.winStore);        
-  });
-*/
-
+  window.onload = postLoadRender;
 }
 
 main();
