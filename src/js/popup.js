@@ -604,7 +604,14 @@ function postLoadRender() {
   console.log("postLoadRender: (", t_load - t_start, " ms)");
   var bgw = chrome.extension.getBackgroundPage();
   var fluxState = bgw.fluxState;
-  renderPopup(fluxState.flux,fluxState.winStore);
+
+  fluxState.flux.on("sync",function () {
+    console.log("Got sync event -- rendering");
+    renderPopup(fluxState.flux,fluxState.winStore);
+  });
+
+  console.log("syncing window list...");
+  fluxState.flux.actions.syncWindowList();
 }
 
 /**

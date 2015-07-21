@@ -60,7 +60,7 @@ var TabWindowStore = Fluxxor.createStore({
         break;
     }
     if (i < this.tabWindows.length) {
-      delete tabWindows[ i ];
+      delete this.tabWindows[ i ];
     } else {
       console.log("removeTabWindow: request to remove window not in collection", tabWindow);
     }
@@ -109,6 +109,24 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   /**
+   * Synchronize internal state of our store with snapshot
+   * of current Chrome window state
+   */
+  syncChromeWindow: function(chromeWindow) {
+    var tabWindow = this.windowIdMap[chromeWindow.id];
+    if( !tabWindow ) {
+      console.log( "syncWindowList: new window id: ", chromeWindow.id );
+      tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
+      this.addTabWindow(tabWindow);
+    } else {
+      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+      // Set chromeWindow to current snapshot of tab contents:
+      tabWindow.chromeWindow = chromeWindow;
+      tabWindow.open = true;
+    }
+  },
+
+  /**
    * synchronize windows from chrome.windows.getAll with internal map of
    * managed and unmanaged tab windows
    */
@@ -124,17 +142,7 @@ var TabWindowStore = Fluxxor.createStore({
     }
     for ( var i = 0; i < chromeWindowList.length; i++ ) {
       var chromeWindow = chromeWindowList[ i ];
-      var tabWindow = this.windowIdMap[chromeWindow.id];
-      if( !tabWindow ) {
-        console.log( "syncWindowList: new window id: ", chromeWindow.id );
-        tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
-        this.addTabWindow(tabWindow);
-      } else {
-        // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
-        // Set chromeWindow to current snapshot of tab contents:
-        tabWindow.chromeWindow = chromeWindow;
-        tabWindow.open = true;
-      }
+      this.syncChromeWindow(chromeWindow);
     }
     // GC any closed, unmanaged windows:
     for ( var i = 0; i < this.tabWindows.length; i++ ) {
@@ -149,6 +157,7 @@ var TabWindowStore = Fluxxor.createStore({
     currentTabWindow._current = true;
 
     console.log("syncWindowList: complete");
+    this.flux.emit("sync");
   },   
 
   onCloseTab: function(payload) {
@@ -156,13 +165,13 @@ var TabWindowStore = Fluxxor.createStore({
     console.log("onCloseTab: closing tab...");
     this.closeTab(payload.tab,function() {
       console.log("onCloseTab: close complete...");
-      self.emit("change");
+      self.flux.emit("change");
     });
   },
 
   onAddTabWindows: function(payload) {
     _.each(payload.tabWindows, this.addTabWindow);
-    this.emit("change");
+    this.flux.emit("change");
   },
 
   onReplaceWindowState: function(payload) {
@@ -174,31 +183,31 @@ var TabWindowStore = Fluxxor.createStore({
   onCloseTabWindow: function(payload) {
     var self = this;
     this.closeTabWindow(payload.tabWindow, function () {
-        self.emit("change");      
+        self.flux.emit("change");      
       });
   },
 
   onRevertTabWindow: function(payload) {
     var self = this;
     this.revertTabWindow(payload.tabWindow, function () {
-        self.emit("change");      
+        self.flux.emit("change");      
       });
   },
 
   onRemoveTabWindow: function(payload) {
     this.removeTabWindow(payload.tabWindow);
-    this.emit("change");
+    this.flux.emit("change");
   },
 
   onAttachChromeWindow: function(payload) {
     this.attachChromeWindow(payload.tabWindow,payload.chromeWindow);
-    this.emit("change");
+    this.flux.emit("change");
   },
 
   onSyncWindowList: function(payload) {
     console.log("onSyncWindowList: ", payload);
     this.syncWindowList(payload.windowList,payload.currentWindow);
-    this.emit("change");
+    this.flux.emit("change");
   },
 
   getAll: function() {
@@ -217,14 +226,6 @@ var TabWindowStore = Fluxxor.createStore({
 
   getTabWindowByBookmarkId: function(bookmarkId) {
     return this.bookmarkIdMap[bookmarkId];
-  },
-
-  getTabWindowByEncodedId: function(encodedId) {
-    if (encodedId.idType=="bookmark") {
-      return this.getTabWindowByBookmarkId(encodedId.id);
-    } else {
-      return this.getTabWindowByChromeId(encodedId.id);
-    }
   }
 });
 
