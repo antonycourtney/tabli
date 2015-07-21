@@ -149,10 +149,11 @@ var actions = {
     var self = this;
     var t_start = performance.now();
     chrome.windows.getAll( {populate: true}, function (windowList) {
-        chrome.windows.getCurrent(null, function (currentWindow) { 
+        chrome.windows.getLastFocused(null, function (focusedWindow) { 
           var t_finish = performance.now();
           console.log("syncWindowList: gathering window state took ", t_finish - t_start, " ms");
-          var payload = { windowList: windowList, currentWindow: currentWindow };
+          console.log("currentWindow: ", focusedWindow);
+          var payload = { windowList: windowList, focusedWindow: focusedWindow };
           self.dispatch(constants.SYNC_WINDOW_LIST, payload);
         });
      });

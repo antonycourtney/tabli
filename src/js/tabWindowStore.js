@@ -130,14 +130,14 @@ var TabWindowStore = Fluxxor.createStore({
    * synchronize windows from chrome.windows.getAll with internal map of
    * managed and unmanaged tab windows
    */
-  syncWindowList: function( chromeWindowList, currentWindow ) {
+  syncWindowList: function( chromeWindowList, focusedWindow ) {
     console.log("syncWindowList: windows: ", chromeWindowList);
     // To GC any closed windows:
     for ( var i = 0; i < this.tabWindows.length; i++ ) {
       var tabWindow = this.tabWindows[ i ];
       if( tabWindow ) {
         tabWindow.open = false;
-        tabWindow._current = false;
+        tabWindow._focused = false;
       }
     }
     for ( var i = 0; i < chromeWindowList.length; i++ ) {
@@ -153,9 +153,12 @@ var TabWindowStore = Fluxxor.createStore({
       }
     }
     // mark current window:
-    var currentTabWindow = this.windowIdMap[currentWindow.id];
-    currentTabWindow._current = true;
-
+    var currentTabWindow = this.windowIdMap[focusedWindow.id];
+    if (currentTabWindow) {
+      currentTabWindow._focused = true;
+    } else {
+      console.warn("syncWindowList: last focused window id ", focusedWindow.id, " not found -- ignoring");
+    }
     console.log("syncWindowList: complete");
     this.flux.emit("sync");
   },   
@@ -206,7 +209,7 @@ var TabWindowStore = Fluxxor.createStore({
 
   onSyncWindowList: function(payload) {
     console.log("onSyncWindowList: ", payload);
-    this.syncWindowList(payload.windowList,payload.currentWindow);
+    this.syncWindowList(payload.windowList,payload.focusedWindow);
     this.flux.emit("change");
   },
 

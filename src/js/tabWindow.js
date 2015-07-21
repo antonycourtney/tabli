@@ -90,7 +90,7 @@ var tabWindowPrototype = {
   chromeWindow: null,
   bookmarkFolder: null,  
   open: false,
-  _current: false,
+  _focused: false,
 
   reloadBookmarkFolder: function() {
     var tabWindow = this;
@@ -120,8 +120,8 @@ var tabWindowPrototype = {
     return this._managed;
   },
 
-  isCurrent: function() {
-    return this._current;
+  isFocused: function() {
+    return this._focused;
   },
 
   // Get a set of tab-like items for rendering

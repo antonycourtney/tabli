@@ -522,7 +522,7 @@ var R_TabWindowList = React.createClass({
 
   render: function() {
     console.log("TabWindowList: render");
-    var currentWindowElem = [];
+    var focusedWindowElem = [];
     var managedWindows = [];
     var unmanagedWindows = [];
 
@@ -531,12 +531,13 @@ var R_TabWindowList = React.createClass({
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
       if (tabWindow) {
-          var isCurrent = tabWindow.isCurrent();
+          var isFocused = tabWindow.isFocused();
           var isManaged = tabWindow.isManaged();
 
           var windowElem = <R_TabWindow flux={this.props.flux} tabWindow={tabWindow} key={id} />;
-          if (isCurrent) {
-            currentWindowElem = windowElem;
+          if (isFocused) {
+            console.log("TabWindowList.render: current window: ", tabWindow);
+            focusedWindowElem = windowElem;
           } else if (isManaged) {
             managedWindows.push(windowElem);
           } else {
@@ -548,7 +549,7 @@ var R_TabWindowList = React.createClass({
     return (
       <div>
         <hr/>
-        {currentWindowElem}
+        {focusedWindowElem}
         <hr/>
         {managedWindows}
         <hr/>

@@ -181,10 +181,6 @@
 	  console.log("Hello from background page!");
 	  var fluxState = TabWindowStore.init(actions);
 	
-	  fluxState.flux.on("sync",function (info) {
-	    console.log("bgHelper: got sync event -- rendering");
-	  });
-	
 	  fluxState.flux.on("change",function (info) {
 	    console.log("bgHelper: got change event");
 	  });
@@ -337,14 +333,14 @@
 	   * synchronize windows from chrome.windows.getAll with internal map of
 	   * managed and unmanaged tab windows
 	   */
-	  syncWindowList: function( chromeWindowList, currentWindow ) {
+	  syncWindowList: function( chromeWindowList, focusedWindow ) {
 	    console.log("syncWindowList: windows: ", chromeWindowList);
 	    // To GC any closed windows:
 	    for ( var i = 0; i < this.tabWindows.length; i++ ) {
 	      var tabWindow = this.tabWindows[ i ];
 	      if( tabWindow ) {
 	        tabWindow.open = false;
-	        tabWindow._current = false;
+	        tabWindow._focused = false;
 	      }
 	    }
 	    for ( var i = 0; i < chromeWindowList.length; i++ ) {
@@ -360,9 +356,12 @@
 	      }
 	    }
 	    // mark current window:
-	    var currentTabWindow = this.windowIdMap[currentWindow.id];
-	    currentTabWindow._current = true;
-	
+	    var currentTabWindow = this.windowIdMap[focusedWindow.id];
+	    if (currentTabWindow) {
+	      currentTabWindow._focused = true;
+	    } else {
+	      console.warn("syncWindowList: last focused window id ", focusedWindow.id, " not found -- ignoring");
+	    }
 	    console.log("syncWindowList: complete");
 	    this.flux.emit("sync");
 	  },   
@@ -413,7 +412,7 @@
 	
 	  onSyncWindowList: function(payload) {
 	    console.log("onSyncWindowList: ", payload);
-	    this.syncWindowList(payload.windowList,payload.currentWindow);
+	    this.syncWindowList(payload.windowList,payload.focusedWindow);
 	    this.flux.emit("change");
 	  },
 	
@@ -560,7 +559,7 @@
 	  chromeWindow: null,
 	  bookmarkFolder: null,  
 	  open: false,
-	  _current: false,
+	  _focused: false,
 	
 	  reloadBookmarkFolder: function() {
 	    var tabWindow = this;
@@ -590,8 +589,8 @@
 	    return this._managed;
 	  },
 	
-	  isCurrent: function() {
-	    return this._current;
+	  isFocused: function() {
+	    return this._focused;
 	  },
 	
 	  // Get a set of tab-like items for rendering
@@ -825,10 +824,11 @@
 	    var self = this;
 	    var t_start = performance.now();
 	    chrome.windows.getAll( {populate: true}, function (windowList) {
-	        chrome.windows.getCurrent(null, function (currentWindow) { 
+	        chrome.windows.getLastFocused(null, function (focusedWindow) { 
 	          var t_finish = performance.now();
 	          console.log("syncWindowList: gathering window state took ", t_finish - t_start, " ms");
-	          var payload = { windowList: windowList, currentWindow: currentWindow };
+	          console.log("currentWindow: ", focusedWindow);
+	          var payload = { windowList: windowList, focusedWindow: focusedWindow };
 	          self.dispatch(constants.SYNC_WINDOW_LIST, payload);
 	        });
 	     });
