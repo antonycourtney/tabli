@@ -10,14 +10,10 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.(js|jsx)$/, loader: "jsx-loader?harmony" },
-            { test: /\.css$/, loader: "style-loader!css-loader" },
-            { test: /\.(png|jpg)$/, loader: "url-loader?limit=8192"},
-            { test: /\.json$/, loader: "json"}
+            { test: /\.(js|jsx)$/, loader: "babel-loader" }
         ]
     },
     resolve: {
-        // require('module') instead of require('module.js')
-        extensions: ["", ".js", ".jsx", ".json"]
+        extensions: ["", ".js", ".jsx"]
     }
 };

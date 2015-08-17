@@ -19,5 +19,8 @@
     "object-assign": "^3.0.0",
     "react": "^0.13.3",
     "webpack": "^1.11.0"
+  },
+  "devDependencies": {
+    "babel-loader": "^5.3.2"
   }
 }
