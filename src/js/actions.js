@@ -152,7 +152,6 @@ var actions = {
         chrome.windows.getLastFocused(null, function (focusedWindow) { 
           var t_finish = performance.now();
           console.log("syncWindowList: gathering window state took ", t_finish - t_start, " ms");
-          console.log("currentWindow: ", focusedWindow);
           var payload = { windowList: windowList, focusedWindow: focusedWindow };
           self.dispatch(constants.SYNC_WINDOW_LIST, payload);
         });

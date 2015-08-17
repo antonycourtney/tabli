@@ -129,12 +129,7 @@ function initBookmarks(flux,cb) {
 }
 
 function main() {
-  console.log("Hello from background page!");
   var fluxState = TabWindowStore.init(actions);
-
-  fluxState.flux.on("change",function (info) {
-    console.log("bgHelper: got change event");
-  });
 
   window.fluxState = fluxState;
   initBookmarks(fluxState.flux,function () {

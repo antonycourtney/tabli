@@ -5,9 +5,8 @@ var $ = require('jquery');
 
 var _ = require('underscore');
 
+// slight performance hit:
 var React = require('react');
-
-window.React = require('react');
 
 var objectAssign = require('object-assign');
 
@@ -440,7 +439,7 @@ var R_TabWindow = React.createClass({
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.getTabItems();
 
-    console.log("TabWindow.render: ", this.props.flux, this.props);
+    // console.log("TabWindow.render: ", this.props.flux, this.props);
 
     /*
      * optimization:  Let's only render tabItems if expanded
@@ -579,11 +578,10 @@ function logWrap( f ) {
  * Call React.render with flux state
  */
 function renderPopup(flux,winStore) {
+
   var t_init = performance.now();
   var elemId = document.getElementById('windowList-region');
-  console.log("renderPopup: elemId: ", elemId);
   var windowList = <R_TabWindowList flux={flux} winStore={winStore} />;
-  console.log("renderPopup: ", document, windowList, elemId, flux, winStore );
   React.render( windowList, elemId ); 
   var t_render = performance.now();
   console.log("initial render complete. render time: (", t_render - t_init, " ms)");

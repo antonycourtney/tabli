@@ -115,7 +115,7 @@ var TabWindowStore = Fluxxor.createStore({
   syncChromeWindow: function(chromeWindow) {
     var tabWindow = this.windowIdMap[chromeWindow.id];
     if( !tabWindow ) {
-      console.log( "syncWindowList: new window id: ", chromeWindow.id );
+      // console.log( "syncWindowList: new window id: ", chromeWindow.id );
       tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       this.addTabWindow(tabWindow);
     } else {
@@ -131,7 +131,6 @@ var TabWindowStore = Fluxxor.createStore({
    * managed and unmanaged tab windows
    */
   syncWindowList: function( chromeWindowList, focusedWindow ) {
-    console.log("syncWindowList: windows: ", chromeWindowList);
     // To GC any closed windows:
     for ( var i = 0; i < this.tabWindows.length; i++ ) {
       var tabWindow = this.tabWindows[ i ];
@@ -214,7 +213,7 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   getAll: function() {
-    console.log("Flux store - this.tabWindows.getAll: ", this.tabWindows);
+    // console.log("Flux store - this.tabWindows.getAll: ", this.tabWindows);
     return this.tabWindows.slice();
   },
 
@@ -240,15 +239,15 @@ function init(actions) {
     TabWindowStore: new TabWindowStore()
   };
 
-  console.log("TabWindowStore.init: actions: ", actions);
   var flux = new Fluxxor.Flux(stores, actions);
-  console.log("TabWindowStore.init: flux: ", flux);
   var winStore = stores.TabWindowStore;
+/*
   flux.on("dispatch", function(type, payload) {
       if (console && console.log) {
           console.log("[Dispatch]", type, payload);
       }
   });
+*/
   return {
     flux: flux,
     winStore: winStore
