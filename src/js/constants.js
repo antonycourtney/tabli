@@ -13,4 +13,4 @@ var constants = {
   SYNC_WINDOW_LIST: "SYNC_WINDOW_LIST"
 };
 
-module.exports = constants;
+export default constants;

@@ -1,17 +1,14 @@
 'use strict';
 
-var $ = require('jquery');
+import * as $ from 'jquery';
+import * as React from 'react';
 
-var _ = require('underscore');
+// import * as objectAssign from 'object-assign';
+import 'babel/polyfill';
 
-// slight performance hit:
-var React = require('react');
-
-var objectAssign = require('object-assign');
-
-var Fluxxor = require('fluxxor');
-var TabWindowStore = require('./tabWindowStore.js');
-var TabWindow = require('./tabWindow.js');
+import * as Fluxxor from 'fluxxor';
+import * as TabWindowStore from './tabWindowStore';
+import * as TabWindow from './tabWindow';
 
 var FluxMixin = Fluxxor.FluxMixin(React),
     StoreWatchMixin = Fluxxor.StoreWatchMixin;
@@ -165,7 +162,7 @@ function m() {
   var res = {};
   for (var i = 0; i < arguments.length; i++) {
     if (arguments[i]) {
-      objectAssign(res, arguments[i]);
+      Object.assign(res, arguments[i]);
     } else {
       if (typeof(arguments[i])==="undefined") {
         throw new Error("m(): argument " + i + " undefined");

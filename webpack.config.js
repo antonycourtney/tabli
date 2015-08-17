@@ -10,10 +10,11 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.(js|jsx)$/, loader: "babel-loader" }
+            { test: /\.(js|jsx)$/, loader: "babel-loader" },
+            { test: /\.(json)$/, loader: "json-loader" }
         ]
     },
     resolve: {
-        extensions: ["", ".js", ".jsx"]
+        extensions: ["", ".js", ".jsx", ".json"]
     }
 };

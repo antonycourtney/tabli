@@ -2,10 +2,12 @@
  * A Flux store for TabWindows
  */
 'use strict';
-var Fluxxor = require('fluxxor');
-var _ = require('underscore');
-var constants = require('./constants.js');
-var TabWindow = require('./tabWindow.js');
+
+import * as Fluxxor from 'fluxxor';
+import * as React from 'react';
+import * as _ from 'underscore';
+import * as constants from './constants';
+import * as TabWindow from './tabWindow';
 
 var TabWindowStore = Fluxxor.createStore({
   initialize: function() {
@@ -234,7 +236,7 @@ var TabWindowStore = Fluxxor.createStore({
 /*
  * initialize Flux state and empty window store and return it
  */
-function init(actions) {
+export function init(actions) {
   var stores = {
     TabWindowStore: new TabWindowStore()
   };
@@ -253,5 +255,3 @@ function init(actions) {
     winStore: winStore
   };
 }
-
-module.exports.init = init;

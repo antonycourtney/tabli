@@ -3,7 +3,7 @@
  */
 'use strict';
 
-var constants = require('./constants.js');
+import * as constants from './constants';
 
 var actions = {
   addTabWindows: function(tabWindows) {
@@ -158,5 +158,4 @@ var actions = {
      });
   }
 };
-
-module.exports = actions;
+export default actions;

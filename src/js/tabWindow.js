@@ -162,7 +162,7 @@ var tabWindowPrototype = {
 /*  
  * initialize a tab window from a (unmanaged) chrome Window
  */
-function makeChromeTabWindow( chromeWindow ) {
+export function makeChromeTabWindow( chromeWindow ) {
   var ret = Object.create( tabWindowPrototype );
   ret.chromeWindow = chromeWindow;
   ret.open = true;
@@ -172,7 +172,7 @@ function makeChromeTabWindow( chromeWindow ) {
 /*
  * initialize an unopened window from a bookmarks folder
  */
-function makeFolderTabWindow( bookmarkFolder ) {
+export function makeFolderTabWindow( bookmarkFolder ) {
   var ret = Object.create( tabWindowPrototype );
   ret._managed = true;
   ret.bookmarkFolder = bookmarkFolder;
@@ -183,16 +183,10 @@ function makeFolderTabWindow( bookmarkFolder ) {
 /*
  * deserialize a TabWindow from its payload:
  */
-function deserialize(payload) {
+export function deserialize(payload) {
   if (payload._managed) {
     return makeFolderTabWindow(payload.bookmarkFolder);
   } else {
     return makeChromeTabWindow(payload.chromeWindow);
   }
 } 
-
-module.exports = {
-  makeChromeTabWindow: makeChromeTabWindow,
-  makeFolderTabWindow: makeFolderTabWindow,
-  deserialize: deserialize
-};

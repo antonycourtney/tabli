@@ -5,10 +5,9 @@
  */
 'use strict';
 
-var TabWindowStore = require('./tabWindowStore.js');
-var TabWindow = require('./tabWindow.js');
-
-var actions = require('./actions');
+import * as TabWindowStore from './tabWindowStore';
+import * as TabWindow from './tabWindow';
+import * as actions from './actions';
 
 var popupPort = null;
 var tabmanFolderId = null;
