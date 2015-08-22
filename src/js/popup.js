@@ -350,6 +350,11 @@ var R_TabItem = React.createClass({
     }
 
     var fiSrc=tab.favIconUrl ? tab.favIconUrl : "";
+    // Skip the chrome FAVICONs; they just throw when accessed.
+    if (fiSrc.indexOf("chrome://theme/")==0) {
+      fiSrc="";
+    }
+
     var tabFavIcon = <img style={styles.favIcon} src={fiSrc} />;
 
     var tabActiveStyle = tab.active ? styles.activeSpan : null;
