@@ -9,6 +9,21 @@ import * as _ from 'underscore';
 import * as constants from './constants';
 import * as TabWindow from './tabWindow';
 
+/*
+ * find the index of a tab in a ChromeWindow by its tab Id
+ *
+ * just dumb linear search for now
+ */
+function findTabIndex(chromeWindow,targetTabId) {
+  for (var i = 0; i < chromeWindow.tabs.length; i++) {
+    var tab = chromeWindow.tabs[i];
+    if (tab.id == targetTabId)
+      return i;
+  }
+  return null;
+} 
+
+
 var TabWindowStore = Fluxxor.createStore({
   initialize: function() {
     this.resetState();
@@ -19,7 +34,19 @@ var TabWindowStore = Fluxxor.createStore({
       constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow,
       constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
       constants.SYNC_WINDOW_LIST, this.onSyncWindowList,
-      constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState
+      constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState,
+      constants.SYNC_CHROME_WINDOW, this.onSyncChromeWindow,
+      constants.REMOVE_CHROME_WINDOW, this.onRemoveChromeWindow,
+      constants.TAB_CREATED, this.onTabCreated,
+      constants.TAB_REMOVED, this.onTabRemoved,
+      constants.TAB_UPDATED, this.onTabUpdated             
+/*      
+      constants.TAB_MOVED, this.onTabMoved,
+      constants.TAB_DETACHED, this.onTabDetached,
+      constants.TAB_ATTACHED, this.onTabAttached,
+      constants.TAB_ACTIVATED, this.onTabActivated
+  */
+
       );
   },
 
@@ -67,6 +94,16 @@ var TabWindowStore = Fluxxor.createStore({
       console.log("removeTabWindow: request to remove window not in collection", tabWindow);
     }
     this.clearMapEntry(tabWindow);
+  },
+
+  removeChromeWindow: function(windowId) {
+    console.log("removeChromeWindow: ", windowId);
+    var tabWindow = this.windowIdMap[windowId];
+    if( !tabWindow ) {
+      console.warn("window id not found -- ignoring");
+    } else {
+      this.removeTabWindow(tabWindow);      
+    }
   },
 
   closeTabWindow: function(tabWindow, cb) {
@@ -128,6 +165,69 @@ var TabWindowStore = Fluxxor.createStore({
     }
   },
 
+  handleTabCreated: function(tab) {
+    var tabWindow = this.windowIdMap[tab.windowId];
+    if (!tabWindow) {
+      console.warn("Got tab created event for unknown window ", tab);
+    } else {
+      console.log("handleTabCreated: ", tabWindow, tab);
+      if (!tabWindow.chromeWindow) {
+        console.warn("got tab created for bad chromeWindow");
+      }
+      if (!tabWindow.chromeWindow.tabs) {
+        console.warn("first tab in chrome window; initializing...");
+        tabWindow.chromeWindow.tabs = [tab];
+      } else {
+        // append this tab onto tabs at index: 
+        tabWindow.chromeWindow.tabs.splice(tab.index,0,tab);
+      }
+    }
+  },
+
+  handleTabRemoved: function(tabId,removeInfo) {
+    if (removeInfo.isWindowClosing) {
+      console.log("handleTabRemoved: window closing, ignoring...");
+      // Window is closing, ignore...
+      return;
+    }
+    var tabWindow = this.windowIdMap[removeInfo.windowId];
+    if (!tabWindow) {
+      console.warn("Got tab removed event for unknown window ", tabId, removeInfo);
+    } else {
+      var chromeWindow = tabWindow.chromeWindow;
+
+      var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
+      if (tabIndex!=null) {
+        tabWindow.chromeWindow.tabs.splice(tabIndex,1);
+      }
+    }
+  },
+
+  handleTabUpdated: function(tabId,changeInfo,tab) {
+    console.log("handleTabUpdated: ", tabId, changeInfo, tab);
+    var tabWindow = this.windowIdMap[tab.windowId];
+    if (!tabWindow) {
+      console.warn("Got tab updated event for unknown window ", tab);
+      return;
+    } 
+    console.log("handleTabUpdated: ", tabWindow, tab);
+    if (!tabWindow.chromeWindow) {
+      console.warn("got tab Updated for bad chromeWindow");
+    }
+    if (!tabWindow.chromeWindow.tabs) {
+      console.warn("No tabs in chrome Window; dropping update...");
+      tabWindow.chromeWindow.tabs = [tab];
+    } else {
+      /* we should be able to trust tab.index, but this seems safer... */
+      var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
+      if (tabIndex==null) {
+        console.warn("Got tab update for unknown tab: ", tabId, tab);
+        return;
+      }
+      tabWindow.chromeWindow.tabs[tabIndex] = tab;
+    }
+  },
+
   /**
    * synchronize windows from chrome.windows.getAll with internal map of
    * managed and unmanaged tab windows
@@ -153,6 +253,12 @@ var TabWindowStore = Fluxxor.createStore({
         this.removeTabWindow(tabWindow);
       }
     }
+
+    /*
+     * TODO / FIXME: A _focused flag on each window is wrong rep
+     * for an event-driven implementation
+     */
+
     // mark current window:
     var currentTabWindow = this.windowIdMap[focusedWindow.id];
     if (currentTabWindow) {
@@ -169,13 +275,13 @@ var TabWindowStore = Fluxxor.createStore({
     console.log("onCloseTab: closing tab...");
     this.closeTab(payload.tab,function() {
       console.log("onCloseTab: close complete...");
-      self.flux.emit("change");
+      self.emit("change");
     });
   },
 
   onAddTabWindows: function(payload) {
     _.each(payload.tabWindows, this.addTabWindow);
-    this.flux.emit("change");
+    this.emit("change");
   },
 
   onReplaceWindowState: function(payload) {
@@ -187,31 +293,57 @@ var TabWindowStore = Fluxxor.createStore({
   onCloseTabWindow: function(payload) {
     var self = this;
     this.closeTabWindow(payload.tabWindow, function () {
-        self.flux.emit("change");      
+        self.emit("change");      
       });
   },
 
   onRevertTabWindow: function(payload) {
     var self = this;
     this.revertTabWindow(payload.tabWindow, function () {
-        self.flux.emit("change");      
+        self.emit("change");      
       });
   },
 
   onRemoveTabWindow: function(payload) {
     this.removeTabWindow(payload.tabWindow);
-    this.flux.emit("change");
+    this.emit("change");
+  },
+
+  onRemoveChromeWindow: function(payload) {
+    this.removeChromeWindow(payload.windowId);
+    this.emit("change");
+  },
+
+  onSyncChromeWindow: function(payload) {
+    this.syncChromeWindow(payload.chromeWindow);
+    this.emit("change");
   },
 
   onAttachChromeWindow: function(payload) {
     this.attachChromeWindow(payload.tabWindow,payload.chromeWindow);
-    this.flux.emit("change");
+    this.emit("change");
   },
 
   onSyncWindowList: function(payload) {
     console.log("onSyncWindowList: ", payload);
     this.syncWindowList(payload.windowList,payload.focusedWindow);
-    this.flux.emit("change");
+    this.emit("change");
+  },
+
+  onTabCreated: function(payload) {
+    console.log("onTabCreated: ", payload);
+    this.handleTabCreated(payload.tab);
+    this.emit("change");
+  },
+
+  onTabRemoved: function(payload) {
+    this.handleTabRemoved(payload.tabId,payload.removeInfo);
+    this.emit("change");
+  },
+
+  onTabUpdated: function(payload) {
+    this.handleTabUpdated(payload.tabId,payload.changeInfo,payload.tab);
+    this.emit("change");
   },
 
   getAll: function() {
@@ -243,13 +375,11 @@ export function init(actions) {
 
   var flux = new Fluxxor.Flux(stores, actions);
   var winStore = stores.TabWindowStore;
-/*
   flux.on("dispatch", function(type, payload) {
       if (console && console.log) {
           console.log("[Dispatch]", type, payload);
       }
   });
-*/
   return {
     flux: flux,
     winStore: winStore

@@ -90,7 +90,7 @@ var tabWindowPrototype = {
   chromeWindow: null,
   bookmarkFolder: null,  
   open: false,
-  _focused: false,
+  _focused: false,  // TODO/FIXME: Wrong rep for event-driven bgHelper
 
   reloadBookmarkFolder: function() {
     var tabWindow = this;
@@ -105,6 +105,9 @@ var tabWindowPrototype = {
       return this.bookmarkFolder.title;
     } else {
       var tabs = this.chromeWindow.tabs;
+      if (!tabs)
+        return "";  // window initializing
+      
       // linear search to find active tab to use as window title
       for ( var j = 0; j < tabs.length; j++ ) {
         var tab = tabs[j];

@@ -605,14 +605,20 @@ function postLoadRender() {
   console.log("postLoadRender: (", t_load - t_start, " ms)");
   var bgw = chrome.extension.getBackgroundPage();
   var fluxState = bgw.fluxState;
+  renderPopup(fluxState.flux,fluxState.winStore);
+/*
+ * We used to do an explicit window sync but this is painfully slow to do at popup open time
+ * So now we just use chrome's window and tab events to keep Flux store up to date in the
+ * background.
 
   fluxState.flux.on("sync",function () {
-    console.log("Got sync event -- rendering");
-    renderPopup(fluxState.flux,fluxState.winStore);
+    var t_sync = performance.now();
+    console.log("Got sync event (", t_sync - t_load," ms) -- rendering");
   });
 
   console.log("syncing window list...");
   fluxState.flux.actions.syncWindowList();
+*/
 }
 
 /**

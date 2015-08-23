@@ -41,12 +41,20 @@ var actions = {
     this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
   },
 
+  /* remove a Chrome window by window id */
+  removeChromeWindow: function(windowId) {
+    var payload = { windowId };
+    this.dispatch(constants.REMOVE_CHROME_WINDOW, payload);
+  },
 
   restoreBookmarkWindow: function(tabWindow) {
     var self = this;
     function resyncCallback() {
       self.flux.actions.syncWindowList();
-    }    
+    }
+    /*
+     * special case handling of replacing the contents of a fresh window 
+     */    
     chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
       var urls = [];
       var tabs = tabWindow.getTabItems();
@@ -145,7 +153,7 @@ var actions = {
     });
   },
 
-  syncWindowList: function() {
+  syncWindowList: function(cb) {
     var self = this;
     var t_start = performance.now();
     chrome.windows.getAll( {populate: true}, function (windowList) {
@@ -154,8 +162,41 @@ var actions = {
           console.log("syncWindowList: gathering window state took ", t_finish - t_start, " ms");
           var payload = { windowList: windowList, focusedWindow: focusedWindow };
           self.dispatch(constants.SYNC_WINDOW_LIST, payload);
+          if (cb) {
+            cb();
+          }
         });
      });
-  }
+  },
+
+  /* sync a new Chrome window upon creation */
+  syncChromeWindow: function(chromeWindow) {
+    var payload = { chromeWindow };
+    this.dispatch(constants.SYNC_CHROME_WINDOW, payload);
+  },
+
+  /* tab event handlers */
+  tabCreated: function(tab) {
+    this.dispatch(constants.TAB_CREATED,{ tab });
+  },
+  tabRemoved: function(tabId,removeInfo) {
+    this.dispatch(constants.TAB_REMOVED,{ tabId,removeInfo });
+  },
+  tabUpdated: function(tabId,changeInfo,tab) {
+    this.dispatch(constants.TAB_UPDATED,{ tabId, changeInfo, tab });
+  },
+  tabMoved: function(tabId,moveInfo) {
+    this.dispatch(constants.TAB_MOVED,{ tabId, moveInfo });
+  },
+  tabDetached: function(tabId,detachInfo) {
+    this.dispatch(constants.TAB_DETACHED,{ tabId, detachInfo });
+  },
+  tabAttached: function(tab) {
+    this.dispatch(constants.TAB_ATTACHED,{ tabId, attachInfo });
+  },
+  tabActivated: function(activeInfo) {
+    this.dispatch(constants.TAB_ACTIVATED,activeInfo);
+  },
+
 };
 export default actions;

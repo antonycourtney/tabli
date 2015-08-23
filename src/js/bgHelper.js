@@ -127,13 +127,34 @@ function initBookmarks(flux,cb) {
   });
 }
 
+
+/**
+ * register Window and Tab event handlers that will update Flux state when windows / tabs are
+ * open or closed
+ */
+function registerHandlers(fluxState)
+{
+  var actions = fluxState.flux.actions;
+
+  chrome.windows.onCreated.addListener(actions.syncChromeWindow);
+  chrome.windows.onRemoved.addListener(actions.removeChromeWindow);
+  chrome.tabs.onCreated.addListener(actions.tabCreated);
+  chrome.tabs.onRemoved.addListener(actions.tabRemoved);
+  chrome.tabs.onUpdated.addListener(actions.tabUpdated);
+  chrome.tabs.onMoved.addListener(actions.tabMoved);
+  chrome.tabs.onDetached.addListener(actions.tabDetached);
+  chrome.tabs.onAttached.addListener(actions.tabAttached);
+  chrome.tabs.onActivated.addListener(actions.tabActivated);
+}
+
+
 function main() {
   var fluxState = TabWindowStore.init(actions);
 
   window.fluxState = fluxState;
   initBookmarks(fluxState.flux,function () {
     console.log("init: done reading bookmarks.");
-    fluxState.flux.actions.syncWindowList();
+    fluxState.flux.actions.syncWindowList(() => { registerHandlers(fluxState); });
   });
 }
 
