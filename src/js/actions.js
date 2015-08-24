@@ -48,10 +48,8 @@ var actions = {
   },
 
   restoreBookmarkWindow: function(tabWindow) {
+    console.log("restoreBookmarkWindow: ", tabWindow, tabWindow.chromeWindow);
     var self = this;
-    function resyncCallback() {
-      self.flux.actions.syncWindowList();
-    }
     /*
      * special case handling of replacing the contents of a fresh window 
      */    
@@ -87,14 +85,11 @@ var actions = {
 
   openTabWindow: function(tabWindow) {
     var self = this;
-    function resyncCallback() {
-      self.flux.actions.syncWindowList();
-    }
 
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
     if (tabWindow.open) {
       // existing window -- just transfer focus
-      chrome.windows.update( windowId, { focused: true }, resyncCallback );
+      chrome.windows.update( windowId, { focused: true });
     } else {
       // bookmarked window -- need to open it!
       self.flux.actions.restoreBookmarkWindow(tabWindow);      
@@ -110,10 +105,6 @@ var actions = {
   // activate a specific tab:
   activateTab: function(tabWindow,tab,tabIndex) {
     var self = this;
-    function resyncCallback() {
-      self.flux.actions.syncWindowList();
-    }
-
     console.log("activateTab: ", tabWindow, tab );
     if( tabWindow.open ) {
       // OK, so we know this window is open.  What about the specific tab?
@@ -122,7 +113,7 @@ var actions = {
         console.log("making tab active");
         chrome.tabs.update( tab.id, { active: true }, function () {
           console.log("making tab's window active");
-          chrome.windows.update( tabWindow.chromeWindow.id, { focused: true }, resyncCallback);
+          chrome.windows.update( tabWindow.chromeWindow.id, { focused: true });
         });
       } else {
         // restore this bookmarked tab:
@@ -145,12 +136,7 @@ var actions = {
   closeTab: function(tab) {
     console.log("closeTab: closing ", tab, this);
     var self = this;
-    chrome.tabs.remove( tab.id, function() {
-      console.log("closeTab: closed.  syncing");
-      // TODO: we could probably sync just the one window
-      // Note:  Flux plays games with 'this', so we can't do this.syncWindowList()
-      self.flux.actions.syncWindowList();
-    });
+    chrome.tabs.remove(tab.id);
   },
 
   syncWindowList: function(cb) {

@@ -672,28 +672,19 @@
 	 * See https://code.google.com/p/chromium/issues/detail?id=511699
 	 *
 	 */
-	
 	var t_start = performance.now();
 	
 	function postLoadRender() {
 	  var t_load = performance.now();
 	  console.log("postLoadRender: (", t_load - t_start, " ms)");
-	  var bgw = chrome.extension.getBackgroundPage();
-	  var fluxState = bgw.fluxState;
-	  renderPopup(fluxState.flux, fluxState.winStore);
 	  /*
 	   * We used to do an explicit window sync but this is painfully slow to do at popup open time
 	   * So now we just use chrome's window and tab events to keep Flux store up to date in the
 	   * background.
-	  
-	    fluxState.flux.on("sync",function () {
-	      var t_sync = performance.now();
-	      console.log("Got sync event (", t_sync - t_load," ms) -- rendering");
-	    });
-	  
-	    console.log("syncing window list...");
-	    fluxState.flux.actions.syncWindowList();
-	  */
+	   */
+	  var bgw = chrome.extension.getBackgroundPage();
+	  var fluxState = bgw.fluxState;
+	  renderPopup(fluxState.flux, fluxState.winStore);
 	}
 	
 	/**
@@ -866,6 +857,14 @@
 	  },
 	
 	  attachChromeWindow: function attachChromeWindow(tabWindow, chromeWindow) {
+	    console.log("attachChromeWindow: ", tabWindow, chromeWindow);
+	    // Was this Chrome window id previously associated with some other tab window?
+	    var oldTabWindow = this.windowIdMap[chromeWindow.id];
+	    if (oldTabWindow) {
+	      console.log("found previous tab window -- detaching");
+	      console.log("oldTabWindow: ", oldTabWindow);
+	      this.removeTabWindow(oldTabWindow);
+	    }
 	    tabWindow.chromeWindow = chromeWindow;
 	    tabWindow.open = true;
 	    this.windowIdMap[chromeWindow.id] = tabWindow;
@@ -878,11 +877,11 @@
 	  syncChromeWindow: function syncChromeWindow(chromeWindow) {
 	    var tabWindow = this.windowIdMap[chromeWindow.id];
 	    if (!tabWindow) {
-	      // console.log( "syncWindowList: new window id: ", chromeWindow.id );
+	      // console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
 	      tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
 	      this.addTabWindow(tabWindow);
 	    } else {
-	      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+	      console.warn("syncChromeWindow: cache hit for window id: ", chromeWindow.id);
 	      // Set chromeWindow to current snapshot of tab contents:
 	      tabWindow.chromeWindow = chromeWindow;
 	      tabWindow.open = true;
@@ -28350,7 +28349,9 @@
 	        tabs = this.bookmarkFolder.children.map(makeBookmarkedTabItem);
 	      }
 	    } else {
-	      tabs = this.chromeWindow.tabs.map(makeOpenTabItem);
+	      tabs = this.chromeWindow.tabs;
+	      if (!tabs) return [];
+	      tabs = tabs.map(makeOpenTabItem);
 	    }
 	
 	    return tabs;

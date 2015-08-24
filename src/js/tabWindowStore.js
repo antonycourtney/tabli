@@ -142,6 +142,14 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
   attachChromeWindow: function(tabWindow,chromeWindow) {
+    console.log("attachChromeWindow: ", tabWindow, chromeWindow);
+    // Was this Chrome window id previously associated with some other tab window?
+    var oldTabWindow = this.windowIdMap[chromeWindow.id];
+    if (oldTabWindow) {
+      console.log("found previous tab window -- detaching");
+      console.log("oldTabWindow: ", oldTabWindow);
+      this.removeTabWindow(oldTabWindow);
+    }
     tabWindow.chromeWindow = chromeWindow;
     tabWindow.open = true;
     this.windowIdMap[ chromeWindow.id ] = tabWindow;
@@ -154,11 +162,11 @@ var TabWindowStore = Fluxxor.createStore({
   syncChromeWindow: function(chromeWindow) {
     var tabWindow = this.windowIdMap[chromeWindow.id];
     if( !tabWindow ) {
-      // console.log( "syncWindowList: new window id: ", chromeWindow.id );
+      // console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
       tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       this.addTabWindow(tabWindow);
     } else {
-      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+      console.warn( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
       // Set chromeWindow to current snapshot of tab contents:
       tabWindow.chromeWindow = chromeWindow;
       tabWindow.open = true;

@@ -107,7 +107,7 @@ var tabWindowPrototype = {
       var tabs = this.chromeWindow.tabs;
       if (!tabs)
         return "";  // window initializing
-      
+
       // linear search to find active tab to use as window title
       for ( var j = 0; j < tabs.length; j++ ) {
         var tab = tabs[j];
@@ -138,7 +138,10 @@ var tabWindowPrototype = {
         tabs = this.bookmarkFolder.children.map( makeBookmarkedTabItem );
       }
     } else {
-      tabs = this.chromeWindow.tabs.map( makeOpenTabItem );
+      tabs = this.chromeWindow.tabs;
+      if (!tabs)
+        return [];
+      tabs = tabs.map( makeOpenTabItem );
     }
 
     return tabs;

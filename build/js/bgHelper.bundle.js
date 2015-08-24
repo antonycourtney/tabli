@@ -377,6 +377,14 @@
 	  },
 	
 	  attachChromeWindow: function attachChromeWindow(tabWindow, chromeWindow) {
+	    console.log("attachChromeWindow: ", tabWindow, chromeWindow);
+	    // Was this Chrome window id previously associated with some other tab window?
+	    var oldTabWindow = this.windowIdMap[chromeWindow.id];
+	    if (oldTabWindow) {
+	      console.log("found previous tab window -- detaching");
+	      console.log("oldTabWindow: ", oldTabWindow);
+	      this.removeTabWindow(oldTabWindow);
+	    }
 	    tabWindow.chromeWindow = chromeWindow;
 	    tabWindow.open = true;
 	    this.windowIdMap[chromeWindow.id] = tabWindow;
@@ -389,11 +397,11 @@
 	  syncChromeWindow: function syncChromeWindow(chromeWindow) {
 	    var tabWindow = this.windowIdMap[chromeWindow.id];
 	    if (!tabWindow) {
-	      // console.log( "syncWindowList: new window id: ", chromeWindow.id );
+	      // console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
 	      tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
 	      this.addTabWindow(tabWindow);
 	    } else {
-	      // console.log( "syncWindowList: cache hit for id: ", chromeWindow.id );
+	      console.warn("syncChromeWindow: cache hit for window id: ", chromeWindow.id);
 	      // Set chromeWindow to current snapshot of tab contents:
 	      tabWindow.chromeWindow = chromeWindow;
 	      tabWindow.open = true;
@@ -27861,7 +27869,9 @@
 	        tabs = this.bookmarkFolder.children.map(makeBookmarkedTabItem);
 	      }
 	    } else {
-	      tabs = this.chromeWindow.tabs.map(makeOpenTabItem);
+	      tabs = this.chromeWindow.tabs;
+	      if (!tabs) return [];
+	      tabs = tabs.map(makeOpenTabItem);
 	    }
 	
 	    return tabs;
@@ -27984,10 +27994,8 @@
 	  },
 	
 	  restoreBookmarkWindow: function restoreBookmarkWindow(tabWindow) {
+	    console.log("restoreBookmarkWindow: ", tabWindow, tabWindow.chromeWindow);
 	    var self = this;
-	    function resyncCallback() {
-	      self.flux.actions.syncWindowList();
-	    }
 	    /*
 	     * special case handling of replacing the contents of a fresh window 
 	     */
@@ -28024,14 +28032,11 @@
 	
 	  openTabWindow: function openTabWindow(tabWindow) {
 	    var self = this;
-	    function resyncCallback() {
-	      self.flux.actions.syncWindowList();
-	    }
 	
 	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 	    if (tabWindow.open) {
 	      // existing window -- just transfer focus
-	      chrome.windows.update(windowId, { focused: true }, resyncCallback);
+	      chrome.windows.update(windowId, { focused: true });
 	    } else {
 	      // bookmarked window -- need to open it!
 	      self.flux.actions.restoreBookmarkWindow(tabWindow);
@@ -28047,10 +28052,6 @@
 	  // activate a specific tab:
 	  activateTab: function activateTab(tabWindow, tab, tabIndex) {
 	    var self = this;
-	    function resyncCallback() {
-	      self.flux.actions.syncWindowList();
-	    }
-	
 	    console.log("activateTab: ", tabWindow, tab);
 	    if (tabWindow.open) {
 	      // OK, so we know this window is open.  What about the specific tab?
@@ -28059,7 +28060,7 @@
 	        console.log("making tab active");
 	        chrome.tabs.update(tab.id, { active: true }, function () {
 	          console.log("making tab's window active");
-	          chrome.windows.update(tabWindow.chromeWindow.id, { focused: true }, resyncCallback);
+	          chrome.windows.update(tabWindow.chromeWindow.id, { focused: true });
 	        });
 	      } else {
 	        // restore this bookmarked tab:
@@ -28082,12 +28083,7 @@
 	  closeTab: function closeTab(tab) {
 	    console.log("closeTab: closing ", tab, this);
 	    var self = this;
-	    chrome.tabs.remove(tab.id, function () {
-	      console.log("closeTab: closed.  syncing");
-	      // TODO: we could probably sync just the one window
-	      // Note:  Flux plays games with 'this', so we can't do this.syncWindowList()
-	      self.flux.actions.syncWindowList();
-	    });
+	    chrome.tabs.remove(tab.id);
 	  },
 	
 	  syncWindowList: function syncWindowList(cb) {
