@@ -136,16 +136,16 @@ function registerHandlers(fluxState)
 {
   var actions = fluxState.flux.actions;
 
-  chrome.windows.onCreated.addListener(actions.syncChromeWindow);
-  chrome.windows.onRemoved.addListener(actions.removeChromeWindow);
-  chrome.windows.onFocusChanged.addListener(actions.windowFocusChanged);
-  chrome.tabs.onCreated.addListener(actions.tabCreated);
-  chrome.tabs.onRemoved.addListener(actions.tabRemoved);
-  chrome.tabs.onUpdated.addListener(actions.tabUpdated);
-  chrome.tabs.onMoved.addListener(actions.tabMoved);
-  chrome.tabs.onDetached.addListener(actions.tabDetached);
-  chrome.tabs.onAttached.addListener(actions.tabAttached);
-  chrome.tabs.onActivated.addListener(actions.tabActivated);
+  chrome.windows.onCreated.addListener(actions.chromeWindowCreated);
+  chrome.windows.onRemoved.addListener(actions.chromeWindowRemoved);
+  chrome.windows.onFocusChanged.addListener(actions.chromeWindowFocusChanged);
+  chrome.tabs.onCreated.addListener(actions.chromeTabCreated);
+  chrome.tabs.onRemoved.addListener(actions.chromeTabRemoved);
+  chrome.tabs.onUpdated.addListener(actions.chromeTabUpdated);
+  chrome.tabs.onMoved.addListener(actions.chromeTabMoved);
+  chrome.tabs.onDetached.addListener(actions.chromeTabDetached);
+  chrome.tabs.onAttached.addListener(actions.chromeTabttached);
+  chrome.tabs.onActivated.addListener(actions.chromeTabActivated);
 }
 
 

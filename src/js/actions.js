@@ -40,17 +40,6 @@ var actions = {
     this.dispatch(constants.REMOVE_TAB_WINDOW, payload);
   },
 
-  /* remove a Chrome window by window id */
-  removeChromeWindow: function(windowId) {
-    var payload = { windowId };
-    this.dispatch(constants.REMOVE_CHROME_WINDOW, payload);
-  },
-
-  windowFocusChanged: function(windowId) {
-    var payload = { windowId };
-    this.dispatch(constants.WINDOW_FOCUS_CHANGED, payload);  
-  },
-
   restoreBookmarkWindow: function(tabWindow) {
     console.log("restoreBookmarkWindow: ", tabWindow, tabWindow.chromeWindow);
     var self = this;
@@ -159,33 +148,45 @@ var actions = {
      });
   },
 
-  /* sync a new Chrome window upon creation */
-  syncChromeWindow: function(chromeWindow) {
+
+  /* actions registered as Chrome window and tab event listeners */
+
+  chromeWindowCreated: function(chromeWindow) {
     var payload = { chromeWindow };
-    this.dispatch(constants.SYNC_CHROME_WINDOW, payload);
+    this.dispatch(constants.CHROME_WINDOW_CREATED, payload);
+  },
+
+  chromeWindowRemoved: function(windowId) {
+    var payload = { windowId };
+    this.dispatch(constants.CHROME_WINDOW_REMOVED, payload);
+  },
+
+  chromeWindowFocusChanged: function(windowId) {
+    var payload = { windowId };
+    this.dispatch(constants.CHROME_WINDOW_FOCUS_CHANGED, payload);  
   },
 
   /* tab event handlers */
-  tabCreated: function(tab) {
-    this.dispatch(constants.TAB_CREATED,{ tab });
+  chromeTabCreated: function(tab) {
+    this.dispatch(constants.CHROME_TAB_CREATED,{ tab });
   },
-  tabRemoved: function(tabId,removeInfo) {
-    this.dispatch(constants.TAB_REMOVED,{ tabId,removeInfo });
+  chromeTabRemoved: function(tabId,removeInfo) {
+    this.dispatch(constants.CHROME_TAB_REMOVED,{ tabId,removeInfo });
   },
-  tabUpdated: function(tabId,changeInfo,tab) {
-    this.dispatch(constants.TAB_UPDATED,{ tabId, changeInfo, tab });
+  chromeTabUpdated: function(tabId,changeInfo,tab) {
+    this.dispatch(constants.CHROME_TAB_UPDATED,{ tabId, changeInfo, tab });
   },
-  tabMoved: function(tabId,moveInfo) {
-    this.dispatch(constants.TAB_MOVED,{ tabId, moveInfo });
+  chromeTabMoved: function(tabId,moveInfo) {
+    this.dispatch(constants.CHROME_TAB_MOVED,{ tabId, moveInfo });
   },
-  tabDetached: function(tabId,detachInfo) {
-    this.dispatch(constants.TAB_DETACHED,{ tabId, detachInfo });
+  chromeTabDetached: function(tabId,detachInfo) {
+    this.dispatch(constants.CHROME_TAB_DETACHED,{ tabId, detachInfo });
   },
-  tabAttached: function(tab) {
-    this.dispatch(constants.TAB_ATTACHED,{ tabId, attachInfo });
+  chromeTabAttached: function(tab) {
+    this.dispatch(constants.CHROME_TAB_ATTACHED,{ tabId, attachInfo });
   },
-  tabActivated: function(activeInfo) {
-    this.dispatch(constants.TAB_ACTIVATED,activeInfo);
+  chromeTabActivated: function(activeInfo) {
+    this.dispatch(constants.CHROME_TAB_ACTIVATED,activeInfo);
   },
 
 };

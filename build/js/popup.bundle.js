@@ -753,11 +753,11 @@
 	var TabWindowStore = Fluxxor.createStore({
 	  initialize: function initialize() {
 	    this.resetState();
-	    this.bindActions(constants.ADD_TAB_WINDOWS, this.onAddTabWindows, constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow, constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow, constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow, constants.REVERT_TAB_WINDOW, this.onRevertTabWindow, constants.SYNC_WINDOW_LIST, this.onSyncWindowList, constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState, constants.SYNC_CHROME_WINDOW, this.onSyncChromeWindow, constants.REMOVE_CHROME_WINDOW, this.onRemoveChromeWindow, constants.WINDOW_FOCUS_CHANGED, this.onWindowFocusChanged, constants.TAB_CREATED, this.onTabCreated, constants.TAB_REMOVED, this.onTabRemoved, constants.TAB_UPDATED, this.onTabUpdated, constants.TAB_ACTIVATED, this.onTabActivated
+	    this.bindActions(constants.ADD_TAB_WINDOWS, this.onAddTabWindows, constants.CLOSE_TAB_WINDOW, this.onCloseTabWindow, constants.REMOVE_TAB_WINDOW, this.onRemoveTabWindow, constants.ATTACH_CHROME_WINDOW, this.onAttachChromeWindow, constants.REVERT_TAB_WINDOW, this.onRevertTabWindow, constants.SYNC_WINDOW_LIST, this.onSyncWindowList, constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState, constants.CHROME_WINDOW_CREATED, this.onChromeWindowCreated, constants.CHROME_WINDOW_REMOVED, this.onChromeWindowRemoved, constants.CHROME_WINDOW_FOCUS_CHANGED, this.onChromeWindowFocusChanged, constants.CHROME_TAB_CREATED, this.onChromeTabCreated, constants.CHROME_TAB_REMOVED, this.onChromeTabRemoved, constants.CHROME_TAB_UPDATED, this.onChromeTabUpdated, constants.CHROME_TAB_ACTIVATED, this.onChromeTabActivated
 	    /*      
-	          constants.TAB_MOVED, this.onTabMoved,
-	          constants.TAB_DETACHED, this.onTabDetached,
-	          constants.TAB_ATTACHED, this.onTabAttached,
+	          constants.CHROME_TAB_MOVED, this.onChromeTabMoved,
+	          constants.CHROME_TAB_DETACHED, this.onChromeTabDetached,
+	          constants.CHROME_TAB_ATTACHED, this.onChromeTabAttached,
 	      */
 	
 	    );
@@ -765,7 +765,6 @@
 	
 	  resetState: function resetState() {
 	    this.windowIdMap = {};
-	    this.bookmarkIdMap = {};
 	    this.tabWindows = [];
 	  },
 	
@@ -777,19 +776,13 @@
 	    if (chromeWindow) {
 	      this.windowIdMap[chromeWindow.id] = tabWindow;
 	    }
-	    var bookmarkFolder = tabWindow.bookmarkFolder;
-	    if (bookmarkFolder) {
-	      this.bookmarkIdMap[bookmarkFolder.id] = tabWindow;
-	    }
 	    this.tabWindows.push(tabWindow);
 	  },
 	
-	  clearMapEntry: function clearMapEntry(tabWindow) {
-	    console.log("clearMapEntry: ", tabWindow);
+	  clearWindowIdMapEntry: function clearWindowIdMapEntry(tabWindow) {
+	    console.log("clearWindowIdMapEntry: ", tabWindow);
 	    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 	    if (windowId) delete this.windowIdMap[windowId];
-	    var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
-	    if (bookmarkId) delete this.bookmarkIdMap[bookmarkId];
 	  },
 	
 	  removeTabWindow: function removeTabWindow(tabWindow) {
@@ -803,28 +796,7 @@
 	    } else {
 	      console.log("removeTabWindow: request to remove window not in collection", tabWindow);
 	    }
-	    this.clearMapEntry(tabWindow);
-	  },
-	
-	  removeChromeWindow: function removeChromeWindow(windowId) {
-	    console.log("removeChromeWindow: ", windowId);
-	    var tabWindow = this.windowIdMap[windowId];
-	    if (!tabWindow) {
-	      console.warn("window id not found -- ignoring");
-	    } else {
-	      this.removeTabWindow(tabWindow);
-	    }
-	  },
-	
-	  closeTabWindow: function closeTabWindow(tabWindow, cb) {
-	    console.log("store closeTabWindow: ", tabWindow);
-	    if (!tabWindow.isManaged()) {
-	      console.log("unmanaged window -- removing");
-	      this.removeTabWindow(tabWindow);
-	    } else {
-	      this.clearMapEntry(tabWindow);
-	    }
-	    cb();
+	    this.clearWindowIdMapEntry(tabWindow);
 	  },
 	
 	  revertTabWindow: function revertTabWindow(tabWindow, callback) {
@@ -887,7 +859,47 @@
 	    }
 	  },
 	
-	  handleTabActivated: function handleTabActivated(tabId, windowId) {
+	  handleChromeWindowCreated: function handleChromeWindowCreated(chromeWindow) {
+	    this.syncChromeWindow(chromeWindow);
+	  },
+	
+	  handleChromeWindowRemoved: function handleChromeWindowRemoved(windowId) {
+	    console.log("handleChromeWindowRemoved: ", windowId);
+	    var tabWindow = this.windowIdMap[windowId];
+	    if (!tabWindow) {
+	      console.warn("window id not found -- ignoring");
+	    } else {
+	      if (!tabWindow.isManaged()) {
+	        // unmanaged windiw -- just remove
+	        this.removeTabWindow(tabWindow);
+	      } else {
+	        // managed window -- mark as closed and dissociate chrome window
+	        tabWindow.open = false;
+	        tabWindow.chromeWindow = null;
+	        this.clearWindowIdMapEntry(tabWindow);
+	      }
+	    }
+	  },
+	
+	  handleChromeWindowFocusChanged: function handleChromeWindowFocusChanged(windowId) {
+	    /* TODO / FIXME: more efficient rep for focused window */
+	    for (var i = 0; i < this.tabWindows.length; i++) {
+	      var tabWindow = this.tabWindows[i];
+	      if (tabWindow) {
+	        tabWindow._focused = false;
+	      }
+	    }
+	    if (windowId != chrome.windows.WINDOW_ID_NONE) {
+	      var tabWindow = this.windowIdMap[windowId];
+	      if (!tabWindow) {
+	        console.warn("Got focus event for unknown window id ", windowId);
+	        return;
+	      }
+	      tabWindow._focused = true;
+	    }
+	  },
+	
+	  handleChromeTabActivated: function handleChromeTabActivated(tabId, windowId) {
 	    var tabWindow = this.windowIdMap[windowId];
 	    if (!tabWindow) {
 	      console.warn("window id not found -- ignoring");
@@ -902,12 +914,12 @@
 	    }
 	  },
 	
-	  handleTabCreated: function handleTabCreated(tab) {
+	  handleChromeTabCreated: function handleChromeTabCreated(tab) {
 	    var tabWindow = this.windowIdMap[tab.windowId];
 	    if (!tabWindow) {
 	      console.warn("Got tab created event for unknown window ", tab);
 	    } else {
-	      console.log("handleTabCreated: ", tabWindow, tab);
+	      console.log("handleChromeTabCreated: ", tabWindow, tab);
 	      if (!tabWindow.chromeWindow) {
 	        console.warn("got tab created for bad chromeWindow");
 	      }
@@ -921,9 +933,9 @@
 	    }
 	  },
 	
-	  handleTabRemoved: function handleTabRemoved(tabId, removeInfo) {
+	  handleChromeTabRemoved: function handleChromeTabRemoved(tabId, removeInfo) {
 	    if (removeInfo.isWindowClosing) {
-	      console.log("handleTabRemoved: window closing, ignoring...");
+	      console.log("handleChromeTabRemoved: window closing, ignoring...");
 	      // Window is closing, ignore...
 	      return;
 	    }
@@ -940,14 +952,14 @@
 	    }
 	  },
 	
-	  handleTabUpdated: function handleTabUpdated(tabId, changeInfo, tab) {
-	    console.log("handleTabUpdated: ", tabId, changeInfo, tab);
+	  handleChromeTabUpdated: function handleChromeTabUpdated(tabId, changeInfo, tab) {
+	    console.log("handleChromeTabUpdated: ", tabId, changeInfo, tab);
 	    var tabWindow = this.windowIdMap[tab.windowId];
 	    if (!tabWindow) {
 	      console.warn("Got tab updated event for unknown window ", tab);
 	      return;
 	    }
-	    console.log("handleTabUpdated: ", tabWindow, tab);
+	    console.log("handleChromeTabUpdated: ", tabWindow, tab);
 	    if (!tabWindow.chromeWindow) {
 	      console.warn("got tab Updated for bad chromeWindow");
 	    }
@@ -962,24 +974,6 @@
 	        return;
 	      }
 	      tabWindow.chromeWindow.tabs[tabIndex] = tab;
-	    }
-	  },
-	
-	  handleWindowFocusChanged: function handleWindowFocusChanged(windowId) {
-	    /* TODO / FIXME: more efficient rep for focused window */
-	    for (var i = 0; i < this.tabWindows.length; i++) {
-	      var tabWindow = this.tabWindows[i];
-	      if (tabWindow) {
-	        tabWindow._focused = false;
-	      }
-	    }
-	    if (windowId != chrome.windows.WINDOW_ID_NONE) {
-	      var tabWindow = this.windowIdMap[windowId];
-	      if (!tabWindow) {
-	        console.warn("Got focus event for unknown window id ", windowId);
-	        return;
-	      }
-	      tabWindow._focused = true;
 	    }
 	  },
 	
@@ -1068,16 +1062,6 @@
 	    this.emit("change");
 	  },
 	
-	  onRemoveChromeWindow: function onRemoveChromeWindow(payload) {
-	    this.removeChromeWindow(payload.windowId);
-	    this.emit("change");
-	  },
-	
-	  onSyncChromeWindow: function onSyncChromeWindow(payload) {
-	    this.syncChromeWindow(payload.chromeWindow);
-	    this.emit("change");
-	  },
-	
 	  onAttachChromeWindow: function onAttachChromeWindow(payload) {
 	    this.attachChromeWindow(payload.tabWindow, payload.chromeWindow);
 	    this.emit("change");
@@ -1089,29 +1073,39 @@
 	    this.emit("change");
 	  },
 	
-	  onTabCreated: function onTabCreated(payload) {
-	    console.log("onTabCreated: ", payload);
-	    this.handleTabCreated(payload.tab);
+	  onChromeWindowCreated: function onChromeWindowCreated(payload) {
+	    this.handleChromeWindowCreated(payload.chromeWindow);
 	    this.emit("change");
 	  },
 	
-	  onTabRemoved: function onTabRemoved(payload) {
-	    this.handleTabRemoved(payload.tabId, payload.removeInfo);
+	  onChromeWindowRemoved: function onChromeWindowRemoved(payload) {
+	    this.handleChromeWindowRemoved(payload.windowId);
 	    this.emit("change");
 	  },
 	
-	  onTabUpdated: function onTabUpdated(payload) {
-	    this.handleTabUpdated(payload.tabId, payload.changeInfo, payload.tab);
+	  onChromeWindowFocusChanged: function onChromeWindowFocusChanged(payload) {
+	    this.handleChromeWindowFocusChanged(payload.windowId);
 	    this.emit("change");
 	  },
 	
-	  onTabActivated: function onTabActivated(payload) {
-	    this.handleTabActivated(payload.tabId, payload.windowId);
+	  onChromeTabCreated: function onChromeTabCreated(payload) {
+	    console.log("onChromeTabCreated: ", payload);
+	    this.handleChromeTabCreated(payload.tab);
 	    this.emit("change");
 	  },
 	
-	  onWindowFocusChanged: function onWindowFocusChanged(payload) {
-	    this.handleWindowFocusChanged(payload.windowId);
+	  onChromeTabRemoved: function onChromeTabRemoved(payload) {
+	    this.handleChromeTabRemoved(payload.tabId, payload.removeInfo);
+	    this.emit("change");
+	  },
+	
+	  onChromeTabUpdated: function onChromeTabUpdated(payload) {
+	    this.handleChromeTabUpdated(payload.tabId, payload.changeInfo, payload.tab);
+	    this.emit("change");
+	  },
+	
+	  onChromeTabActivated: function onChromeTabActivated(payload) {
+	    this.handleChromeTabActivated(payload.tabId, payload.windowId);
 	    this.emit("change");
 	  },
 	
@@ -1127,10 +1121,6 @@
 	  // returns a tabWindow or undefined
 	  getTabWindowByChromeId: function getTabWindowByChromeId(chromeId) {
 	    return this.windowIdMap[chromeId];
-	  },
-	
-	  getTabWindowByBookmarkId: function getTabWindowByBookmarkId(bookmarkId) {
-	    return this.bookmarkIdMap[bookmarkId];
 	  }
 	});
 	
@@ -1390,19 +1380,19 @@
 	  ATTACH_CHROME_WINDOW: "ATTACH_CHROME_WINDOW",
 	  CLOSE_TAB_WINDOW: "CLOSE_TAB_WINDOW",
 	  REMOVE_TAB_WINDOW: "REMOVE_TAB_WINDOW",
-	  REMOVE_CHROME_WINDOW: "REMOVE_CHROME_WINDOW",
 	  REPLACE_WINDOW_STATE: "REPLACE_WINDOW_STATE",
 	  REVERT_TAB_WINDOW: "REVERT_TAB_WINDOW",
 	  SYNC_WINDOW_LIST: "SYNC_WINDOW_LIST",
-	  SYNC_CHROME_WINDOW: "SYNC_CHROME_WINDOW",
-	  WINDOW_FOCUS_CHANGED: "WINDOW_FOCUS_CHANGED",
-	  TAB_CREATED: "TAB_CREATED",
-	  TAB_REMOVED: "TAB_REMOVED",
-	  TAB_UPDATED: "TAB_UPDATED",
-	  TAB_MOVED: "TAB_MOVED",
-	  TAB_DETACHED: "TAB_DETACHED",
-	  TAB_ATTACHED: "TAB_ATTACHED",
-	  TAB_ACTIVATED: "TAB_ACTIVATED"
+	  CHROME_WINDOW_CREATED: "CHROME_WINDOW_CREATED",
+	  CHROME_WINDOW_REMOVED: "CHROME_WINDOW_REMOVED",
+	  CHROME_WINDOW_FOCUS_CHANGED: "CHROME_WINDOW_FOCUS_CHANGED",
+	  CHROME_TAB_CREATED: "CHROME_TAB_CREATED",
+	  CHROME_TAB_REMOVED: "CHROME_TAB_REMOVED",
+	  CHROME_TAB_UPDATED: "CHROME_TAB_UPDATED",
+	  CHROME_TAB_MOVED: "CHROME_TAB_MOVED",
+	  CHROME_TAB_DETACHED: "CHROME_TAB_DETACHED",
+	  CHROME_TAB_ATTACHED: "CHROME_TAB_ATTACHED",
+	  CHROME_TAB_ACTIVATED: "CHROME_TAB_ACTIVATED"
 	};
 	
 	exports["default"] = constants;

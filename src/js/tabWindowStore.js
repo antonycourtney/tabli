@@ -35,17 +35,17 @@ var TabWindowStore = Fluxxor.createStore({
       constants.REVERT_TAB_WINDOW, this.onRevertTabWindow,
       constants.SYNC_WINDOW_LIST, this.onSyncWindowList,
       constants.REPLACE_WINDOW_STATE, this.onReplaceWindowState,
-      constants.SYNC_CHROME_WINDOW, this.onSyncChromeWindow,
-      constants.REMOVE_CHROME_WINDOW, this.onRemoveChromeWindow,
-      constants.WINDOW_FOCUS_CHANGED, this.onWindowFocusChanged,
-      constants.TAB_CREATED, this.onTabCreated,
-      constants.TAB_REMOVED, this.onTabRemoved,
-      constants.TAB_UPDATED, this.onTabUpdated,
-      constants.TAB_ACTIVATED, this.onTabActivated             
+      constants.CHROME_WINDOW_CREATED, this.onChromeWindowCreated,
+      constants.CHROME_WINDOW_REMOVED, this.onChromeWindowRemoved,
+      constants.CHROME_WINDOW_FOCUS_CHANGED, this.onChromeWindowFocusChanged,
+      constants.CHROME_TAB_CREATED, this.onChromeTabCreated,
+      constants.CHROME_TAB_REMOVED, this.onChromeTabRemoved,
+      constants.CHROME_TAB_UPDATED, this.onChromeTabUpdated,
+      constants.CHROME_TAB_ACTIVATED, this.onChromeTabActivated             
 /*      
-      constants.TAB_MOVED, this.onTabMoved,
-      constants.TAB_DETACHED, this.onTabDetached,
-      constants.TAB_ATTACHED, this.onTabAttached,
+      constants.CHROME_TAB_MOVED, this.onChromeTabMoved,
+      constants.CHROME_TAB_DETACHED, this.onChromeTabDetached,
+      constants.CHROME_TAB_ATTACHED, this.onChromeTabAttached,
   */
 
       );
@@ -53,7 +53,6 @@ var TabWindowStore = Fluxxor.createStore({
 
   resetState: function() {
     this.windowIdMap = {};
-    this.bookmarkIdMap = {};
     this.tabWindows = [];
   },
 
@@ -65,21 +64,14 @@ var TabWindowStore = Fluxxor.createStore({
     if (chromeWindow) {
       this.windowIdMap[ chromeWindow.id ] = tabWindow;
     }
-    var bookmarkFolder = tabWindow.bookmarkFolder;
-    if (bookmarkFolder) {
-        this.bookmarkIdMap[bookmarkFolder.id] = tabWindow;
-    }
     this.tabWindows.push( tabWindow );     
   },
 
-  clearMapEntry: function(tabWindow) {
-    console.log("clearMapEntry: ", tabWindow);
+  clearWindowIdMapEntry: function(tabWindow) {
+    console.log("clearWindowIdMapEntry: ", tabWindow);
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
     if (windowId) 
       delete this.windowIdMap[ windowId ];
-    var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
-    if (bookmarkId)
-      delete this.bookmarkIdMap[ bookmarkId ];
   },
 
   removeTabWindow: function(tabWindow) {
@@ -94,29 +86,10 @@ var TabWindowStore = Fluxxor.createStore({
     } else {
       console.log("removeTabWindow: request to remove window not in collection", tabWindow);
     }
-    this.clearMapEntry(tabWindow);
+    this.clearWindowIdMapEntry(tabWindow);
   },
 
-  removeChromeWindow: function(windowId) {
-    console.log("removeChromeWindow: ", windowId);
-    var tabWindow = this.windowIdMap[windowId];
-    if( !tabWindow ) {
-      console.warn("window id not found -- ignoring");
-    } else {
-      this.removeTabWindow(tabWindow);      
-    }
-  },
 
-  closeTabWindow: function(tabWindow, cb) {
-    console.log("store closeTabWindow: ", tabWindow);
-    if (!tabWindow.isManaged()) {
-      console.log("unmanaged window -- removing");
-      this.removeTabWindow(tabWindow);
-    } else {
-      this.clearMapEntry(tabWindow);
-    }
-    cb();      
-  },
 
   revertTabWindow: function( tabWindow, callback ) {
     var tabs = tabWindow.chromeWindow.tabs;
@@ -174,8 +147,47 @@ var TabWindowStore = Fluxxor.createStore({
     }
   },
 
+  handleChromeWindowCreated: function(chromeWindow) {
+    this.syncChromeWindow(chromeWindow);
+  },
 
-  handleTabActivated(tabId,windowId) {
+  handleChromeWindowRemoved: function(windowId) {
+    console.log("handleChromeWindowRemoved: ", windowId);
+    var tabWindow = this.windowIdMap[windowId];
+    if( !tabWindow ) {
+      console.warn("window id not found -- ignoring");
+    } else {
+      if (!(tabWindow.isManaged())) { 
+        // unmanaged windiw -- just remove
+        this.removeTabWindow(tabWindow);
+      } else {
+        // managed window -- mark as closed and dissociate chrome window
+        tabWindow.open = false;
+        tabWindow.chromeWindow = null;
+        this.clearWindowIdMapEntry(tabWindow);
+      }      
+    }
+  },
+
+  handleChromeWindowFocusChanged: function(windowId) {
+    /* TODO / FIXME: more efficient rep for focused window */
+    for ( var i = 0; i < this.tabWindows.length; i++ ) {
+      var tabWindow = this.tabWindows[ i ];
+      if( tabWindow ) {
+        tabWindow._focused = false;
+      }
+    }
+    if (windowId != chrome.windows.WINDOW_ID_NONE) {
+      var tabWindow = this.windowIdMap[windowId];
+      if (!tabWindow) {
+        console.warn("Got focus event for unknown window id ", windowId );
+        return;
+      } 
+      tabWindow._focused = true;
+    }
+  },
+
+  handleChromeTabActivated: function(tabId,windowId) {
     var tabWindow = this.windowIdMap[windowId];
     if( !tabWindow ) {
       console.warn("window id not found -- ignoring");
@@ -191,12 +203,12 @@ var TabWindowStore = Fluxxor.createStore({
   },
 
 
-  handleTabCreated: function(tab) {
+  handleChromeTabCreated: function(tab) {
     var tabWindow = this.windowIdMap[tab.windowId];
     if (!tabWindow) {
       console.warn("Got tab created event for unknown window ", tab);
     } else {
-      console.log("handleTabCreated: ", tabWindow, tab);
+      console.log("handleChromeTabCreated: ", tabWindow, tab);
       if (!tabWindow.chromeWindow) {
         console.warn("got tab created for bad chromeWindow");
       }
@@ -210,9 +222,9 @@ var TabWindowStore = Fluxxor.createStore({
     }
   },
 
-  handleTabRemoved: function(tabId,removeInfo) {
+  handleChromeTabRemoved: function(tabId,removeInfo) {
     if (removeInfo.isWindowClosing) {
-      console.log("handleTabRemoved: window closing, ignoring...");
+      console.log("handleChromeTabRemoved: window closing, ignoring...");
       // Window is closing, ignore...
       return;
     }
@@ -229,14 +241,14 @@ var TabWindowStore = Fluxxor.createStore({
     }
   },
 
-  handleTabUpdated: function(tabId,changeInfo,tab) {
-    console.log("handleTabUpdated: ", tabId, changeInfo, tab);
+  handleChromeTabUpdated: function(tabId,changeInfo,tab) {
+    console.log("handleChromeTabUpdated: ", tabId, changeInfo, tab);
     var tabWindow = this.windowIdMap[tab.windowId];
     if (!tabWindow) {
       console.warn("Got tab updated event for unknown window ", tab);
       return;
     } 
-    console.log("handleTabUpdated: ", tabWindow, tab);
+    console.log("handleChromeTabUpdated: ", tabWindow, tab);
     if (!tabWindow.chromeWindow) {
       console.warn("got tab Updated for bad chromeWindow");
     }
@@ -251,24 +263,6 @@ var TabWindowStore = Fluxxor.createStore({
         return;
       }
       tabWindow.chromeWindow.tabs[tabIndex] = tab;
-    }
-  },
-
-  handleWindowFocusChanged: function(windowId) {
-    /* TODO / FIXME: more efficient rep for focused window */
-    for ( var i = 0; i < this.tabWindows.length; i++ ) {
-      var tabWindow = this.tabWindows[ i ];
-      if( tabWindow ) {
-        tabWindow._focused = false;
-      }
-    }
-    if (windowId != chrome.windows.WINDOW_ID_NONE) {
-      var tabWindow = this.windowIdMap[windowId];
-      if (!tabWindow) {
-        console.warn("Got focus event for unknown window id ", windowId );
-        return;
-      } 
-      tabWindow._focused = true;
     }
   },
 
@@ -357,16 +351,6 @@ var TabWindowStore = Fluxxor.createStore({
     this.emit("change");
   },
 
-  onRemoveChromeWindow: function(payload) {
-    this.removeChromeWindow(payload.windowId);
-    this.emit("change");
-  },
-
-  onSyncChromeWindow: function(payload) {
-    this.syncChromeWindow(payload.chromeWindow);
-    this.emit("change");
-  },
-
   onAttachChromeWindow: function(payload) {
     this.attachChromeWindow(payload.tabWindow,payload.chromeWindow);
     this.emit("change");
@@ -378,29 +362,39 @@ var TabWindowStore = Fluxxor.createStore({
     this.emit("change");
   },
 
-  onTabCreated: function(payload) {
-    console.log("onTabCreated: ", payload);
-    this.handleTabCreated(payload.tab);
+  onChromeWindowCreated: function(payload) {
+    this.handleChromeWindowCreated(payload.chromeWindow);
     this.emit("change");
   },
 
-  onTabRemoved: function(payload) {
-    this.handleTabRemoved(payload.tabId,payload.removeInfo);
+  onChromeWindowRemoved: function(payload) {
+    this.handleChromeWindowRemoved(payload.windowId);
     this.emit("change");
   },
 
-  onTabUpdated: function(payload) {
-    this.handleTabUpdated(payload.tabId,payload.changeInfo,payload.tab);
+  onChromeWindowFocusChanged: function(payload) {
+    this.handleChromeWindowFocusChanged(payload.windowId);
     this.emit("change");
   },
 
-  onTabActivated: function(payload) {
-    this.handleTabActivated(payload.tabId,payload.windowId);
+  onChromeTabCreated: function(payload) {
+    console.log("onChromeTabCreated: ", payload);
+    this.handleChromeTabCreated(payload.tab);
     this.emit("change");
   },
 
-  onWindowFocusChanged: function(payload) {
-    this.handleWindowFocusChanged(payload.windowId);
+  onChromeTabRemoved: function(payload) {
+    this.handleChromeTabRemoved(payload.tabId,payload.removeInfo);
+    this.emit("change");
+  },
+
+  onChromeTabUpdated: function(payload) {
+    this.handleChromeTabUpdated(payload.tabId,payload.changeInfo,payload.tab);
+    this.emit("change");
+  },
+
+  onChromeTabActivated: function(payload) {
+    this.handleChromeTabActivated(payload.tabId,payload.windowId);
     this.emit("change");
   },
 
@@ -416,10 +410,6 @@ var TabWindowStore = Fluxxor.createStore({
   // returns a tabWindow or undefined
   getTabWindowByChromeId: function(chromeId) {
     return this.windowIdMap[chromeId];
-  },
-
-  getTabWindowByBookmarkId: function(bookmarkId) {
-    return this.bookmarkIdMap[bookmarkId];
   }
 });
 
