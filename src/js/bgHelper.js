@@ -138,6 +138,7 @@ function registerHandlers(fluxState)
 
   chrome.windows.onCreated.addListener(actions.syncChromeWindow);
   chrome.windows.onRemoved.addListener(actions.removeChromeWindow);
+  chrome.windows.onFocusChanged.addListener(actions.windowFocusChanged);
   chrome.tabs.onCreated.addListener(actions.tabCreated);
   chrome.tabs.onRemoved.addListener(actions.tabRemoved);
   chrome.tabs.onUpdated.addListener(actions.tabUpdated);

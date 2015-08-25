@@ -11,7 +11,6 @@ var actions = {
     this.dispatch(constants.ADD_TAB_WINDOWS, payload);
   },
 
-
   closeTabWindow: function(tabWindow) {
     console.log("closeTabWindow: ", tabWindow);
     if (!tabWindow.open) {
@@ -45,6 +44,11 @@ var actions = {
   removeChromeWindow: function(windowId) {
     var payload = { windowId };
     this.dispatch(constants.REMOVE_CHROME_WINDOW, payload);
+  },
+
+  windowFocusChanged: function(windowId) {
+    var payload = { windowId };
+    this.dispatch(constants.WINDOW_FOCUS_CHANGED, payload);  
   },
 
   restoreBookmarkWindow: function(tabWindow) {
