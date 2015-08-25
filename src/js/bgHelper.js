@@ -146,6 +146,7 @@ function registerHandlers(fluxState)
   chrome.tabs.onDetached.addListener(actions.chromeTabDetached);
   chrome.tabs.onAttached.addListener(actions.chromeTabttached);
   chrome.tabs.onActivated.addListener(actions.chromeTabActivated);
+  chrome.tabs.onReplaced.addListener(actions.chromeTabReplaced);
 }
 
 

@@ -23,6 +23,28 @@ function findTabIndex(chromeWindow,targetTabId) {
   return null;
 } 
 
+/**
+ * find the TabWindow and index for a particular tab id.
+ *
+ * TODO / FIXME: Could be improved by maintaining a map by tab id
+ *
+ * spectacularly inefficient (linear)
+ * returns:
+ *    [ TabWindow t, Number tabIndex ]
+ * or
+ *     [] -- if not found
+ */
+function findTabId(tabWindows,targetTabId) {
+  for (var i = 0; i < tabWindows.length; i++) {
+    var tabWindow = tabWindows[i];
+    if (tabWindow && tabWindow.open) {
+      var targetIdx = findTabIndex(tabWindow.chromeWindow,targetTabId);
+      if (targetIdx != null)
+        return [tabWindow, targetIdx];
+    }
+  }
+  return [];
+}
 
 var TabWindowStore = Fluxxor.createStore({
   initialize: function() {
@@ -41,7 +63,8 @@ var TabWindowStore = Fluxxor.createStore({
       constants.CHROME_TAB_CREATED, this.onChromeTabCreated,
       constants.CHROME_TAB_REMOVED, this.onChromeTabRemoved,
       constants.CHROME_TAB_UPDATED, this.onChromeTabUpdated,
-      constants.CHROME_TAB_ACTIVATED, this.onChromeTabActivated             
+      constants.CHROME_TAB_ACTIVATED, this.onChromeTabActivated,
+      constants.CHROME_TAB_REPLACED, this.onChromeTabReplaced            
 /*      
       constants.CHROME_TAB_MOVED, this.onChromeTabMoved,
       constants.CHROME_TAB_DETACHED, this.onChromeTabDetached,
@@ -266,6 +289,18 @@ var TabWindowStore = Fluxxor.createStore({
     }
   },
 
+  handleChromeTabReplaced: function(addedTabId,removedTabId) {
+    console.log("handleChromeTabReplaced: ", addedTabId, removedTabId);
+    var [removedTabWindow,removedIndex] = findTabId(this.tabWindows, removedTabId);
+    if (removedTabWindow) {
+      var tab = removedTabWindow.chromeWindow.tabs[removedIndex]
+      console.log("found removed tab: ", tab);
+      tab.id = addedTabId;
+    } else {
+      console.log("removed tab id not found!");
+    }
+  },
+
   /**
    * synchronize windows from chrome.windows.getAll with internal map of
    * managed and unmanaged tab windows
@@ -395,6 +430,11 @@ var TabWindowStore = Fluxxor.createStore({
 
   onChromeTabActivated: function(payload) {
     this.handleChromeTabActivated(payload.tabId,payload.windowId);
+    this.emit("change");
+  },
+
+  onChromeTabReplaced: function(payload) {
+    this.handleChromeTabReplaced(payload.addedTabId,payload.removedTabId);
     this.emit("change");
   },
 

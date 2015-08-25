@@ -188,6 +188,8 @@ var actions = {
   chromeTabActivated: function(activeInfo) {
     this.dispatch(constants.CHROME_TAB_ACTIVATED,activeInfo);
   },
-
+  chromeTabReplaced: function(addedTabId,removedTabId) {
+    this.dispatch(constants.CHROME_TAB_REPLACED,{addedTabId,removedTabId});
+  }
 };
 export default actions;
