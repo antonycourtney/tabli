@@ -26,7 +26,7 @@ var actions = {
     chrome.windows.remove( windowId, function() {
       tabWindow.open = false;
       var payload = { tabWindow: tabWindow };
-      self.dispatch(constants.CLOSE_TAB_WINDOW, payload);
+      self.dispatch(constants.REMOVE_TAB_WINDOW, payload);
     });
   },
 
