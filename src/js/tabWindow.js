@@ -90,7 +90,6 @@ var tabWindowPrototype = {
   chromeWindow: null,
   bookmarkFolder: null,  
   open: false,
-  _focused: false,  // TODO/FIXME: Wrong rep for event-driven bgHelper
 
   reloadBookmarkFolder: function() {
     var tabWindow = this;
@@ -124,7 +123,7 @@ var tabWindowPrototype = {
   },
 
   isFocused: function() {
-    return this._focused;
+    return (this.open && this.chromeWindow && this.chromeWindow.focused);
   },
 
   // Get a set of tab-like items for rendering

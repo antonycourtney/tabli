@@ -2,16 +2,14 @@
 
 import * as $ from 'jquery';
 import * as React from 'react';
+import * as actions from './actions';
 
 // import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
 
-import * as Fluxxor from 'fluxxor';
 import * as TabWindowStore from './tabWindowStore';
 import * as TabWindow from './tabWindow';
 
-var FluxMixin = Fluxxor.FluxMixin(React),
-    StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var WINDOW_HEADER_HEIGHT = 22;
 
@@ -291,7 +289,7 @@ var R_WindowHeader = React.createClass({
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
           onClick={this.props.onOpen} >
         {windowCheckItem}
-        <R_ExpanderButton expanded={this.props.expanded} onClick={this.props.onExpand} />
+        <R_ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
         <span style={titleStyle}>{windowTitle}</span>
         {revertButton}
         {closeButton}
@@ -310,11 +308,11 @@ var R_TabItem = React.createClass({
 
     // console.log("R_TabItem: handleClick: tab: ", tab);
 
-    this.props.flux.actions.activateTab(tabWindow,tab,tabIndex);
+    actions.activateTab(this.props.winStore,tabWindow,tab,tabIndex);
   },
 
   handleClose: function() {
-    this.props.flux.actions.closeTab(this.props.tab);
+    actions.closeTab(this.props.winStore,this.props.tab);
   }, 
 
   render: function() {
@@ -362,7 +360,7 @@ var R_TabItem = React.createClass({
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
-    var closeButton = <R_HeaderButton flux={this.props.flux} baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
+    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
                           hoverStyle={styles.closeButtonHover} title="Close Tab" 
                           onClick={this.handleClose} />
 
@@ -391,17 +389,17 @@ var R_TabWindow = React.createClass({
 
   handleOpen: function() {
     console.log("handleOpen", this, this.props);
-    this.props.flux.actions.openTabWindow(this.props.tabWindow);
+    actions.openTabWindow(this.props.winStore,this.props.tabWindow);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    this.props.flux.actions.closeTabWindow(this.props.tabWindow);
+    actions.closeTabWindow(this.props.winStore,this.props.tabWindow);
   },
 
   handleRevert: function(event) {
     // console.log("handleRevert");
-    this.props.flux.actions.revertTabWindow(this.props.tabWindow);
+    flux.actions.revertTabWindow(this.props.winStore,this.props.tabWindow);
   },
 
 
@@ -420,7 +418,7 @@ var R_TabWindow = React.createClass({
     var items = [];
     for (var i = 0; i < tabs.length; i++ ) {
       var id = "tabItem-" + i;
-      var tabItem = <R_TabItem flux={this.props.flux} tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
+      var tabItem = <R_TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
       items.push(tabItem);
     };
 
@@ -455,7 +453,7 @@ var R_TabWindow = React.createClass({
       tabItems = this.renderTabItems(tabWindow,[]);
     }
     var windowHeader = 
-      <R_WindowHeader flux={this.props.flux}
+      <R_WindowHeader winStore={this.props.winStore}
           tabWindow={tabWindow} 
           expanded={expanded} 
           onExpand={this.handleExpand} 
@@ -493,33 +491,8 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
   return tA.localeCompare( tB );
 }
 
-/*
- * top-level element for all tab windows that pulls window list from Flux store
- */
+
 var R_TabWindowList = React.createClass({
-  mixins: [FluxMixin, StoreWatchMixin("TabWindowStore")],
-
-  getStateFromFlux: function() {
-    var t_start = performance.now();
-    var store = this.props.winStore;
-
-    var tabWindows = store.getAll();
-
-    var sortedWindows = tabWindows.sort(windowCmpFn);
-
-    // console.log("R_TabWindowList: ", tabWindows, sortedWindows);
-
-    var fluxState = {
-      tabWindows: sortedWindows
-    };
-
-    // console.log("getStateFromFlux:");
-    // console.log(JSON.stringify(fluxState,null,2));
-
-    var t_finish = performance.now();
-    console.log("TabWindowList.getStateFromFlux: ", t_finish - t_start, " ms");
-    return fluxState;
-  },
 
   render: function() {
     console.log("TabWindowList: render");
@@ -527,7 +500,8 @@ var R_TabWindowList = React.createClass({
     var managedWindows = [];
     var unmanagedWindows = [];
 
-    var tabWindows = this.state.tabWindows;
+//    var tabWindows = this.state.tabWindows;
+    var tabWindows = this.props.sortedWindows;
     for (var i=0; i < tabWindows.length; i++) {
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
@@ -535,7 +509,7 @@ var R_TabWindowList = React.createClass({
           var isFocused = tabWindow.isFocused();
           var isManaged = tabWindow.isManaged();
 
-          var windowElem = <R_TabWindow flux={this.props.flux} tabWindow={tabWindow} key={id} />;
+          var windowElem = <R_TabWindow winStore={this.props.winStore} tabWindow={tabWindow} key={id} />;
           if (isFocused) {
             console.log("TabWindowList.render: current window: ", tabWindow);
             focusedWindowElem = windowElem;
@@ -552,12 +526,30 @@ var R_TabWindowList = React.createClass({
         <hr/>
         {focusedWindowElem}
         <hr/>
-        {managedWindows}
-        <hr/>
         {unmanagedWindows}
+        <hr/>
+        {managedWindows}
       </div>
     );    
   }
+});
+
+var R_TabMan = React.createClass({
+  getInitialState: function() {
+    var tabWindows = this.props.winStore.getAll();
+    var sortedWindows = tabWindows.sort(windowCmpFn);
+
+    return {
+      winStore: this.props.winStore,
+      sortedWindows
+    };
+  },
+
+  render: function() {
+    return (<R_TabWindowList winStore={this.state.winStore} 
+                             sortedWindows={this.state.sortedWindows} />);
+  }
+
 });
 
 // wrapper to log exceptions
@@ -575,20 +567,6 @@ function logWrap( f ) {
   return wf;
 }
 
-
-/**
- * Call React.render with flux state
- */
-function renderPopup(flux,winStore) {
-
-  var t_init = performance.now();
-  var elemId = document.getElementById('windowList-region');
-  var windowList = <R_TabWindowList flux={flux} winStore={winStore} />;
-  React.render( windowList, elemId ); 
-  var t_render = performance.now();
-  console.log("initial render complete. render time: (", t_render - t_init, " ms)");
-} 
-
 /*
  * Perform our React rendering *after* the load event for the popup
  * because we observe that Chrome's http cache will not attempt to
@@ -597,36 +575,26 @@ function renderPopup(flux,winStore) {
  * See https://code.google.com/p/chromium/issues/detail?id=511699
  *
  */
-var t_start = performance.now();
-
 function postLoadRender() {
-  var t_load = performance.now();
-  console.log("postLoadRender: (", t_load - t_start, " ms)");
-  var t_preGet = performance.now();
-  chrome.windows.getAll({populate: true},(windows) => {
-    var t_postGet = performance.now();
-    console.log("getAll complete: (", t_postGet - t_preGet, " ms )");
-    console.log("getAll windows: ", windows);
+  var bgw = chrome.extension.getBackgroundPage();
+  var winStore = bgw.winStore;
 
-    var bgw = chrome.extension.getBackgroundPage();
-    var fluxState = bgw.fluxState;
-    renderPopup(fluxState.flux,fluxState.winStore);
+  actions.syncChromeWindows(winStore,() => {
+    console.log("postLoadRender: window sync complete");
+
+    var t_preRender = performance.now();
+    var elemId = document.getElementById('windowList-region');
+    var windowListComponent = <R_TabMan winStore={winStore} />;
+    React.render( windowListComponent, elemId ); 
+    var t_postRender = performance.now();
+    console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
   });
-/*
- * We used to do an explicit window sync but this is painfully slow to do at popup open time
- * So now we just use chrome's window and tab events to keep Flux store up to date in the
- * background.
- */
- /*
-  */
 }
 
 /**
  * Initialize tab manager and flux store, and then render popup from Flux store.
  */
 function main() {
-  console.log("popup main");
-
   window.onload = postLoadRender;
 }
 

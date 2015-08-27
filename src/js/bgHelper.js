@@ -5,7 +5,7 @@
  */
 'use strict';
 
-import * as TabWindowStore from './tabWindowStore';
+import TabWindowStore from './tabWindowStore';
 import * as TabWindow from './tabWindow';
 import * as actions from './actions';
 
@@ -69,7 +69,7 @@ function unmanageWindow( tabWindow ) {
 }
 
 /* On startup load managed windows from bookmarks folder */
-function loadManagedWindows(flux,tabManFolder ) {
+function loadManagedWindows(winStore,tabManFolder ) {
   var folderTabWindows = [];
   for( var i = 0; i < tabManFolder.children.length; i++ ) {
     var windowFolder = tabManFolder.children[ i ];
@@ -83,7 +83,7 @@ function loadManagedWindows(flux,tabManFolder ) {
     }
     folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder));
   }
-  flux.actions.addTabWindows(folderTabWindows);
+  winStore.addTabWindows(folderTabWindows);
 }
 
 /*
@@ -107,7 +107,7 @@ function ensureChildFolder( parentNode, childFolderName, callback ) {
   chrome.bookmarks.create( folderObj, callback );
 }
 
-function initBookmarks(flux,cb) {
+function initBookmarks(winStore,cb) {
   chrome.bookmarks.getTree(function(tree){
     var otherBookmarksNode = tree[0].children[1]; 
     console.log( "otherBookmarksNode: ", otherBookmarksNode );
@@ -119,7 +119,7 @@ function initBookmarks(flux,cb) {
         archiveFolderId = archiveFolder.id;
         chrome.bookmarks.getSubTree(tabManFolder.id,function (subTreeNodes) {
           console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
-          loadManagedWindows(flux,subTreeNodes[0]);
+          loadManagedWindows(winStore,subTreeNodes[0]);
           cb();
         });
       })
@@ -127,36 +127,12 @@ function initBookmarks(flux,cb) {
   });
 }
 
-
-/**
- * register Window and Tab event handlers that will update Flux state when windows / tabs are
- * open or closed
- */
-function registerHandlers(fluxState)
-{
-  var actions = fluxState.flux.actions;
-
-  chrome.windows.onCreated.addListener(actions.chromeWindowCreated);
-  chrome.windows.onRemoved.addListener(actions.chromeWindowRemoved);
-  chrome.windows.onFocusChanged.addListener(actions.chromeWindowFocusChanged);
-  chrome.tabs.onCreated.addListener(actions.chromeTabCreated);
-  chrome.tabs.onRemoved.addListener(actions.chromeTabRemoved);
-  chrome.tabs.onUpdated.addListener(actions.chromeTabUpdated);
-  chrome.tabs.onMoved.addListener(actions.chromeTabMoved);
-  chrome.tabs.onDetached.addListener(actions.chromeTabDetached);
-  chrome.tabs.onAttached.addListener(actions.chromeTabttached);
-  chrome.tabs.onActivated.addListener(actions.chromeTabActivated);
-  chrome.tabs.onReplaced.addListener(actions.chromeTabReplaced);
-}
-
-
 function main() {
-  var fluxState = TabWindowStore.init(actions);
-
-  window.fluxState = fluxState;
-  initBookmarks(fluxState.flux,function () {
+  var winStore = new TabWindowStore();
+  window.winStore = winStore;
+  initBookmarks(winStore,function () {
     console.log("init: done reading bookmarks.");
-    fluxState.flux.actions.syncWindowList(() => { registerHandlers(fluxState); });
+    actions.syncChromeWindows(winStore);
   });
 }
 
