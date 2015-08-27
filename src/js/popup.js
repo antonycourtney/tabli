@@ -9,7 +9,8 @@ import 'babel/polyfill';
 
 import * as TabWindowStore from './tabWindowStore';
 import * as TabWindow from './tabWindow';
-
+import {addons} from 'react/addons'; 
+const {PureRenderMixin} = addons;
 
 var WINDOW_HEADER_HEIGHT = 22;
 
@@ -172,6 +173,7 @@ function m() {
 
 // expand / contract button for a window
 var R_ExpanderButton = React.createClass({
+  mixins: [PureRenderMixin],
   handleClicked: function(event) {
     var nextState = !this.props.expanded;
     this.props.onClick(nextState);
@@ -209,7 +211,7 @@ var Hoverable = {
 
 // A button that will merge in hoverStyle when hovered over
 var R_HeaderButton = React.createClass({
-  mixins: [Hoverable],
+  mixins: [Hoverable,PureRenderMixin],
   handleClick: function(event) {
     if (this.props.visible) {
       this.props.onClick();
@@ -229,7 +231,7 @@ var R_HeaderButton = React.createClass({
 
 
 var R_WindowHeader = React.createClass({
-  mixins:[Hoverable],
+  mixins:[Hoverable,PureRenderMixin],
 
   handleUnmanageClick: function(event) {
     console.log("unamange: ", this.props.tabWindow);
