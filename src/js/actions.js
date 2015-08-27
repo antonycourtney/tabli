@@ -104,10 +104,12 @@ export function activateTab(winStore,tabWindow,tab,tabIndex) {
   }        
 }
 
-export function closeTab(winStore,tab) {
-  console.log("closeTab: closing ", tab, this);
+export function closeTab(winStore,windowId,tabId) {
+  console.log("closeTab: closing tab ", windowId, tabId);;
   var self = this;
-  chrome.tabs.remove(tab.id);
+  chrome.tabs.remove(tabId,() => {
+    winStore.handleTabClosed(windowId,tabId);
+  });
 }
 
 export function closeTabWindow(winStore,tabWindow) {

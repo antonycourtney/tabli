@@ -8,6 +8,7 @@
 
 import * as _ from 'underscore';
 import * as TabWindow from './tabWindow';
+import EventEmitter from 'events';
 
 /*
  * find the index of a tab in a ChromeWindow by its tab Id
@@ -46,18 +47,19 @@ function findTabId(tabWindows,targetTabId) {
   return [];
 }
 
-export default class TabWindowStore {
+export default class TabWindowStore extends EventEmitter {
 
   constructor() {
+    super();
     this.windowIdMap = {};  // maps from chrome window id for open windows
     this.bookmarkIdMap = {};
+    this.notifyCallback = null;
   }
 
   /*
    * add a new Tab window to global maps:
    */
   addTabWindow(tabWindow) {
-
     var chromeWindow = tabWindow.chromeWindow;
     if (chromeWindow) {
       this.windowIdMap[ chromeWindow.id ] = tabWindow;
@@ -79,6 +81,7 @@ export default class TabWindowStore {
     var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
     if (bookmarkId)
       delete this.bookmarkIdMap[bookmarkId];
+    this.emit("change");
   }
 
   removeTabWindow(tabWindow) {
@@ -136,7 +139,7 @@ export default class TabWindowStore {
       tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       this.addTabWindow(tabWindow);
     } else {
-      console.warn( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
+      // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
       // Set chromeWindow to current snapshot of tab contents:
       tabWindow.chromeWindow = chromeWindow;
       tabWindow.open = true;
@@ -220,23 +223,28 @@ export default class TabWindowStore {
     }
   }
 
+  handleTabClosed(windowId,tabId) {
+    var tabWindow = this.windowIdMap[windowId];
+    if (!tabWindow) {
+      console.warn("Got tab removed event for unknown window ", windowId, tabId);
+      return;
+    }
+    var chromeWindow = tabWindow.chromeWindow;
+    var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
+    if (tabIndex!=null) {
+      tabWindow.chromeWindow.tabs.splice(tabIndex,1);
+    }
+    this.emit("change");
+  }
+
+
   handleChromeTabRemoved(tabId,removeInfo) {
     if (removeInfo.isWindowClosing) {
       console.log("handleChromeTabRemoved: window closing, ignoring...");
       // Window is closing, ignore...
       return;
     }
-    var tabWindow = this.windowIdMap[removeInfo.windowId];
-    if (!tabWindow) {
-      console.warn("Got tab removed event for unknown window ", tabId, removeInfo);
-    } else {
-      var chromeWindow = tabWindow.chromeWindow;
-
-      var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
-      if (tabIndex!=null) {
-        tabWindow.chromeWindow.tabs.splice(tabIndex,1);
-      }
-    }
+    this.handleTabClosed(removeInfo.windowId,tabId);
   }
 
   handleChromeTabUpdated(tabId,changeInfo,tab) {
@@ -310,6 +318,7 @@ export default class TabWindowStore {
       }
     }
     console.log("syncWindowList: complete");
+    this.emit("change");
   }   
 
   getAll() {
@@ -322,5 +331,20 @@ export default class TabWindowStore {
   // returns a tabWindow or undefined
   getTabWindowByChromeId(chromeId) {
     return this.windowIdMap[chromeId];
+  }
+
+  /*
+   * Set a view listener, and ensure there is at most one.
+   *
+   * We have our own interface here because we don't have a reliable destructor / close event on the
+   * chrome extension popup where 
+   */
+  setViewListener(listener) {
+    if (this.viewListener) {
+      console.log("setViewListener: clearing old view listener");
+      this.removeListener("change", this.viewListener);
+    }
+    this.viewListener=listener;
+    this.on("change",listener);
   }
 }

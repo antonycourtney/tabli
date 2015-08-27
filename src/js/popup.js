@@ -312,7 +312,11 @@ var R_TabItem = React.createClass({
   },
 
   handleClose: function() {
-    actions.closeTab(this.props.winStore,this.props.tab);
+    if (!this.props.tabWindow.chromeWindow)
+      return;
+    var windowId = this.props.tabWindow.chromeWindow.id;
+    var tabId = this.props.tab.id;
+    actions.closeTab(this.props.winStore,windowId,tabId);
   }, 
 
   render: function() {
@@ -535,21 +539,42 @@ var R_TabWindowList = React.createClass({
 });
 
 var R_TabMan = React.createClass({
-  getInitialState: function() {
-    var tabWindows = this.props.winStore.getAll();
+  getStateFromStore: function(winStore) {
+    var tabWindows = winStore.getAll();
     var sortedWindows = tabWindows.sort(windowCmpFn);
 
     return {
-      winStore: this.props.winStore,
+      winStore: winStore,
       sortedWindows
     };
+  },
+
+  getInitialState: function() {
+    return this.getStateFromStore(this.props.winStore);
   },
 
   render: function() {
     return (<R_TabWindowList winStore={this.state.winStore} 
                              sortedWindows={this.state.sortedWindows} />);
-  }
+  },
 
+  componentWillMount: function() {
+    var winStore = this.props.winStore;
+    /*
+     * This listener on the store is essential for triggering a (recursive) re-render
+     * in response to a state change.
+     */
+    // Save viewListener so we can remove it in componentWillUnmount
+    this.viewListener = () => {
+      this.setState(this.getStateFromStore(winStore));      
+    };
+    // We used to just do:
+    // winStore.on("change",this.viewListener);
+    // but that leaked because unfortunately componentWillUnmount never gets called
+    // when popup closes.
+    // Now we use setViewListener, which ensures at most one view listener:
+    winStore.setViewListener(this.viewListener);
+  },
 });
 
 // wrapper to log exceptions
