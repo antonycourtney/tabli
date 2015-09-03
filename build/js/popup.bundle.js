@@ -219,6 +219,27 @@
 	  headerCheckBox: {
 	    width: 13,
 	    height: 13
+	  },
+	  modalOverlay: {
+	    position: 'fixed',
+	    top: 0,
+	    left: 0,
+	    background: 'rgba(0,0,0,0.6)',
+	    zIndex: 5,
+	    width: '100%',
+	    height: '100%'
+	  },
+	  modalContents: {
+	    width: 300,
+	    position: 'relative',
+	    margin: '10% auto',
+	    zIndex: 10,
+	    paddingTop: 5,
+	    paddingRight: 20,
+	    paddingBottom: 13,
+	    paddingLeft: 20,
+	    borderRadius: 3,
+	    background: '#fff'
 	  }
 	};
 	
@@ -302,6 +323,10 @@
 	
 	  mixins: [Hoverable, PureRenderMixin],
 	
+	  contextTypes: {
+	    appComponent: React.PropTypes.object.isRequired
+	  },
+	
 	  handleUnmanageClick: function handleUnmanageClick(event) {
 	    console.log("unamange: ", this.props.tabWindow);
 	    event.stopPropagation();
@@ -309,6 +334,11 @@
 	
 	  handleManageClick: function handleManageClick(event) {
 	    console.log("manage: ", this.props.tabWindow);
+	
+	    var appComponent = this.context.appComponent;
+	
+	    appComponent.openModal();
+	
 	    event.stopPropagation();
 	  },
 	
@@ -466,6 +496,10 @@
 	
 	  mixins: [Hoverable],
 	
+	  contextTypes: {
+	    appComponent: React.PropTypes.object.isRequired
+	  },
+	
 	  getInitialState: function getInitialState() {
 	    // Note:  We initialize this with null rather than false so that it will follow
 	    // open / closed state of window
@@ -499,6 +533,7 @@
 	  },
 	
 	  renderTabItems: function renderTabItems(tabWindow, tabs) {
+	    console.log("R_TabWindow: context: ", this.context);
 	    var items = [];
 	    for (var i = 0; i < tabs.length; i++) {
 	      var id = "tabItem-" + i;
@@ -628,13 +663,76 @@
 	    };
 	  },
 	
+	  childContextTypes: {
+	    appComponent: React.PropTypes.object.isRequired
+	  },
+	
+	  getChildContext: function getChildContext() {
+	    return { appComponent: this };
+	  },
+	
 	  getInitialState: function getInitialState() {
-	    return this.getStateFromStore(this.props.winStore);
+	    var st = this.getStateFromStore(this.props.winStore);
+	    st.modalIsOpen = false;
+	    return st;
+	  },
+	
+	  openModal: function openModal() {
+	    this.setState({ modalIsOpen: true });
+	  },
+	
+	  closeModal: function closeModal() {
+	    this.setState({ modalIsOpen: false });
 	  },
 	
 	  render: function render() {
-	    return React.createElement(R_TabWindowList, { winStore: this.state.winStore,
-	      sortedWindows: this.state.sortedWindows });
+	    try {
+	      var modalDiv = null;
+	
+	      if (this.state.modalIsOpen) {
+	        modalDiv = React.createElement(
+	          'div',
+	          null,
+	          React.createElement(
+	            'div',
+	            { style: styles.modalOverlay },
+	            React.createElement(
+	              'div',
+	              { style: styles.modalContents },
+	              React.createElement(
+	                'form',
+	                null,
+	                React.createElement(
+	                  'fieldset',
+	                  null,
+	                  React.createElement(
+	                    'label',
+	                    { 'for': 'title' },
+	                    'Window Title'
+	                  ),
+	                  React.createElement('input', { type: 'text', name: 'title', id: 'title' })
+	                )
+	              )
+	            )
+	          )
+	        );
+	      }
+	
+	      var ret = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(R_TabWindowList, { winStore: this.state.winStore,
+	          sortedWindows: this.state.sortedWindows,
+	          appComponent: this
+	        }),
+	        modalDiv
+	      );
+	    } catch (e) {
+	      console.error("App Component: caught exception during render: ");
+	      console.error(e.stack);
+	      throw e;
+	    }
+	    return ret;
 	  },
 	
 	  componentWillMount: function componentWillMount() {
@@ -822,21 +920,25 @@
 	        _this.addTabWindow(w);
 	      });
 	    }
+	
+	    /* We distinguish between removing an entry from map of open windows (windowIdMap)
+	     * because when closing a bookmarked window, we only wish to remove it from former
+	     */
 	  }, {
-	    key: 'removeWindowMapEntries',
-	    value: function removeWindowMapEntries(tabWindow) {
-	      console.log("removeWindowMapEntries: ", tabWindow);
+	    key: 'handleTabWindowClosed',
+	    value: function handleTabWindowClosed(tabWindow) {
+	      console.log("handleTabWindowClosed: ", tabWindow);
 	      var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 	      if (windowId) delete this.windowIdMap[windowId];
-	      var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
-	      if (bookmarkId) delete this.bookmarkIdMap[bookmarkId];
 	      this.emit("change");
 	    }
 	  }, {
-	    key: 'removeTabWindow',
-	    value: function removeTabWindow(tabWindow) {
-	      console.log("removeTabWindow: ", tabWindow);
-	      this.removeWindowMapEntries(tabWindow);
+	    key: 'removeBookmarkIdMapEntry',
+	    value: function removeBookmarkIdMapEntry(tabWindow) {
+	      console.log("removeBookmarkIdMapEntry: ", tabWindow);
+	      var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
+	      if (bookmarkId) delete this.bookmarkIdMap[bookmarkId];
+	      this.emit("change");
 	    }
 	  }, {
 	    key: 'revertTabWindow',
@@ -893,11 +995,11 @@
 	    value: function syncChromeWindow(chromeWindow) {
 	      var tabWindow = this.windowIdMap[chromeWindow.id];
 	      if (!tabWindow) {
-	        // console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
+	        console.log("syncChromeWindow: new window id: ", chromeWindow.id);
 	        tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
 	        this.addTabWindow(tabWindow);
 	      } else {
-	        // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
+	        console.log("syncChromeWindow: cache hit for window id: ", chromeWindow.id);
 	        // Set chromeWindow to current snapshot of tab contents:
 	        tabWindow.chromeWindow = chromeWindow;
 	        tabWindow.open = true;
@@ -1065,14 +1167,19 @@
 	    }
 	
 	    /**
-	     * synchronize windows from chrome.windows.getAll with internal map of
-	     * managed and unmanaged tab windows
+	     * synchronize the currently open windows from chrome.windows.getAll with 
+	     * internal map of open windows
 	     */
 	  }, {
 	    key: 'syncWindowList',
 	    value: function syncWindowList(chromeWindowList) {
+	      var _this2 = this;
+	
+	      console.log("syncWindowList: enter: ", chromeWindowList);
+	
 	      // To GC any closed windows:
 	      var tabWindows = this.getAll();
+	      console.log("syncWindowList: tabWindows: ", tabWindows);
 	      for (var i = 0; i < tabWindows.length; i++) {
 	        var tabWindow = tabWindows[i];
 	        if (tabWindow) {
@@ -1083,16 +1190,28 @@
 	        var chromeWindow = chromeWindowList[i];
 	        this.syncChromeWindow(chromeWindow);
 	      }
-	      // GC any closed, unmanaged windows:
-	      for (var i = 0; i < tabWindows.length; i++) {
-	        tabWindow = tabWindows[i];
-	        if (tabWindow && !tabWindow._managed && !tabWindow.open) {
-	          console.log("syncWindowList: detected closed window: ", tabWindow);
-	          this.removeTabWindow(tabWindow);
-	        }
-	      }
+	      // Clean up any closed windows:
+	      var closedTabWindows = _.filter(tabWindows, function (w) {
+	        return !w.open;
+	      });
+	      console.log("syncWindowList: detected closed windows: ", closedTabWindows);
+	
+	      // TODO: can we eta-contract this?
+	      closedTabWindows.forEach(function (w) {
+	        _this2.handleTabWindowClosed(w);
+	      });
 	      console.log("syncWindowList: complete");
 	      this.emit("change");
+	    }
+	
+	    /**
+	     * get the currently open tab windows
+	     */
+	  }, {
+	    key: 'getOpen',
+	    value: function getOpen() {
+	      var openWindows = _.values(this.windowIdMap);
+	      return openWindows;
 	    }
 	  }, {
 	    key: 'getAll',
@@ -3225,7 +3344,7 @@
 	  var self = this;
 	  chrome.windows.remove(windowId, function () {
 	    tabWindow.open = false;
-	    winStore.removeTabWindow(tabWindow);
+	    winStore.handleTabWindowClosed(tabWindow);
 	  });
 	}
 

@@ -153,6 +153,27 @@ var styles = {
   headerCheckBox: {
     width: 13,
     height: 13
+  },
+  modalOverlay: { 
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    background:'rgba(0,0,0,0.6)',
+    zIndex: 5,
+    width: '100%',
+    height: '100%'
+  },
+  modalContents: {
+    width: 300,
+    position: 'relative',
+    margin: '10% auto',
+    zIndex: 10,
+    paddingTop: 5,
+    paddingRight: 20,
+    paddingBottom: 13,
+    paddingLeft: 20,
+    borderRadius: 3,
+    background: '#fff'
   }
 }
 
@@ -233,6 +254,10 @@ var R_HeaderButton = React.createClass({
 var R_WindowHeader = React.createClass({
   mixins:[Hoverable,PureRenderMixin],
 
+  contextTypes: {
+    appComponent: React.PropTypes.object.isRequired
+  },
+
   handleUnmanageClick: function(event) {
     console.log("unamange: ", this.props.tabWindow);
     event.stopPropagation();
@@ -240,7 +265,12 @@ var R_WindowHeader = React.createClass({
 
   handleManageClick: function(event) {
     console.log("manage: ", this.props.tabWindow);
-      event.stopPropagation();
+
+    var appComponent = this.context.appComponent;
+
+    appComponent.openModal();
+
+    event.stopPropagation();
   },
 
   render: function() {
@@ -387,6 +417,10 @@ var R_TabItem = React.createClass({
 var R_TabWindow = React.createClass({
   mixins: [Hoverable],
 
+  contextTypes: {
+    appComponent: React.PropTypes.object.isRequired
+  },
+
   getInitialState: function() {
     // Note:  We initialize this with null rather than false so that it will follow
     // open / closed state of window
@@ -421,6 +455,7 @@ var R_TabWindow = React.createClass({
   },
 
   renderTabItems: function(tabWindow,tabs) {
+    console.log("R_TabWindow: context: ", this.context);
     var items = [];
     for (var i = 0; i < tabs.length; i++ ) {
       var id = "tabItem-" + i;
@@ -551,13 +586,63 @@ var R_TabMan = React.createClass({
     };
   },
 
+  childContextTypes: {
+       appComponent: React.PropTypes.object.isRequired
+  },
+
+  getChildContext: function() {
+    return { appComponent: this };
+  },
+
   getInitialState: function() {
-    return this.getStateFromStore(this.props.winStore);
+    var st = this.getStateFromStore(this.props.winStore);
+    st.modalIsOpen = false;
+    return st;
+  },
+
+  openModal: function() {
+    this.setState({modalIsOpen: true});
+  },
+
+  closeModal: function() {
+    this.setState({modalIsOpen: false});
   },
 
   render: function() {
-    return (<R_TabWindowList winStore={this.state.winStore} 
-                             sortedWindows={this.state.sortedWindows} />);
+    try {
+      var modalDiv = null;
+
+      if (this.state.modalIsOpen) {
+        modalDiv = (
+          <div>
+            <div style={styles.modalOverlay}>
+              <div style={styles.modalContents}>
+                <form>
+                  <fieldset>
+                    <label for="title">Window Title</label>
+                    <input type="text" name="title" id="title"/>
+                  </fieldset>
+                </form>
+              </div>
+            </div>
+          </div> );
+      }
+
+      var ret = (
+        <div>
+          <R_TabWindowList winStore={this.state.winStore} 
+                           sortedWindows={this.state.sortedWindows} 
+                           appComponent={this} 
+                           />
+          {modalDiv}        
+        </div> 
+       );
+    } catch (e) {
+      console.error( "App Component: caught exception during render: " );
+      console.error( e.stack );
+      throw e;      
+    }
+    return ret;
   },
 
   componentWillMount: function() {

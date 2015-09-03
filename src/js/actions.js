@@ -126,6 +126,6 @@ export function closeTabWindow(winStore,tabWindow) {
   var self = this;
   chrome.windows.remove( windowId, function() {
     tabWindow.open = false;
-    winStore.removeTabWindow(tabWindow);
+    winStore.handleTabWindowClosed(tabWindow);
   });
 }

@@ -73,20 +73,23 @@ export default class TabWindowStore extends EventEmitter {
     _.each(tabWindows, (w) => { this.addTabWindow(w); } );
   }
 
-  removeWindowMapEntries(tabWindow) {
-    console.log("removeWindowMapEntries: ", tabWindow);
+  /* We distinguish between removing an entry from map of open windows (windowIdMap)
+   * because when closing a bookmarked window, we only wish to remove it from former
+   */
+  handleTabWindowClosed(tabWindow) {
+    console.log("handleTabWindowClosed: ", tabWindow);
     var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-    if (windowId) 
-      delete this.windowIdMap[ windowId ];
+    if (windowId)
+      delete this.windowIdMap[ windowId ];    
+    this.emit("change");
+  }
+
+  removeBookmarkIdMapEntry(tabWindow) {
+    console.log("removeBookmarkIdMapEntry: ", tabWindow);
     var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
     if (bookmarkId)
       delete this.bookmarkIdMap[bookmarkId];
     this.emit("change");
-  }
-
-  removeTabWindow(tabWindow) {
-    console.log("removeTabWindow: ", tabWindow);
-    this.removeWindowMapEntries(tabWindow);
   }
 
   revertTabWindow( tabWindow, callback ) {
@@ -135,11 +138,11 @@ export default class TabWindowStore extends EventEmitter {
   syncChromeWindow(chromeWindow) {
     var tabWindow = this.windowIdMap[chromeWindow.id];
     if( !tabWindow ) {
-      // console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
+      console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
       tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       this.addTabWindow(tabWindow);
     } else {
-      // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
+      console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
       // Set chromeWindow to current snapshot of tab contents:
       tabWindow.chromeWindow = chromeWindow;
       tabWindow.open = true;
@@ -293,12 +296,15 @@ export default class TabWindowStore extends EventEmitter {
   }
 
   /**
-   * synchronize windows from chrome.windows.getAll with internal map of
-   * managed and unmanaged tab windows
+   * synchronize the currently open windows from chrome.windows.getAll with 
+   * internal map of open windows
    */
   syncWindowList(chromeWindowList) {
+    console.log("syncWindowList: enter: ", chromeWindowList);
+
     // To GC any closed windows:
     var tabWindows = this.getAll();
+    console.log("syncWindowList: tabWindows: ", tabWindows );
     for ( var i = 0; i < tabWindows.length; i++ ) {
       var tabWindow = tabWindows[ i ];
       if( tabWindow ) {
@@ -309,17 +315,23 @@ export default class TabWindowStore extends EventEmitter {
       var chromeWindow = chromeWindowList[ i ];
       this.syncChromeWindow(chromeWindow);
     }
-    // GC any closed, unmanaged windows:
-    for ( var i = 0; i < tabWindows.length; i++ ) {
-      tabWindow = tabWindows[ i ];
-      if( tabWindow && !( tabWindow._managed ) && !( tabWindow.open ) ) {
-        console.log( "syncWindowList: detected closed window: ", tabWindow );
-        this.removeTabWindow(tabWindow);
-      }
-    }
+    // Clean up any closed windows:
+    var closedTabWindows = _.filter(tabWindows, (w) => { return !(w.open);});
+    console.log("syncWindowList: detected closed windows: ", closedTabWindows);
+
+    // TODO: can we eta-contract this?
+    closedTabWindows.forEach((w) => { this.handleTabWindowClosed(w); });
     console.log("syncWindowList: complete");
     this.emit("change");
   }   
+
+  /**
+   * get the currently open tab windows
+   */ 
+  getOpen() {
+    var openWindows = _.values(this.windowIdMap);
+    return openWindows;    
+  }
 
   getAll() {
     var openWindows = _.values(this.windowIdMap);
