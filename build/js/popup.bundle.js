@@ -985,31 +985,6 @@
 	      tabWindow.open = true;
 	      this.windowIdMap[chromeWindow.id] = tabWindow;
 	    }
-	
-	    /**
-	     * Synchronize internal state of our store with snapshot
-	     * of current Chrome window state
-	     */
-	  }, {
-	    key: 'syncChromeWindow',
-	    value: function syncChromeWindow(chromeWindow) {
-	      var tabWindow = this.windowIdMap[chromeWindow.id];
-	      if (!tabWindow) {
-	        console.log("syncChromeWindow: new window id: ", chromeWindow.id);
-	        tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
-	        this.addTabWindow(tabWindow);
-	      } else {
-	        console.log("syncChromeWindow: cache hit for window id: ", chromeWindow.id);
-	        // Set chromeWindow to current snapshot of tab contents:
-	        tabWindow.chromeWindow = chromeWindow;
-	        tabWindow.open = true;
-	      }
-	    }
-	  }, {
-	    key: 'handleChromeWindowCreated',
-	    value: function handleChromeWindowCreated(chromeWindow) {
-	      this.syncChromeWindow(chromeWindow);
-	    }
 	  }, {
 	    key: 'handleChromeWindowRemoved',
 	    value: function handleChromeWindowRemoved(windowId) {
@@ -1167,6 +1142,31 @@
 	    }
 	
 	    /**
+	     * Synchronize internal state of our store with snapshot
+	     * of current Chrome window state
+	     */
+	  }, {
+	    key: 'syncChromeWindow',
+	    value: function syncChromeWindow(chromeWindow) {
+	      var tabWindow = this.windowIdMap[chromeWindow.id];
+	      if (!tabWindow) {
+	        console.log("syncChromeWindow: new window id: ", chromeWindow.id);
+	        tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
+	        this.addTabWindow(tabWindow);
+	      } else {
+	        console.log("syncChromeWindow: cache hit for window id: ", chromeWindow.id);
+	        // Set chromeWindow to current snapshot of tab contents:
+	        tabWindow.chromeWindow = chromeWindow;
+	        tabWindow.open = true;
+	      }
+	    }
+	  }, {
+	    key: 'handleChromeWindowCreated',
+	    value: function handleChromeWindowCreated(chromeWindow) {
+	      this.syncChromeWindow(chromeWindow);
+	    }
+	
+	    /**
 	     * synchronize the currently open windows from chrome.windows.getAll with 
 	     * internal map of open windows
 	     */
@@ -1177,30 +1177,27 @@
 	
 	      console.log("syncWindowList: enter: ", chromeWindowList);
 	
-	      // To GC any closed windows:
-	      var tabWindows = this.getAll();
+	      var tabWindows = this.getOpen();
 	      console.log("syncWindowList: tabWindows: ", tabWindows);
-	      for (var i = 0; i < tabWindows.length; i++) {
-	        var tabWindow = tabWindows[i];
-	        if (tabWindow) {
-	          tabWindow.open = false;
-	        }
-	      }
-	      for (var i = 0; i < chromeWindowList.length; i++) {
-	        var chromeWindow = chromeWindowList[i];
-	        this.syncChromeWindow(chromeWindow);
-	      }
-	      // Clean up any closed windows:
-	      var closedTabWindows = _.filter(tabWindows, function (w) {
-	        return !w.open;
-	      });
-	      console.log("syncWindowList: detected closed windows: ", closedTabWindows);
 	
-	      // TODO: can we eta-contract this?
-	      closedTabWindows.forEach(function (w) {
-	        _this2.handleTabWindowClosed(w);
+	      // Iterate through tab windows, closing any not in chromeWindowList:
+	      var chromeIds = _.pluck(chromeWindowList, 'id');
+	      var chromeIdSet = new Set(chromeIds);
+	      tabWindows.forEach(function (tw) {
+	        if (!chromeIdSet.has(tw.chromeWindow.id)) {
+	          console.log("syncWindowList: detected closed window: ", tw);
+	          // mark it closed:
+	          tw.open = false;
+	          // And remove it from open window map:
+	          _this2.handleTabWindowClosed(tw);
+	        }
 	      });
-	      console.log("syncWindowList: complete");
+	
+	      // Now iterate through chrome windows and find any new ones since last sync:
+	      chromeWindowList.forEach(function (cw) {
+	        _this2.syncChromeWindow(cw);
+	      });
+	
 	      this.emit("change");
 	    }
 	
