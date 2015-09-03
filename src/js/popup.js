@@ -455,7 +455,6 @@ var R_TabWindow = React.createClass({
   },
 
   renderTabItems: function(tabWindow,tabs) {
-    console.log("R_TabWindow: context: ", this.context);
     var items = [];
     for (var i = 0; i < tabs.length; i++ ) {
       var id = "tabItem-" + i;
@@ -552,7 +551,6 @@ var R_TabWindowList = React.createClass({
 
           var windowElem = <R_TabWindow winStore={this.props.winStore} tabWindow={tabWindow} key={id} />;
           if (isFocused) {
-            console.log("TabWindowList.render: current window: ", tabWindow);
             focusedWindowElem = windowElem;
           } else if (isManaged) {
             managedWindows.push(windowElem);

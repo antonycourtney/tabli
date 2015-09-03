@@ -281,11 +281,11 @@ export default class TabWindowStore extends EventEmitter {
   syncChromeWindow(chromeWindow) {
     var tabWindow = this.windowIdMap[chromeWindow.id];
     if( !tabWindow ) {
-      console.log( "syncChromeWindow: new window id: ", chromeWindow.id );
+      console.log( "syncChromeWindow: detected new window id: ", chromeWindow.id );
       tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       this.addTabWindow(tabWindow);
     } else {
-      console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
+      // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
       // Set chromeWindow to current snapshot of tab contents:
       tabWindow.chromeWindow = chromeWindow;
       tabWindow.open = true;
@@ -302,10 +302,8 @@ export default class TabWindowStore extends EventEmitter {
    * internal map of open windows
    */
   syncWindowList(chromeWindowList) {
-    console.log("syncWindowList: enter: ", chromeWindowList);
 
     var tabWindows = this.getOpen();
-    console.log("syncWindowList: tabWindows: ", tabWindows );
 
     // Iterate through tab windows, closing any not in chromeWindowList:
     var chromeIds = _.pluck(chromeWindowList,'id');

@@ -533,7 +533,6 @@
 	  },
 	
 	  renderTabItems: function renderTabItems(tabWindow, tabs) {
-	    console.log("R_TabWindow: context: ", this.context);
 	    var items = [];
 	    for (var i = 0; i < tabs.length; i++) {
 	      var id = "tabItem-" + i;
@@ -627,7 +626,6 @@
 	
 	        var windowElem = React.createElement(R_TabWindow, { winStore: this.props.winStore, tabWindow: tabWindow, key: id });
 	        if (isFocused) {
-	          console.log("TabWindowList.render: current window: ", tabWindow);
 	          focusedWindowElem = windowElem;
 	        } else if (isManaged) {
 	          managedWindows.push(windowElem);
@@ -1150,11 +1148,11 @@
 	    value: function syncChromeWindow(chromeWindow) {
 	      var tabWindow = this.windowIdMap[chromeWindow.id];
 	      if (!tabWindow) {
-	        console.log("syncChromeWindow: new window id: ", chromeWindow.id);
+	        console.log("syncChromeWindow: detected new window id: ", chromeWindow.id);
 	        tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
 	        this.addTabWindow(tabWindow);
 	      } else {
-	        console.log("syncChromeWindow: cache hit for window id: ", chromeWindow.id);
+	        // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
 	        // Set chromeWindow to current snapshot of tab contents:
 	        tabWindow.chromeWindow = chromeWindow;
 	        tabWindow.open = true;
@@ -1175,10 +1173,7 @@
 	    value: function syncWindowList(chromeWindowList) {
 	      var _this2 = this;
 	
-	      console.log("syncWindowList: enter: ", chromeWindowList);
-	
 	      var tabWindows = this.getOpen();
-	      console.log("syncWindowList: tabWindows: ", tabWindows);
 	
 	      // Iterate through tab windows, closing any not in chromeWindowList:
 	      var chromeIds = _.pluck(chromeWindowList, 'id');
