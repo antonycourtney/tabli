@@ -255,7 +255,7 @@
 	    zIndex: 10,
 	    borderRadius: 3,
 	    background: '#fff',
-	    margin: '10% auto',
+	    margin: '200px auto',
 	    border: '1px solid #bababa',
 	    display: 'flex',
 	    flexDirection: 'column'
