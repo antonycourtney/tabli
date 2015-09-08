@@ -305,22 +305,22 @@ export default class TabWindowStore extends EventEmitter {
 
     var tabWindows = this.getOpen();
 
-    // Iterate through tab windows, closing any not in chromeWindowList:
+    // Iterate through tab windows (our current list of open windows)
+    // closing any not in chromeWindowList:
     var chromeIds = _.pluck(chromeWindowList,'id');
     var chromeIdSet = new Set(chromeIds);
     tabWindows.forEach((tw) => {
       if (!chromeIdSet.has(tw.chromeWindow.id)) {
         console.log("syncWindowList: detected closed window: ", tw);
-        // mark it closed:
+        // mark it closed (only matters for bookmarked windows):
         tw.open = false;
         // And remove it from open window map:
         this.handleTabWindowClosed(tw);
       }
     });
 
-    // Now iterate through chrome windows and find any new ones since last sync:
+    // Now iterate through chromeWindowList and find any chrome windows not in our map of open windows:
     chromeWindowList.forEach((cw) => { this.syncChromeWindow(cw); });
-
 
     this.emit("change");
   }   

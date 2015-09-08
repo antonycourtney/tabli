@@ -36,14 +36,6 @@ export function parseURL(url) {
   };
 }
 
-/**
- * symmetric difference of two arrays using optional field extractor functions
- *
- */
-export function symmetricDiffBy(a,b,af,bf) {
-
-}
-
 /*
 var CONTEXT_MENU_ID = 99;
 var contextMenuCreated = false;

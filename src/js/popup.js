@@ -22,7 +22,7 @@ var styles = {
   },
   // This is the container for a single tabWindow, consisting of its
   // header and tabs:
-  windowInfo: {
+  tabWindow: {
     border: '1px solid #bababa',
     borderRadius: 3,
     marginBottom: 8,
@@ -30,7 +30,7 @@ var styles = {
     display: 'flex',
     flexDirection: 'column'
   },
-  windowInfoHover: {
+  tabWindowHover: {
     boxShadow: '0px 0px 5px 2px #7472ff'
   },
   windowHeader: {
@@ -56,15 +56,22 @@ var styles = {
   tabItemHover: {
    backgroundColor: '#dadada'
   },
-  windowList: { 
+  text: {
     fontSize: 12,
-    // lineHeight: '100%',
+    marginTop: 'auto',
+    marginBottom: 'auto',
+    marginLeft: 3    
+  },
+/*
+  tabListItem: { 
+    fontSize: 12,
     width: 243,
     maxWidth: 243,
     marginTop: 'auto',
     marginBottom: 'auto',
     marginLeft: 3
   },
+*/
   tabTitle: {
     width: 275,
     maxWidth: 275
@@ -103,6 +110,10 @@ var styles = {
     marginLeft: 1,
     marginRight: 0 
   },
+  spacer: {
+    backgroundColor: 'MistyRose',
+    flex: 1
+  },
   favIcon: {
     width: 16,
     height: 16,
@@ -133,10 +144,12 @@ var styles = {
       marginRight: '20px'
   },
   closeButton: {
-    background: 'url("../images/interface-80.png")',
+    WebkitMaskImage: 'url("../images/interface-77.png")',
+    backgroundColor: '#888888'
   },
   closeButtonHover: {
-    background: 'url("../images/interface-94.png")'
+    WebkitMaskImage: 'url("../images/interface-74.png")',
+    backgroundColor: '#000000'
   },
   tabList: {
     marginLeft: 0
@@ -148,7 +161,14 @@ var styles = {
     fontWeight: 'bold',
   },
   windowTitle: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    width: 243,
+    maxWidth: 243
+  },
+  modalTitle: {
+    fontWeight: 'bold',
+    paddingLeft: 16,
+    maxWidth: 243
   },
   headerCheckBox: {
     width: 13,
@@ -163,20 +183,29 @@ var styles = {
     width: '100%',
     height: '100%'
   },
-  modalContents: {
+  modalContainer: {
     width: 300,
     position: 'relative',
-    margin: '10% auto',
     zIndex: 10,
-    paddingTop: 5,
-    paddingRight: 20,
-    paddingBottom: 13,
-    paddingLeft: 20,
     borderRadius: 3,
-    background: '#fff'
+    background: '#fff',
+    margin: '10% auto',
+    border: '1px solid #bababa',   
+    display: 'flex',
+    flexDirection: 'column'     
+  },
+  modalBodyContainer: {
+    display: 'flex',
+    height: 50
+  },
+  modalBodyContents: {
+    margin: 'auto'
   }
 }
 
+/**
+ * Object merge operator from the original css-in-js presentation
+ */
 function m() {
 
   var res = {};
@@ -235,7 +264,7 @@ var R_HeaderButton = React.createClass({
   mixins: [Hoverable,PureRenderMixin],
   handleClick: function(event) {
     if (this.props.visible) {
-      this.props.onClick();
+      this.props.onClick(event);
       event.stopPropagation();
     }
   },
@@ -267,9 +296,7 @@ var R_WindowHeader = React.createClass({
     console.log("manage: ", this.props.tabWindow);
 
     var appComponent = this.context.appComponent;
-
     appComponent.openModal();
-
     event.stopPropagation();
   },
 
@@ -299,8 +326,7 @@ var R_WindowHeader = React.createClass({
 
     var windowTitle = tabWindow.getTitle();   
     var openStyle = tabWindow.open ? styles.open : styles.closed;
-    var titleStyle = m(styles.windowList,styles.noWrap,styles.windowTitle,openStyle);
-
+    var titleStyle = m(styles.text,styles.noWrap,styles.windowTitle,openStyle);
     var closeStyle = m(styles.headerButton,styles.closeButton);
 
     // We use hovering in the window header (this.state.hovering) to determine 
@@ -324,6 +350,7 @@ var R_WindowHeader = React.createClass({
         <R_ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
         <span style={titleStyle}>{windowTitle}</span>
         {revertButton}
+        <div style={styles.spacer} />        
         {closeButton}
       </div>
     );
@@ -392,7 +419,7 @@ var R_TabItem = React.createClass({
     var tabFavIcon = <img style={styles.favIcon} src={fiSrc} />;
 
     var tabActiveStyle = tab.active ? styles.activeSpan : null;
-    var tabTitleStyles = m(styles.windowList,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
+    var tabTitleStyles = m(styles.text,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
@@ -408,6 +435,7 @@ var R_TabItem = React.createClass({
         {tabCheckItem}
         {tabFavIcon}
         <span style={tabTitleStyles}>{tabTitle}</span>
+        <div style={styles.spacer} />
         {closeButton}
       </div>);
   }
@@ -502,8 +530,8 @@ var R_TabWindow = React.createClass({
           onClose={this.handleClose}
         />;
 
-    var hoverStyle=this.state.hovering ? styles.windowInfoHover : null;
-    var windowStyles=m(styles.windowInfo,styles.expandablePanel,hoverStyle);
+    var hoverStyle=this.state.hovering ? styles.tabWindowHover : null;
+    var windowStyles=m(styles.tabWindow,styles.expandablePanel,hoverStyle);
 
     return (
       <div style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
@@ -573,6 +601,93 @@ var R_TabWindowList = React.createClass({
   }
 });
 
+/*
+ * generic modal dialog component
+ */
+var R_Modal = React.createClass({
+
+  contextTypes: {
+    appComponent: React.PropTypes.object.isRequired
+  },
+
+  handleClose: function(event) {
+    console.log("handleClose: ", event, arguments);
+    var appComponent = this.context.appComponent;
+    appComponent.closeModal();
+    event.stopPropagation();    
+  },
+
+  render() {
+    var modalDiv = null;
+
+    if (this.props.show) {
+      var titleStyle = m(styles.text,styles.noWrap,styles.modalTitle,styles.open);
+      var closeStyle = m(styles.headerButton,styles.closeButton);
+      var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={true} 
+                            hoverStyle={styles.closeButtonHover} title="Close Window" 
+                            onClick={this.handleClose} />
+      modalDiv = (
+        <div>
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContainer}>
+              <div style={m(styles.windowHeader,styles.noWrap)} >
+                <span style={titleStyle}>{this.props.title}</span>
+                <div style={styles.spacer} />
+                {closeButton}
+              </div>
+              <div style={styles.modalBodyContainer}>
+                <div style={styles.modalBodyContents}>
+                  {this.props.children}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> );
+    }
+    return modalDiv;
+  }
+
+});
+
+/*
+ * Modal dialog for saving a bookmarked window
+ */
+var R_SaveModal = React.createClass({
+  contextTypes: {
+    appComponent: React.PropTypes.object.isRequired
+  },
+  handleClose(e) {
+    var appComponent = this.context.appComponent;
+    appComponent.closeModal();
+    e.stopPropagation();    
+  },
+  handleKeyDown(e) {
+    if (e.keyCode==27) {
+      this.handleClose(e);
+    }
+  },
+  handleSubmit(e) {
+    e.preventDefault();
+    const titleStr = this.refs.titleInput.getDOMNode().value;
+    console.log("handleSubmit: title: ", titleStr);
+  },
+  render() {
+    return (
+      <R_Modal title="Save Tabs" show={this.props.show} focusRef="titleInput">
+        <form className="dialog-form" onSubmit={this.handleSubmit}>
+          <fieldset>
+            <label htmlFor="title">Window Title</label>
+            <input type="text" name="title" id="title" ref="titleInput"
+              autoFocus={true}
+              onKeyDown={this.handleKeyDown}
+             />
+          </fieldset>
+        </form>      
+      </R_Modal>
+    );
+  }
+});
+
 var R_TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
@@ -608,31 +723,13 @@ var R_TabMan = React.createClass({
 
   render: function() {
     try {
-      var modalDiv = null;
-
-      if (this.state.modalIsOpen) {
-        modalDiv = (
-          <div>
-            <div style={styles.modalOverlay}>
-              <div style={styles.modalContents}>
-                <form>
-                  <fieldset>
-                    <label for="title">Window Title</label>
-                    <input type="text" name="title" id="title"/>
-                  </fieldset>
-                </form>
-              </div>
-            </div>
-          </div> );
-      }
-
       var ret = (
         <div>
           <R_TabWindowList winStore={this.state.winStore} 
                            sortedWindows={this.state.sortedWindows} 
                            appComponent={this} 
                            />
-          {modalDiv}        
+          <R_SaveModal show={this.state.modalIsOpen} />
         </div> 
        );
     } catch (e) {
@@ -689,7 +786,7 @@ function postLoadRender() {
   var bgw = chrome.extension.getBackgroundPage();
   var winStore = bgw.winStore;
 
-  actions.syncChromeWindows(winStore,() => {
+  actions.syncChromeWindows(winStore,logWrap( () => {
     console.log("postLoadRender: window sync complete");
 
     var t_preRender = performance.now();
@@ -698,7 +795,7 @@ function postLoadRender() {
     React.render( windowListComponent, elemId ); 
     var t_postRender = performance.now();
     console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
-  });
+  }));
 }
 
 /**

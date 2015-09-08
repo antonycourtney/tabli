@@ -181,7 +181,7 @@ button.window-managed {
 // From jQuery UI modal-form-custom example:
 label, input { display:block; }
 input.text { margin-bottom:12px; width:95%; padding: .4em; }
-fieldset { padding:0; border:0; margin-top:25px; }
+fieldset { padding:0; border:0; }
 .ui-dialog .ui-state-error { padding: .3em; }
 .validateTips { border: 1px solid transparent; padding: 0.3em; }
 .expandable-panel {
@@ -195,4 +195,9 @@ fieldset { padding:0; border:0; margin-top:25px; }
 }
 .expandable-panel-content-open {
   margin-top: 0px;  
+}
+
+.dialog-form label {
+  padding: 5px;
+  font-weight: bold;
 }
