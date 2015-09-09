@@ -266,6 +266,9 @@
 	  },
 	  modalBodyContents: {
 	    margin: 'auto'
+	  },
+	  dialogInfo: {
+	    borderBottom: '1px solid #bababa'
 	  }
 	};
 	
@@ -363,9 +366,12 @@
 	
 	  handleManageClick: function handleManageClick(event) {
 	    console.log("manage: ", this.props.tabWindow);
+	    event.preventDefault();
+	    var tabWindow = this.props.tabWindow;
 	
 	    var appComponent = this.context.appComponent;
-	    appComponent.openModal();
+	    appComponent.openSaveModal(tabWindow);
+	
 	    event.stopPropagation();
 	  },
 	
@@ -384,14 +390,15 @@
 	    if (managed) {
 	      windowCheckItem = React.createElement('button', { style: m(styles.headerButton, styles.windowManagedButton),
 	        title: 'Stop managing this window', onClick: this.handleUnmanageClick });
-	      // TODO: callbacks!
 	    } else {
-	        var checkStyle = m(styles.headerButton, hoverStyle, styles.headerCheckBox);
-	        windowCheckItem = React.createElement('input', { style: checkStyle, type: 'checkbox',
-	          title: 'Bookmark this window (and all its tabs)',
-	          onClick: this.handleManageClick
-	        });
-	      }
+	      var checkStyle = m(styles.headerButton, hoverStyle, styles.headerCheckBox);
+	      windowCheckItem = React.createElement('input', { style: checkStyle, type: 'checkbox',
+	        title: 'Bookmark this window (and all its tabs)',
+	        onClick: this.handleManageClick,
+	        ref: 'managedCheckbox',
+	        value: false
+	      });
+	    }
 	
 	    var windowTitle = tabWindow.getTitle();
 	    var openStyle = tabWindow.open ? styles.open : styles.closed;
@@ -689,55 +696,52 @@
 	  handleClose: function handleClose(event) {
 	    console.log("handleClose: ", event, arguments);
 	    var appComponent = this.context.appComponent;
-	    appComponent.closeModal();
+	    appComponent.closeSaveModal();
 	    event.stopPropagation();
 	  },
 	
 	  render: function render() {
 	    var modalDiv = null;
 	
-	    if (this.props.show) {
-	      var titleStyle = m(styles.text, styles.noWrap, styles.modalTitle, styles.open);
-	      var closeStyle = m(styles.headerButton, styles.closeButton);
-	      var closeButton = React.createElement(R_HeaderButton, { baseStyle: closeStyle, visible: true,
-	        hoverStyle: styles.closeButtonHover, title: 'Close Window',
-	        onClick: this.handleClose });
-	      modalDiv = React.createElement(
+	    var titleStyle = m(styles.text, styles.noWrap, styles.modalTitle, styles.open);
+	    var closeStyle = m(styles.headerButton, styles.closeButton);
+	    var closeButton = React.createElement(R_HeaderButton, { baseStyle: closeStyle, visible: true,
+	      hoverStyle: styles.closeButtonHover, title: 'Close Window',
+	      onClick: this.handleClose });
+	    modalDiv = React.createElement(
+	      'div',
+	      { style: styles.modalOverlay },
+	      React.createElement(
 	        'div',
-	        null,
+	        { style: styles.modalContainer },
 	        React.createElement(
 	          'div',
-	          { style: styles.modalOverlay },
+	          { style: m(styles.windowHeader, styles.noWrap) },
+	          React.createElement(
+	            'span',
+	            { style: titleStyle },
+	            this.props.title
+	          ),
+	          React.createElement('div', { style: styles.spacer }),
+	          closeButton
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: styles.modalBodyContainer },
 	          React.createElement(
 	            'div',
-	            { style: styles.modalContainer },
-	            React.createElement(
-	              'div',
-	              { style: m(styles.windowHeader, styles.noWrap) },
-	              React.createElement(
-	                'span',
-	                { style: titleStyle },
-	                this.props.title
-	              ),
-	              React.createElement('div', { style: styles.spacer }),
-	              closeButton
-	            ),
-	            React.createElement(
-	              'div',
-	              { style: styles.modalBodyContainer },
-	              React.createElement(
-	                'div',
-	                { style: styles.modalBodyContents },
-	                this.props.children
-	              )
-	            )
+	            { style: styles.modalBodyContents },
+	            this.props.children
 	          )
 	        )
-	      );
-	    }
+	      )
+	    );
 	    return modalDiv;
-	  }
+	  },
 	
+	  componentDidMount: function componentDidMount() {
+	    console.log("Modal: componentDidMount");
+	  }
 	});
 	
 	/*
@@ -749,13 +753,18 @@
 	  contextTypes: {
 	    appComponent: React.PropTypes.object.isRequired
 	  },
+	  /* The duplication of handleClose here and in Modal is hideous, but
+	   * not obvious how to avoid
+	   */
 	  handleClose: function handleClose(e) {
 	    var appComponent = this.context.appComponent;
-	    appComponent.closeModal();
+	    appComponent.closeSaveModal();
 	    e.stopPropagation();
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
 	    if (e.keyCode == 27) {
+	      // ESC key
+	      e.preventDefault();
 	      this.handleClose(e);
 	    }
 	  },
@@ -764,10 +773,23 @@
 	    var titleStr = this.refs.titleInput.getDOMNode().value;
 	    console.log("handleSubmit: title: ", titleStr);
 	  },
+	
+	  /*
+	  */
+	
 	  render: function render() {
 	    return React.createElement(
 	      R_Modal,
-	      { title: 'Save Tabs', show: this.props.show, focusRef: 'titleInput' },
+	      { title: 'Save Tabs', focusRef: 'titleInput' },
+	      React.createElement(
+	        'div',
+	        { style: styles.dialogInfo },
+	        React.createElement(
+	          'span',
+	          null,
+	          'Save this window (and all tabs)'
+	        )
+	      ),
 	      React.createElement(
 	        'form',
 	        { className: 'dialog-form', onSubmit: this.handleSubmit },
@@ -781,12 +803,25 @@
 	          ),
 	          React.createElement('input', { type: 'text', name: 'title', id: 'title', ref: 'titleInput',
 	            autoFocus: true,
+	            defaultValue: this.props.initialTitle,
 	            onKeyDown: this.handleKeyDown
 	          })
 	        )
 	      )
 	    );
+	  },
+	
+	  componentDidMount: function componentDidMount() {
+	    console.log("SaveModal: did mount");
+	    var titleElem = this.refs.titleInput.getDOMNode();
+	    /* titleElem.val(this.props.initialTitle); */
+	    var titleLen = this.props.initialTitle.length;
+	    window.setTimeout(function () {
+	      console.log("timer func");
+	      titleElem.setSelectionRange(0, titleLen);
+	    }, 0);
 	  }
+	
 	});
 	
 	var R_TabMan = React.createClass({
@@ -816,16 +851,28 @@
 	    return st;
 	  },
 	
-	  openModal: function openModal() {
-	    this.setState({ modalIsOpen: true });
+	  openSaveModal: function openSaveModal(tabWindow) {
+	    var initialTitle = tabWindow.getTitle();
+	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
 	  },
 	
-	  closeModal: function closeModal() {
-	    this.setState({ modalIsOpen: false });
+	  closeSaveModal: function closeSaveModal() {
+	    this.setState({ saveModalIsOpen: false });
+	  },
+	
+	  /* render modal (or not) based on this.state.modalIsOpen */
+	  renderModal: function renderModal() {
+	    var modal = null;
+	    if (this.state.saveModalIsOpen) {
+	      modal = React.createElement(R_SaveModal, { initialTitle: this.state.saveInitialTitle,
+	        tabWindow: this.state.saveTabWindow });
+	    }
+	    return modal;
 	  },
 	
 	  render: function render() {
 	    try {
+	      var modal = this.renderModal();
 	      var ret = React.createElement(
 	        'div',
 	        null,
@@ -833,7 +880,7 @@
 	          sortedWindows: this.state.sortedWindows,
 	          appComponent: this
 	        }),
-	        React.createElement(R_SaveModal, { show: this.state.modalIsOpen })
+	        modal
 	      );
 	    } catch (e) {
 	      console.error("App Component: caught exception during render: ");

@@ -200,6 +200,9 @@ var styles = {
   },
   modalBodyContents: {
     margin: 'auto'
+  },
+  dialogInfo: {
+    borderBottom: '1px solid #bababa'
   }
 }
 
@@ -294,9 +297,12 @@ var R_WindowHeader = React.createClass({
 
   handleManageClick: function(event) {
     console.log("manage: ", this.props.tabWindow);
+    event.preventDefault();
+    var tabWindow = this.props.tabWindow;
 
     var appComponent = this.context.appComponent;
-    appComponent.openModal();
+    appComponent.openSaveModal(tabWindow);
+    
     event.stopPropagation();
   },
 
@@ -315,12 +321,13 @@ var R_WindowHeader = React.createClass({
     if( managed ) {
       windowCheckItem =  <button style={m(styles.headerButton,styles.windowManagedButton)} 
                             title="Stop managing this window" onClick={this.handleUnmanageClick} />;
-      // TODO: callbacks!
     } else {
       var checkStyle = m(styles.headerButton,hoverStyle,styles.headerCheckBox);
       windowCheckItem = <input style={checkStyle} type="checkbox" 
                           title="Bookmark this window (and all its tabs)" 
                           onClick={this.handleManageClick}
+                          ref="managedCheckbox"
+                          value={false}
                           />;
     }
 
@@ -613,40 +620,39 @@ var R_Modal = React.createClass({
   handleClose: function(event) {
     console.log("handleClose: ", event, arguments);
     var appComponent = this.context.appComponent;
-    appComponent.closeModal();
+    appComponent.closeSaveModal();
     event.stopPropagation();    
   },
 
   render() {
     var modalDiv = null;
 
-    if (this.props.show) {
-      var titleStyle = m(styles.text,styles.noWrap,styles.modalTitle,styles.open);
-      var closeStyle = m(styles.headerButton,styles.closeButton);
-      var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={true} 
-                            hoverStyle={styles.closeButtonHover} title="Close Window" 
-                            onClick={this.handleClose} />
-      modalDiv = (
-        <div>
-          <div style={styles.modalOverlay}>
-            <div style={styles.modalContainer}>
-              <div style={m(styles.windowHeader,styles.noWrap)} >
-                <span style={titleStyle}>{this.props.title}</span>
-                <div style={styles.spacer} />
-                {closeButton}
-              </div>
-              <div style={styles.modalBodyContainer}>
-                <div style={styles.modalBodyContents}>
-                  {this.props.children}
-                </div>
-              </div>
+    var titleStyle = m(styles.text,styles.noWrap,styles.modalTitle,styles.open);
+    var closeStyle = m(styles.headerButton,styles.closeButton);
+    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={true} 
+                          hoverStyle={styles.closeButtonHover} title="Close Window" 
+                          onClick={this.handleClose} />
+    modalDiv = (
+      <div style={styles.modalOverlay}>
+        <div style={styles.modalContainer}>
+          <div style={m(styles.windowHeader,styles.noWrap)} >
+            <span style={titleStyle}>{this.props.title}</span>
+            <div style={styles.spacer} />
+            {closeButton}
+          </div>
+          <div style={styles.modalBodyContainer}>
+            <div style={styles.modalBodyContents}>
+              {this.props.children}
             </div>
           </div>
-        </div> );
-    }
+        </div>
+      </div> );
     return modalDiv;
-  }
+  },
 
+  componentDidMount() {
+    console.log("Modal: componentDidMount");
+  }
 });
 
 /*
@@ -656,13 +662,18 @@ var R_SaveModal = React.createClass({
   contextTypes: {
     appComponent: React.PropTypes.object.isRequired
   },
+  /* The duplication of handleClose here and in Modal is hideous, but
+   * not obvious how to avoid
+   */
   handleClose(e) {
     var appComponent = this.context.appComponent;
-    appComponent.closeModal();
+    appComponent.closeSaveModal();
     e.stopPropagation();    
   },
   handleKeyDown(e) {
     if (e.keyCode==27) {
+      // ESC key
+      e.preventDefault();
       this.handleClose(e);
     }
   },
@@ -671,21 +682,41 @@ var R_SaveModal = React.createClass({
     const titleStr = this.refs.titleInput.getDOMNode().value;
     console.log("handleSubmit: title: ", titleStr);
   },
+
+/*
+*/
+
   render() {
     return (
-      <R_Modal title="Save Tabs" show={this.props.show} focusRef="titleInput">
+      <R_Modal title="Save Tabs" focusRef="titleInput">
+        <div style={styles.dialogInfo} >
+          <span>Save this window (and all tabs)</span> 
+        </div>
         <form className="dialog-form" onSubmit={this.handleSubmit}>
           <fieldset>
             <label htmlFor="title">Window Title</label>
             <input type="text" name="title" id="title" ref="titleInput"
               autoFocus={true}
+              defaultValue={this.props.initialTitle}
               onKeyDown={this.handleKeyDown}
              />
           </fieldset>
         </form>      
       </R_Modal>
     );
+  },
+
+  componentDidMount() {
+    console.log("SaveModal: did mount");
+    var titleElem = this.refs.titleInput.getDOMNode();
+    /* titleElem.val(this.props.initialTitle); */
+    const titleLen = this.props.initialTitle.length;
+    window.setTimeout( function() {
+      console.log("timer func");
+      titleElem.setSelectionRange( 0, titleLen);
+    }, 0 );
   }
+
 });
 
 var R_TabMan = React.createClass({
@@ -713,23 +744,35 @@ var R_TabMan = React.createClass({
     return st;
   },
 
-  openModal: function() {
-    this.setState({modalIsOpen: true});
+  openSaveModal: function(tabWindow) {
+    const initialTitle = tabWindow.getTitle();
+    this.setState({saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow} );
   },
 
-  closeModal: function() {
-    this.setState({modalIsOpen: false});
+  closeSaveModal: function() {
+    this.setState({saveModalIsOpen: false});
+  },
+
+  /* render modal (or not) based on this.state.modalIsOpen */
+  renderModal() {
+    var modal = null;
+    if (this.state.saveModalIsOpen) {
+      modal = <R_SaveModal initialTitle={this.state.saveInitialTitle} 
+                tabWindow={this.state.saveTabWindow} />;
+    }
+    return modal;
   },
 
   render: function() {
     try {
+      const modal = this.renderModal();
       var ret = (
         <div>
           <R_TabWindowList winStore={this.state.winStore} 
                            sortedWindows={this.state.sortedWindows} 
                            appComponent={this} 
                            />
-          <R_SaveModal show={this.state.modalIsOpen} />
+          {modal}
         </div> 
        );
     } catch (e) {
