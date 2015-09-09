@@ -71,63 +71,8 @@
 	var actions = _interopRequireWildcard(_actions);
 	
 	var popupPort = null;
-	var tabmanFolderId = null;
 	var tabmanFolderTitle = "Subjective Tab Manager";
-	
-	var archiveFolderId = null;
 	var archiveFolderTitle = "_Archive";
-	
-	/*
-	 * begin managing the specified tab window
-	 */
-	function manageWindow(tabWindow, opts) {
-	  // and write out a Bookmarks folder for this newly managed window:
-	  if (!tabmanFolderId) {
-	    alert("Could not save bookmarks -- no tab manager folder");
-	  }
-	  var windowFolder = { parentId: tabmanFolderId,
-	    title: opts.title
-	  };
-	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
-	    console.log("succesfully created bookmarks folder ", windowFolderNode);
-	    console.log("for window: ", tabWindow);
-	    var tabs = TabWindow.chromeWindow.tabs;
-	    for (var i = 0; i < tabs.length; i++) {
-	      var tab = tabs[i];
-	      // bookmark for this tab:
-	      var tabMark = { parentId: windowFolderNode.id, title: tab.title, url: tab.url };
-	      chrome.bookmarks.create(tabMark, function (tabNode) {
-	        console.log("succesfully bookmarked tab ", tabNode);
-	      });
-	    }
-	    // Now do an explicit get of subtree to get node populated with children
-	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
-	      var fullFolderNode = folderNodes[0];
-	      TabWindow.bookmarkFolder = fullFolderNode;
-	
-	      // Note: Only now do we actually change the state to managed!
-	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
-	      // or have no children because of the asynchrony of creating bookmarks.
-	      // There might still be a race condition here since
-	      // the bookmarks for children may not have been created yet.
-	      // Haven't seen evidence of this so far.
-	      TabWindow._managed = true;
-	      TabWindow._managedTitle = opts.title;
-	    });
-	  });
-	}
-	
-	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-	function unmanageWindow(tabWindow) {
-	  TabWindow._managed = false;
-	
-	  if (!archiveFolderId) {
-	    alert("could not move managed window folder to archive -- no archive folder");
-	    return;
-	  }
-	  chrome.bookmarks.move(TabWindow.bookmarkFolder.id, { parentId: archiveFolderId });
-	  TabWindow.bookmarkFolder = null; // disconnect from this bookmark folder
-	}
 	
 	/* On startup load managed windows from bookmarks folder */
 	function loadManagedWindows(winStore, tabManFolder) {
@@ -168,7 +113,14 @@
 	  chrome.bookmarks.create(folderObj, callback);
 	}
 	
-	function initBookmarks(winStore, cb) {
+	/**
+	 * acquire main folder and archive folder and initialize
+	 * window store
+	 */
+	function initWinStore(cb) {
+	  var tabmanFolderId = null;
+	  var archiveFolderId = null;
+	
 	  chrome.bookmarks.getTree(function (tree) {
 	    var otherBookmarksNode = tree[0].children[1];
 	    console.log("otherBookmarksNode: ", otherBookmarksNode);
@@ -180,8 +132,9 @@
 	        archiveFolderId = archiveFolder.id;
 	        chrome.bookmarks.getSubTree(tabManFolder.id, function (subTreeNodes) {
 	          console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
+	          var winStore = new _tabWindowStore2['default'](tabmanFolderId, archiveFolderId);
 	          loadManagedWindows(winStore, subTreeNodes[0]);
-	          cb();
+	          cb(winStore);
 	        });
 	      });
 	    });
@@ -189,10 +142,9 @@
 	}
 	
 	function main() {
-	  var winStore = new _tabWindowStore2['default']();
-	  window.winStore = winStore;
-	  initBookmarks(winStore, function () {
+	  initWinStore(function (winStore) {
 	    console.log("init: done reading bookmarks.");
+	    window.winStore = winStore;
 	    actions.syncChromeWindows(winStore);
 	  });
 	}
@@ -282,13 +234,15 @@
 	var TabWindowStore = (function (_EventEmitter) {
 	  _inherits(TabWindowStore, _EventEmitter);
 	
-	  function TabWindowStore() {
+	  function TabWindowStore(folderId, archiveFolderId) {
 	    _classCallCheck(this, TabWindowStore);
 	
 	    _get(Object.getPrototypeOf(TabWindowStore.prototype), 'constructor', this).call(this);
 	    this.windowIdMap = {}; // maps from chrome window id for open windows
 	    this.bookmarkIdMap = {};
 	    this.notifyCallback = null;
+	    this.folderId = folderId;
+	    this.archiveFolderId = archiveFolderId;
 	  }
 	
 	  /*
@@ -336,6 +290,13 @@
 	      this.emit("change");
 	    }
 	  }, {
+	    key: 'unmanageWindow',
+	    value: function unmanageWindow(tabWindow) {
+	      this.removeBookmarkIdMapEntry(tabWindow);
+	      tabWindow._managed = false;
+	      tabWindow.bookmarkFolder = null; // disconnect from this bookmark folder
+	    }
+	  }, {
 	    key: 'revertTabWindow',
 	    value: function revertTabWindow(tabWindow, callback) {
 	      var tabs = tabWindow.chromeWindow.tabs;
@@ -364,6 +325,10 @@
 	        });
 	      });
 	    }
+	
+	    /**
+	     * attach a Chrome window to a specific tab window (after opening a saved window)
+	     */
 	  }, {
 	    key: 'attachChromeWindow',
 	    value: function attachChromeWindow(tabWindow, chromeWindow) {
@@ -379,6 +344,25 @@
 	      tabWindow.chromeWindow = chromeWindow;
 	      tabWindow.open = true;
 	      this.windowIdMap[chromeWindow.id] = tabWindow;
+	    }
+	
+	    /**
+	     * attach a bookmark folder to a specific tab window (after managing)
+	     */
+	  }, {
+	    key: 'attachBookmarkFolder',
+	    value: function attachBookmarkFolder(tabWindow, bookmarkFolder, title) {
+	      tabWindow.bookmarkFolder = bookmarkFolder;
+	
+	      //
+	      // HACK: breaking the tabWindow abstraction
+	      //
+	      tabWindow._managed = true;
+	      tabWindow._managedTitle = title;
+	
+	      // And re-register in store maps:
+	      this.addTabWindow(tabWindow);
+	      this.emit("change");
 	    }
 	  }, {
 	    key: 'handleChromeWindowRemoved',
@@ -2614,6 +2598,8 @@
 	exports.activateTab = activateTab;
 	exports.closeTab = closeTab;
 	exports.closeTabWindow = closeTabWindow;
+	exports.manageWindow = manageWindow;
+	exports.unmanageWindow = unmanageWindow;
 	
 	function syncChromeWindows(winStore, cb) {
 	  var t_preGet = performance.now();
@@ -2735,6 +2721,63 @@
 	  chrome.windows.remove(windowId, function () {
 	    tabWindow.open = false;
 	    winStore.handleTabWindowClosed(tabWindow);
+	  });
+	}
+	
+	/*
+	 * save the specified tab window and make it a managed window
+	 */
+	
+	function manageWindow(winStore, tabWindow, title, cb) {
+	  var tabmanFolderId = winStore.folderId;
+	
+	  // and write out a Bookmarks folder for this newly managed window:
+	  if (!tabmanFolderId) {
+	    alert("Could not save bookmarks -- no tab manager folder");
+	  }
+	  var windowFolder = { parentId: tabmanFolderId,
+	    title: title
+	  };
+	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
+	    console.log("succesfully created bookmarks folder ", windowFolderNode);
+	    console.log("for window: ", tabWindow);
+	    var tabs = tabWindow.chromeWindow.tabs;
+	    for (var i = 0; i < tabs.length; i++) {
+	      var tab = tabs[i];
+	      // bookmark for this tab:
+	      var tabMark = { parentId: windowFolderNode.id, title: tab.title, url: tab.url };
+	      chrome.bookmarks.create(tabMark, function (tabNode) {
+	        console.log("succesfully bookmarked tab ", tabNode);
+	      });
+	    }
+	    // Now do an explicit get of subtree to get node populated with children
+	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
+	      var fullFolderNode = folderNodes[0];
+	
+	      // Note: Only now do we actually change the state to managed!
+	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
+	      // or have no children because of the asynchrony of creating bookmarks.
+	      // There might still be a race condition here since
+	      // the bookmarks for children may not have been created yet.
+	      // Haven't seen evidence of this so far.     
+	      winStore.attachBookmarkFolder(tabWindow, fullFolderNode, title);
+	      cb(tabWindow);
+	    });
+	  });
+	}
+	
+	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
+	
+	function unmanageWindow(winStore, tabWindow) {
+	  console.log("unmanageWindow");
+	  if (!winStore.archiveFolderId) {
+	    alert("could not move managed window folder to archive -- no archive folder");
+	    return;
+	  }
+	  // TODO: what happens if a folder with same name already exists in archive folder?
+	  chrome.bookmarks.move(tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, function (resultNode) {
+	    console.log("unmanageWindow: bookmark folder moved to archive folder");
+	    winStore.unmanageWindow(tabWindow);
 	  });
 	}
 

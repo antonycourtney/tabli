@@ -233,7 +233,7 @@
 	  },
 	  modalTitle: {
 	    fontWeight: 'bold',
-	    paddingLeft: 16,
+	    paddingLeft: 7,
 	    maxWidth: 243
 	  },
 	  headerCheckBox: {
@@ -268,7 +268,13 @@
 	    margin: 'auto'
 	  },
 	  dialogInfo: {
-	    borderBottom: '1px solid #bababa'
+	    borderBottom: '1px solid #bababa',
+	    paddingLeft: 3
+	  },
+	  dialogInfoContents: {
+	    marginLeft: 10,
+	    marginTop: 10,
+	    marginBottom: 10
 	  }
 	};
 	
@@ -361,6 +367,7 @@
 	
 	  handleUnmanageClick: function handleUnmanageClick(event) {
 	    console.log("unamange: ", this.props.tabWindow);
+	    actions.unmanageWindow(this.props.winStore, this.props.tabWindow);
 	    event.stopPropagation();
 	  },
 	
@@ -368,7 +375,6 @@
 	    console.log("manage: ", this.props.tabWindow);
 	    event.preventDefault();
 	    var tabWindow = this.props.tabWindow;
-	
 	    var appComponent = this.context.appComponent;
 	    appComponent.openSaveModal(tabWindow);
 	
@@ -393,7 +399,7 @@
 	    } else {
 	      var checkStyle = m(styles.headerButton, hoverStyle, styles.headerCheckBox);
 	      windowCheckItem = React.createElement('input', { style: checkStyle, type: 'checkbox',
-	        title: 'Bookmark this window (and all its tabs)',
+	        title: 'Save all tabs in this window',
 	        onClick: this.handleManageClick,
 	        ref: 'managedCheckbox',
 	        value: false
@@ -689,15 +695,10 @@
 	var R_Modal = React.createClass({
 	  displayName: 'R_Modal',
 	
-	  contextTypes: {
-	    appComponent: React.PropTypes.object.isRequired
-	  },
-	
 	  handleClose: function handleClose(event) {
-	    console.log("handleClose: ", event, arguments);
-	    var appComponent = this.context.appComponent;
-	    appComponent.closeSaveModal();
-	    event.stopPropagation();
+	    console.log("Modal.handleClose: ", event, arguments);
+	    event.preventDefault();
+	    this.props.onClose(event);
 	  },
 	
 	  render: function render() {
@@ -725,15 +726,7 @@
 	          React.createElement('div', { style: styles.spacer }),
 	          closeButton
 	        ),
-	        React.createElement(
-	          'div',
-	          { style: styles.modalBodyContainer },
-	          React.createElement(
-	            'div',
-	            { style: styles.modalBodyContents },
-	            this.props.children
-	          )
-	        )
+	        this.props.children
 	      )
 	    );
 	    return modalDiv;
@@ -744,21 +737,51 @@
 	  }
 	});
 	
+	var R_ModalInfo = React.createClass({
+	  displayName: 'R_ModalInfo',
+	
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { style: styles.dialogInfo },
+	      React.createElement(
+	        'div',
+	        { style: styles.dialogInfoContents },
+	        this.props.children
+	      )
+	    );
+	  }
+	});
+	
+	var R_ModalBody = React.createClass({
+	  displayName: 'R_ModalBody',
+	
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { style: styles.modalBodyContainer },
+	      React.createElement(
+	        'div',
+	        { style: styles.modalBodyContents },
+	        this.props.children
+	      )
+	    );
+	  }
+	});
+	
 	/*
 	 * Modal dialog for saving a bookmarked window
 	 */
 	var R_SaveModal = React.createClass({
 	  displayName: 'R_SaveModal',
 	
-	  contextTypes: {
-	    appComponent: React.PropTypes.object.isRequired
-	  },
 	  /* The duplication of handleClose here and in Modal is hideous, but
 	   * not obvious how to avoid
 	   */
 	  handleClose: function handleClose(e) {
+	    e.preventDefault();
 	    var appComponent = this.context.appComponent;
-	    appComponent.closeSaveModal();
+	    this.props.onClose();
 	    e.stopPropagation();
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
@@ -772,40 +795,41 @@
 	    e.preventDefault();
 	    var titleStr = this.refs.titleInput.getDOMNode().value;
 	    console.log("handleSubmit: title: ", titleStr);
+	    this.props.onSubmit(titleStr);
 	  },
-	
-	  /*
-	  */
-	
 	  render: function render() {
 	    return React.createElement(
 	      R_Modal,
-	      { title: 'Save Tabs', focusRef: 'titleInput' },
+	      { title: 'Save Tabs', focusRef: 'titleInput', onClose: this.handleClose },
 	      React.createElement(
-	        'div',
-	        { style: styles.dialogInfo },
+	        R_ModalInfo,
+	        null,
 	        React.createElement(
 	          'span',
 	          null,
-	          'Save this window (and all tabs)'
+	          'Save all tabs in this window'
 	        )
 	      ),
 	      React.createElement(
-	        'form',
-	        { className: 'dialog-form', onSubmit: this.handleSubmit },
+	        R_ModalBody,
+	        null,
 	        React.createElement(
-	          'fieldset',
-	          null,
+	          'form',
+	          { className: 'dialog-form', onSubmit: this.handleSubmit },
 	          React.createElement(
-	            'label',
-	            { htmlFor: 'title' },
-	            'Window Title'
-	          ),
-	          React.createElement('input', { type: 'text', name: 'title', id: 'title', ref: 'titleInput',
-	            autoFocus: true,
-	            defaultValue: this.props.initialTitle,
-	            onKeyDown: this.handleKeyDown
-	          })
+	            'fieldset',
+	            null,
+	            React.createElement(
+	              'label',
+	              { htmlFor: 'title' },
+	              'Window Title'
+	            ),
+	            React.createElement('input', { type: 'text', name: 'title', id: 'title', ref: 'titleInput',
+	              autoFocus: true,
+	              defaultValue: this.props.initialTitle,
+	              onKeyDown: this.handleKeyDown
+	            })
+	          )
 	        )
 	      )
 	    );
@@ -860,12 +884,25 @@
 	    this.setState({ saveModalIsOpen: false });
 	  },
 	
+	  /* handler for save modal */
+	  doSave: function doSave(titleStr) {
+	    var _this = this;
+	
+	    actions.manageWindow(this.state.winStore, this.state.saveTabWindow, titleStr, function (w) {
+	      console.log("finished saving: ", w);
+	      _this.closeSaveModal();
+	    });
+	  },
+	
 	  /* render modal (or not) based on this.state.modalIsOpen */
 	  renderModal: function renderModal() {
 	    var modal = null;
 	    if (this.state.saveModalIsOpen) {
 	      modal = React.createElement(R_SaveModal, { initialTitle: this.state.saveInitialTitle,
-	        tabWindow: this.state.saveTabWindow });
+	        tabWindow: this.state.saveTabWindow,
+	        onClose: this.closeSaveModal,
+	        onSubmit: this.doSave
+	      });
 	    }
 	    return modal;
 	  },
@@ -891,7 +928,7 @@
 	  },
 	
 	  componentWillMount: function componentWillMount() {
-	    var _this = this;
+	    var _this2 = this;
 	
 	    var winStore = this.props.winStore;
 	    /*
@@ -900,7 +937,7 @@
 	     */
 	    // Save viewListener so we can remove it in componentWillUnmount
 	    this.viewListener = function () {
-	      _this.setState(_this.getStateFromStore(winStore));
+	      _this2.setState(_this2.getStateFromStore(winStore));
 	    };
 	    // We used to just do:
 	    // winStore.on("change",this.viewListener);
@@ -1042,13 +1079,15 @@
 	var TabWindowStore = (function (_EventEmitter) {
 	  _inherits(TabWindowStore, _EventEmitter);
 	
-	  function TabWindowStore() {
+	  function TabWindowStore(folderId, archiveFolderId) {
 	    _classCallCheck(this, TabWindowStore);
 	
 	    _get(Object.getPrototypeOf(TabWindowStore.prototype), 'constructor', this).call(this);
 	    this.windowIdMap = {}; // maps from chrome window id for open windows
 	    this.bookmarkIdMap = {};
 	    this.notifyCallback = null;
+	    this.folderId = folderId;
+	    this.archiveFolderId = archiveFolderId;
 	  }
 	
 	  /*
@@ -1096,6 +1135,13 @@
 	      this.emit("change");
 	    }
 	  }, {
+	    key: 'unmanageWindow',
+	    value: function unmanageWindow(tabWindow) {
+	      this.removeBookmarkIdMapEntry(tabWindow);
+	      tabWindow._managed = false;
+	      tabWindow.bookmarkFolder = null; // disconnect from this bookmark folder
+	    }
+	  }, {
 	    key: 'revertTabWindow',
 	    value: function revertTabWindow(tabWindow, callback) {
 	      var tabs = tabWindow.chromeWindow.tabs;
@@ -1124,6 +1170,10 @@
 	        });
 	      });
 	    }
+	
+	    /**
+	     * attach a Chrome window to a specific tab window (after opening a saved window)
+	     */
 	  }, {
 	    key: 'attachChromeWindow',
 	    value: function attachChromeWindow(tabWindow, chromeWindow) {
@@ -1139,6 +1189,25 @@
 	      tabWindow.chromeWindow = chromeWindow;
 	      tabWindow.open = true;
 	      this.windowIdMap[chromeWindow.id] = tabWindow;
+	    }
+	
+	    /**
+	     * attach a bookmark folder to a specific tab window (after managing)
+	     */
+	  }, {
+	    key: 'attachBookmarkFolder',
+	    value: function attachBookmarkFolder(tabWindow, bookmarkFolder, title) {
+	      tabWindow.bookmarkFolder = bookmarkFolder;
+	
+	      //
+	      // HACK: breaking the tabWindow abstraction
+	      //
+	      tabWindow._managed = true;
+	      tabWindow._managedTitle = title;
+	
+	      // And re-register in store maps:
+	      this.addTabWindow(tabWindow);
+	      this.emit("change");
 	    }
 	  }, {
 	    key: 'handleChromeWindowRemoved',
@@ -3374,6 +3443,8 @@
 	exports.activateTab = activateTab;
 	exports.closeTab = closeTab;
 	exports.closeTabWindow = closeTabWindow;
+	exports.manageWindow = manageWindow;
+	exports.unmanageWindow = unmanageWindow;
 	
 	function syncChromeWindows(winStore, cb) {
 	  var t_preGet = performance.now();
@@ -3495,6 +3566,63 @@
 	  chrome.windows.remove(windowId, function () {
 	    tabWindow.open = false;
 	    winStore.handleTabWindowClosed(tabWindow);
+	  });
+	}
+	
+	/*
+	 * save the specified tab window and make it a managed window
+	 */
+	
+	function manageWindow(winStore, tabWindow, title, cb) {
+	  var tabmanFolderId = winStore.folderId;
+	
+	  // and write out a Bookmarks folder for this newly managed window:
+	  if (!tabmanFolderId) {
+	    alert("Could not save bookmarks -- no tab manager folder");
+	  }
+	  var windowFolder = { parentId: tabmanFolderId,
+	    title: title
+	  };
+	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
+	    console.log("succesfully created bookmarks folder ", windowFolderNode);
+	    console.log("for window: ", tabWindow);
+	    var tabs = tabWindow.chromeWindow.tabs;
+	    for (var i = 0; i < tabs.length; i++) {
+	      var tab = tabs[i];
+	      // bookmark for this tab:
+	      var tabMark = { parentId: windowFolderNode.id, title: tab.title, url: tab.url };
+	      chrome.bookmarks.create(tabMark, function (tabNode) {
+	        console.log("succesfully bookmarked tab ", tabNode);
+	      });
+	    }
+	    // Now do an explicit get of subtree to get node populated with children
+	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
+	      var fullFolderNode = folderNodes[0];
+	
+	      // Note: Only now do we actually change the state to managed!
+	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
+	      // or have no children because of the asynchrony of creating bookmarks.
+	      // There might still be a race condition here since
+	      // the bookmarks for children may not have been created yet.
+	      // Haven't seen evidence of this so far.     
+	      winStore.attachBookmarkFolder(tabWindow, fullFolderNode, title);
+	      cb(tabWindow);
+	    });
+	  });
+	}
+	
+	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
+	
+	function unmanageWindow(winStore, tabWindow) {
+	  console.log("unmanageWindow");
+	  if (!winStore.archiveFolderId) {
+	    alert("could not move managed window folder to archive -- no archive folder");
+	    return;
+	  }
+	  // TODO: what happens if a folder with same name already exists in archive folder?
+	  chrome.bookmarks.move(tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, function (resultNode) {
+	    console.log("unmanageWindow: bookmark folder moved to archive folder");
+	    winStore.unmanageWindow(tabWindow);
 	  });
 	}
 

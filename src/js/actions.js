@@ -129,3 +129,58 @@ export function closeTabWindow(winStore,tabWindow) {
     winStore.handleTabWindowClosed(tabWindow);
   });
 }
+
+/*
+ * save the specified tab window and make it a managed window
+ */
+export function manageWindow(winStore,tabWindow,title,cb) {
+  const tabmanFolderId = winStore.folderId;
+
+  // and write out a Bookmarks folder for this newly managed window:
+  if( !tabmanFolderId ) {
+    alert( "Could not save bookmarks -- no tab manager folder" );
+  }
+  var windowFolder = { parentId: tabmanFolderId,
+                       title: title,
+                     };
+  chrome.bookmarks.create( windowFolder, function( windowFolderNode ) {
+    console.log( "succesfully created bookmarks folder ", windowFolderNode );
+    console.log( "for window: ", tabWindow );
+    var tabs = tabWindow.chromeWindow.tabs;
+    for( var i = 0; i < tabs.length; i++ ) {
+      var tab = tabs[ i ];
+      // bookmark for this tab:
+      var tabMark = { parentId: windowFolderNode.id, title: tab.title, url: tab.url };
+      chrome.bookmarks.create( tabMark, function( tabNode ) {
+        console.log( "succesfully bookmarked tab ", tabNode );
+      });
+    }
+    // Now do an explicit get of subtree to get node populated with children
+    chrome.bookmarks.getSubTree( windowFolderNode.id, function ( folderNodes ) {
+      var fullFolderNode = folderNodes[ 0 ];
+
+      // Note: Only now do we actually change the state to managed!
+      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
+      // or have no children because of the asynchrony of creating bookmarks.
+      // There might still be a race condition here since
+      // the bookmarks for children may not have been created yet.
+      // Haven't seen evidence of this so far.      
+      winStore.attachBookmarkFolder(tabWindow,fullFolderNode,title);
+      cb(tabWindow);
+    } );
+  } );    
+}
+
+/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
+export function unmanageWindow(winStore,tabWindow) {
+  console.log("unmanageWindow");
+  if( !winStore.archiveFolderId ) {
+    alert( "could not move managed window folder to archive -- no archive folder" );
+    return;
+  }
+  // TODO: what happens if a folder with same name already exists in archive folder?
+  chrome.bookmarks.move( tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, (resultNode) => {
+    console.log("unmanageWindow: bookmark folder moved to archive folder");
+    winStore.unmanageWindow(tabWindow);
+  });
+}

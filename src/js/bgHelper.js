@@ -10,63 +10,10 @@ import * as TabWindow from './tabWindow';
 import * as actions from './actions';
 
 var popupPort = null;
-var tabmanFolderId = null;
-var tabmanFolderTitle = "Subjective Tab Manager";
+const tabmanFolderTitle = "Subjective Tab Manager";
+const archiveFolderTitle = "_Archive";
 
-var archiveFolderId = null;
-var archiveFolderTitle = "_Archive";
 
-/*
- * begin managing the specified tab window
- */
-function manageWindow( tabWindow, opts ) {
-  // and write out a Bookmarks folder for this newly managed window:
-  if( !tabmanFolderId ) {
-    alert( "Could not save bookmarks -- no tab manager folder" );
-  }
-  var windowFolder = { parentId: tabmanFolderId,
-                       title: opts.title,
-                     };
-  chrome.bookmarks.create( windowFolder, function( windowFolderNode ) {
-    console.log( "succesfully created bookmarks folder ", windowFolderNode );
-    console.log( "for window: ", tabWindow );
-    var tabs = TabWindow.chromeWindow.tabs;
-    for( var i = 0; i < tabs.length; i++ ) {
-      var tab = tabs[ i ];
-      // bookmark for this tab:
-      var tabMark = { parentId: windowFolderNode.id, title: tab.title, url: tab.url };
-      chrome.bookmarks.create( tabMark, function( tabNode ) {
-        console.log( "succesfully bookmarked tab ", tabNode );
-      });
-    }
-    // Now do an explicit get of subtree to get node populated with children
-    chrome.bookmarks.getSubTree( windowFolderNode.id, function ( folderNodes ) {
-      var fullFolderNode = folderNodes[ 0 ];
-      TabWindow.bookmarkFolder = fullFolderNode;
-
-      // Note: Only now do we actually change the state to managed!
-      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
-      // or have no children because of the asynchrony of creating bookmarks.
-      // There might still be a race condition here since
-      // the bookmarks for children may not have been created yet.
-      // Haven't seen evidence of this so far.
-      TabWindow._managed = true;
-      TabWindow._managedTitle = opts.title;
-    } );
-  } );
-}
-
-/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-function unmanageWindow( tabWindow ) {
-  TabWindow._managed = false;
-
-  if( !archiveFolderId ) {
-    alert( "could not move managed window folder to archive -- no archive folder" );
-    return;
-  }
-  chrome.bookmarks.move( TabWindow.bookmarkFolder.id, { parentId: archiveFolderId } );
-  TabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
-}
 
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows(winStore,tabManFolder ) {
@@ -107,7 +54,14 @@ function ensureChildFolder( parentNode, childFolderName, callback ) {
   chrome.bookmarks.create( folderObj, callback );
 }
 
-function initBookmarks(winStore,cb) {
+/**
+ * acquire main folder and archive folder and initialize
+ * window store
+ */
+function initWinStore(cb) {
+  var tabmanFolderId = null;
+  var archiveFolderId = null;
+
   chrome.bookmarks.getTree(function(tree){
     var otherBookmarksNode = tree[0].children[1]; 
     console.log( "otherBookmarksNode: ", otherBookmarksNode );
@@ -119,8 +73,9 @@ function initBookmarks(winStore,cb) {
         archiveFolderId = archiveFolder.id;
         chrome.bookmarks.getSubTree(tabManFolder.id,function (subTreeNodes) {
           console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
+          var winStore = new TabWindowStore(tabmanFolderId,archiveFolderId);
           loadManagedWindows(winStore,subTreeNodes[0]);
-          cb();
+          cb(winStore);
         });
       })
     });
@@ -128,10 +83,9 @@ function initBookmarks(winStore,cb) {
 }
 
 function main() {
-  var winStore = new TabWindowStore();
-  window.winStore = winStore;
-  initBookmarks(winStore,function () {
+  initWinStore(function (winStore) {
     console.log("init: done reading bookmarks.");
+    window.winStore = winStore;
     actions.syncChromeWindows(winStore);
   });
 }

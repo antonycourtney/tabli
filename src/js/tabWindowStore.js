@@ -49,11 +49,13 @@ function findTabId(tabWindows,targetTabId) {
 
 export default class TabWindowStore extends EventEmitter {
 
-  constructor() {
+  constructor(folderId,archiveFolderId) {
     super();
     this.windowIdMap = {};  // maps from chrome window id for open windows
     this.bookmarkIdMap = {};
     this.notifyCallback = null;
+    this.folderId = folderId;
+    this.archiveFolderId = archiveFolderId;
   }
 
   /*
@@ -92,6 +94,12 @@ export default class TabWindowStore extends EventEmitter {
     this.emit("change");
   }
 
+  unmanageWindow(tabWindow) {
+    this.removeBookmarkIdMapEntry(tabWindow);    
+    tabWindow._managed = false;
+    tabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
+  }
+
   revertTabWindow( tabWindow, callback ) {
     var tabs = tabWindow.chromeWindow.tabs;
     var currentTabIds = tabs.map( function ( t ) { return t.id; } );
@@ -116,6 +124,9 @@ export default class TabWindowStore extends EventEmitter {
     });
   }
 
+  /**
+   * attach a Chrome window to a specific tab window (after opening a saved window)
+   */
   attachChromeWindow(tabWindow,chromeWindow) {
     console.log("attachChromeWindow: ", tabWindow, chromeWindow);
     // Was this Chrome window id previously associated with some other tab window?
@@ -131,6 +142,23 @@ export default class TabWindowStore extends EventEmitter {
     this.windowIdMap[ chromeWindow.id ] = tabWindow;
   }
 
+
+  /**
+   * attach a bookmark folder to a specific tab window (after managing)
+   */
+  attachBookmarkFolder(tabWindow,bookmarkFolder,title) {
+      tabWindow.bookmarkFolder = bookmarkFolder;
+
+      //
+      // HACK: breaking the tabWindow abstraction
+      //
+      tabWindow._managed = true;
+      tabWindow._managedTitle = title;
+
+      // And re-register in store maps:
+      this.addTabWindow(tabWindow);
+      this.emit("change");
+  }
 
   handleChromeWindowRemoved(windowId) {
     console.log("handleChromeWindowRemoved: ", windowId);

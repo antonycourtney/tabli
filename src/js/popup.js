@@ -167,7 +167,7 @@ var styles = {
   },
   modalTitle: {
     fontWeight: 'bold',
-    paddingLeft: 16,
+    paddingLeft: 7,
     maxWidth: 243
   },
   headerCheckBox: {
@@ -202,7 +202,13 @@ var styles = {
     margin: 'auto'
   },
   dialogInfo: {
-    borderBottom: '1px solid #bababa'
+    borderBottom: '1px solid #bababa',
+    paddingLeft: 3
+  },
+  dialogInfoContents: {
+    marginLeft: 10,
+    marginTop: 10,
+    marginBottom: 10
   }
 }
 
@@ -292,6 +298,7 @@ var R_WindowHeader = React.createClass({
 
   handleUnmanageClick: function(event) {
     console.log("unamange: ", this.props.tabWindow);
+    actions.unmanageWindow(this.props.winStore,this.props.tabWindow);
     event.stopPropagation();
   },
 
@@ -299,10 +306,9 @@ var R_WindowHeader = React.createClass({
     console.log("manage: ", this.props.tabWindow);
     event.preventDefault();
     var tabWindow = this.props.tabWindow;
-
     var appComponent = this.context.appComponent;
     appComponent.openSaveModal(tabWindow);
-    
+
     event.stopPropagation();
   },
 
@@ -324,7 +330,7 @@ var R_WindowHeader = React.createClass({
     } else {
       var checkStyle = m(styles.headerButton,hoverStyle,styles.headerCheckBox);
       windowCheckItem = <input style={checkStyle} type="checkbox" 
-                          title="Bookmark this window (and all its tabs)" 
+                          title="Save all tabs in this window" 
                           onClick={this.handleManageClick}
                           ref="managedCheckbox"
                           value={false}
@@ -613,15 +619,10 @@ var R_TabWindowList = React.createClass({
  */
 var R_Modal = React.createClass({
 
-  contextTypes: {
-    appComponent: React.PropTypes.object.isRequired
-  },
-
   handleClose: function(event) {
-    console.log("handleClose: ", event, arguments);
-    var appComponent = this.context.appComponent;
-    appComponent.closeSaveModal();
-    event.stopPropagation();    
+    console.log("Modal.handleClose: ", event, arguments);
+    event.preventDefault();
+    this.props.onClose(event);
   },
 
   render() {
@@ -640,11 +641,7 @@ var R_Modal = React.createClass({
             <div style={styles.spacer} />
             {closeButton}
           </div>
-          <div style={styles.modalBodyContainer}>
-            <div style={styles.modalBodyContents}>
-              {this.props.children}
-            </div>
-          </div>
+          {this.props.children}
         </div>
       </div> );
     return modalDiv;
@@ -655,19 +652,41 @@ var R_Modal = React.createClass({
   }
 });
 
+var R_ModalInfo = React.createClass({
+  render() {
+    return (
+      <div style={styles.dialogInfo}>      
+        <div style={styles.dialogInfoContents}>
+          {this.props.children}
+        </div>
+      </div>
+    );
+  }
+});
+
+var R_ModalBody = React.createClass({
+  render() {
+    return (
+      <div style={styles.modalBodyContainer}>
+        <div style={styles.modalBodyContents}>
+          {this.props.children}
+        </div>
+      </div>
+    );
+  }
+});
+
 /*
  * Modal dialog for saving a bookmarked window
  */
 var R_SaveModal = React.createClass({
-  contextTypes: {
-    appComponent: React.PropTypes.object.isRequired
-  },
   /* The duplication of handleClose here and in Modal is hideous, but
    * not obvious how to avoid
    */
   handleClose(e) {
+    e.preventDefault();
     var appComponent = this.context.appComponent;
-    appComponent.closeSaveModal();
+    this.props.onClose();
     e.stopPropagation();    
   },
   handleKeyDown(e) {
@@ -681,27 +700,26 @@ var R_SaveModal = React.createClass({
     e.preventDefault();
     const titleStr = this.refs.titleInput.getDOMNode().value;
     console.log("handleSubmit: title: ", titleStr);
+    this.props.onSubmit(titleStr);
   },
-
-/*
-*/
-
   render() {
     return (
-      <R_Modal title="Save Tabs" focusRef="titleInput">
-        <div style={styles.dialogInfo} >
-          <span>Save this window (and all tabs)</span> 
-        </div>
-        <form className="dialog-form" onSubmit={this.handleSubmit}>
-          <fieldset>
-            <label htmlFor="title">Window Title</label>
-            <input type="text" name="title" id="title" ref="titleInput"
-              autoFocus={true}
-              defaultValue={this.props.initialTitle}
-              onKeyDown={this.handleKeyDown}
-             />
-          </fieldset>
-        </form>      
+      <R_Modal title="Save Tabs" focusRef="titleInput" onClose={this.handleClose} >
+        <R_ModalInfo>
+          <span>Save all tabs in this window</span> 
+        </R_ModalInfo>
+        <R_ModalBody>
+          <form className="dialog-form" onSubmit={this.handleSubmit}>
+            <fieldset>
+              <label htmlFor="title">Window Title</label>
+              <input type="text" name="title" id="title" ref="titleInput"
+                autoFocus={true}
+                defaultValue={this.props.initialTitle}
+                onKeyDown={this.handleKeyDown}
+               />
+            </fieldset>
+          </form>
+        </R_ModalBody>      
       </R_Modal>
     );
   },
@@ -744,13 +762,21 @@ var R_TabMan = React.createClass({
     return st;
   },
 
-  openSaveModal: function(tabWindow) {
+  openSaveModal(tabWindow) {
     const initialTitle = tabWindow.getTitle();
     this.setState({saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow} );
   },
 
-  closeSaveModal: function() {
+  closeSaveModal() {
     this.setState({saveModalIsOpen: false});
+  },
+
+  /* handler for save modal */
+  doSave(titleStr) {
+    actions.manageWindow(this.state.winStore,this.state.saveTabWindow,titleStr,(w) => {
+      console.log("finished saving: ", w);
+      this.closeSaveModal();
+    });
   },
 
   /* render modal (or not) based on this.state.modalIsOpen */
@@ -758,7 +784,10 @@ var R_TabMan = React.createClass({
     var modal = null;
     if (this.state.saveModalIsOpen) {
       modal = <R_SaveModal initialTitle={this.state.saveInitialTitle} 
-                tabWindow={this.state.saveTabWindow} />;
+                tabWindow={this.state.saveTabWindow}
+                onClose={this.closeSaveModal} 
+                onSubmit={this.doSave}
+                />;
     }
     return modal;
   },
