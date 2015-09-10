@@ -8,7 +8,6 @@ import * as actions from './actions';
 import 'babel/polyfill';
 
 import * as TabWindowStore from './tabWindowStore';
-import * as TabWindow from './tabWindow';
 import {addons} from 'react/addons'; 
 const {PureRenderMixin} = addons;
 
@@ -217,6 +216,11 @@ var styles = {
   windowListSectionHeader: {
     fontWeight: 'bold',
     marginBottom: 5
+  },
+  searchBar: {    
+  },
+  searchInput: {
+    width: '100%'
   }
 }
 
@@ -239,7 +243,7 @@ function m() {
 }
 
 // expand / contract button for a window
-var R_ExpanderButton = React.createClass({
+var ExpanderButton = React.createClass({
   mixins: [PureRenderMixin],
   handleClicked: function(event) {
     var nextState = !this.props.expanded;
@@ -277,7 +281,7 @@ var Hoverable = {
 };
 
 // A button that will merge in hoverStyle when hovered over
-var R_HeaderButton = React.createClass({
+var HeaderButton = React.createClass({
   mixins: [Hoverable,PureRenderMixin],
   handleClick: function(event) {
     if (this.props.visible) {
@@ -297,7 +301,7 @@ var R_HeaderButton = React.createClass({
 })
 
 
-var R_WindowHeader = React.createClass({
+var WindowHeader = React.createClass({
   mixins:[Hoverable,PureRenderMixin],
 
   contextTypes: {
@@ -352,12 +356,12 @@ var R_WindowHeader = React.createClass({
 
     // We use hovering in the window header (this.state.hovering) to determine 
     // visibility of both the revert button and close button appearing after the window title.
-    var revertButton = <R_HeaderButton baseStyle={m(styles.headerButton,styles.revertButton)} 
+    var revertButton = <HeaderButton baseStyle={m(styles.headerButton,styles.revertButton)} 
                           visible={this.state.hovering && managed && tabWindow.open} 
                           title="Revert to bookmarked tabs (Close other tabs)" 
                           onClick={this.props.onRevert} />
 
-    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={this.state.hovering} 
+    var closeButton = <HeaderButton baseStyle={closeStyle} visible={this.state.hovering} 
                           hoverStyle={styles.closeButtonHover} title="Close Window" 
                           onClick={this.props.onClose} />
 
@@ -368,7 +372,7 @@ var R_WindowHeader = React.createClass({
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
           onClick={this.props.onOpen} >
         {windowCheckItem}
-        <R_ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
+        <ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
         <span style={titleStyle}>{windowTitle}</span>
         {revertButton}
         <div style={styles.spacer} />        
@@ -378,7 +382,7 @@ var R_WindowHeader = React.createClass({
   }
 });
 
-var R_TabItem = React.createClass({
+var TabItem = React.createClass({
   mixins:[Hoverable],
 
   handleClick: function() {
@@ -386,7 +390,7 @@ var R_TabItem = React.createClass({
     var tab = this.props.tab;
     var tabIndex = this.props.tabIndex;
 
-    // console.log("R_TabItem: handleClick: tab: ", tab);
+    // console.log("TabItem: handleClick: tab: ", tab);
 
     actions.activateTab(this.props.winStore,tabWindow,tab,tabIndex);
   },
@@ -444,7 +448,7 @@ var R_TabItem = React.createClass({
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
-    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
+    var closeButton = <HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
                           hoverStyle={styles.closeButtonHover} title="Close Tab" 
                           onClick={this.handleClose} />
 
@@ -463,7 +467,7 @@ var R_TabItem = React.createClass({
 
 });
 
-var R_TabWindow = React.createClass({
+var TabWindow = React.createClass({
   mixins: [Hoverable],
 
   contextTypes: {
@@ -506,7 +510,7 @@ var R_TabWindow = React.createClass({
     var items = [];
     for (var i = 0; i < tabs.length; i++ ) {
       var id = "tabItem-" + i;
-      var tabItem = <R_TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
+      var tabItem = <TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
       items.push(tabItem);
     };
 
@@ -538,7 +542,7 @@ var R_TabWindow = React.createClass({
       tabItems = this.renderTabItems(tabWindow,[]);
     }
     var windowHeader = 
-      <R_WindowHeader winStore={this.props.winStore}
+      <WindowHeader winStore={this.props.winStore}
           tabWindow={tabWindow} 
           expanded={expanded} 
           onExpand={this.handleExpand} 
@@ -598,7 +602,23 @@ var WindowListSection = React.createClass({
   }
 });
 
-var R_TabWindowList = React.createClass({
+var SearchBar = React.createClass({
+  handleChange() {
+    const searchStr=this.refs.searchInput.getDOMNode().value;
+    this.props.onSearchInput(searchStr);
+  },
+
+  render() {
+    return (
+      <div style={styles.searchBar}>
+        <input style={styles.searchInput} type="text" ref="searchInput" placeholder="Search..." 
+          onChange={this.handleChange} />
+      </div>
+    );  
+  }
+});
+
+var TabWindowList = React.createClass({
 
   render: function() {
     console.log("TabWindowList: render");
@@ -614,7 +634,7 @@ var R_TabWindowList = React.createClass({
           var isOpen = tabWindow.open;
           var isFocused = tabWindow.isFocused();
 
-          var windowElem = <R_TabWindow winStore={this.props.winStore} tabWindow={tabWindow} key={id} />;
+          var windowElem = <TabWindow winStore={this.props.winStore} tabWindow={tabWindow} key={id} />;
           if (isFocused) {
             focusedWindowElem = windowElem;
           } else if (isOpen) {
@@ -637,10 +657,10 @@ var R_TabWindowList = React.createClass({
 
     return (
       <div>
-        <WindowListSection title="Current">
+        <WindowListSection title="Current Window">
           {focusedWindowElem}
         </WindowListSection>
-        <WindowListSection title="Open Windows">
+        <WindowListSection title="Other Open Windows">
           {openWindows}
         </WindowListSection>
         {savedSection}
@@ -652,7 +672,7 @@ var R_TabWindowList = React.createClass({
 /*
  * generic modal dialog component
  */
-var R_Modal = React.createClass({
+var Modal = React.createClass({
 
   handleClose: function(event) {
     console.log("Modal.handleClose: ", event, arguments);
@@ -665,7 +685,7 @@ var R_Modal = React.createClass({
 
     var titleStyle = m(styles.text,styles.noWrap,styles.modalTitle,styles.open);
     var closeStyle = m(styles.headerButton,styles.closeButton);
-    var closeButton = <R_HeaderButton baseStyle={closeStyle} visible={true} 
+    var closeButton = <HeaderButton baseStyle={closeStyle} visible={true} 
                           hoverStyle={styles.closeButtonHover} title="Close Window" 
                           onClick={this.handleClose} />
     modalDiv = (
@@ -687,7 +707,7 @@ var R_Modal = React.createClass({
   }
 });
 
-var R_ModalInfo = React.createClass({
+var ModalInfo = React.createClass({
   render() {
     return (
       <div style={styles.dialogInfo}>      
@@ -699,7 +719,7 @@ var R_ModalInfo = React.createClass({
   }
 });
 
-var R_ModalBody = React.createClass({
+var ModalBody = React.createClass({
   render() {
     return (
       <div style={styles.modalBodyContainer}>
@@ -714,7 +734,7 @@ var R_ModalBody = React.createClass({
 /*
  * Modal dialog for saving a bookmarked window
  */
-var R_SaveModal = React.createClass({
+var SaveModal = React.createClass({
   /* The duplication of handleClose here and in Modal is hideous, but
    * not obvious how to avoid
    */
@@ -739,11 +759,11 @@ var R_SaveModal = React.createClass({
   },
   render() {
     return (
-      <R_Modal title="Save Tabs" focusRef="titleInput" onClose={this.handleClose} >
-        <R_ModalInfo>
+      <Modal title="Save Tabs" focusRef="titleInput" onClose={this.handleClose} >
+        <ModalInfo>
           <span>Save all tabs in this window</span> 
-        </R_ModalInfo>
-        <R_ModalBody>
+        </ModalInfo>
+        <ModalBody>
           <form className="dialog-form" onSubmit={this.handleSubmit}>
             <fieldset>
               <label htmlFor="title">Window Title</label>
@@ -754,8 +774,8 @@ var R_SaveModal = React.createClass({
                />
             </fieldset>
           </form>
-        </R_ModalBody>      
-      </R_Modal>
+        </ModalBody>      
+      </Modal>
     );
   },
 
@@ -772,7 +792,7 @@ var R_SaveModal = React.createClass({
 
 });
 
-var R_TabMan = React.createClass({
+var TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
     var sortedWindows = tabWindows.sort(windowCmpFn);
@@ -784,7 +804,7 @@ var R_TabMan = React.createClass({
   },
 
   childContextTypes: {
-       appComponent: React.PropTypes.object.isRequired
+     appComponent: React.PropTypes.object.isRequired
   },
 
   getChildContext: function() {
@@ -794,7 +814,13 @@ var R_TabMan = React.createClass({
   getInitialState: function() {
     var st = this.getStateFromStore(this.props.winStore);
     st.modalIsOpen = false;
+    st.searchStr = '';
     return st;
+  },
+
+  handleSearchInput(searchStr) {
+    console.log("search input: '",searchStr,"'");
+    this.setState(searchStr,searchStr.trim());
   },
 
   openSaveModal(tabWindow) {
@@ -818,7 +844,7 @@ var R_TabMan = React.createClass({
   renderModal() {
     var modal = null;
     if (this.state.saveModalIsOpen) {
-      modal = <R_SaveModal initialTitle={this.state.saveInitialTitle} 
+      modal = <SaveModal initialTitle={this.state.saveInitialTitle} 
                 tabWindow={this.state.saveTabWindow}
                 onClose={this.closeSaveModal} 
                 onSubmit={this.doSave}
@@ -832,9 +858,12 @@ var R_TabMan = React.createClass({
       const modal = this.renderModal();
       var ret = (
         <div>
-          <R_TabWindowList winStore={this.state.winStore} 
+          <WindowListSection>
+            <SearchBar onSearchInput={this.handleSearchInput}/>
+          </WindowListSection>        
+          <TabWindowList winStore={this.state.winStore} 
                            sortedWindows={this.state.sortedWindows} 
-                           appComponent={this} 
+                           appComponent={this}
                            />
           {modal}
         </div> 
@@ -893,7 +922,7 @@ function renderPopup() {
 
     var t_preRender = performance.now();
     var elemId = document.getElementById('windowList-region');
-    var windowListComponent = <R_TabMan winStore={winStore} />;
+    var windowListComponent = <TabMan winStore={winStore} />;
     React.render( windowListComponent, elemId ); 
     var t_postRender = performance.now();
     console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    

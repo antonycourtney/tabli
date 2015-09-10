@@ -71,10 +71,6 @@
 	
 	var TabWindowStore = _interopRequireWildcard(_tabWindowStore);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
-	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
-	
 	var _reactAddons = __webpack_require__(/*! react/addons */ 346);
 	
 	var PureRenderMixin = _reactAddons.addons.PureRenderMixin;
@@ -283,6 +279,10 @@
 	  windowListSectionHeader: {
 	    fontWeight: 'bold',
 	    marginBottom: 5
+	  },
+	  searchBar: {},
+	  searchInput: {
+	    width: '100%'
 	  }
 	};
 	
@@ -305,8 +305,8 @@
 	}
 	
 	// expand / contract button for a window
-	var R_ExpanderButton = React.createClass({
-	  displayName: 'R_ExpanderButton',
+	var ExpanderButton = React.createClass({
+	  displayName: 'ExpanderButton',
 	
 	  mixins: [PureRenderMixin],
 	  handleClicked: function handleClicked(event) {
@@ -343,8 +343,8 @@
 	};
 	
 	// A button that will merge in hoverStyle when hovered over
-	var R_HeaderButton = React.createClass({
-	  displayName: 'R_HeaderButton',
+	var HeaderButton = React.createClass({
+	  displayName: 'HeaderButton',
 	
 	  mixins: [Hoverable, PureRenderMixin],
 	  handleClick: function handleClick(event) {
@@ -364,8 +364,8 @@
 	  }
 	});
 	
-	var R_WindowHeader = React.createClass({
-	  displayName: 'R_WindowHeader',
+	var WindowHeader = React.createClass({
+	  displayName: 'WindowHeader',
 	
 	  mixins: [Hoverable, PureRenderMixin],
 	
@@ -421,12 +421,12 @@
 	
 	    // We use hovering in the window header (this.state.hovering) to determine
 	    // visibility of both the revert button and close button appearing after the window title.
-	    var revertButton = React.createElement(R_HeaderButton, { baseStyle: m(styles.headerButton, styles.revertButton),
+	    var revertButton = React.createElement(HeaderButton, { baseStyle: m(styles.headerButton, styles.revertButton),
 	      visible: this.state.hovering && managed && tabWindow.open,
 	      title: 'Revert to bookmarked tabs (Close other tabs)',
 	      onClick: this.props.onRevert });
 	
-	    var closeButton = React.createElement(R_HeaderButton, { baseStyle: closeStyle, visible: this.state.hovering,
+	    var closeButton = React.createElement(HeaderButton, { baseStyle: closeStyle, visible: this.state.hovering,
 	      hoverStyle: styles.closeButtonHover, title: 'Close Window',
 	      onClick: this.props.onClose });
 	
@@ -438,7 +438,7 @@
 	        onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut,
 	        onClick: this.props.onOpen },
 	      windowCheckItem,
-	      React.createElement(R_ExpanderButton, { winStore: this.props.winStore, expanded: this.props.expanded, onClick: this.props.onExpand }),
+	      React.createElement(ExpanderButton, { winStore: this.props.winStore, expanded: this.props.expanded, onClick: this.props.onExpand }),
 	      React.createElement(
 	        'span',
 	        { style: titleStyle },
@@ -451,8 +451,8 @@
 	  }
 	});
 	
-	var R_TabItem = React.createClass({
-	  displayName: 'R_TabItem',
+	var TabItem = React.createClass({
+	  displayName: 'TabItem',
 	
 	  mixins: [Hoverable],
 	
@@ -461,7 +461,7 @@
 	    var tab = this.props.tab;
 	    var tabIndex = this.props.tabIndex;
 	
-	    // console.log("R_TabItem: handleClick: tab: ", tab);
+	    // console.log("TabItem: handleClick: tab: ", tab);
 	
 	    actions.activateTab(this.props.winStore, tabWindow, tab, tabIndex);
 	  },
@@ -516,7 +516,7 @@
 	    var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
 	
 	    var closeStyle = m(styles.headerButton, styles.closeButton);
-	    var closeButton = React.createElement(R_HeaderButton, { baseStyle: closeStyle, visible: tab.open && this.state.hovering,
+	    var closeButton = React.createElement(HeaderButton, { baseStyle: closeStyle, visible: tab.open && this.state.hovering,
 	      hoverStyle: styles.closeButtonHover, title: 'Close Tab',
 	      onClick: this.handleClose });
 	
@@ -540,8 +540,8 @@
 	
 	});
 	
-	var R_TabWindow = React.createClass({
-	  displayName: 'R_TabWindow',
+	var TabWindow = React.createClass({
+	  displayName: 'TabWindow',
 	
 	  mixins: [Hoverable],
 	
@@ -584,7 +584,7 @@
 	    var items = [];
 	    for (var i = 0; i < tabs.length; i++) {
 	      var id = "tabItem-" + i;
-	      var tabItem = React.createElement(R_TabItem, { winStore: this.props.winStore, tabWindow: tabWindow, tab: tabs[i], key: id, tabIndex: i });
+	      var tabItem = React.createElement(TabItem, { winStore: this.props.winStore, tabWindow: tabWindow, tab: tabs[i], key: id, tabIndex: i });
 	      items.push(tabItem);
 	    };
 	
@@ -616,7 +616,7 @@
 	      // render empty list of tab items to get -ve margin rollup layout right...
 	      tabItems = this.renderTabItems(tabWindow, []);
 	    }
-	    var windowHeader = React.createElement(R_WindowHeader, { winStore: this.props.winStore,
+	    var windowHeader = React.createElement(WindowHeader, { winStore: this.props.winStore,
 	      tabWindow: tabWindow,
 	      expanded: expanded,
 	      onExpand: this.handleExpand,
@@ -681,8 +681,26 @@
 	  }
 	});
 	
-	var R_TabWindowList = React.createClass({
-	  displayName: 'R_TabWindowList',
+	var SearchBar = React.createClass({
+	  displayName: 'SearchBar',
+	
+	  handleChange: function handleChange() {
+	    var searchStr = this.refs.searchInput.getDOMNode().value;
+	    this.props.onSearchInput(searchStr);
+	  },
+	
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { style: styles.searchBar },
+	      React.createElement('input', { style: styles.searchInput, type: 'text', ref: 'searchInput', placeholder: 'Search...',
+	        onChange: this.handleChange })
+	    );
+	  }
+	});
+	
+	var TabWindowList = React.createClass({
+	  displayName: 'TabWindowList',
 	
 	  render: function render() {
 	    console.log("TabWindowList: render");
@@ -698,7 +716,7 @@
 	        var isOpen = tabWindow.open;
 	        var isFocused = tabWindow.isFocused();
 	
-	        var windowElem = React.createElement(R_TabWindow, { winStore: this.props.winStore, tabWindow: tabWindow, key: id });
+	        var windowElem = React.createElement(TabWindow, { winStore: this.props.winStore, tabWindow: tabWindow, key: id });
 	        if (isFocused) {
 	          focusedWindowElem = windowElem;
 	        } else if (isOpen) {
@@ -723,12 +741,12 @@
 	      null,
 	      React.createElement(
 	        WindowListSection,
-	        { title: 'Current' },
+	        { title: 'Current Window' },
 	        focusedWindowElem
 	      ),
 	      React.createElement(
 	        WindowListSection,
-	        { title: 'Open Windows' },
+	        { title: 'Other Open Windows' },
 	        openWindows
 	      ),
 	      savedSection
@@ -739,8 +757,8 @@
 	/*
 	 * generic modal dialog component
 	 */
-	var R_Modal = React.createClass({
-	  displayName: 'R_Modal',
+	var Modal = React.createClass({
+	  displayName: 'Modal',
 	
 	  handleClose: function handleClose(event) {
 	    console.log("Modal.handleClose: ", event, arguments);
@@ -753,7 +771,7 @@
 	
 	    var titleStyle = m(styles.text, styles.noWrap, styles.modalTitle, styles.open);
 	    var closeStyle = m(styles.headerButton, styles.closeButton);
-	    var closeButton = React.createElement(R_HeaderButton, { baseStyle: closeStyle, visible: true,
+	    var closeButton = React.createElement(HeaderButton, { baseStyle: closeStyle, visible: true,
 	      hoverStyle: styles.closeButtonHover, title: 'Close Window',
 	      onClick: this.handleClose });
 	    modalDiv = React.createElement(
@@ -784,8 +802,8 @@
 	  }
 	});
 	
-	var R_ModalInfo = React.createClass({
-	  displayName: 'R_ModalInfo',
+	var ModalInfo = React.createClass({
+	  displayName: 'ModalInfo',
 	
 	  render: function render() {
 	    return React.createElement(
@@ -800,8 +818,8 @@
 	  }
 	});
 	
-	var R_ModalBody = React.createClass({
-	  displayName: 'R_ModalBody',
+	var ModalBody = React.createClass({
+	  displayName: 'ModalBody',
 	
 	  render: function render() {
 	    return React.createElement(
@@ -819,8 +837,8 @@
 	/*
 	 * Modal dialog for saving a bookmarked window
 	 */
-	var R_SaveModal = React.createClass({
-	  displayName: 'R_SaveModal',
+	var SaveModal = React.createClass({
+	  displayName: 'SaveModal',
 	
 	  /* The duplication of handleClose here and in Modal is hideous, but
 	   * not obvious how to avoid
@@ -846,10 +864,10 @@
 	  },
 	  render: function render() {
 	    return React.createElement(
-	      R_Modal,
+	      Modal,
 	      { title: 'Save Tabs', focusRef: 'titleInput', onClose: this.handleClose },
 	      React.createElement(
-	        R_ModalInfo,
+	        ModalInfo,
 	        null,
 	        React.createElement(
 	          'span',
@@ -858,7 +876,7 @@
 	        )
 	      ),
 	      React.createElement(
-	        R_ModalBody,
+	        ModalBody,
 	        null,
 	        React.createElement(
 	          'form',
@@ -895,8 +913,8 @@
 	
 	});
 	
-	var R_TabMan = React.createClass({
-	  displayName: 'R_TabMan',
+	var TabMan = React.createClass({
+	  displayName: 'TabMan',
 	
 	  getStateFromStore: function getStateFromStore(winStore) {
 	    var tabWindows = winStore.getAll();
@@ -919,7 +937,13 @@
 	  getInitialState: function getInitialState() {
 	    var st = this.getStateFromStore(this.props.winStore);
 	    st.modalIsOpen = false;
+	    st.searchStr = '';
 	    return st;
+	  },
+	
+	  handleSearchInput: function handleSearchInput(searchStr) {
+	    console.log("search input: '", searchStr, "'");
+	    this.setState(searchStr, searchStr.trim());
 	  },
 	
 	  openSaveModal: function openSaveModal(tabWindow) {
@@ -945,7 +969,7 @@
 	  renderModal: function renderModal() {
 	    var modal = null;
 	    if (this.state.saveModalIsOpen) {
-	      modal = React.createElement(R_SaveModal, { initialTitle: this.state.saveInitialTitle,
+	      modal = React.createElement(SaveModal, { initialTitle: this.state.saveInitialTitle,
 	        tabWindow: this.state.saveTabWindow,
 	        onClose: this.closeSaveModal,
 	        onSubmit: this.doSave
@@ -960,7 +984,12 @@
 	      var ret = React.createElement(
 	        'div',
 	        null,
-	        React.createElement(R_TabWindowList, { winStore: this.state.winStore,
+	        React.createElement(
+	          WindowListSection,
+	          null,
+	          React.createElement(SearchBar, { onSearchInput: this.handleSearchInput })
+	        ),
+	        React.createElement(TabWindowList, { winStore: this.state.winStore,
 	          sortedWindows: this.state.sortedWindows,
 	          appComponent: this
 	        }),
@@ -1022,7 +1051,7 @@
 	
 	    var t_preRender = performance.now();
 	    var elemId = document.getElementById('windowList-region');
-	    var windowListComponent = React.createElement(R_TabMan, { winStore: winStore });
+	    var windowListComponent = React.createElement(TabMan, { winStore: winStore });
 	    React.render(windowListComponent, elemId);
 	    var t_postRender = performance.now();
 	    console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");
