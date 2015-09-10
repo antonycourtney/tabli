@@ -13,8 +13,6 @@ var popupPort = null;
 const tabmanFolderTitle = "Subjective Tab Manager";
 const archiveFolderTitle = "_Archive";
 
-
-
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows(winStore,tabManFolder ) {
   var folderTabWindows = [];

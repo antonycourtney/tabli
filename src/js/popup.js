@@ -470,17 +470,16 @@ var R_TabWindow = React.createClass({
 
   handleOpen: function() {
     console.log("handleOpen", this, this.props);
-    actions.openTabWindow(this.props.winStore,this.props.tabWindow);
+    actions.openWindow(this.props.winStore,this.props.tabWindow);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    actions.closeTabWindow(this.props.winStore,this.props.tabWindow);
+    actions.closeWindow(this.props.winStore,this.props.tabWindow);
   },
 
   handleRevert: function(event) {
-    // console.log("handleRevert");
-    flux.actions.revertTabWindow(this.props.winStore,this.props.tabWindow);
+    actions.revertWindow(this.props.winStore,this.props.tabWindow);
   },
 
 
@@ -519,9 +518,6 @@ var R_TabWindow = React.createClass({
   render: function () {
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.getTabItems();
-
-    // console.log("TabWindow.render: ", this.props.flux, this.props);
-
     /*
      * optimization:  Let's only render tabItems if expanded
      */
@@ -846,15 +842,10 @@ function logWrap( f ) {
   return wf;
 }
 
-/*
- * Perform our React rendering *after* the load event for the popup
- * because we observe that Chrome's http cache will not attempt to
- * re-validate cached resources accessed after the load event.
- *
- * See https://code.google.com/p/chromium/issues/detail?id=511699
- *
- */
-function postLoadRender() {
+/**
+ * Main entry point to rendering the popup window
+ */ 
+function renderPopup() {
   var bgw = chrome.extension.getBackgroundPage();
   var winStore = bgw.winStore;
 
@@ -870,11 +861,18 @@ function postLoadRender() {
   }));
 }
 
-/**
- * Initialize tab manager and flux store, and then render popup from Flux store.
+/*
+ * Perform our React rendering *after* the load event for the popup
+ * (rather than the more traditional ondocumentready event)
+ * because we observe that Chrome's http cache will not attempt to
+ * re-validate cached resources accessed after the load event, and this
+ * is essential for reasonable performance when loading favicons.
+ *
+ * See https://code.google.com/p/chromium/issues/detail?id=511699
+ *
  */
 function main() {
-  window.onload = postLoadRender;
+  window.onload = renderPopup;
 }
 
 main();

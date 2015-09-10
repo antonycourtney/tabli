@@ -305,8 +305,11 @@ export default class TabWindowStore extends EventEmitter {
   /**
    * Synchronize internal state of our store with snapshot
    * of current Chrome window state
+   *
+   * @param chromeWindow window to synchronize
+   * @param noEmit suppress emitting change event if true. Useful to batch changes, i.e. syncWindowList
    */
-  syncChromeWindow(chromeWindow) {
+  syncChromeWindow(chromeWindow,noEmit) {
     var tabWindow = this.windowIdMap[chromeWindow.id];
     if( !tabWindow ) {
       console.log( "syncChromeWindow: detected new window id: ", chromeWindow.id );
@@ -318,12 +321,14 @@ export default class TabWindowStore extends EventEmitter {
       tabWindow.chromeWindow = chromeWindow;
       tabWindow.open = true;
     }
+    if (!noEmit) {
+      this.emit("change");
+    }
   }
 
   handleChromeWindowCreated(chromeWindow) {
     this.syncChromeWindow(chromeWindow);
   }
-
 
   /**
    * synchronize the currently open windows from chrome.windows.getAll with 
@@ -348,7 +353,7 @@ export default class TabWindowStore extends EventEmitter {
     });
 
     // Now iterate through chromeWindowList and find any chrome windows not in our map of open windows:
-    chromeWindowList.forEach((cw) => { this.syncChromeWindow(cw); });
+    chromeWindowList.forEach((cw) => { this.syncChromeWindow(cw,true); });
 
     this.emit("change");
   }   

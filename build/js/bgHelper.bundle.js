@@ -523,10 +523,13 @@
 	    /**
 	     * Synchronize internal state of our store with snapshot
 	     * of current Chrome window state
+	     *
+	     * @param chromeWindow window to synchronize
+	     * @param noEmit suppress emitting change event if true. Useful to batch changes, i.e. syncWindowList
 	     */
 	  }, {
 	    key: 'syncChromeWindow',
-	    value: function syncChromeWindow(chromeWindow) {
+	    value: function syncChromeWindow(chromeWindow, noEmit) {
 	      var tabWindow = this.windowIdMap[chromeWindow.id];
 	      if (!tabWindow) {
 	        console.log("syncChromeWindow: detected new window id: ", chromeWindow.id);
@@ -537,6 +540,9 @@
 	        // Set chromeWindow to current snapshot of tab contents:
 	        tabWindow.chromeWindow = chromeWindow;
 	        tabWindow.open = true;
+	      }
+	      if (!noEmit) {
+	        this.emit("change");
 	      }
 	    }
 	  }, {
@@ -572,7 +578,7 @@
 	
 	      // Now iterate through chromeWindowList and find any chrome windows not in our map of open windows:
 	      chromeWindowList.forEach(function (cw) {
-	        _this2.syncChromeWindow(cw);
+	        _this2.syncChromeWindow(cw, true);
 	      });
 	
 	      this.emit("change");
@@ -2594,12 +2600,13 @@
 	  value: true
 	});
 	exports.syncChromeWindows = syncChromeWindows;
-	exports.openTabWindow = openTabWindow;
+	exports.openWindow = openWindow;
 	exports.activateTab = activateTab;
 	exports.closeTab = closeTab;
-	exports.closeTabWindow = closeTabWindow;
+	exports.closeWindow = closeWindow;
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
+	exports.revertWindow = revertWindow;
 	
 	function syncChromeWindows(winStore, cb) {
 	  var t_preGet = performance.now();
@@ -2614,7 +2621,7 @@
 	/**
 	 * restore a bookmark window.
 	 *
-	 * N.B.: NOT exported; called from openTabWindow
+	 * N.B.: NOT exported; called from openWindow
 	 */
 	function restoreBookmarkWindow(winStore, tabWindow) {
 	  console.log("restoreBookmarkWindow: ", tabWindow);
@@ -2653,7 +2660,7 @@
 	  });
 	}
 	
-	function openTabWindow(winStore, tabWindow) {
+	function openWindow(winStore, tabWindow) {
 	  var self = this;
 	
 	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
@@ -2693,7 +2700,7 @@
 	    }
 	  } else {
 	    console.log("activateTab: opening non-open window");
-	    openTabWindow(tabWindow);
+	    openWindow(tabWindow);
 	    // TODO: activate chosen tab after opening window!
 	  }
 	}
@@ -2706,15 +2713,15 @@
 	  });
 	}
 	
-	function closeTabWindow(winStore, tabWindow) {
-	  console.log("closeTabWindow: ", tabWindow);
+	function closeWindow(winStore, tabWindow) {
+	  console.log("closeWindow: ", tabWindow);
 	  if (!tabWindow.open) {
-	    console.log("closeTabWindow: request to close non-open window, ignoring...");
+	    console.log("closeWindow: request to close non-open window, ignoring...");
 	    return;
 	  }
 	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 	  if (!windowId) {
-	    console.log("closeTabWindow: no valid chrome window, ignoring....");
+	    console.log("closeWindow: no valid chrome window, ignoring....");
 	    return;
 	  }
 	  var self = this;
@@ -2778,6 +2785,32 @@
 	  chrome.bookmarks.move(tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, function (resultNode) {
 	    console.log("unmanageWindow: bookmark folder moved to archive folder");
 	    winStore.unmanageWindow(tabWindow);
+	  });
+	}
+	
+	function revertWindow(winStore, tabWindow) {
+	  var tabs = tabWindow.chromeWindow.tabs;
+	  var currentTabIds = tabs.map(function (t) {
+	    return t.id;
+	  });
+	
+	  // re-open bookmarks:
+	  var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
+	    return bm.url;
+	  });
+	  for (var i = 0; i < urls.length; i++) {
+	    // need to open it:
+	    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
+	    chrome.tabs.create(tabInfo);
+	  };
+	
+	  // blow away all the existing tabs:
+	  chrome.tabs.remove(currentTabIds, function () {
+	    var windowId = tabWindow.chromeWindow.id;
+	    // refresh window details:
+	    chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
+	      winStore.syncChromeWindow(chromeWindow);
+	    });
 	  });
 	}
 
