@@ -275,6 +275,14 @@
 	    marginLeft: 10,
 	    marginTop: 10,
 	    marginBottom: 10
+	  },
+	  windowListSection: {
+	    borderBottom: '1px solid #bababa',
+	    padding: 8
+	  },
+	  windowListSectionHeader: {
+	    fontWeight: 'bold',
+	    marginBottom: 5
 	  }
 	};
 	
@@ -643,44 +651,87 @@
 	  return tA.localeCompare(tB);
 	}
 	
+	var WindowListSection = React.createClass({
+	  displayName: 'WindowListSection',
+	
+	  render: function render() {
+	    var header = null;
+	    if (this.props.title) {
+	      header = React.createElement(
+	        'div',
+	        { style: styles.windowListSectionHeader },
+	        React.createElement(
+	          'span',
+	          null,
+	          this.props.title
+	        )
+	      );
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      { style: styles.windowListSection },
+	      header,
+	      React.createElement(
+	        'div',
+	        null,
+	        this.props.children
+	      )
+	    );
+	  }
+	});
+	
 	var R_TabWindowList = React.createClass({
 	  displayName: 'R_TabWindowList',
 	
 	  render: function render() {
 	    console.log("TabWindowList: render");
 	    var focusedWindowElem = [];
-	    var managedWindows = [];
-	    var unmanagedWindows = [];
+	    var openWindows = [];
+	    var savedWindows = [];
 	
-	    //    var tabWindows = this.state.tabWindows;
 	    var tabWindows = this.props.sortedWindows;
 	    for (var i = 0; i < tabWindows.length; i++) {
 	      var tabWindow = tabWindows[i];
 	      var id = "tabWindow" + i;
 	      if (tabWindow) {
+	        var isOpen = tabWindow.open;
 	        var isFocused = tabWindow.isFocused();
-	        var isManaged = tabWindow.isManaged();
 	
 	        var windowElem = React.createElement(R_TabWindow, { winStore: this.props.winStore, tabWindow: tabWindow, key: id });
 	        if (isFocused) {
 	          focusedWindowElem = windowElem;
-	        } else if (isManaged) {
-	          managedWindows.push(windowElem);
+	        } else if (isOpen) {
+	          openWindows.push(windowElem);
 	        } else {
-	          unmanagedWindows.push(windowElem);
+	          savedWindows.push(windowElem);
 	        }
 	      }
+	    }
+	
+	    var savedSection = null;
+	    if (savedWindows.length > 0) {
+	      savedSection = React.createElement(
+	        WindowListSection,
+	        { title: 'Saved Closed Windows' },
+	        savedWindows
+	      );
 	    }
 	
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement('hr', null),
-	      focusedWindowElem,
-	      React.createElement('hr', null),
-	      unmanagedWindows,
-	      React.createElement('hr', null),
-	      managedWindows
+	      React.createElement(
+	        WindowListSection,
+	        { title: 'Current' },
+	        focusedWindowElem
+	      ),
+	      React.createElement(
+	        WindowListSection,
+	        { title: 'Open Windows' },
+	        openWindows
+	      ),
+	      savedSection
 	    );
 	  }
 	});

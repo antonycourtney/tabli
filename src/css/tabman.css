@@ -9,6 +9,7 @@ body {  background: white;
       font-size:12px;
       cursor: default;
       overflow: auto;
+      margin: 0px;
    }
 h1, h2, h3 {font-family: sans-serif;}
 h1 { font-size: 16px; }

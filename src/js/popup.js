@@ -209,6 +209,14 @@ var styles = {
     marginLeft: 10,
     marginTop: 10,
     marginBottom: 10
+  },
+  windowListSection: {
+    borderBottom: '1px solid #bababa',
+    padding: 8
+  },
+  windowListSectionHeader: {
+    fontWeight: 'bold',
+    marginBottom: 5
   }
 }
 
@@ -568,43 +576,74 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
   return tA.localeCompare( tB );
 }
 
+var WindowListSection = React.createClass({
+  render() {
+    var header = null;
+    if (this.props.title) {
+      header = (
+        <div style={styles.windowListSectionHeader}>
+          <span>{this.props.title}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div style={styles.windowListSection}>
+        {header}
+        <div>
+          {this.props.children}
+        </div>
+      </div>
+    );
+  }
+});
 
 var R_TabWindowList = React.createClass({
 
   render: function() {
     console.log("TabWindowList: render");
     var focusedWindowElem = [];
-    var managedWindows = [];
-    var unmanagedWindows = [];
+    var openWindows = [];
+    var savedWindows = [];
 
-//    var tabWindows = this.state.tabWindows;
-    var tabWindows = this.props.sortedWindows;
+    var tabWindows = this.props.sortedWindows;    
     for (var i=0; i < tabWindows.length; i++) {
       var tabWindow = tabWindows[i];
       var id = "tabWindow" + i;
       if (tabWindow) {
+          var isOpen = tabWindow.open;
           var isFocused = tabWindow.isFocused();
-          var isManaged = tabWindow.isManaged();
 
           var windowElem = <R_TabWindow winStore={this.props.winStore} tabWindow={tabWindow} key={id} />;
           if (isFocused) {
             focusedWindowElem = windowElem;
-          } else if (isManaged) {
-            managedWindows.push(windowElem);
+          } else if (isOpen) {
+            openWindows.push(windowElem);
           } else {
-            unmanagedWindows.push(windowElem);
+            savedWindows.push(windowElem);
           }
       }
     }
 
+    var savedSection = null;
+    if (savedWindows.length > 0) {
+      savedSection = (
+        <WindowListSection title="Saved Closed Windows">
+          {savedWindows}
+        </WindowListSection>
+      );
+    }
+
+
     return (
       <div>
-        <hr/>
-        {focusedWindowElem}
-        <hr/>
-        {unmanagedWindows}
-        <hr/>
-        {managedWindows}
+        <WindowListSection title="Current">
+          {focusedWindowElem}
+        </WindowListSection>
+        <WindowListSection title="Open Windows">
+          {openWindows}
+        </WindowListSection>
+        {savedSection}
       </div>
     );    
   }
