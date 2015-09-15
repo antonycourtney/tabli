@@ -211,7 +211,10 @@ var styles = {
   },
   windowListSection: {
     borderBottom: '1px solid #bababa',
-    padding: 8
+    paddingLeft: 10,
+    paddingRight: 16,
+    paddingTop: 12,
+    paddingBottom: 4
   },
   windowListSectionHeader: {
     fontWeight: 'bold',
@@ -361,7 +364,8 @@ var WindowHeader = React.createClass({
                           title="Revert to bookmarked tabs (Close other tabs)" 
                           onClick={this.props.onRevert} />
 
-    var closeButton = <HeaderButton baseStyle={closeStyle} visible={this.state.hovering} 
+    var closeButton = <HeaderButton baseStyle={closeStyle}
+                          visible={this.state.hovering && tabWindow.open} 
                           hoverStyle={styles.closeButtonHover} title="Close Window" 
                           onClick={this.props.onClose} />
 

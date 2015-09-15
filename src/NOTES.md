@@ -4,6 +4,8 @@ X Modal dialog for saving a tab window
 
 X Fix tab window sort order: Focused Window, Open Windows (alphabetical by title), Saved (closed) Windows
 
+(!!) - Add event handled for check box for bookmarking / un-bookmarking a tab
+
 - review actions.js with tabWindowStore.js.  Make sure every action has the right corresponding entry points in TabWindowStore, with correct change notifications.
 
 - Mark all the handleChromeXXX methods in TabWindowStore as deprecated (or just remove)
@@ -14,11 +16,15 @@ X Fix tab window sort order: Focused Window, Open Windows (alphabetical by title
 
 - Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
 
-- Instead of single listener reg, using port/disconnected technique to GC popup view listener:
+X Instead of single listener reg, using port/disconnected technique to GC popup view listener:
   http://stackoverflow.com/questions/15798516/is-there-an-event-for-when-a-chrome-extension-popup-is-closed
 
 - BUG: Revert causes window to temporarily disappear from window list  
 
 - KM req: Audible indicator! See "audible" in Tabs API
 
-- Check out what's going on with Medium favicon -- seems to be smaller than 16x16; make sure we had to fixed size.
+- Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned
+
+- More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs.
+
+- Don't show close button for closed windows

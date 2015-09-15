@@ -19,5 +19,13 @@
     "16": "images/glyphicons_154_more_windows.png",
     "48": "images/Multimedia-12-48.png",
     "128": "images/Multimedia-12-128.png"
+  },
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Period",
+        "mac": "MacCtrl+Period"
+      }
+    }
   }
 }
