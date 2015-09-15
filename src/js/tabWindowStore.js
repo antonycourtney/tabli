@@ -53,6 +53,7 @@ export default class TabWindowStore extends EventEmitter {
     super();
     this.windowIdMap = {};  // maps from chrome window id for open windows
     this.bookmarkIdMap = {};
+    this.viewListeners = [];
     this.notifyCallback = null;
     this.folderId = folderId;
     this.archiveFolderId = archiveFolderId;
@@ -379,17 +380,29 @@ export default class TabWindowStore extends EventEmitter {
   }
 
   /*
-   * Set a view listener, and ensure there is at most one.
+   * Add a view listener and return its listener id
    *
-   * We have our own interface here because we don't have a reliable destructor / close event on the
-   * chrome extension popup where 
+   * We have our own interface here because we don't have a reliable destructor / close event 
+   * on the chrome extension popup window
    */
-  setViewListener(listener) {
-    if (this.viewListener) {
-      console.log("setViewListener: clearing old view listener");
-      this.removeListener("change", this.viewListener);
+  addViewListener(listener) {
+    // check to ensure this listener not yet registered:
+    var idx = this.viewListeners.indexOf(listener);
+    if (idx===-1) {
+      idx = this.viewListeners.length;
+      this.viewListeners.push(listener);
+      this.on("change",listener);
     }
-    this.viewListener=listener;
-    this.on("change",listener);
+    return idx;
+  }
+
+  removeViewListener(id) {
+    var listener = this.viewListeners[id];
+    if (listener) {
+      this.removeListener("change",listener);
+    } else {
+      console.warn("clearViewListener: No listener found for id ", id);
+    }
+    delete this.viewListeners[id];
   }
 }

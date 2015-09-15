@@ -3,6 +3,8 @@
  */
 'use strict';
 
+import * as _ from 'underscore';
+
 function makeBookmarkedTabItem( bm ) {
   var ret = Object.create( bm );
   ret.bookmarked = true;
@@ -127,7 +129,7 @@ var tabWindowPrototype = {
   },
 
   // Get a set of tab-like items for rendering
-  getTabItems: function() {
+  getTabItems: function(searchStr,searchRE) {
     var tabs;
 
     if( this.isManaged() ) {
@@ -143,7 +145,21 @@ var tabWindowPrototype = {
       tabs = tabs.map( makeOpenTabItem );
     }
 
-    return tabs;
+    // console.log("getTabItems: " + JSON.stringify(this.getEncodedId()) + ": searchStr: '" + searchStr + "', ",searchRE);
+
+    var filteredTabs;
+    // Let's limit to title to start with
+    // var filteredTabs = 
+    if (!searchRE) {
+      filteredTabs = tabs;
+    } else {
+      filteredTabs = _.filter(tabs,(tab) => {
+        const titleMatches = tab.title.match(searchRE);
+        return (titleMatches !== null);
+      });
+    }
+
+    return filteredTabs;
   },
 
   /*

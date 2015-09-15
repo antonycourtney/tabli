@@ -103,7 +103,7 @@
 	    maxHeight: WINDOW_HEADER_HEIGHT,
 	    paddingLeft: 3,
 	    paddingRight: 3,
-	    marginBottom: 3,
+	    // marginBottom: 3,
 	    display: 'inline-flex',
 	    // justifyContent: 'space-between',
 	    alignItems: 'center'
@@ -604,7 +604,10 @@
 	
 	  render: function render() {
 	    var tabWindow = this.props.tabWindow;
-	    var tabs = tabWindow.getTabItems();
+	    var tabs = tabWindow.getTabItems(this.props.searchStr, this.props.searchRE);
+	
+	    if (tabs.length == 0) return null;
+	
 	    /*
 	     * optimization:  Let's only render tabItems if expanded
 	     */
@@ -616,6 +619,7 @@
 	      // render empty list of tab items to get -ve margin rollup layout right...
 	      tabItems = this.renderTabItems(tabWindow, []);
 	    }
+	
 	    var windowHeader = React.createElement(WindowHeader, { winStore: this.props.winStore,
 	      tabWindow: tabWindow,
 	      expanded: expanded,
@@ -716,7 +720,10 @@
 	        var isOpen = tabWindow.open;
 	        var isFocused = tabWindow.isFocused();
 	
-	        var windowElem = React.createElement(TabWindow, { winStore: this.props.winStore, tabWindow: tabWindow, key: id });
+	        var windowElem = React.createElement(TabWindow, { winStore: this.props.winStore,
+	          tabWindow: tabWindow, key: id,
+	          searchStr: this.props.searchStr,
+	          searchRE: this.props.searchRE });
 	        if (isFocused) {
 	          focusedWindowElem = windowElem;
 	        } else if (isOpen) {
@@ -938,12 +945,19 @@
 	    var st = this.getStateFromStore(this.props.winStore);
 	    st.modalIsOpen = false;
 	    st.searchStr = '';
+	    st.searchRE = null;
 	    return st;
 	  },
 	
 	  handleSearchInput: function handleSearchInput(searchStr) {
+	    searchStr = searchStr.trim();
+	
+	    var searchRE = null;
+	    if (searchStr.length > 0) {
+	      searchRE = new RegExp(searchStr, "i");
+	    }
 	    console.log("search input: '", searchStr, "'");
-	    this.setState(searchStr, searchStr.trim());
+	    this.setState({ searchStr: searchStr, searchRE: searchRE });
 	  },
 	
 	  openSaveModal: function openSaveModal(tabWindow) {
@@ -991,7 +1005,9 @@
 	        ),
 	        React.createElement(TabWindowList, { winStore: this.state.winStore,
 	          sortedWindows: this.state.sortedWindows,
-	          appComponent: this
+	          appComponent: this,
+	          searchStr: this.state.searchStr,
+	          searchRE: this.state.searchRE
 	        }),
 	        modal
 	      );
@@ -1020,7 +1036,11 @@
 	    // but that leaked because unfortunately componentWillUnmount never gets called
 	    // when popup closes.
 	    // Now we use setViewListener, which ensures at most one view listener:
-	    winStore.setViewListener(this.viewListener);
+	    // winStore.setViewListener(this.viewListener);
+	
+	    var listenerId = winStore.addViewListener(this.viewListener);
+	    console.log("added view listener: ", listenerId);
+	    sendHelperMessage({ listenerId: listenerId });
 	  }
 	});
 	
@@ -1056,6 +1076,17 @@
 	    var t_postRender = performance.now();
 	    console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");
 	  }));
+	}
+	
+	/**
+	 * send message to BGhelper
+	 */
+	function sendHelperMessage(msg) {
+	  var port = chrome.runtime.connect({ name: "popup" });
+	  port.postMessage(msg);
+	  port.onMessage.addListener(function (msg) {
+	    console.log("Got response message: ", msg);
+	  });
 	}
 	
 	/*
@@ -1163,6 +1194,7 @@
 	    _get(Object.getPrototypeOf(TabWindowStore.prototype), 'constructor', this).call(this);
 	    this.windowIdMap = {}; // maps from chrome window id for open windows
 	    this.bookmarkIdMap = {};
+	    this.viewListeners = [];
 	    this.notifyCallback = null;
 	    this.folderId = folderId;
 	    this.archiveFolderId = archiveFolderId;
@@ -1535,20 +1567,33 @@
 	    }
 	
 	    /*
-	     * Set a view listener, and ensure there is at most one.
+	     * Add a view listener and return its listener id
 	     *
-	     * We have our own interface here because we don't have a reliable destructor / close event on the
-	     * chrome extension popup where 
+	     * We have our own interface here because we don't have a reliable destructor / close event 
+	     * on the chrome extension popup window
 	     */
 	  }, {
-	    key: 'setViewListener',
-	    value: function setViewListener(listener) {
-	      if (this.viewListener) {
-	        console.log("setViewListener: clearing old view listener");
-	        this.removeListener("change", this.viewListener);
+	    key: 'addViewListener',
+	    value: function addViewListener(listener) {
+	      // check to ensure this listener not yet registered:
+	      var idx = this.viewListeners.indexOf(listener);
+	      if (idx === -1) {
+	        idx = this.viewListeners.length;
+	        this.viewListeners.push(listener);
+	        this.on("change", listener);
 	      }
-	      this.viewListener = listener;
-	      this.on("change", listener);
+	      return idx;
+	    }
+	  }, {
+	    key: 'removeViewListener',
+	    value: function removeViewListener(id) {
+	      var listener = this.viewListeners[id];
+	      if (listener) {
+	        this.removeListener("change", listener);
+	      } else {
+	        console.warn("clearViewListener: No listener found for id ", id);
+	      }
+	      delete this.viewListeners[id];
 	    }
 	  }]);
 	
@@ -2987,19 +3032,26 @@
 /*!*****************************!*\
   !*** ./src/js/tabWindow.js ***!
   \*****************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Representations of windows and bookmark folders
 	 */
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
+	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
 	exports.makeChromeTabWindow = makeChromeTabWindow;
 	exports.makeFolderTabWindow = makeFolderTabWindow;
 	exports.deserialize = deserialize;
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+	
+	var _underscore = __webpack_require__(/*! underscore */ 2);
+	
+	var _ = _interopRequireWildcard(_underscore);
+	
 	function makeBookmarkedTabItem(bm) {
 	  var ret = Object.create(bm);
 	  ret.bookmarked = true;
@@ -3123,7 +3175,7 @@
 	  },
 	
 	  // Get a set of tab-like items for rendering
-	  getTabItems: function getTabItems() {
+	  getTabItems: function getTabItems(searchStr, searchRE) {
 	    var tabs;
 	
 	    if (this.isManaged()) {
@@ -3138,7 +3190,21 @@
 	      tabs = tabs.map(makeOpenTabItem);
 	    }
 	
-	    return tabs;
+	    // console.log("getTabItems: " + JSON.stringify(this.getEncodedId()) + ": searchStr: '" + searchStr + "', ",searchRE);
+	
+	    var filteredTabs;
+	    // Let's limit to title to start with
+	    // var filteredTabs =
+	    if (!searchRE) {
+	      filteredTabs = tabs;
+	    } else {
+	      filteredTabs = _.filter(tabs, function (tab) {
+	        var titleMatches = tab.title.match(searchRE);
+	        return titleMatches !== null;
+	      });
+	    }
+	
+	    return filteredTabs;
 	  },
 	
 	  /*

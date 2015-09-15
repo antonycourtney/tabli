@@ -141,11 +141,23 @@
 	  });
 	}
 	
+	function setupConnectionListener(winStore) {
+	  chrome.runtime.onConnect.addListener(function (port) {
+	    port.onMessage.addListener(function (msg) {
+	      var listenerId = msg.listenerId;
+	      port.onDisconnect.addListener(function () {
+	        winStore.removeViewListener(listenerId);
+	      });
+	    });
+	  });
+	}
+	
 	function main() {
 	  initWinStore(function (winStore) {
 	    console.log("init: done reading bookmarks.");
 	    window.winStore = winStore;
 	    actions.syncChromeWindows(winStore);
+	    setupConnectionListener(winStore);
 	  });
 	}
 	
@@ -240,6 +252,7 @@
 	    _get(Object.getPrototypeOf(TabWindowStore.prototype), 'constructor', this).call(this);
 	    this.windowIdMap = {}; // maps from chrome window id for open windows
 	    this.bookmarkIdMap = {};
+	    this.viewListeners = [];
 	    this.notifyCallback = null;
 	    this.folderId = folderId;
 	    this.archiveFolderId = archiveFolderId;
@@ -612,20 +625,33 @@
 	    }
 	
 	    /*
-	     * Set a view listener, and ensure there is at most one.
+	     * Add a view listener and return its listener id
 	     *
-	     * We have our own interface here because we don't have a reliable destructor / close event on the
-	     * chrome extension popup where 
+	     * We have our own interface here because we don't have a reliable destructor / close event 
+	     * on the chrome extension popup window
 	     */
 	  }, {
-	    key: 'setViewListener',
-	    value: function setViewListener(listener) {
-	      if (this.viewListener) {
-	        console.log("setViewListener: clearing old view listener");
-	        this.removeListener("change", this.viewListener);
+	    key: 'addViewListener',
+	    value: function addViewListener(listener) {
+	      // check to ensure this listener not yet registered:
+	      var idx = this.viewListeners.indexOf(listener);
+	      if (idx === -1) {
+	        idx = this.viewListeners.length;
+	        this.viewListeners.push(listener);
+	        this.on("change", listener);
 	      }
-	      this.viewListener = listener;
-	      this.on("change", listener);
+	      return idx;
+	    }
+	  }, {
+	    key: 'removeViewListener',
+	    value: function removeViewListener(id) {
+	      var listener = this.viewListeners[id];
+	      if (listener) {
+	        this.removeListener("change", listener);
+	      } else {
+	        console.warn("clearViewListener: No listener found for id ", id);
+	      }
+	      delete this.viewListeners[id];
 	    }
 	  }]);
 	
@@ -2064,19 +2090,26 @@
 /*!*****************************!*\
   !*** ./src/js/tabWindow.js ***!
   \*****************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Representations of windows and bookmark folders
 	 */
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
+	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
 	exports.makeChromeTabWindow = makeChromeTabWindow;
 	exports.makeFolderTabWindow = makeFolderTabWindow;
 	exports.deserialize = deserialize;
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+	
+	var _underscore = __webpack_require__(/*! underscore */ 2);
+	
+	var _ = _interopRequireWildcard(_underscore);
+	
 	function makeBookmarkedTabItem(bm) {
 	  var ret = Object.create(bm);
 	  ret.bookmarked = true;
@@ -2200,7 +2233,7 @@
 	  },
 	
 	  // Get a set of tab-like items for rendering
-	  getTabItems: function getTabItems() {
+	  getTabItems: function getTabItems(searchStr, searchRE) {
 	    var tabs;
 	
 	    if (this.isManaged()) {
@@ -2215,7 +2248,21 @@
 	      tabs = tabs.map(makeOpenTabItem);
 	    }
 	
-	    return tabs;
+	    // console.log("getTabItems: " + JSON.stringify(this.getEncodedId()) + ": searchStr: '" + searchStr + "', ",searchRE);
+	
+	    var filteredTabs;
+	    // Let's limit to title to start with
+	    // var filteredTabs =
+	    if (!searchRE) {
+	      filteredTabs = tabs;
+	    } else {
+	      filteredTabs = _.filter(tabs, function (tab) {
+	        var titleMatches = tab.title.match(searchRE);
+	        return titleMatches !== null;
+	      });
+	    }
+	
+	    return filteredTabs;
 	  },
 	
 	  /*

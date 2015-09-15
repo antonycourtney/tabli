@@ -39,7 +39,7 @@ var styles = {
     maxHeight: WINDOW_HEADER_HEIGHT,
     paddingLeft: 3,
     paddingRight: 3,
-    marginBottom: 3,
+    // marginBottom: 3,
     display: 'inline-flex',
     // justifyContent: 'space-between',
     alignItems: 'center'
@@ -529,7 +529,11 @@ var TabWindow = React.createClass({
 
   render: function () {
     var tabWindow = this.props.tabWindow;
-    var tabs = tabWindow.getTabItems();
+    var tabs = tabWindow.getTabItems(this.props.searchStr,this.props.searchRE);
+
+    if (tabs.length==0)
+      return null;
+
     /*
      * optimization:  Let's only render tabItems if expanded
      */
@@ -541,6 +545,7 @@ var TabWindow = React.createClass({
       // render empty list of tab items to get -ve margin rollup layout right...
       tabItems = this.renderTabItems(tabWindow,[]);
     }
+
     var windowHeader = 
       <WindowHeader winStore={this.props.winStore}
           tabWindow={tabWindow} 
@@ -634,7 +639,10 @@ var TabWindowList = React.createClass({
           var isOpen = tabWindow.open;
           var isFocused = tabWindow.isFocused();
 
-          var windowElem = <TabWindow winStore={this.props.winStore} tabWindow={tabWindow} key={id} />;
+          var windowElem = <TabWindow winStore={this.props.winStore} 
+                              tabWindow={tabWindow} key={id} 
+                              searchStr={this.props.searchStr} 
+                              searchRE={this.props.searchRE} />;
           if (isFocused) {
             focusedWindowElem = windowElem;
           } else if (isOpen) {
@@ -815,12 +823,19 @@ var TabMan = React.createClass({
     var st = this.getStateFromStore(this.props.winStore);
     st.modalIsOpen = false;
     st.searchStr = '';
+    st.searchRE = null;
     return st;
   },
 
   handleSearchInput(searchStr) {
+    searchStr = searchStr.trim();
+
+    var searchRE = null;
+    if (searchStr.length > 0) {
+      searchRE = new RegExp(searchStr,"i");
+    }
     console.log("search input: '",searchStr,"'");
-    this.setState(searchStr,searchStr.trim());
+    this.setState({ searchStr, searchRE });
   },
 
   openSaveModal(tabWindow) {
@@ -864,6 +879,8 @@ var TabMan = React.createClass({
           <TabWindowList winStore={this.state.winStore} 
                            sortedWindows={this.state.sortedWindows} 
                            appComponent={this}
+                           searchStr={this.state.searchStr}
+                           searchRE={this.state.searchRE}
                            />
           {modal}
         </div> 
@@ -891,7 +908,11 @@ var TabMan = React.createClass({
     // but that leaked because unfortunately componentWillUnmount never gets called
     // when popup closes.
     // Now we use setViewListener, which ensures at most one view listener:
-    winStore.setViewListener(this.viewListener);
+    // winStore.setViewListener(this.viewListener);
+
+    var listenerId = winStore.addViewListener(this.viewListener);
+    console.log("added view listener: ", listenerId);
+    sendHelperMessage({ listenerId });
   },
 });
 
@@ -927,6 +948,17 @@ function renderPopup() {
     var t_postRender = performance.now();
     console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
   }));
+}
+
+/**
+ * send message to BGhelper
+ */
+function sendHelperMessage(msg) {
+  var port = chrome.runtime.connect({name: "popup"});
+  port.postMessage(msg);
+  port.onMessage.addListener(function(msg) {
+    console.log("Got response message: ", msg);
+  });  
 }
 
 /*

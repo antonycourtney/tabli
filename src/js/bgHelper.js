@@ -80,11 +80,23 @@ function initWinStore(cb) {
   });
 }
 
+function setupConnectionListener(winStore) {
+  chrome.runtime.onConnect.addListener(function(port) {
+    port.onMessage.addListener(function(msg) {
+      var listenerId = msg.listenerId;
+      port.onDisconnect.addListener(() => {
+        winStore.removeViewListener(listenerId);
+      });
+    });
+  });
+}
+
 function main() {
   initWinStore(function (winStore) {
     console.log("init: done reading bookmarks.");
     window.winStore = winStore;
     actions.syncChromeWindows(winStore);
+    setupConnectionListener(winStore);
   });
 }
 
