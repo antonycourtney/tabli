@@ -29,7 +29,7 @@ var styles = {
     display: 'flex',
     flexDirection: 'column'
   },
-  tabWindowHover: {
+  tabWindowSelected: {
     boxShadow: '0px 0px 5px 2px #7472ff'
   },
   windowHeader: {
@@ -52,8 +52,13 @@ var styles = {
     display: 'flex',
     alignItems: 'center'
   },
-  tabItemHover: {
+  tabItemSelected: {
    backgroundColor: '#dadada'
+  },
+  tabItemHover: {
+   // backgroundColor: '#dadada'
+   borderTop: '1px solid #cacaca',
+   borderBottom: '1px solid #cacaca'
   },
   text: {
     fontSize: 12,
@@ -61,16 +66,6 @@ var styles = {
     marginBottom: 'auto',
     marginLeft: 3    
   },
-/*
-  tabListItem: { 
-    fontSize: 12,
-    width: 243,
-    maxWidth: 243,
-    marginTop: 'auto',
-    marginBottom: 'auto',
-    marginLeft: 3
-  },
-*/
   tabTitle: {
     width: 275,
     maxWidth: 275
@@ -81,11 +76,9 @@ var styles = {
     minHeight: WINDOW_HEADER_HEIGHT,
     overflow: 'hidden'
   },
-
   expandablePanelContentClosed: {
     marginTop: '-999px'
   },
-
   expandablePanelContentOpen: {
     marginTop: 0
   },
@@ -560,8 +553,8 @@ var TabWindow = React.createClass({
           onClose={this.handleClose}
         />;
 
-    var hoverStyle=this.state.hovering ? styles.tabWindowHover : null;
-    var windowStyles=m(styles.tabWindow,styles.expandablePanel,hoverStyle);
+    var selectedStyle=this.props.isSelected ? styles.tabWindowSelected : null;
+    var windowStyles=m(styles.tabWindow,styles.expandablePanel,selectedStyle);
 
     return (
       <div style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
@@ -577,6 +570,16 @@ var TabWindow = React.createClass({
  *   open windows first, then alpha by title
  */
 function windowCmpFn( tabWindowA, tabWindowB ) {
+  // focused window very first:
+  const fA = tabWindowA.isFocused();
+  const fB = tabWindowB.isFocused();
+  if (fA != fB) {
+    if (fA)
+      return -1;
+    else
+      return 1;
+  }
+
   // open windows first:
   if ( tabWindowA.open != tabWindowB.open ) {
     if ( tabWindowA.open )
@@ -642,11 +645,18 @@ var TabWindowList = React.createClass({
       if (tabWindow) {
           var isOpen = tabWindow.open;
           var isFocused = tabWindow.isFocused();
-
+          var isSelected = tabWindow === this.props.selectedWindow;
+          var selectedTab = null;
+          if (isSelected) {
+            selectedTab = this.props.selectedTab;
+          }
           var windowElem = <TabWindow winStore={this.props.winStore} 
                               tabWindow={tabWindow} key={id} 
                               searchStr={this.props.searchStr} 
-                              searchRE={this.props.searchRE} />;
+                              searchRE={this.props.searchRE}
+                              isSelected={isSelected}
+                              selectedTab={selectedTab}
+                              />;
           if (isFocused) {
             focusedWindowElem = windowElem;
           } else if (isOpen) {
@@ -809,6 +819,9 @@ var TabMan = React.createClass({
     var tabWindows = winStore.getAll();
     var sortedWindows = tabWindows.sort(windowCmpFn);
 
+    // var w0Title = sortedWindows[0].getTitle();
+    // console.log("TabMan: window 0 title: '" + w0Title + "'");
+
     return {
       winStore: winStore,
       sortedWindows
@@ -828,6 +841,9 @@ var TabMan = React.createClass({
     st.modalIsOpen = false;
     st.searchStr = '';
     st.searchRE = null;
+    const w0 = st.sortedWindows[0];
+    st.selectedWindow = w0;
+    st.selectedTab = null;
     return st;
   },
 
@@ -885,6 +901,8 @@ var TabMan = React.createClass({
                            appComponent={this}
                            searchStr={this.state.searchStr}
                            searchRE={this.state.searchRE}
+                           selectedWindow={this.state.selectedWindow}
+                           selectedTab={this.state.selectedTab}
                            />
           {modal}
         </div> 

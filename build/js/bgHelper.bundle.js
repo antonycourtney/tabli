@@ -1,47 +1,50 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/*!****************************!*\
+  !*** ./src/js/bgHelper.js ***!
+  \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -50,27 +53,27 @@
 	 * popup rendering will be as fast as possible
 	 */
 	'use strict';
-
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _tabWindowStore = __webpack_require__(1);
-
+	
+	var _tabWindowStore = __webpack_require__(/*! ./tabWindowStore */ 1);
+	
 	var _tabWindowStore2 = _interopRequireDefault(_tabWindowStore);
-
-	var _tabWindow = __webpack_require__(3);
-
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
-
-	var _actions = __webpack_require__(5);
-
+	
+	var _actions = __webpack_require__(/*! ./actions */ 5);
+	
 	var actions = _interopRequireWildcard(_actions);
-
+	
 	var popupPort = null;
 	var tabmanFolderTitle = "Subjective Tab Manager";
 	var archiveFolderTitle = "_Archive";
-
+	
 	/* On startup load managed windows from bookmarks folder */
 	function loadManagedWindows(winStore, tabManFolder) {
 	  var folderTabWindows = [];
@@ -88,7 +91,7 @@
 	  }
 	  winStore.addTabWindows(folderTabWindows);
 	}
-
+	
 	/*
 	 * given a specific parent Folder node, ensure a particular child exists.
 	 * Will invoke callback either synchronously or asynchronously passing the node
@@ -109,7 +112,7 @@
 	  var folderObj = { parentId: parentNode.id, title: childFolderName };
 	  chrome.bookmarks.create(folderObj, callback);
 	}
-
+	
 	/**
 	 * acquire main folder and archive folder and initialize
 	 * window store
@@ -117,7 +120,7 @@
 	function initWinStore(cb) {
 	  var tabmanFolderId = null;
 	  var archiveFolderId = null;
-
+	
 	  chrome.bookmarks.getTree(function (tree) {
 	    var otherBookmarksNode = tree[0].children[1];
 	    console.log("otherBookmarksNode: ", otherBookmarksNode);
@@ -137,7 +140,7 @@
 	    });
 	  });
 	}
-
+	
 	function setupConnectionListener(winStore) {
 	  chrome.runtime.onConnect.addListener(function (port) {
 	    port.onMessage.addListener(function (msg) {
@@ -148,7 +151,7 @@
 	    });
 	  });
 	}
-
+	
 	function main() {
 	  initWinStore(function (winStore) {
 	    console.log("init: done reading bookmarks.");
@@ -157,11 +160,14 @@
 	    setupConnectionListener(winStore);
 	  });
 	}
-
+	
 	main();
 
 /***/ },
 /* 1 */
+/*!**********************************!*\
+  !*** ./src/js/tabWindowStore.js ***!
+  \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -171,37 +177,37 @@
 	 * and then retrieve the instance from the background window in the popup
 	 */
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-
+	
 	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
+	
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
+	
 	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
+	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var _underscore = __webpack_require__(2);
-
+	
+	var _underscore = __webpack_require__(/*! underscore */ 2);
+	
 	var _ = _interopRequireWildcard(_underscore);
-
-	var _tabWindow = __webpack_require__(3);
-
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
-
-	var _events = __webpack_require__(4);
-
+	
+	var _events = __webpack_require__(/*! events */ 4);
+	
 	var _events2 = _interopRequireDefault(_events);
-
+	
 	/*
 	 * find the index of a tab in a ChromeWindow by its tab Id
 	 *
@@ -214,7 +220,7 @@
 	  }
 	  return null;
 	}
-
+	
 	/**
 	 * find the TabWindow and index for a particular tab id.
 	 *
@@ -236,13 +242,13 @@
 	  }
 	  return [];
 	}
-
+	
 	var TabWindowStore = (function (_EventEmitter) {
 	  _inherits(TabWindowStore, _EventEmitter);
-
+	
 	  function TabWindowStore(folderId, archiveFolderId) {
 	    _classCallCheck(this, TabWindowStore);
-
+	
 	    _get(Object.getPrototypeOf(TabWindowStore.prototype), 'constructor', this).call(this);
 	    this.windowIdMap = {}; // maps from chrome window id for open windows
 	    this.bookmarkIdMap = {};
@@ -251,11 +257,11 @@
 	    this.folderId = folderId;
 	    this.archiveFolderId = archiveFolderId;
 	  }
-
+	
 	  /*
 	   * add a new Tab window to global maps:
 	   */
-
+	
 	  _createClass(TabWindowStore, [{
 	    key: 'addTabWindow',
 	    value: function addTabWindow(tabWindow) {
@@ -271,12 +277,12 @@
 	    key: 'addTabWindows',
 	    value: function addTabWindows(tabWindows) {
 	      var _this = this;
-
+	
 	      _.each(tabWindows, function (w) {
 	        _this.addTabWindow(w);
 	      });
 	    }
-
+	
 	    /* We distinguish between removing an entry from map of open windows (windowIdMap)
 	     * because when closing a bookmarked window, we only wish to remove it from former
 	     */
@@ -310,7 +316,7 @@
 	      var currentTabIds = tabs.map(function (t) {
 	        return t.id;
 	      });
-
+	
 	      // re-open bookmarks:
 	      var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
 	        return bm.url;
@@ -320,7 +326,7 @@
 	        var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
 	        chrome.tabs.create(tabInfo);
 	      };
-
+	
 	      // blow away all the existing tabs:
 	      chrome.tabs.remove(currentTabIds, function () {
 	        var windowId = tabWindow.chromeWindow.id;
@@ -332,7 +338,7 @@
 	        });
 	      });
 	    }
-
+	
 	    /**
 	     * attach a Chrome window to a specific tab window (after opening a saved window)
 	     */
@@ -352,7 +358,7 @@
 	      tabWindow.open = true;
 	      this.windowIdMap[chromeWindow.id] = tabWindow;
 	    }
-
+	
 	    /**
 	     * attach a bookmark folder to a specific tab window (after managing)
 	     */
@@ -360,13 +366,13 @@
 	    key: 'attachBookmarkFolder',
 	    value: function attachBookmarkFolder(tabWindow, bookmarkFolder, title) {
 	      tabWindow.bookmarkFolder = bookmarkFolder;
-
+	
 	      //
 	      // HACK: breaking the tabWindow abstraction
 	      //
 	      tabWindow._managed = true;
 	      tabWindow._managedTitle = title;
-
+	
 	      // And re-register in store maps:
 	      this.addTabWindow(tabWindow);
 	      this.emit("change");
@@ -395,7 +401,7 @@
 	    value: function handleChromeWindowFocusChanged(windowId) {
 	      /* TODO / FIXME: more efficient rep for focused window */
 	      var tabWindows = this.getAll();
-
+	
 	      for (var i = 0; i < tabWindows.length; i++) {
 	        var tabWindow = tabWindows[i];
 	        if (tabWindow) {
@@ -503,14 +509,14 @@
 	    value: function handleChromeTabReplaced(addedTabId, removedTabId) {
 	      console.log("handleChromeTabReplaced: ", addedTabId, removedTabId);
 	      var tabWindows = this.getAll();
-
+	
 	      var _findTabId = findTabId(tabWindows, removedTabId);
-
+	
 	      var _findTabId2 = _slicedToArray(_findTabId, 2);
-
+	
 	      var removedTabWindow = _findTabId2[0];
 	      var removedIndex = _findTabId2[1];
-
+	
 	      if (removedTabWindow) {
 	        var tab = removedTabWindow.chromeWindow.tabs[removedIndex];
 	        console.log("found removed tab: ", tab);
@@ -526,7 +532,7 @@
 	        console.log("removed tab id not found!");
 	      }
 	    }
-
+	
 	    /**
 	     * Synchronize internal state of our store with snapshot
 	     * of current Chrome window state
@@ -557,7 +563,7 @@
 	    value: function handleChromeWindowCreated(chromeWindow) {
 	      this.syncChromeWindow(chromeWindow);
 	    }
-
+	
 	    /**
 	     * synchronize the currently open windows from chrome.windows.getAll with 
 	     * internal map of open windows
@@ -566,9 +572,9 @@
 	    key: 'syncWindowList',
 	    value: function syncWindowList(chromeWindowList) {
 	      var _this2 = this;
-
+	
 	      var tabWindows = this.getOpen();
-
+	
 	      // Iterate through tab windows (our current list of open windows)
 	      // closing any not in chromeWindowList:
 	      var chromeIds = _.pluck(chromeWindowList, 'id');
@@ -582,15 +588,15 @@
 	          _this2.handleTabWindowClosed(tw);
 	        }
 	      });
-
+	
 	      // Now iterate through chromeWindowList and find any chrome windows not in our map of open windows:
 	      chromeWindowList.forEach(function (cw) {
 	        _this2.syncChromeWindow(cw, true);
 	      });
-
+	
 	      this.emit("change");
 	    }
-
+	
 	    /**
 	     * get the currently open tab windows
 	     */
@@ -610,14 +616,14 @@
 	      });
 	      return closedManagedWindows.concat(openWindows);
 	    }
-
+	
 	    // returns a tabWindow or undefined
 	  }, {
 	    key: 'getTabWindowByChromeId',
 	    value: function getTabWindowByChromeId(chromeId) {
 	      return this.windowIdMap[chromeId];
 	    }
-
+	
 	    /*
 	     * Add a view listener and return its listener id
 	     *
@@ -648,36 +654,39 @@
 	      delete this.viewListeners[id];
 	    }
 	  }]);
-
+	
 	  return TabWindowStore;
 	})(_events2['default']);
-
+	
 	exports['default'] = TabWindowStore;
 	module.exports = exports['default'];
 
 /***/ },
 /* 2 */
+/*!************************************!*\
+  !*** ./~/underscore/underscore.js ***!
+  \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.7.0
 	//     http://underscorejs.org
 	//     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	//     Underscore may be freely distributed under the MIT license.
-
+	
 	(function() {
-
+	
 	  // Baseline setup
 	  // --------------
-
+	
 	  // Establish the root object, `window` in the browser, or `exports` on the server.
 	  var root = this;
-
+	
 	  // Save the previous value of the `_` variable.
 	  var previousUnderscore = root._;
-
+	
 	  // Save bytes in the minified (but not gzipped) version:
 	  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
-
+	
 	  // Create quick reference variables for speed access to core prototypes.
 	  var
 	    push             = ArrayProto.push,
@@ -685,21 +694,21 @@
 	    concat           = ArrayProto.concat,
 	    toString         = ObjProto.toString,
 	    hasOwnProperty   = ObjProto.hasOwnProperty;
-
+	
 	  // All **ECMAScript 5** native function implementations that we hope to use
 	  // are declared here.
 	  var
 	    nativeIsArray      = Array.isArray,
 	    nativeKeys         = Object.keys,
 	    nativeBind         = FuncProto.bind;
-
+	
 	  // Create a safe reference to the Underscore object for use below.
 	  var _ = function(obj) {
 	    if (obj instanceof _) return obj;
 	    if (!(this instanceof _)) return new _(obj);
 	    this._wrapped = obj;
 	  };
-
+	
 	  // Export the Underscore object for **Node.js**, with
 	  // backwards-compatibility for the old `require()` API. If we're in
 	  // the browser, add `_` as a global object.
@@ -711,10 +720,10 @@
 	  } else {
 	    root._ = _;
 	  }
-
+	
 	  // Current version.
 	  _.VERSION = '1.7.0';
-
+	
 	  // Internal function that returns an efficient (for current engines) version
 	  // of the passed-in callback, to be repeatedly applied in other Underscore
 	  // functions.
@@ -738,7 +747,7 @@
 	      return func.apply(context, arguments);
 	    };
 	  };
-
+	
 	  // A mostly-internal function to generate callbacks that can be applied
 	  // to each element in a collection, returning the desired result — either
 	  // identity, an arbitrary callback, a property matcher, or a property accessor.
@@ -748,10 +757,10 @@
 	    if (_.isObject(value)) return _.matches(value);
 	    return _.property(value);
 	  };
-
+	
 	  // Collection Functions
 	  // --------------------
-
+	
 	  // The cornerstone, an `each` implementation, aka `forEach`.
 	  // Handles raw objects in addition to array-likes. Treats all
 	  // sparse array-likes as if they were dense.
@@ -771,7 +780,7 @@
 	    }
 	    return obj;
 	  };
-
+	
 	  // Return the results of applying the iteratee to each element.
 	  _.map = _.collect = function(obj, iteratee, context) {
 	    if (obj == null) return [];
@@ -786,9 +795,9 @@
 	    }
 	    return results;
 	  };
-
+	
 	  var reduceError = 'Reduce of empty array with no initial value';
-
+	
 	  // **Reduce** builds up a single result from a list of values, aka `inject`,
 	  // or `foldl`.
 	  _.reduce = _.foldl = _.inject = function(obj, iteratee, memo, context) {
@@ -807,7 +816,7 @@
 	    }
 	    return memo;
 	  };
-
+	
 	  // The right-associative version of reduce, also known as `foldr`.
 	  _.reduceRight = _.foldr = function(obj, iteratee, memo, context) {
 	    if (obj == null) obj = [];
@@ -825,7 +834,7 @@
 	    }
 	    return memo;
 	  };
-
+	
 	  // Return the first value which passes a truth test. Aliased as `detect`.
 	  _.find = _.detect = function(obj, predicate, context) {
 	    var result;
@@ -838,7 +847,7 @@
 	    });
 	    return result;
 	  };
-
+	
 	  // Return all the elements that pass a truth test.
 	  // Aliased as `select`.
 	  _.filter = _.select = function(obj, predicate, context) {
@@ -850,12 +859,12 @@
 	    });
 	    return results;
 	  };
-
+	
 	  // Return all the elements for which a truth test fails.
 	  _.reject = function(obj, predicate, context) {
 	    return _.filter(obj, _.negate(_.iteratee(predicate)), context);
 	  };
-
+	
 	  // Determine whether all of the elements match a truth test.
 	  // Aliased as `all`.
 	  _.every = _.all = function(obj, predicate, context) {
@@ -870,7 +879,7 @@
 	    }
 	    return true;
 	  };
-
+	
 	  // Determine if at least one element in the object matches a truth test.
 	  // Aliased as `any`.
 	  _.some = _.any = function(obj, predicate, context) {
@@ -885,7 +894,7 @@
 	    }
 	    return false;
 	  };
-
+	
 	  // Determine if the array or object contains a given value (using `===`).
 	  // Aliased as `include`.
 	  _.contains = _.include = function(obj, target) {
@@ -893,7 +902,7 @@
 	    if (obj.length !== +obj.length) obj = _.values(obj);
 	    return _.indexOf(obj, target) >= 0;
 	  };
-
+	
 	  // Invoke a method (with arguments) on every item in a collection.
 	  _.invoke = function(obj, method) {
 	    var args = slice.call(arguments, 2);
@@ -902,24 +911,24 @@
 	      return (isFunc ? method : value[method]).apply(value, args);
 	    });
 	  };
-
+	
 	  // Convenience version of a common use case of `map`: fetching a property.
 	  _.pluck = function(obj, key) {
 	    return _.map(obj, _.property(key));
 	  };
-
+	
 	  // Convenience version of a common use case of `filter`: selecting only objects
 	  // containing specific `key:value` pairs.
 	  _.where = function(obj, attrs) {
 	    return _.filter(obj, _.matches(attrs));
 	  };
-
+	
 	  // Convenience version of a common use case of `find`: getting the first object
 	  // containing specific `key:value` pairs.
 	  _.findWhere = function(obj, attrs) {
 	    return _.find(obj, _.matches(attrs));
 	  };
-
+	
 	  // Return the maximum element (or element-based computation).
 	  _.max = function(obj, iteratee, context) {
 	    var result = -Infinity, lastComputed = -Infinity,
@@ -944,7 +953,7 @@
 	    }
 	    return result;
 	  };
-
+	
 	  // Return the minimum element (or element-based computation).
 	  _.min = function(obj, iteratee, context) {
 	    var result = Infinity, lastComputed = Infinity,
@@ -969,7 +978,7 @@
 	    }
 	    return result;
 	  };
-
+	
 	  // Shuffle a collection, using the modern version of the
 	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 	  _.shuffle = function(obj) {
@@ -983,7 +992,7 @@
 	    }
 	    return shuffled;
 	  };
-
+	
 	  // Sample **n** random values from a collection.
 	  // If **n** is not specified, returns a single random element.
 	  // The internal `guard` argument allows it to work with `map`.
@@ -994,7 +1003,7 @@
 	    }
 	    return _.shuffle(obj).slice(0, Math.max(0, n));
 	  };
-
+	
 	  // Sort the object's values by a criterion produced by an iteratee.
 	  _.sortBy = function(obj, iteratee, context) {
 	    iteratee = _.iteratee(iteratee, context);
@@ -1014,7 +1023,7 @@
 	      return left.index - right.index;
 	    }), 'value');
 	  };
-
+	
 	  // An internal function used for aggregate "group by" operations.
 	  var group = function(behavior) {
 	    return function(obj, iteratee, context) {
@@ -1027,26 +1036,26 @@
 	      return result;
 	    };
 	  };
-
+	
 	  // Groups the object's values by a criterion. Pass either a string attribute
 	  // to group by, or a function that returns the criterion.
 	  _.groupBy = group(function(result, value, key) {
 	    if (_.has(result, key)) result[key].push(value); else result[key] = [value];
 	  });
-
+	
 	  // Indexes the object's values by a criterion, similar to `groupBy`, but for
 	  // when you know that your index values will be unique.
 	  _.indexBy = group(function(result, value, key) {
 	    result[key] = value;
 	  });
-
+	
 	  // Counts instances of an object that group by a certain criterion. Pass
 	  // either a string attribute to count by, or a function that returns the
 	  // criterion.
 	  _.countBy = group(function(result, value, key) {
 	    if (_.has(result, key)) result[key]++; else result[key] = 1;
 	  });
-
+	
 	  // Use a comparator function to figure out the smallest index at which
 	  // an object should be inserted so as to maintain order. Uses binary search.
 	  _.sortedIndex = function(array, obj, iteratee, context) {
@@ -1059,7 +1068,7 @@
 	    }
 	    return low;
 	  };
-
+	
 	  // Safely create a real, live array from anything iterable.
 	  _.toArray = function(obj) {
 	    if (!obj) return [];
@@ -1067,13 +1076,13 @@
 	    if (obj.length === +obj.length) return _.map(obj, _.identity);
 	    return _.values(obj);
 	  };
-
+	
 	  // Return the number of elements in an object.
 	  _.size = function(obj) {
 	    if (obj == null) return 0;
 	    return obj.length === +obj.length ? obj.length : _.keys(obj).length;
 	  };
-
+	
 	  // Split a collection into two arrays: one whose elements all satisfy the given
 	  // predicate, and one whose elements all do not satisfy the predicate.
 	  _.partition = function(obj, predicate, context) {
@@ -1084,10 +1093,10 @@
 	    });
 	    return [pass, fail];
 	  };
-
+	
 	  // Array Functions
 	  // ---------------
-
+	
 	  // Get the first element of an array. Passing **n** will return the first N
 	  // values in the array. Aliased as `head` and `take`. The **guard** check
 	  // allows it to work with `_.map`.
@@ -1097,7 +1106,7 @@
 	    if (n < 0) return [];
 	    return slice.call(array, 0, n);
 	  };
-
+	
 	  // Returns everything but the last entry of the array. Especially useful on
 	  // the arguments object. Passing **n** will return all the values in
 	  // the array, excluding the last N. The **guard** check allows it to work with
@@ -1105,7 +1114,7 @@
 	  _.initial = function(array, n, guard) {
 	    return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
 	  };
-
+	
 	  // Get the last element of an array. Passing **n** will return the last N
 	  // values in the array. The **guard** check allows it to work with `_.map`.
 	  _.last = function(array, n, guard) {
@@ -1113,7 +1122,7 @@
 	    if (n == null || guard) return array[array.length - 1];
 	    return slice.call(array, Math.max(array.length - n, 0));
 	  };
-
+	
 	  // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
 	  // Especially useful on the arguments object. Passing an **n** will return
 	  // the rest N values in the array. The **guard**
@@ -1121,12 +1130,12 @@
 	  _.rest = _.tail = _.drop = function(array, n, guard) {
 	    return slice.call(array, n == null || guard ? 1 : n);
 	  };
-
+	
 	  // Trim out all falsy values from an array.
 	  _.compact = function(array) {
 	    return _.filter(array, _.identity);
 	  };
-
+	
 	  // Internal implementation of a recursive `flatten` function.
 	  var flatten = function(input, shallow, strict, output) {
 	    if (shallow && _.every(input, _.isArray)) {
@@ -1144,17 +1153,17 @@
 	    }
 	    return output;
 	  };
-
+	
 	  // Flatten out an array, either recursively (by default), or just one level.
 	  _.flatten = function(array, shallow) {
 	    return flatten(array, shallow, false, []);
 	  };
-
+	
 	  // Return a version of the array that does not contain the specified value(s).
 	  _.without = function(array) {
 	    return _.difference(array, slice.call(arguments, 1));
 	  };
-
+	
 	  // Produce a duplicate-free version of the array. If the array has already
 	  // been sorted, you have the option of using a faster algorithm.
 	  // Aliased as `unique`.
@@ -1185,13 +1194,13 @@
 	    }
 	    return result;
 	  };
-
+	
 	  // Produce an array that contains the union: each distinct element from all of
 	  // the passed-in arrays.
 	  _.union = function() {
 	    return _.uniq(flatten(arguments, true, true, []));
 	  };
-
+	
 	  // Produce an array that contains every item shared between all the
 	  // passed-in arrays.
 	  _.intersection = function(array) {
@@ -1208,7 +1217,7 @@
 	    }
 	    return result;
 	  };
-
+	
 	  // Take the difference between one array and a number of other arrays.
 	  // Only the elements present in just the first array will remain.
 	  _.difference = function(array) {
@@ -1217,7 +1226,7 @@
 	      return !_.contains(rest, value);
 	    });
 	  };
-
+	
 	  // Zip together multiple lists into a single array -- elements that share
 	  // an index go together.
 	  _.zip = function(array) {
@@ -1229,7 +1238,7 @@
 	    }
 	    return results;
 	  };
-
+	
 	  // Converts lists into objects. Pass either a single array of `[key, value]`
 	  // pairs, or two parallel arrays of the same length -- one of keys, and one of
 	  // the corresponding values.
@@ -1245,7 +1254,7 @@
 	    }
 	    return result;
 	  };
-
+	
 	  // Return the position of the first occurrence of an item in an array,
 	  // or -1 if the item is not included in the array.
 	  // If the array is large and already in sort order, pass `true`
@@ -1264,7 +1273,7 @@
 	    for (; i < length; i++) if (array[i] === item) return i;
 	    return -1;
 	  };
-
+	
 	  _.lastIndexOf = function(array, item, from) {
 	    if (array == null) return -1;
 	    var idx = array.length;
@@ -1274,7 +1283,7 @@
 	    while (--idx >= 0) if (array[idx] === item) return idx;
 	    return -1;
 	  };
-
+	
 	  // Generate an integer Array containing an arithmetic progression. A port of
 	  // the native Python `range()` function. See
 	  // [the Python documentation](http://docs.python.org/library/functions.html#range).
@@ -1284,23 +1293,23 @@
 	      start = 0;
 	    }
 	    step = step || 1;
-
+	
 	    var length = Math.max(Math.ceil((stop - start) / step), 0);
 	    var range = Array(length);
-
+	
 	    for (var idx = 0; idx < length; idx++, start += step) {
 	      range[idx] = start;
 	    }
-
+	
 	    return range;
 	  };
-
+	
 	  // Function (ahem) Functions
 	  // ------------------
-
+	
 	  // Reusable constructor function for prototype setting.
 	  var Ctor = function(){};
-
+	
 	  // Create a function bound to a given object (assigning `this`, and arguments,
 	  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
 	  // available.
@@ -1320,7 +1329,7 @@
 	    };
 	    return bound;
 	  };
-
+	
 	  // Partially apply a function by creating a version that has had some of its
 	  // arguments pre-filled, without changing its dynamic `this` context. _ acts
 	  // as a placeholder, allowing any combination of arguments to be pre-filled.
@@ -1336,7 +1345,7 @@
 	      return func.apply(this, args);
 	    };
 	  };
-
+	
 	  // Bind a number of an object's methods to that object. Remaining arguments
 	  // are the method names to be bound. Useful for ensuring that all callbacks
 	  // defined on an object belong to it.
@@ -1349,7 +1358,7 @@
 	    }
 	    return obj;
 	  };
-
+	
 	  // Memoize an expensive function by storing its results.
 	  _.memoize = function(func, hasher) {
 	    var memoize = function(key) {
@@ -1361,7 +1370,7 @@
 	    memoize.cache = {};
 	    return memoize;
 	  };
-
+	
 	  // Delays a function for the given number of milliseconds, and then calls
 	  // it with the arguments supplied.
 	  _.delay = function(func, wait) {
@@ -1370,13 +1379,13 @@
 	      return func.apply(null, args);
 	    }, wait);
 	  };
-
+	
 	  // Defers a function, scheduling it to run after the current call stack has
 	  // cleared.
 	  _.defer = function(func) {
 	    return _.delay.apply(_, [func, 1].concat(slice.call(arguments, 1)));
 	  };
-
+	
 	  // Returns a function, that, when invoked, will only be triggered at most once
 	  // during a given window of time. Normally, the throttled function will run
 	  // as much as it can, without ever going more than once per `wait` duration;
@@ -1411,17 +1420,17 @@
 	      return result;
 	    };
 	  };
-
+	
 	  // Returns a function, that, as long as it continues to be invoked, will not
 	  // be triggered. The function will be called after it stops being called for
 	  // N milliseconds. If `immediate` is passed, trigger the function on the
 	  // leading edge, instead of the trailing.
 	  _.debounce = function(func, wait, immediate) {
 	    var timeout, args, context, timestamp, result;
-
+	
 	    var later = function() {
 	      var last = _.now() - timestamp;
-
+	
 	      if (last < wait && last > 0) {
 	        timeout = setTimeout(later, wait - last);
 	      } else {
@@ -1432,7 +1441,7 @@
 	        }
 	      }
 	    };
-
+	
 	    return function() {
 	      context = this;
 	      args = arguments;
@@ -1443,25 +1452,25 @@
 	        result = func.apply(context, args);
 	        context = args = null;
 	      }
-
+	
 	      return result;
 	    };
 	  };
-
+	
 	  // Returns the first function passed as an argument to the second,
 	  // allowing you to adjust arguments, run code before and after, and
 	  // conditionally execute the original function.
 	  _.wrap = function(func, wrapper) {
 	    return _.partial(wrapper, func);
 	  };
-
+	
 	  // Returns a negated version of the passed-in predicate.
 	  _.negate = function(predicate) {
 	    return function() {
 	      return !predicate.apply(this, arguments);
 	    };
 	  };
-
+	
 	  // Returns a function that is the composition of a list of functions, each
 	  // consuming the return value of the function that follows.
 	  _.compose = function() {
@@ -1474,7 +1483,7 @@
 	      return result;
 	    };
 	  };
-
+	
 	  // Returns a function that will only be executed after being called N times.
 	  _.after = function(times, func) {
 	    return function() {
@@ -1483,7 +1492,7 @@
 	      }
 	    };
 	  };
-
+	
 	  // Returns a function that will only be executed before being called N times.
 	  _.before = function(times, func) {
 	    var memo;
@@ -1496,14 +1505,14 @@
 	      return memo;
 	    };
 	  };
-
+	
 	  // Returns a function that will be executed at most one time, no matter how
 	  // often you call it. Useful for lazy initialization.
 	  _.once = _.partial(_.before, 2);
-
+	
 	  // Object Functions
 	  // ----------------
-
+	
 	  // Retrieve the names of an object's properties.
 	  // Delegates to **ECMAScript 5**'s native `Object.keys`
 	  _.keys = function(obj) {
@@ -1513,7 +1522,7 @@
 	    for (var key in obj) if (_.has(obj, key)) keys.push(key);
 	    return keys;
 	  };
-
+	
 	  // Retrieve the values of an object's properties.
 	  _.values = function(obj) {
 	    var keys = _.keys(obj);
@@ -1524,7 +1533,7 @@
 	    }
 	    return values;
 	  };
-
+	
 	  // Convert an object into a list of `[key, value]` pairs.
 	  _.pairs = function(obj) {
 	    var keys = _.keys(obj);
@@ -1535,7 +1544,7 @@
 	    }
 	    return pairs;
 	  };
-
+	
 	  // Invert the keys and values of an object. The values must be serializable.
 	  _.invert = function(obj) {
 	    var result = {};
@@ -1545,7 +1554,7 @@
 	    }
 	    return result;
 	  };
-
+	
 	  // Return a sorted list of the function names available on the object.
 	  // Aliased as `methods`
 	  _.functions = _.methods = function(obj) {
@@ -1555,7 +1564,7 @@
 	    }
 	    return names.sort();
 	  };
-
+	
 	  // Extend a given object with all the properties in passed-in object(s).
 	  _.extend = function(obj) {
 	    if (!_.isObject(obj)) return obj;
@@ -1570,7 +1579,7 @@
 	    }
 	    return obj;
 	  };
-
+	
 	  // Return a copy of the object only containing the whitelisted properties.
 	  _.pick = function(obj, iteratee, context) {
 	    var result = {}, key;
@@ -1591,7 +1600,7 @@
 	    }
 	    return result;
 	  };
-
+	
 	   // Return a copy of the object without the blacklisted properties.
 	  _.omit = function(obj, iteratee, context) {
 	    if (_.isFunction(iteratee)) {
@@ -1604,7 +1613,7 @@
 	    }
 	    return _.pick(obj, iteratee, context);
 	  };
-
+	
 	  // Fill in a given object with default properties.
 	  _.defaults = function(obj) {
 	    if (!_.isObject(obj)) return obj;
@@ -1616,13 +1625,13 @@
 	    }
 	    return obj;
 	  };
-
+	
 	  // Create a (shallow-cloned) duplicate of an object.
 	  _.clone = function(obj) {
 	    if (!_.isObject(obj)) return obj;
 	    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
 	  };
-
+	
 	  // Invokes interceptor with the obj, and then returns obj.
 	  // The primary purpose of this method is to "tap into" a method chain, in
 	  // order to perform operations on intermediate results within the chain.
@@ -1630,7 +1639,7 @@
 	    interceptor(obj);
 	    return obj;
 	  };
-
+	
 	  // Internal recursive comparison function for `isEqual`.
 	  var eq = function(a, b, aStack, bStack) {
 	    // Identical objects are equal. `0 === -0`, but they aren't identical.
@@ -1720,12 +1729,12 @@
 	    bStack.pop();
 	    return result;
 	  };
-
+	
 	  // Perform a deep comparison to check if two objects are equal.
 	  _.isEqual = function(a, b) {
 	    return eq(a, b, [], []);
 	  };
-
+	
 	  // Is a given array, string, or object empty?
 	  // An "empty" object has no enumerable own-properties.
 	  _.isEmpty = function(obj) {
@@ -1734,31 +1743,31 @@
 	    for (var key in obj) if (_.has(obj, key)) return false;
 	    return true;
 	  };
-
+	
 	  // Is a given value a DOM element?
 	  _.isElement = function(obj) {
 	    return !!(obj && obj.nodeType === 1);
 	  };
-
+	
 	  // Is a given value an array?
 	  // Delegates to ECMA5's native Array.isArray
 	  _.isArray = nativeIsArray || function(obj) {
 	    return toString.call(obj) === '[object Array]';
 	  };
-
+	
 	  // Is a given variable an object?
 	  _.isObject = function(obj) {
 	    var type = typeof obj;
 	    return type === 'function' || type === 'object' && !!obj;
 	  };
-
+	
 	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp.
 	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp'], function(name) {
 	    _['is' + name] = function(obj) {
 	      return toString.call(obj) === '[object ' + name + ']';
 	    };
 	  });
-
+	
 	  // Define a fallback version of the method in browsers (ahem, IE), where
 	  // there isn't any inspectable "Arguments" type.
 	  if (!_.isArguments(arguments)) {
@@ -1766,74 +1775,74 @@
 	      return _.has(obj, 'callee');
 	    };
 	  }
-
+	
 	  // Optimize `isFunction` if appropriate. Work around an IE 11 bug.
 	  if (true) {
 	    _.isFunction = function(obj) {
 	      return typeof obj == 'function' || false;
 	    };
 	  }
-
+	
 	  // Is a given object a finite number?
 	  _.isFinite = function(obj) {
 	    return isFinite(obj) && !isNaN(parseFloat(obj));
 	  };
-
+	
 	  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
 	  _.isNaN = function(obj) {
 	    return _.isNumber(obj) && obj !== +obj;
 	  };
-
+	
 	  // Is a given value a boolean?
 	  _.isBoolean = function(obj) {
 	    return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
 	  };
-
+	
 	  // Is a given value equal to null?
 	  _.isNull = function(obj) {
 	    return obj === null;
 	  };
-
+	
 	  // Is a given variable undefined?
 	  _.isUndefined = function(obj) {
 	    return obj === void 0;
 	  };
-
+	
 	  // Shortcut function for checking if an object has a given property directly
 	  // on itself (in other words, not on a prototype).
 	  _.has = function(obj, key) {
 	    return obj != null && hasOwnProperty.call(obj, key);
 	  };
-
+	
 	  // Utility Functions
 	  // -----------------
-
+	
 	  // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
 	  // previous owner. Returns a reference to the Underscore object.
 	  _.noConflict = function() {
 	    root._ = previousUnderscore;
 	    return this;
 	  };
-
+	
 	  // Keep the identity function around for default iteratees.
 	  _.identity = function(value) {
 	    return value;
 	  };
-
+	
 	  _.constant = function(value) {
 	    return function() {
 	      return value;
 	    };
 	  };
-
+	
 	  _.noop = function(){};
-
+	
 	  _.property = function(key) {
 	    return function(obj) {
 	      return obj[key];
 	    };
 	  };
-
+	
 	  // Returns a predicate for checking whether an object has a given set of `key:value` pairs.
 	  _.matches = function(attrs) {
 	    var pairs = _.pairs(attrs), length = pairs.length;
@@ -1847,7 +1856,7 @@
 	      return true;
 	    };
 	  };
-
+	
 	  // Run a function **n** times.
 	  _.times = function(n, iteratee, context) {
 	    var accum = Array(Math.max(0, n));
@@ -1855,7 +1864,7 @@
 	    for (var i = 0; i < n; i++) accum[i] = iteratee(i);
 	    return accum;
 	  };
-
+	
 	  // Return a random integer between min and max (inclusive).
 	  _.random = function(min, max) {
 	    if (max == null) {
@@ -1864,12 +1873,12 @@
 	    }
 	    return min + Math.floor(Math.random() * (max - min + 1));
 	  };
-
+	
 	  // A (possibly faster) way to get the current timestamp as an integer.
 	  _.now = Date.now || function() {
 	    return new Date().getTime();
 	  };
-
+	
 	   // List of HTML entities for escaping.
 	  var escapeMap = {
 	    '&': '&amp;',
@@ -1880,7 +1889,7 @@
 	    '`': '&#x60;'
 	  };
 	  var unescapeMap = _.invert(escapeMap);
-
+	
 	  // Functions for escaping and unescaping strings to/from HTML interpolation.
 	  var createEscaper = function(map) {
 	    var escaper = function(match) {
@@ -1897,7 +1906,7 @@
 	  };
 	  _.escape = createEscaper(escapeMap);
 	  _.unescape = createEscaper(unescapeMap);
-
+	
 	  // If the value of the named `property` is a function then invoke it with the
 	  // `object` as context; otherwise, return it.
 	  _.result = function(object, property) {
@@ -1905,7 +1914,7 @@
 	    var value = object[property];
 	    return _.isFunction(value) ? object[property]() : value;
 	  };
-
+	
 	  // Generate a unique integer id (unique within the entire client session).
 	  // Useful for temporary DOM ids.
 	  var idCounter = 0;
@@ -1913,7 +1922,7 @@
 	    var id = ++idCounter + '';
 	    return prefix ? prefix + id : id;
 	  };
-
+	
 	  // By default, Underscore uses ERB-style template delimiters, change the
 	  // following template settings to use alternative delimiters.
 	  _.templateSettings = {
@@ -1921,12 +1930,12 @@
 	    interpolate : /<%=([\s\S]+?)%>/g,
 	    escape      : /<%-([\s\S]+?)%>/g
 	  };
-
+	
 	  // When customizing `templateSettings`, if you don't want to define an
 	  // interpolation, evaluation or escaping regex, we need one that is
 	  // guaranteed not to match.
 	  var noMatch = /(.)^/;
-
+	
 	  // Certain characters need to be escaped so that they can be put into a
 	  // string literal.
 	  var escapes = {
@@ -1937,13 +1946,13 @@
 	    '\u2028': 'u2028',
 	    '\u2029': 'u2029'
 	  };
-
+	
 	  var escaper = /\\|'|\r|\n|\u2028|\u2029/g;
-
+	
 	  var escapeChar = function(match) {
 	    return '\\' + escapes[match];
 	  };
-
+	
 	  // JavaScript micro-templating, similar to John Resig's implementation.
 	  // Underscore templating handles arbitrary delimiters, preserves whitespace,
 	  // and correctly escapes quotes within interpolated code.
@@ -1951,21 +1960,21 @@
 	  _.template = function(text, settings, oldSettings) {
 	    if (!settings && oldSettings) settings = oldSettings;
 	    settings = _.defaults({}, settings, _.templateSettings);
-
+	
 	    // Combine delimiters into one regular expression via alternation.
 	    var matcher = RegExp([
 	      (settings.escape || noMatch).source,
 	      (settings.interpolate || noMatch).source,
 	      (settings.evaluate || noMatch).source
 	    ].join('|') + '|$', 'g');
-
+	
 	    // Compile the template source, escaping string literals appropriately.
 	    var index = 0;
 	    var source = "__p+='";
 	    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
 	      source += text.slice(index, offset).replace(escaper, escapeChar);
 	      index = offset + match.length;
-
+	
 	      if (escape) {
 	        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
 	      } else if (interpolate) {
@@ -1973,55 +1982,55 @@
 	      } else if (evaluate) {
 	        source += "';\n" + evaluate + "\n__p+='";
 	      }
-
+	
 	      // Adobe VMs need the match returned to produce the correct offest.
 	      return match;
 	    });
 	    source += "';\n";
-
+	
 	    // If a variable is not specified, place data values in local scope.
 	    if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
-
+	
 	    source = "var __t,__p='',__j=Array.prototype.join," +
 	      "print=function(){__p+=__j.call(arguments,'');};\n" +
 	      source + 'return __p;\n';
-
+	
 	    try {
 	      var render = new Function(settings.variable || 'obj', '_', source);
 	    } catch (e) {
 	      e.source = source;
 	      throw e;
 	    }
-
+	
 	    var template = function(data) {
 	      return render.call(this, data, _);
 	    };
-
+	
 	    // Provide the compiled source as a convenience for precompilation.
 	    var argument = settings.variable || 'obj';
 	    template.source = 'function(' + argument + '){\n' + source + '}';
-
+	
 	    return template;
 	  };
-
+	
 	  // Add a "chain" function. Start chaining a wrapped Underscore object.
 	  _.chain = function(obj) {
 	    var instance = _(obj);
 	    instance._chain = true;
 	    return instance;
 	  };
-
+	
 	  // OOP
 	  // ---------------
 	  // If Underscore is called as a function, it returns a wrapped object that
 	  // can be used OO-style. This wrapper holds altered versions of all the
 	  // underscore functions. Wrapped objects may be chained.
-
+	
 	  // Helper function to continue chaining intermediate results.
 	  var result = function(obj) {
 	    return this._chain ? _(obj).chain() : obj;
 	  };
-
+	
 	  // Add your own custom functions to the Underscore object.
 	  _.mixin = function(obj) {
 	    _.each(_.functions(obj), function(name) {
@@ -2033,10 +2042,10 @@
 	      };
 	    });
 	  };
-
+	
 	  // Add all of the Underscore functions to the wrapper object.
 	  _.mixin(_);
-
+	
 	  // Add all mutator Array functions to the wrapper.
 	  _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
 	    var method = ArrayProto[name];
@@ -2047,7 +2056,7 @@
 	      return result.call(this, obj);
 	    };
 	  });
-
+	
 	  // Add all accessor Array functions to the wrapper.
 	  _.each(['concat', 'join', 'slice'], function(name) {
 	    var method = ArrayProto[name];
@@ -2055,12 +2064,12 @@
 	      return result.call(this, method.apply(this._wrapped, arguments));
 	    };
 	  });
-
+	
 	  // Extracts the result from a wrapped and chained object.
 	  _.prototype.value = function() {
 	    return this._wrapped;
 	  };
-
+	
 	  // AMD registration happens at the end for compatibility with AMD loaders
 	  // that may not enforce next-turn semantics on modules. Even though general
 	  // practice for AMD registration is to be anonymous, underscore registers
@@ -2078,26 +2087,29 @@
 
 /***/ },
 /* 3 */
+/*!*****************************!*\
+  !*** ./src/js/tabWindow.js ***!
+  \*****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Representations of windows and bookmark folders
 	 */
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
 	exports.makeChromeTabWindow = makeChromeTabWindow;
 	exports.makeFolderTabWindow = makeFolderTabWindow;
 	exports.deserialize = deserialize;
-
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-	var _underscore = __webpack_require__(2);
-
+	
+	var _underscore = __webpack_require__(/*! underscore */ 2);
+	
 	var _ = _interopRequireWildcard(_underscore);
-
+	
 	function makeBookmarkedTabItem(bm) {
 	  var ret = Object.create(bm);
 	  ret.bookmarked = true;
@@ -2105,14 +2117,14 @@
 	  ret.bookmark = bm;
 	  return ret;
 	};
-
+	
 	function makeOpenTabItem(ot) {
 	  var ret = Object.create(ot);
 	  ret.bookmarked = false;
 	  ret.open = true;
 	  return ret;
 	};
-
+	
 	/*
 	 * Gather open tabs and a set of non-opened bookmarks from the given bookmarks 
 	 * list for a managed window that is open
@@ -2137,7 +2149,7 @@
 	  }
 	  return { openTabs: tabs, closedBookmarks: closedBookmarks };
 	}
-
+	
 	/*
 	 * For a managed, open window, return a list of tab items
 	 * representing both open tabs and closed bookmarks, making
@@ -2156,7 +2168,7 @@
 	  var outTabs = [];
 	  var openTabs = tabInfo.openTabs.slice();
 	  var bookmarks = bookmarkFolder.children.slice();
-
+	
 	  while (openTabs.length > 0 && bookmarks.length > 0) {
 	    var tab = openTabs.shift();
 	    var bm = bookmarks.shift();
@@ -2175,17 +2187,17 @@
 	  }
 	  // and inject the remaining tabs:
 	  outTabs = outTabs.concat(openTabs);
-
+	
 	  return outTabs;
 	}
-
+	
 	var tabWindowPrototype = {
 	  _managed: false,
 	  _managedTitle: "",
 	  chromeWindow: null,
 	  bookmarkFolder: null,
 	  open: false,
-
+	
 	  reloadBookmarkFolder: function reloadBookmarkFolder() {
 	    var tabWindow = this;
 	    chrome.bookmarks.getSubTree(this.bookmarkFolder.id, function (folderNodes) {
@@ -2193,14 +2205,14 @@
 	      tabWindow.bookmarkFolder = fullFolderNode;
 	    });
 	  },
-
+	
 	  getTitle: function getTitle() {
 	    if (this._managed) {
 	      return this.bookmarkFolder.title;
 	    } else {
 	      var tabs = this.chromeWindow.tabs;
 	      if (!tabs) return ""; // window initializing
-
+	
 	      // linear search to find active tab to use as window title
 	      for (var j = 0; j < tabs.length; j++) {
 	        var tab = tabs[j];
@@ -2211,19 +2223,19 @@
 	    }
 	    return ""; // shouldn't happen
 	  },
-
+	
 	  isManaged: function isManaged() {
 	    return this._managed;
 	  },
-
+	
 	  isFocused: function isFocused() {
 	    return this.open && this.chromeWindow && this.chromeWindow.focused;
 	  },
-
+	
 	  // Get a set of tab-like items for rendering
 	  getTabItems: function getTabItems(searchStr, searchRE) {
 	    var tabs;
-
+	
 	    if (this.isManaged()) {
 	      if (this.open) {
 	        tabs = getManagedOpenTabs(this.chromeWindow, this.bookmarkFolder);
@@ -2235,9 +2247,9 @@
 	      if (!tabs) return [];
 	      tabs = tabs.map(makeOpenTabItem);
 	    }
-
+	
 	    // console.log("getTabItems: " + JSON.stringify(this.getEncodedId()) + ": searchStr: '" + searchStr + "', ",searchRE);
-
+	
 	    var filteredTabs;
 	    // Let's limit to title to start with
 	    // var filteredTabs =
@@ -2249,17 +2261,17 @@
 	        return titleMatches !== null;
 	      });
 	    }
-
+	
 	    return filteredTabs;
 	  },
-
+	
 	  /*
 	   * return bookmark Id or chrome Id dependending on tabWindow type
 	   */
 	  getEncodedId: function getEncodedId() {
 	    var idType;
 	    var id;
-
+	
 	    if (this.bookmarkFolder) {
 	      idType = "bookmark";
 	      id = this.bookmarkFolder.id;
@@ -2270,34 +2282,34 @@
 	    return { idType: idType, id: id };
 	  }
 	};
-
+	
 	/*  
 	 * initialize a tab window from a (unmanaged) chrome Window
 	 */
-
+	
 	function makeChromeTabWindow(chromeWindow) {
 	  var ret = Object.create(tabWindowPrototype);
 	  ret.chromeWindow = chromeWindow;
 	  ret.open = true;
 	  return ret;
 	}
-
+	
 	/*
 	 * initialize an unopened window from a bookmarks folder
 	 */
-
+	
 	function makeFolderTabWindow(bookmarkFolder) {
 	  var ret = Object.create(tabWindowPrototype);
 	  ret._managed = true;
 	  ret.bookmarkFolder = bookmarkFolder;
-
+	
 	  return ret;
 	}
-
+	
 	/*
 	 * deserialize a TabWindow from its payload:
 	 */
-
+	
 	function deserialize(payload) {
 	  if (payload._managed) {
 	    return makeFolderTabWindow(payload.bookmarkFolder);
@@ -2308,6 +2320,9 @@
 
 /***/ },
 /* 4 */
+/*!****************************!*\
+  !*** ./~/events/events.js ***!
+  \****************************/
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -2330,23 +2345,23 @@
 	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+	
 	function EventEmitter() {
 	  this._events = this._events || {};
 	  this._maxListeners = this._maxListeners || undefined;
 	}
 	module.exports = EventEmitter;
-
+	
 	// Backwards-compat with node 0.10.x
 	EventEmitter.EventEmitter = EventEmitter;
-
+	
 	EventEmitter.prototype._events = undefined;
 	EventEmitter.prototype._maxListeners = undefined;
-
+	
 	// By default EventEmitters will print a warning if more than 10 listeners are
 	// added to it. This is a useful default which helps finding memory leaks.
 	EventEmitter.defaultMaxListeners = 10;
-
+	
 	// Obviously not all Emitters should be limited to 10. This function allows
 	// that to be increased. Set to zero for unlimited.
 	EventEmitter.prototype.setMaxListeners = function(n) {
@@ -2355,13 +2370,13 @@
 	  this._maxListeners = n;
 	  return this;
 	};
-
+	
 	EventEmitter.prototype.emit = function(type) {
 	  var er, handler, len, args, i, listeners;
-
+	
 	  if (!this._events)
 	    this._events = {};
-
+	
 	  // If there is no 'error' event listener then throw.
 	  if (type === 'error') {
 	    if (!this._events.error ||
@@ -2373,12 +2388,12 @@
 	      throw TypeError('Uncaught, unspecified "error" event.');
 	    }
 	  }
-
+	
 	  handler = this._events[type];
-
+	
 	  if (isUndefined(handler))
 	    return false;
-
+	
 	  if (isFunction(handler)) {
 	    switch (arguments.length) {
 	      // fast cases
@@ -2404,32 +2419,32 @@
 	    args = new Array(len - 1);
 	    for (i = 1; i < len; i++)
 	      args[i - 1] = arguments[i];
-
+	
 	    listeners = handler.slice();
 	    len = listeners.length;
 	    for (i = 0; i < len; i++)
 	      listeners[i].apply(this, args);
 	  }
-
+	
 	  return true;
 	};
-
+	
 	EventEmitter.prototype.addListener = function(type, listener) {
 	  var m;
-
+	
 	  if (!isFunction(listener))
 	    throw TypeError('listener must be a function');
-
+	
 	  if (!this._events)
 	    this._events = {};
-
+	
 	  // To avoid recursion in the case that type === "newListener"! Before
 	  // adding it to the listeners, first emit "newListener".
 	  if (this._events.newListener)
 	    this.emit('newListener', type,
 	              isFunction(listener.listener) ?
 	              listener.listener : listener);
-
+	
 	  if (!this._events[type])
 	    // Optimize the case of one listener. Don't need the extra array object.
 	    this._events[type] = listener;
@@ -2439,7 +2454,7 @@
 	  else
 	    // Adding the second element, need to change to array.
 	    this._events[type] = [this._events[type], listener];
-
+	
 	  // Check for listener leak
 	  if (isObject(this._events[type]) && !this._events[type].warned) {
 	    var m;
@@ -2448,7 +2463,7 @@
 	    } else {
 	      m = EventEmitter.defaultMaxListeners;
 	    }
-
+	
 	    if (m && m > 0 && this._events[type].length > m) {
 	      this._events[type].warned = true;
 	      console.error('(node) warning: possible EventEmitter memory ' +
@@ -2461,53 +2476,53 @@
 	      }
 	    }
 	  }
-
+	
 	  return this;
 	};
-
+	
 	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
+	
 	EventEmitter.prototype.once = function(type, listener) {
 	  if (!isFunction(listener))
 	    throw TypeError('listener must be a function');
-
+	
 	  var fired = false;
-
+	
 	  function g() {
 	    this.removeListener(type, g);
-
+	
 	    if (!fired) {
 	      fired = true;
 	      listener.apply(this, arguments);
 	    }
 	  }
-
+	
 	  g.listener = listener;
 	  this.on(type, g);
-
+	
 	  return this;
 	};
-
+	
 	// emits a 'removeListener' event iff the listener was removed
 	EventEmitter.prototype.removeListener = function(type, listener) {
 	  var list, position, length, i;
-
+	
 	  if (!isFunction(listener))
 	    throw TypeError('listener must be a function');
-
+	
 	  if (!this._events || !this._events[type])
 	    return this;
-
+	
 	  list = this._events[type];
 	  length = list.length;
 	  position = -1;
-
+	
 	  if (list === listener ||
 	      (isFunction(list.listener) && list.listener === listener)) {
 	    delete this._events[type];
 	    if (this._events.removeListener)
 	      this.emit('removeListener', type, listener);
-
+	
 	  } else if (isObject(list)) {
 	    for (i = length; i-- > 0;) {
 	      if (list[i] === listener ||
@@ -2516,30 +2531,30 @@
 	        break;
 	      }
 	    }
-
+	
 	    if (position < 0)
 	      return this;
-
+	
 	    if (list.length === 1) {
 	      list.length = 0;
 	      delete this._events[type];
 	    } else {
 	      list.splice(position, 1);
 	    }
-
+	
 	    if (this._events.removeListener)
 	      this.emit('removeListener', type, listener);
 	  }
-
+	
 	  return this;
 	};
-
+	
 	EventEmitter.prototype.removeAllListeners = function(type) {
 	  var key, listeners;
-
+	
 	  if (!this._events)
 	    return this;
-
+	
 	  // not listening for removeListener, no need to emit
 	  if (!this._events.removeListener) {
 	    if (arguments.length === 0)
@@ -2548,7 +2563,7 @@
 	      delete this._events[type];
 	    return this;
 	  }
-
+	
 	  // emit removeListener for all listeners on all events
 	  if (arguments.length === 0) {
 	    for (key in this._events) {
@@ -2559,9 +2574,9 @@
 	    this._events = {};
 	    return this;
 	  }
-
+	
 	  listeners = this._events[type];
-
+	
 	  if (isFunction(listeners)) {
 	    this.removeListener(type, listeners);
 	  } else {
@@ -2570,10 +2585,10 @@
 	      this.removeListener(type, listeners[listeners.length - 1]);
 	  }
 	  delete this._events[type];
-
+	
 	  return this;
 	};
-
+	
 	EventEmitter.prototype.listeners = function(type) {
 	  var ret;
 	  if (!this._events || !this._events[type])
@@ -2584,7 +2599,7 @@
 	    ret = this._events[type].slice();
 	  return ret;
 	};
-
+	
 	EventEmitter.listenerCount = function(emitter, type) {
 	  var ret;
 	  if (!emitter._events || !emitter._events[type])
@@ -2595,19 +2610,19 @@
 	    ret = emitter._events[type].length;
 	  return ret;
 	};
-
+	
 	function isFunction(arg) {
 	  return typeof arg === 'function';
 	}
-
+	
 	function isNumber(arg) {
 	  return typeof arg === 'number';
 	}
-
+	
 	function isObject(arg) {
 	  return typeof arg === 'object' && arg !== null;
 	}
-
+	
 	function isUndefined(arg) {
 	  return arg === void 0;
 	}
@@ -2615,10 +2630,13 @@
 
 /***/ },
 /* 5 */
+/*!***************************!*\
+  !*** ./src/js/actions.js ***!
+  \***************************/
 /***/ function(module, exports) {
 
 	'use strict';
-
+	
 	/**
 	 * get all open Chrome windows and synchronize state with our tab window store
 	 *
@@ -2636,7 +2654,7 @@
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
 	exports.revertWindow = revertWindow;
-
+	
 	function syncChromeWindows(winStore, cb) {
 	  var t_preGet = performance.now();
 	  chrome.windows.getAll({ populate: true }, function (windowList) {
@@ -2646,7 +2664,7 @@
 	    if (cb) cb();
 	  });
 	}
-
+	
 	/**
 	 * restore a bookmark window.
 	 *
@@ -2688,10 +2706,10 @@
 	    }
 	  });
 	}
-
+	
 	function openWindow(winStore, tabWindow) {
 	  var self = this;
-
+	
 	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
 	  if (tabWindow.open) {
 	    // existing, open window -- just transfer focus
@@ -2702,7 +2720,7 @@
 	      restoreBookmarkWindow(winStore, tabWindow);
 	    }
 	}
-
+	
 	// activate a specific tab:
 	function activateTab(winStore, tabWindow, tab, tabIndex) {
 	  var self = this;
@@ -2733,7 +2751,7 @@
 	    // TODO: activate chosen tab after opening window!
 	  }
 	}
-
+	
 	function closeTab(winStore, windowId, tabId) {
 	  console.log("closeTab: closing tab ", windowId, tabId);;
 	  var self = this;
@@ -2741,7 +2759,7 @@
 	    winStore.handleTabClosed(windowId, tabId);
 	  });
 	}
-
+	
 	function closeWindow(winStore, tabWindow) {
 	  console.log("closeWindow: ", tabWindow);
 	  if (!tabWindow.open) {
@@ -2759,14 +2777,14 @@
 	    winStore.handleTabWindowClosed(tabWindow);
 	  });
 	}
-
+	
 	/*
 	 * save the specified tab window and make it a managed window
 	 */
-
+	
 	function manageWindow(winStore, tabWindow, title, cb) {
 	  var tabmanFolderId = winStore.folderId;
-
+	
 	  // and write out a Bookmarks folder for this newly managed window:
 	  if (!tabmanFolderId) {
 	    alert("Could not save bookmarks -- no tab manager folder");
@@ -2789,7 +2807,7 @@
 	    // Now do an explicit get of subtree to get node populated with children
 	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
 	      var fullFolderNode = folderNodes[0];
-
+	
 	      // Note: Only now do we actually change the state to managed!
 	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
 	      // or have no children because of the asynchrony of creating bookmarks.
@@ -2801,9 +2819,9 @@
 	    });
 	  });
 	}
-
+	
 	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-
+	
 	function unmanageWindow(winStore, tabWindow) {
 	  console.log("unmanageWindow");
 	  if (!winStore.archiveFolderId) {
@@ -2816,13 +2834,13 @@
 	    winStore.unmanageWindow(tabWindow);
 	  });
 	}
-
+	
 	function revertWindow(winStore, tabWindow) {
 	  var tabs = tabWindow.chromeWindow.tabs;
 	  var currentTabIds = tabs.map(function (t) {
 	    return t.id;
 	  });
-
+	
 	  // re-open bookmarks:
 	  var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
 	    return bm.url;
@@ -2832,7 +2850,7 @@
 	    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
 	    chrome.tabs.create(tabInfo);
 	  };
-
+	
 	  // blow away all the existing tabs:
 	  chrome.tabs.remove(currentTabIds, function () {
 	    var windowId = tabWindow.chromeWindow.id;
@@ -2845,3 +2863,4 @@
 
 /***/ }
 /******/ ]);
+//# sourceMappingURL=bgHelper.bundle.js.map
