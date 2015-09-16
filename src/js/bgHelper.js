@@ -8,6 +8,7 @@
 import TabWindowStore from './tabWindowStore';
 import * as TabWindow from './tabWindow';
 import * as actions from './actions';
+import * as ITabWindow from './immTabWindow';
 
 var popupPort = null;
 const tabmanFolderTitle = "Subjective Tab Manager";
@@ -16,6 +17,7 @@ const archiveFolderTitle = "_Archive";
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows(winStore,tabManFolder ) {
   var folderTabWindows = [];
+  var i_folderTabWindows = [];
   for( var i = 0; i < tabManFolder.children.length; i++ ) {
     var windowFolder = tabManFolder.children[ i ];
     if( windowFolder.title[0] === "_" ) {
@@ -27,6 +29,7 @@ function loadManagedWindows(winStore,tabManFolder ) {
       continue;
     }
     folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder));
+    i_folderTabWindows.push(ITabWindow.makeFolderTabWindow(windowFolder));
   }
   winStore.addTabWindows(folderTabWindows);
 }

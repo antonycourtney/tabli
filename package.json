@@ -8,6 +8,7 @@
   "main": "tabman.js",
   "dependencies": {
     "events": "^1.0.2",
+    "immutable": "^3.7.5",
     "jquery": "^2.1.4",
     "lodash": "^3.10.1",
     "object-assign": "^3.0.0",

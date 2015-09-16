@@ -1,5 +1,6 @@
 'use strict';
 
+import * as ITabWindow from './immTabWindow';
 
 /**
  * get all open Chrome windows and synchronize state with our tab window store
@@ -13,6 +14,8 @@ export function syncChromeWindows(winStore,cb) {
       var t_postGet = performance.now();
       console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
       winStore.syncWindowList(windowList);
+      const immWindows = windowList.map(ITabWindow.makeChromeTabWindow);
+      console.log("syncChromeWindows: immWindows:", immWindows);
       if (cb)
         cb();
    });
