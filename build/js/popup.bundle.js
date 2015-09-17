@@ -968,6 +968,9 @@
 	    st.searchStr = '';
 	    st.searchRE = null;
 	    var w0 = st.sortedWindows[0];
+	
+	    console.log("getInitialState: w0: ", w0.toJS());
+	
 	    st.selectedWindow = w0;
 	    st.selectedTab = null;
 	    return st;
@@ -8062,11 +8065,11 @@
 	  /* TODO: Use algorithm from OLDtabWindow.js to determine tab order.
 	   * For now, let's just concat open and closed tabs, in their sorted order.
 	   */
-	  var openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy(function (tiA, tiB) {
-	    return tiA.openTabIndex - tiB.openTabIndex;
+	  var openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy(function (ti) {
+	    return ti.openTabIndex;
 	  });
-	  var closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy(function (tiA, tiB) {
-	    return tiA.savedTabIndex - tiB.savedTabIndex;
+	  var closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy(function (ti) {
+	    return ti.savedTabIndex;
 	  });
 	
 	  var mergedTabItems = openTabItems.concat(closedTabItems);
@@ -8181,8 +8184,13 @@
 	 */
 	
 	function updateWindow(tabWindow, chromeWindow) {
+	  console.log("updateWindow: updating window id ", chromeWindow.id);
 	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
+	
+	  console.log("updateWindow: mergedTabItems: ", mergedTabItems.toJS());
+	
 	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
+	  console.log("updated window: ", updWindow.toJS());
 	  return updWindow;
 	}
 

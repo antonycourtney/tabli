@@ -848,6 +848,9 @@ var TabMan = React.createClass({
     st.searchStr = '';
     st.searchRE = null;
     const w0 = st.sortedWindows[0];
+
+    console.log("getInitialState: w0: ", w0.toJS());
+
     st.selectedWindow = w0;
     st.selectedTab = null;
     return st;

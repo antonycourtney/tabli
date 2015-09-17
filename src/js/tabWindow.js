@@ -122,8 +122,8 @@ export function mergeOpenTabs(tabItems,openTabs) {
   /* TODO: Use algorithm from OLDtabWindow.js to determine tab order.
    * For now, let's just concat open and closed tabs, in their sorted order.
    */
-  const openTabItems = tabInfo.get(true,Immutable.Seq()).sortBy((tiA,tiB) => tiA.openTabIndex - tiB.openTabIndex);
-  const closedTabItems = tabInfo.get(false,Immutable.Seq()).sortBy((tiA,tiB) => tiA.savedTabIndex - tiB.savedTabIndex);
+  const openTabItems = tabInfo.get(true,Immutable.Seq()).sortBy((ti) => ti.openTabIndex);
+  const closedTabItems = tabInfo.get(false,Immutable.Seq()).sortBy((ti) => ti.savedTabIndex);
 
   const mergedTabItems = openTabItems.concat(closedTabItems);
 
@@ -219,11 +219,16 @@ export function makeChromeTabWindow(chromeWindow) {
  * @return {TabWindow} Updated TabWindow
  */
 export function updateWindow(tabWindow,chromeWindow) {
+  console.log("updateWindow: updating window id ", chromeWindow.id);
   const mergedTabItems = mergeOpenTabs(tabWindow.tabItems,chromeWindow.tabs);
+
+  console.log("updateWindow: mergedTabItems: ",mergedTabItems.toJS());
+
   const updWindow = tabWindow
                       .set('tabItems',mergedTabItems)
                       .set('focused',chromeWindow.focused)
                       .set('open',true)
                       .set('openWindowId',chromeWindow.id);
+  console.log("updated window: ", updWindow.toJS() );                      
   return updWindow;
 }
