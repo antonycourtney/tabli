@@ -7634,7 +7634,7 @@
 	    if (tab.open) {
 	      // Tab is already open, just make it active:
 	      console.log("making tab active");
-	      chrome.tabs.update(tab.id, { active: true }, function () {
+	      chrome.tabs.update(tab.openTabId, { active: true }, function () {
 	        console.log("making tab's window active");
 	        chrome.windows.update(tabWindow.openWindowId, { focused: true });
 	      });
