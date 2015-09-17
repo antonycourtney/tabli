@@ -3,6 +3,7 @@
 import * as $ from 'jquery';
 import * as React from 'react';
 import * as actions from './actions';
+import * as Immutable from 'immutable';
 
 // import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
@@ -323,10 +324,10 @@ var WindowHeader = React.createClass({
   render: function() {
     var tabWindow = this.props.tabWindow;
 
-    var managed = tabWindow.isManaged();
-    var windowTitle = tabWindow.getTitle();
+    var managed = tabWindow.saved;
+    var windowTitle = tabWindow.title;
 
-    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+    var windowId = tabWindow.openWindowId;
 
     var hoverStyle = this.state.hovering ? styles.visible : styles.hidden;
 
@@ -345,7 +346,7 @@ var WindowHeader = React.createClass({
                           />;
     }
 
-    var windowTitle = tabWindow.getTitle();   
+    var windowTitle = tabWindow.title;   
     var openStyle = tabWindow.open ? styles.open : styles.closed;
     var titleStyle = m(styles.text,styles.noWrap,styles.windowTitle,openStyle);
     var closeStyle = m(styles.headerButton,styles.closeButton);
@@ -393,10 +394,12 @@ var TabItem = React.createClass({
   },
 
   handleClose: function() {
-    if (!this.props.tabWindow.chromeWindow)
+    if (!this.props.tabWindow.open)
       return;
-    var windowId = this.props.tabWindow.chromeWindow.id;
-    var tabId = this.props.tab.id;
+    var windowId = this.props.tabWindow.openWindowId;
+    if (!this.props.tab.open)
+      return;
+    var tabId = this.props.tab.openTabId;
     actions.closeTab(this.props.winStore,windowId,tabId);
   }, 
 
@@ -404,7 +407,7 @@ var TabItem = React.createClass({
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
 
-    var managed = tabWindow.isManaged();
+    var managed = tabWindow.saved;
 
     var tabTitle = tab.title;
 
@@ -420,7 +423,7 @@ var TabItem = React.createClass({
 
       var hoverVisible = this.state.hovering ? styles.visible : styles.hidden;
 
-      if (tab.bookmarked ) {
+      if (tab.saved ) {
         tabCheckItem = <button style={m(styles.headerButton,styles.tabManagedButton)} title="Remove bookmark for this tab" />;
         // TODO: callback
       } else {
@@ -505,9 +508,9 @@ var TabWindow = React.createClass({
 
   renderTabItems: function(tabWindow,tabs) {
     var items = [];
-    for (var i = 0; i < tabs.length; i++ ) {
+    for (var i = 0; i < tabs.size; i++ ) {
       var id = "tabItem-" + i;
-      var tabItem = <TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs[i]} key={id} tabIndex={i} />;
+      var tabItem = <TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs.get(i)} key={id} tabIndex={i} />;
       items.push(tabItem);
     };
 
@@ -526,9 +529,9 @@ var TabWindow = React.createClass({
 
   render: function () {
     var tabWindow = this.props.tabWindow;
-    var tabs = tabWindow.getTabItems(this.props.searchStr,this.props.searchRE);
+    var tabs = tabWindow.tabItems;
 
-    if (tabs.length==0)
+    if (tabs.size==0)
       return null;
 
     /*
@@ -540,7 +543,7 @@ var TabWindow = React.createClass({
       tabItems = this.renderTabItems(tabWindow,tabs);
     } else {
       // render empty list of tab items to get -ve margin rollup layout right...
-      tabItems = this.renderTabItems(tabWindow,[]);
+      tabItems = this.renderTabItems(tabWindow,Immutable.Seq());
     }
 
     var windowHeader = 
@@ -571,8 +574,8 @@ var TabWindow = React.createClass({
  */
 function windowCmpFn( tabWindowA, tabWindowB ) {
   // focused window very first:
-  const fA = tabWindowA.isFocused();
-  const fB = tabWindowB.isFocused();
+  const fA = tabWindowA.focused;
+  const fB = tabWindowB.focused;
   if (fA != fB) {
     if (fA)
       return -1;
@@ -587,8 +590,8 @@ function windowCmpFn( tabWindowA, tabWindowB ) {
     else
       return 1;
   }
-  var tA = tabWindowA.getTitle();
-  var tB = tabWindowB.getTitle();
+  var tA = tabWindowA.title;
+  var tB = tabWindowB.title;
   return tA.localeCompare( tB );
 }
 
@@ -644,7 +647,7 @@ var TabWindowList = React.createClass({
       var id = "tabWindow" + i;
       if (tabWindow) {
           var isOpen = tabWindow.open;
-          var isFocused = tabWindow.isFocused();
+          var isFocused = tabWindow.focused;
           var isSelected = tabWindow === this.props.selectedWindow;
           var selectedTab = null;
           if (isSelected) {
@@ -817,9 +820,11 @@ var SaveModal = React.createClass({
 var TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
+
+
     var sortedWindows = tabWindows.sort(windowCmpFn);
 
-    // var w0Title = sortedWindows[0].getTitle();
+    // var w0Title = sortedWindows[0].title;
     // console.log("TabMan: window 0 title: '" + w0Title + "'");
 
     return {
@@ -838,6 +843,7 @@ var TabMan = React.createClass({
 
   getInitialState: function() {
     var st = this.getStateFromStore(this.props.winStore);
+
     st.modalIsOpen = false;
     st.searchStr = '';
     st.searchRE = null;
@@ -859,7 +865,7 @@ var TabMan = React.createClass({
   },
 
   openSaveModal(tabWindow) {
-    const initialTitle = tabWindow.getTitle();
+    const initialTitle = tabWindow.title;
     this.setState({saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow} );
   },
 

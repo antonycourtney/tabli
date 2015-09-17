@@ -40,9 +40,8 @@
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 0:
+/******/ ([
+/* 0 */
 /*!****************************!*\
   !*** ./src/js/bgHelper.js ***!
   \****************************/
@@ -63,17 +62,13 @@
 	
 	var _tabWindowStore2 = _interopRequireDefault(_tabWindowStore);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 4);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
-	var _actions = __webpack_require__(/*! ./actions */ 5);
+	var _actions = __webpack_require__(/*! ./actions */ 6);
 	
 	var actions = _interopRequireWildcard(_actions);
-	
-	var _immTabWindow = __webpack_require__(/*! ./immTabWindow */ 364);
-	
-	var ITabWindow = _interopRequireWildcard(_immTabWindow);
 	
 	var popupPort = null;
 	var tabmanFolderTitle = "Subjective Tab Manager";
@@ -82,7 +77,6 @@
 	/* On startup load managed windows from bookmarks folder */
 	function loadManagedWindows(winStore, tabManFolder) {
 	  var folderTabWindows = [];
-	  var i_folderTabWindows = [];
 	  for (var i = 0; i < tabManFolder.children.length; i++) {
 	    var windowFolder = tabManFolder.children[i];
 	    if (windowFolder.title[0] === "_") {
@@ -94,7 +88,6 @@
 	      continue;
 	    }
 	    folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder));
-	    i_folderTabWindows.push(ITabWindow.makeFolderTabWindow(windowFolder));
 	  }
 	  winStore.addTabWindows(folderTabWindows);
 	}
@@ -171,8 +164,7 @@
 	main();
 
 /***/ },
-
-/***/ 1:
+/* 1 */
 /*!**********************************!*\
   !*** ./src/js/tabWindowStore.js ***!
   \**********************************/
@@ -190,8 +182,6 @@
 	  value: true
 	});
 	
-	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-	
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 	
 	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
@@ -208,11 +198,15 @@
 	
 	var _ = _interopRequireWildcard(_underscore);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	var _immutable = __webpack_require__(/*! immutable */ 3);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 4);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
-	var _events = __webpack_require__(/*! events */ 4);
+	var _events = __webpack_require__(/*! events */ 5);
 	
 	var _events2 = _interopRequireDefault(_events);
 	
@@ -258,27 +252,30 @@
 	    _classCallCheck(this, TabWindowStore);
 	
 	    _get(Object.getPrototypeOf(TabWindowStore.prototype), 'constructor', this).call(this);
-	    this.windowIdMap = {}; // maps from chrome window id for open windows
-	    this.bookmarkIdMap = {};
+	    this.windowIdMap = Immutable.Map(); // maps from chrome window id for open windows
+	    this.bookmarkIdMap = Immutable.Map();
 	    this.viewListeners = [];
 	    this.notifyCallback = null;
 	    this.folderId = folderId;
 	    this.archiveFolderId = archiveFolderId;
 	  }
 	
-	  /*
-	   * add a new Tab window to global maps:
+	  /**
+	   * Update store to include the specified window, indexed by 
+	   * open window id or bookmark id
+	   *
+	   * Note that if an earlier snapshot of tabWindow is in the store, it will be
+	   * replaced
 	   */
 	
 	  _createClass(TabWindowStore, [{
 	    key: 'addTabWindow',
 	    value: function addTabWindow(tabWindow) {
-	      var chromeWindow = tabWindow.chromeWindow;
-	      if (chromeWindow) {
-	        this.windowIdMap[chromeWindow.id] = tabWindow;
+	      if (tabWindow.open) {
+	        this.windowIdMap = this.windowIdMap.set(tabWindow.openWindowId, tabWindow);
 	      }
-	      if (tabWindow.bookmarkFolder) {
-	        this.bookmarkIdMap[tabWindow.bookmarkFolder.id] = tabWindow;
+	      if (tabWindow.saved) {
+	        this.bookmarkIdMap = this.bookmarkIdMap.set(tabWindow.savedFolderId, tabWindow);
 	      }
 	    }
 	  }, {
@@ -298,28 +295,33 @@
 	    key: 'handleTabWindowClosed',
 	    value: function handleTabWindowClosed(tabWindow) {
 	      console.log("handleTabWindowClosed: ", tabWindow);
-	      var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	      if (windowId) delete this.windowIdMap[windowId];
+	      this.windowIdMap = this.windowIdMap['delete'](tabWindow.openWindowId);
+	      this.bookmarkIdMap = TabWindow.resetSavedWindow(tabWindow);
 	      this.emit("change");
 	    }
 	  }, {
 	    key: 'removeBookmarkIdMapEntry',
 	    value: function removeBookmarkIdMapEntry(tabWindow) {
 	      console.log("removeBookmarkIdMapEntry: ", tabWindow);
-	      var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
-	      if (bookmarkId) delete this.bookmarkIdMap[bookmarkId];
+	      this.bookmarkIdMap = this.bookmarkIdMap['delete'](tabWindow.savedFolderId);
 	      this.emit("change");
 	    }
 	  }, {
 	    key: 'unmanageWindow',
 	    value: function unmanageWindow(tabWindow) {
 	      this.removeBookmarkIdMapEntry(tabWindow);
-	      tabWindow._managed = false;
-	      tabWindow.bookmarkFolder = null; // disconnect from this bookmark folder
+	
+	      // disconnect from the previously associated bookmark folder and re-register
+	      var umWindow = tabWindow.set('saved', false).set('savedFolderId', -1);
+	      this.addTabWindow(umWindow);
 	    }
+	
+	    /* TODO!  Need to make sure we're clear on our sync / reconciliation strategy first */
 	  }, {
 	    key: 'revertTabWindow',
 	    value: function revertTabWindow(tabWindow, callback) {
+	      throw new Error("revertTabWindow: TODO -- not ported to immutable yet!");
+	
 	      var tabs = tabWindow.chromeWindow.tabs;
 	      var currentTabIds = tabs.map(function (t) {
 	        return t.id;
@@ -355,16 +357,19 @@
 	    value: function attachChromeWindow(tabWindow, chromeWindow) {
 	      console.log("attachChromeWindow: ", tabWindow, chromeWindow);
 	      // Was this Chrome window id previously associated with some other tab window?
-	      var oldTabWindow = this.windowIdMap[chromeWindow.id];
+	      var oldTabWindow = this.windowIdMap.get(chromeWindow.id);
 	      if (oldTabWindow) {
 	        // This better not be a managed window...
 	        console.log("found previous tab window -- detaching");
 	        console.log("oldTabWindow: ", oldTabWindow);
 	        this.removeTabWindow(oldTabWindow);
 	      }
-	      tabWindow.chromeWindow = chromeWindow;
-	      tabWindow.open = true;
-	      this.windowIdMap[chromeWindow.id] = tabWindow;
+	
+	      var attachedTabItems = TabWindow.mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
+	
+	      var attachedTabWindow = tabWindow.set('open', true).set('openWindowId', chromeWindow.id).set('tabItems', attachedTabItems);
+	
+	      this.addTabWindow(attachedTabWindow);
 	    }
 	
 	    /**
@@ -373,6 +378,8 @@
 	  }, {
 	    key: 'attachBookmarkFolder',
 	    value: function attachBookmarkFolder(tabWindow, bookmarkFolder, title) {
+	      throw new Error("TODO - need to port to immutable");
+	
 	      tabWindow.bookmarkFolder = bookmarkFolder;
 	
 	      //
@@ -386,84 +393,9 @@
 	      this.emit("change");
 	    }
 	  }, {
-	    key: 'handleChromeWindowRemoved',
-	    value: function handleChromeWindowRemoved(windowId) {
-	      console.log("handleChromeWindowRemoved: ", windowId);
-	      var tabWindow = this.windowIdMap[windowId];
-	      if (!tabWindow) {
-	        console.warn("window id not found -- ignoring");
-	      } else {
-	        if (!tabWindow.isManaged()) {
-	          // unmanaged window -- just remove
-	          this.removeTabWindow(tabWindow);
-	        } else {
-	          // managed window -- mark as closed and dissociate chrome window
-	          tabWindow.open = false;
-	          tabWindow.chromeWindow = null;
-	          this.removeWindowMapEntries(tabWindow);
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'handleChromeWindowFocusChanged',
-	    value: function handleChromeWindowFocusChanged(windowId) {
-	      /* TODO / FIXME: more efficient rep for focused window */
-	      var tabWindows = this.getAll();
-	
-	      for (var i = 0; i < tabWindows.length; i++) {
-	        var tabWindow = tabWindows[i];
-	        if (tabWindow) {
-	          tabWindow._focused = false;
-	        }
-	      }
-	      if (windowId != chrome.windows.WINDOW_ID_NONE) {
-	        var tabWindow = this.windowIdMap[windowId];
-	        if (!tabWindow) {
-	          console.warn("Got focus event for unknown window id ", windowId);
-	          return;
-	        }
-	        tabWindow._focused = true;
-	      }
-	    }
-	  }, {
-	    key: 'handleChromeTabActivated',
-	    value: function handleChromeTabActivated(tabId, windowId) {
-	      var tabWindow = this.windowIdMap[windowId];
-	      if (!tabWindow) {
-	        console.warn("window id not found -- ignoring");
-	      } else {
-	        var tabs = tabWindow.chromeWindow.tabs;
-	        if (tabs) {
-	          for (var i = 0; i < tabs.length; i++) {
-	            var tab = tabs[i];
-	            tab.active = tab.id == tabId;
-	          }
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'handleChromeTabCreated',
-	    value: function handleChromeTabCreated(tab) {
-	      var tabWindow = this.windowIdMap[tab.windowId];
-	      if (!tabWindow) {
-	        console.warn("Got tab created event for unknown window ", tab);
-	      } else {
-	        console.log("handleChromeTabCreated: ", tabWindow, tab);
-	        if (!tabWindow.chromeWindow) {
-	          console.warn("got tab created for bad chromeWindow");
-	        }
-	        if (!tabWindow.chromeWindow.tabs) {
-	          console.warn("first tab in chrome window; initializing...");
-	          tabWindow.chromeWindow.tabs = [tab];
-	        } else {
-	          // append this tab onto tabs at index:
-	          tabWindow.chromeWindow.tabs.splice(tab.index, 0, tab);
-	        }
-	      }
-	    }
-	  }, {
 	    key: 'handleTabClosed',
 	    value: function handleTabClosed(windowId, tabId) {
+	      throw new Error("TODO: port handleTabClosed to immutable");
 	      var tabWindow = this.windowIdMap[windowId];
 	      if (!tabWindow) {
 	        console.warn("Got tab removed event for unknown window ", windowId, tabId);
@@ -476,70 +408,6 @@
 	      }
 	      this.emit("change");
 	    }
-	  }, {
-	    key: 'handleChromeTabRemoved',
-	    value: function handleChromeTabRemoved(tabId, removeInfo) {
-	      if (removeInfo.isWindowClosing) {
-	        console.log("handleChromeTabRemoved: window closing, ignoring...");
-	        // Window is closing, ignore...
-	        return;
-	      }
-	      this.handleTabClosed(removeInfo.windowId, tabId);
-	    }
-	  }, {
-	    key: 'handleChromeTabUpdated',
-	    value: function handleChromeTabUpdated(tabId, changeInfo, tab) {
-	      console.log("handleChromeTabUpdated: ", tabId, changeInfo, tab);
-	      var tabWindow = this.windowIdMap[tab.windowId];
-	      if (!tabWindow) {
-	        console.warn("Got tab updated event for unknown window ", tab);
-	        return;
-	      }
-	      console.log("handleChromeTabUpdated: ", tabWindow, tab);
-	      if (!tabWindow.chromeWindow) {
-	        console.warn("got tab Updated for bad chromeWindow");
-	      }
-	      if (!tabWindow.chromeWindow.tabs) {
-	        console.warn("No tabs in chrome Window; dropping update...");
-	        tabWindow.chromeWindow.tabs = [tab];
-	      } else {
-	        /* we should be able to trust tab.index, but this seems safer... */
-	        var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
-	        if (tabIndex == null) {
-	          console.warn("Got tab update for unknown tab: ", tabId, tab);
-	          return;
-	        }
-	        tabWindow.chromeWindow.tabs[tabIndex] = tab;
-	      }
-	    }
-	  }, {
-	    key: 'handleChromeTabReplaced',
-	    value: function handleChromeTabReplaced(addedTabId, removedTabId) {
-	      console.log("handleChromeTabReplaced: ", addedTabId, removedTabId);
-	      var tabWindows = this.getAll();
-	
-	      var _findTabId = findTabId(tabWindows, removedTabId);
-	
-	      var _findTabId2 = _slicedToArray(_findTabId, 2);
-	
-	      var removedTabWindow = _findTabId2[0];
-	      var removedIndex = _findTabId2[1];
-	
-	      if (removedTabWindow) {
-	        var tab = removedTabWindow.chromeWindow.tabs[removedIndex];
-	        console.log("found removed tab: ", tab);
-	        tab.id = addedTabId;
-	        // Unfortunately we may not get any events giving us essential info on the
-	        // added tab.
-	        // Call chrome.tabs.get and then call handleTabUpdate directly
-	        chrome.tabs.get(addedTabId, function (tab) {
-	          console.log("Got replaced tab detail: ", tab);
-	          window.fluxState.flux.actions.chromeTabUpdated(tab.id, {}, tab);
-	        });
-	      } else {
-	        console.log("removed tab id not found!");
-	      }
-	    }
 	
 	    /**
 	     * Synchronize internal state of our store with snapshot
@@ -551,16 +419,20 @@
 	  }, {
 	    key: 'syncChromeWindow',
 	    value: function syncChromeWindow(chromeWindow, noEmit) {
-	      var tabWindow = this.windowIdMap[chromeWindow.id];
+	      var tabWindow = this.windowIdMap.get(chromeWindow.id);
 	      if (!tabWindow) {
 	        console.log("syncChromeWindow: detected new window id: ", chromeWindow.id);
 	        tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
 	        this.addTabWindow(tabWindow);
 	      } else {
 	        // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
+	
+	        var updWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
 	        // Set chromeWindow to current snapshot of tab contents:
-	        tabWindow.chromeWindow = chromeWindow;
-	        tabWindow.open = true;
+	
+	        // console.log("updated window: ", updWindow.toJS());
+	
+	        this.addTabWindow(updWindow);
 	      }
 	      if (!noEmit) {
 	        this.emit("change");
@@ -588,10 +460,8 @@
 	      var chromeIds = _.pluck(chromeWindowList, 'id');
 	      var chromeIdSet = new Set(chromeIds);
 	      tabWindows.forEach(function (tw) {
-	        if (!chromeIdSet.has(tw.chromeWindow.id)) {
+	        if (!chromeIdSet.has(tw.openWindowId)) {
 	          console.log("syncWindowList: detected closed window: ", tw);
-	          // mark it closed (only matters for bookmarked windows):
-	          tw.open = false;
 	          // And remove it from open window map:
 	          _this2.handleTabWindowClosed(tw);
 	        }
@@ -611,25 +481,24 @@
 	  }, {
 	    key: 'getOpen',
 	    value: function getOpen() {
-	      var openWindows = _.values(this.windowIdMap);
+	      var openWindows = this.windowIdMap.toIndexedSeq().toArray();
 	      return openWindows;
 	    }
 	  }, {
 	    key: 'getAll',
 	    value: function getAll() {
-	      var openWindows = _.values(this.windowIdMap);
-	      var managedWindows = _.values(this.bookmarkIdMap);
-	      var closedManagedWindows = _.filter(managedWindows, function (w) {
+	      var openWindows = this.getOpen();
+	      var closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter(function (w) {
 	        return !w.open;
-	      });
-	      return closedManagedWindows.concat(openWindows);
+	      }).toArray();
+	      return openWindows.concat(closedSavedWindows);
 	    }
 	
 	    // returns a tabWindow or undefined
 	  }, {
 	    key: 'getTabWindowByChromeId',
-	    value: function getTabWindowByChromeId(chromeId) {
-	      return this.windowIdMap[chromeId];
+	    value: function getTabWindowByChromeId(windowId) {
+	      return this.windowIdMap.get(windowId);
 	    }
 	
 	    /*
@@ -653,6 +522,7 @@
 	  }, {
 	    key: 'removeViewListener',
 	    value: function removeViewListener(id) {
+	      console.log("removeViewListener: removing listener id ", id);
 	      var listener = this.viewListeners[id];
 	      if (listener) {
 	        this.removeListener("change", listener);
@@ -670,8 +540,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-
-/***/ 2:
+/* 2 */
 /*!************************************!*\
   !*** ./~/underscore/underscore.js ***!
   \************************************/
@@ -2095,969 +1964,7 @@
 
 
 /***/ },
-
-/***/ 3:
-/*!*****************************!*\
-  !*** ./src/js/tabWindow.js ***!
-  \*****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Representations of windows and bookmark folders
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports.makeChromeTabWindow = makeChromeTabWindow;
-	exports.makeFolderTabWindow = makeFolderTabWindow;
-	exports.deserialize = deserialize;
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-	
-	var _underscore = __webpack_require__(/*! underscore */ 2);
-	
-	var _ = _interopRequireWildcard(_underscore);
-	
-	function makeBookmarkedTabItem(bm) {
-	  var ret = Object.create(bm);
-	  ret.bookmarked = true;
-	  ret.open = false;
-	  ret.bookmark = bm;
-	  return ret;
-	};
-	
-	function makeOpenTabItem(ot) {
-	  var ret = Object.create(ot);
-	  ret.bookmarked = false;
-	  ret.open = true;
-	  return ret;
-	};
-	
-	/*
-	 * Gather open tabs and a set of non-opened bookmarks from the given bookmarks 
-	 * list for a managed window that is open
-	 */
-	function getManagedOpenTabInfo(openTabs, bookmarks) {
-	  var urlMap = {};
-	  var tabs = openTabs.map(function (ot) {
-	    var item = makeOpenTabItem(ot);
-	    urlMap[ot.url] = item;
-	    return item;
-	  });
-	  var closedBookmarks = [];
-	  for (var i = 0; i < bookmarks.length; i++) {
-	    var bm = bookmarks[i];
-	    var obm = urlMap[bm.url];
-	    if (obm) {
-	      obm.bookmarked = true;
-	      obm.bookmark = bm;
-	    } else {
-	      closedBookmarks.push(makeBookmarkedTabItem(bm));
-	    }
-	  }
-	  return { openTabs: tabs, closedBookmarks: closedBookmarks };
-	}
-	
-	/*
-	 * For a managed, open window, return a list of tab items
-	 * representing both open tabs and closed bookmarks, making
-	 * best effort to preserve a sensible order
-	 */
-	function getManagedOpenTabs(chromeWindow, bookmarkFolder) {
-	  var tabInfo = getManagedOpenTabInfo(chromeWindow.tabs, bookmarkFolder.children);
-	  /*
-	   * So it's actually not possible to come up with a perfect ordering here, since we
-	   * want to preserve both bookmark order (whether open or closed) and order of
-	   * currently open tabs.
-	   * As a compromise, we'll present bookmarked, opened tabs for as long as they
-	   * match the bookmark ordering, then we'll inject the closed bookmarks, then
-	   * everything else.
-	   */
-	  var outTabs = [];
-	  var openTabs = tabInfo.openTabs.slice();
-	  var bookmarks = bookmarkFolder.children.slice();
-	
-	  while (openTabs.length > 0 && bookmarks.length > 0) {
-	    var tab = openTabs.shift();
-	    var bm = bookmarks.shift();
-	    if (tab.bookmarked && bm.url === tab.url) {
-	      outTabs.push(tab);
-	      tab = null;
-	      bm = null;
-	    } else {
-	      break;
-	    }
-	  }
-	  // we hit a non-matching tab, now inject closed bookmarks:
-	  outTabs = outTabs.concat(tabInfo.closedBookmarks);
-	  if (tab) {
-	    outTabs.push(tab);
-	  }
-	  // and inject the remaining tabs:
-	  outTabs = outTabs.concat(openTabs);
-	
-	  return outTabs;
-	}
-	
-	var tabWindowPrototype = {
-	  _managed: false,
-	  _managedTitle: "",
-	  chromeWindow: null,
-	  bookmarkFolder: null,
-	  open: false,
-	
-	  reloadBookmarkFolder: function reloadBookmarkFolder() {
-	    var tabWindow = this;
-	    chrome.bookmarks.getSubTree(this.bookmarkFolder.id, function (folderNodes) {
-	      var fullFolderNode = folderNodes[0];
-	      tabWindow.bookmarkFolder = fullFolderNode;
-	    });
-	  },
-	
-	  getTitle: function getTitle() {
-	    if (this._managed) {
-	      return this.bookmarkFolder.title;
-	    } else {
-	      var tabs = this.chromeWindow.tabs;
-	      if (!tabs) return ""; // window initializing
-	
-	      // linear search to find active tab to use as window title
-	      for (var j = 0; j < tabs.length; j++) {
-	        var tab = tabs[j];
-	        if (tab.active) {
-	          return tab.title;
-	        }
-	      }
-	    }
-	    return ""; // shouldn't happen
-	  },
-	
-	  isManaged: function isManaged() {
-	    return this._managed;
-	  },
-	
-	  isFocused: function isFocused() {
-	    return this.open && this.chromeWindow && this.chromeWindow.focused;
-	  },
-	
-	  // Get a set of tab-like items for rendering
-	  getTabItems: function getTabItems(searchStr, searchRE) {
-	    var tabs;
-	
-	    if (this.isManaged()) {
-	      if (this.open) {
-	        tabs = getManagedOpenTabs(this.chromeWindow, this.bookmarkFolder);
-	      } else {
-	        tabs = this.bookmarkFolder.children.map(makeBookmarkedTabItem);
-	      }
-	    } else {
-	      tabs = this.chromeWindow.tabs;
-	      if (!tabs) return [];
-	      tabs = tabs.map(makeOpenTabItem);
-	    }
-	
-	    // console.log("getTabItems: " + JSON.stringify(this.getEncodedId()) + ": searchStr: '" + searchStr + "', ",searchRE);
-	
-	    var filteredTabs;
-	    // Let's limit to title to start with
-	    // var filteredTabs =
-	    if (!searchRE) {
-	      filteredTabs = tabs;
-	    } else {
-	      filteredTabs = _.filter(tabs, function (tab) {
-	        var titleMatches = tab.title.match(searchRE);
-	        return titleMatches !== null;
-	      });
-	    }
-	
-	    return filteredTabs;
-	  },
-	
-	  /*
-	   * return bookmark Id or chrome Id dependending on tabWindow type
-	   */
-	  getEncodedId: function getEncodedId() {
-	    var idType;
-	    var id;
-	
-	    if (this.bookmarkFolder) {
-	      idType = "bookmark";
-	      id = this.bookmarkFolder.id;
-	    } else {
-	      idType = "window";
-	      id = this.chromeWindow.id;
-	    }
-	    return { idType: idType, id: id };
-	  }
-	};
-	
-	/*  
-	 * initialize a tab window from a (unmanaged) chrome Window
-	 */
-	
-	function makeChromeTabWindow(chromeWindow) {
-	  var ret = Object.create(tabWindowPrototype);
-	  ret.chromeWindow = chromeWindow;
-	  ret.open = true;
-	  return ret;
-	}
-	
-	/*
-	 * initialize an unopened window from a bookmarks folder
-	 */
-	
-	function makeFolderTabWindow(bookmarkFolder) {
-	  var ret = Object.create(tabWindowPrototype);
-	  ret._managed = true;
-	  ret.bookmarkFolder = bookmarkFolder;
-	
-	  return ret;
-	}
-	
-	/*
-	 * deserialize a TabWindow from its payload:
-	 */
-	
-	function deserialize(payload) {
-	  if (payload._managed) {
-	    return makeFolderTabWindow(payload.bookmarkFolder);
-	  } else {
-	    return makeChromeTabWindow(payload.chromeWindow);
-	  }
-	}
-
-/***/ },
-
-/***/ 4:
-/*!****************************!*\
-  !*** ./~/events/events.js ***!
-  \****************************/
-/***/ function(module, exports) {
-
-	// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-	
-	function EventEmitter() {
-	  this._events = this._events || {};
-	  this._maxListeners = this._maxListeners || undefined;
-	}
-	module.exports = EventEmitter;
-	
-	// Backwards-compat with node 0.10.x
-	EventEmitter.EventEmitter = EventEmitter;
-	
-	EventEmitter.prototype._events = undefined;
-	EventEmitter.prototype._maxListeners = undefined;
-	
-	// By default EventEmitters will print a warning if more than 10 listeners are
-	// added to it. This is a useful default which helps finding memory leaks.
-	EventEmitter.defaultMaxListeners = 10;
-	
-	// Obviously not all Emitters should be limited to 10. This function allows
-	// that to be increased. Set to zero for unlimited.
-	EventEmitter.prototype.setMaxListeners = function(n) {
-	  if (!isNumber(n) || n < 0 || isNaN(n))
-	    throw TypeError('n must be a positive number');
-	  this._maxListeners = n;
-	  return this;
-	};
-	
-	EventEmitter.prototype.emit = function(type) {
-	  var er, handler, len, args, i, listeners;
-	
-	  if (!this._events)
-	    this._events = {};
-	
-	  // If there is no 'error' event listener then throw.
-	  if (type === 'error') {
-	    if (!this._events.error ||
-	        (isObject(this._events.error) && !this._events.error.length)) {
-	      er = arguments[1];
-	      if (er instanceof Error) {
-	        throw er; // Unhandled 'error' event
-	      }
-	      throw TypeError('Uncaught, unspecified "error" event.');
-	    }
-	  }
-	
-	  handler = this._events[type];
-	
-	  if (isUndefined(handler))
-	    return false;
-	
-	  if (isFunction(handler)) {
-	    switch (arguments.length) {
-	      // fast cases
-	      case 1:
-	        handler.call(this);
-	        break;
-	      case 2:
-	        handler.call(this, arguments[1]);
-	        break;
-	      case 3:
-	        handler.call(this, arguments[1], arguments[2]);
-	        break;
-	      // slower
-	      default:
-	        len = arguments.length;
-	        args = new Array(len - 1);
-	        for (i = 1; i < len; i++)
-	          args[i - 1] = arguments[i];
-	        handler.apply(this, args);
-	    }
-	  } else if (isObject(handler)) {
-	    len = arguments.length;
-	    args = new Array(len - 1);
-	    for (i = 1; i < len; i++)
-	      args[i - 1] = arguments[i];
-	
-	    listeners = handler.slice();
-	    len = listeners.length;
-	    for (i = 0; i < len; i++)
-	      listeners[i].apply(this, args);
-	  }
-	
-	  return true;
-	};
-	
-	EventEmitter.prototype.addListener = function(type, listener) {
-	  var m;
-	
-	  if (!isFunction(listener))
-	    throw TypeError('listener must be a function');
-	
-	  if (!this._events)
-	    this._events = {};
-	
-	  // To avoid recursion in the case that type === "newListener"! Before
-	  // adding it to the listeners, first emit "newListener".
-	  if (this._events.newListener)
-	    this.emit('newListener', type,
-	              isFunction(listener.listener) ?
-	              listener.listener : listener);
-	
-	  if (!this._events[type])
-	    // Optimize the case of one listener. Don't need the extra array object.
-	    this._events[type] = listener;
-	  else if (isObject(this._events[type]))
-	    // If we've already got an array, just append.
-	    this._events[type].push(listener);
-	  else
-	    // Adding the second element, need to change to array.
-	    this._events[type] = [this._events[type], listener];
-	
-	  // Check for listener leak
-	  if (isObject(this._events[type]) && !this._events[type].warned) {
-	    var m;
-	    if (!isUndefined(this._maxListeners)) {
-	      m = this._maxListeners;
-	    } else {
-	      m = EventEmitter.defaultMaxListeners;
-	    }
-	
-	    if (m && m > 0 && this._events[type].length > m) {
-	      this._events[type].warned = true;
-	      console.error('(node) warning: possible EventEmitter memory ' +
-	                    'leak detected. %d listeners added. ' +
-	                    'Use emitter.setMaxListeners() to increase limit.',
-	                    this._events[type].length);
-	      if (typeof console.trace === 'function') {
-	        // not supported in IE 10
-	        console.trace();
-	      }
-	    }
-	  }
-	
-	  return this;
-	};
-	
-	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-	
-	EventEmitter.prototype.once = function(type, listener) {
-	  if (!isFunction(listener))
-	    throw TypeError('listener must be a function');
-	
-	  var fired = false;
-	
-	  function g() {
-	    this.removeListener(type, g);
-	
-	    if (!fired) {
-	      fired = true;
-	      listener.apply(this, arguments);
-	    }
-	  }
-	
-	  g.listener = listener;
-	  this.on(type, g);
-	
-	  return this;
-	};
-	
-	// emits a 'removeListener' event iff the listener was removed
-	EventEmitter.prototype.removeListener = function(type, listener) {
-	  var list, position, length, i;
-	
-	  if (!isFunction(listener))
-	    throw TypeError('listener must be a function');
-	
-	  if (!this._events || !this._events[type])
-	    return this;
-	
-	  list = this._events[type];
-	  length = list.length;
-	  position = -1;
-	
-	  if (list === listener ||
-	      (isFunction(list.listener) && list.listener === listener)) {
-	    delete this._events[type];
-	    if (this._events.removeListener)
-	      this.emit('removeListener', type, listener);
-	
-	  } else if (isObject(list)) {
-	    for (i = length; i-- > 0;) {
-	      if (list[i] === listener ||
-	          (list[i].listener && list[i].listener === listener)) {
-	        position = i;
-	        break;
-	      }
-	    }
-	
-	    if (position < 0)
-	      return this;
-	
-	    if (list.length === 1) {
-	      list.length = 0;
-	      delete this._events[type];
-	    } else {
-	      list.splice(position, 1);
-	    }
-	
-	    if (this._events.removeListener)
-	      this.emit('removeListener', type, listener);
-	  }
-	
-	  return this;
-	};
-	
-	EventEmitter.prototype.removeAllListeners = function(type) {
-	  var key, listeners;
-	
-	  if (!this._events)
-	    return this;
-	
-	  // not listening for removeListener, no need to emit
-	  if (!this._events.removeListener) {
-	    if (arguments.length === 0)
-	      this._events = {};
-	    else if (this._events[type])
-	      delete this._events[type];
-	    return this;
-	  }
-	
-	  // emit removeListener for all listeners on all events
-	  if (arguments.length === 0) {
-	    for (key in this._events) {
-	      if (key === 'removeListener') continue;
-	      this.removeAllListeners(key);
-	    }
-	    this.removeAllListeners('removeListener');
-	    this._events = {};
-	    return this;
-	  }
-	
-	  listeners = this._events[type];
-	
-	  if (isFunction(listeners)) {
-	    this.removeListener(type, listeners);
-	  } else {
-	    // LIFO order
-	    while (listeners.length)
-	      this.removeListener(type, listeners[listeners.length - 1]);
-	  }
-	  delete this._events[type];
-	
-	  return this;
-	};
-	
-	EventEmitter.prototype.listeners = function(type) {
-	  var ret;
-	  if (!this._events || !this._events[type])
-	    ret = [];
-	  else if (isFunction(this._events[type]))
-	    ret = [this._events[type]];
-	  else
-	    ret = this._events[type].slice();
-	  return ret;
-	};
-	
-	EventEmitter.listenerCount = function(emitter, type) {
-	  var ret;
-	  if (!emitter._events || !emitter._events[type])
-	    ret = 0;
-	  else if (isFunction(emitter._events[type]))
-	    ret = 1;
-	  else
-	    ret = emitter._events[type].length;
-	  return ret;
-	};
-	
-	function isFunction(arg) {
-	  return typeof arg === 'function';
-	}
-	
-	function isNumber(arg) {
-	  return typeof arg === 'number';
-	}
-	
-	function isObject(arg) {
-	  return typeof arg === 'object' && arg !== null;
-	}
-	
-	function isUndefined(arg) {
-	  return arg === void 0;
-	}
-
-
-/***/ },
-
-/***/ 5:
-/*!***************************!*\
-  !*** ./src/js/actions.js ***!
-  \***************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports.syncChromeWindows = syncChromeWindows;
-	exports.openWindow = openWindow;
-	exports.activateTab = activateTab;
-	exports.closeTab = closeTab;
-	exports.closeWindow = closeWindow;
-	exports.manageWindow = manageWindow;
-	exports.unmanageWindow = unmanageWindow;
-	exports.revertWindow = revertWindow;
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-	
-	var _immTabWindow = __webpack_require__(/*! ./immTabWindow */ 364);
-	
-	var ITabWindow = _interopRequireWildcard(_immTabWindow);
-	
-	/**
-	 * get all open Chrome windows and synchronize state with our tab window store
-	 *
-	 * cb -- if non-null, no-argument callback to call when complete
-	 *
-	 */
-	
-	function syncChromeWindows(winStore, cb) {
-	  var t_preGet = performance.now();
-	  chrome.windows.getAll({ populate: true }, function (windowList) {
-	    var t_postGet = performance.now();
-	    console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
-	    winStore.syncWindowList(windowList);
-	    var immWindows = windowList.map(ITabWindow.makeChromeTabWindow);
-	    console.log("syncChromeWindows: immWindows:", immWindows);
-	    if (cb) cb();
-	  });
-	}
-	
-	/**
-	 * restore a bookmark window.
-	 *
-	 * N.B.: NOT exported; called from openWindow
-	 */
-	function restoreBookmarkWindow(winStore, tabWindow) {
-	  console.log("restoreBookmarkWindow: ", tabWindow);
-	  var self = this;
-	  /*
-	   * special case handling of replacing the contents of a fresh window 
-	   */
-	  chrome.windows.getLastFocused({ populate: true }, function (currentChromeWindow) {
-	    var urls = [];
-	    var tabs = tabWindow.getTabItems();
-	    var urls = tabs.map(function (item) {
-	      return item.url;
-	    });
-	    function cf(chromeWindow) {
-	      console.log("restoreBookmarkWindow: cf");
-	      winStore.attachChromeWindow(tabWindow, chromeWindow);
-	    }
-	    console.log("current chrome window: ", currentChromeWindow);
-	    if (currentChromeWindow.tabs.length === 1 && currentChromeWindow.tabs[0].url === "chrome://newtab/") {
-	      console.log("found new window -- replacing contents");
-	      var origTabId = currentChromeWindow.tabs[0].id;
-	      // new window -- replace contents with urls:
-	      for (var i = 0; i < urls.length; i++) {
-	        // First use our existing tab:
-	        if (i == 0) {
-	          chrome.tabs.update(origTabId, { url: urls[i] });
-	        } else {
-	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[i] };
-	          chrome.tabs.create(tabInfo);
-	        }
-	      }
-	    } else {
-	      // normal case -- create a new window for these urls:
-	      chrome.windows.create({ url: urls, focused: true, type: 'normal' }, cf);
-	    }
-	  });
-	}
-	
-	function openWindow(winStore, tabWindow) {
-	  var self = this;
-	
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  if (tabWindow.open) {
-	    // existing, open window -- just transfer focus
-	    chrome.windows.update(windowId, { focused: true });
-	    // TODO: update focus in winStore
-	  } else {
-	      // bookmarked window -- need to open it!
-	      restoreBookmarkWindow(winStore, tabWindow);
-	    }
-	}
-	
-	// activate a specific tab:
-	function activateTab(winStore, tabWindow, tab, tabIndex) {
-	  var self = this;
-	  console.log("activateTab: ", tabWindow, tab);
-	  if (tabWindow.open) {
-	    // OK, so we know this window is open.  What about the specific tab?
-	    if (tab.open) {
-	      // Tab is already open, just make it active:
-	      console.log("making tab active");
-	      chrome.tabs.update(tab.id, { active: true }, function () {
-	        console.log("making tab's window active");
-	        chrome.windows.update(tabWindow.chromeWindow.id, { focused: true });
-	      });
-	    } else {
-	      // restore this bookmarked tab:
-	      var createOpts = {
-	        windowId: tabWindow.chromeWindow.id,
-	        url: tab.url,
-	        index: tabIndex,
-	        active: true
-	      };
-	      console.log("restoring bookmarked tab");
-	      chrome.tabs.create(createOpts, callback);
-	    }
-	  } else {
-	    console.log("activateTab: opening non-open window");
-	    openWindow(tabWindow);
-	    // TODO: activate chosen tab after opening window!
-	  }
-	}
-	
-	function closeTab(winStore, windowId, tabId) {
-	  console.log("closeTab: closing tab ", windowId, tabId);;
-	  var self = this;
-	  chrome.tabs.remove(tabId, function () {
-	    winStore.handleTabClosed(windowId, tabId);
-	  });
-	}
-	
-	function closeWindow(winStore, tabWindow) {
-	  console.log("closeWindow: ", tabWindow);
-	  if (!tabWindow.open) {
-	    console.log("closeWindow: request to close non-open window, ignoring...");
-	    return;
-	  }
-	  var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
-	  if (!windowId) {
-	    console.log("closeWindow: no valid chrome window, ignoring....");
-	    return;
-	  }
-	  var self = this;
-	  chrome.windows.remove(windowId, function () {
-	    tabWindow.open = false;
-	    winStore.handleTabWindowClosed(tabWindow);
-	  });
-	}
-	
-	/*
-	 * save the specified tab window and make it a managed window
-	 */
-	
-	function manageWindow(winStore, tabWindow, title, cb) {
-	  var tabmanFolderId = winStore.folderId;
-	
-	  // and write out a Bookmarks folder for this newly managed window:
-	  if (!tabmanFolderId) {
-	    alert("Could not save bookmarks -- no tab manager folder");
-	  }
-	  var windowFolder = { parentId: tabmanFolderId,
-	    title: title
-	  };
-	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
-	    console.log("succesfully created bookmarks folder ", windowFolderNode);
-	    console.log("for window: ", tabWindow);
-	    var tabs = tabWindow.chromeWindow.tabs;
-	    for (var i = 0; i < tabs.length; i++) {
-	      var tab = tabs[i];
-	      // bookmark for this tab:
-	      var tabMark = { parentId: windowFolderNode.id, title: tab.title, url: tab.url };
-	      chrome.bookmarks.create(tabMark, function (tabNode) {
-	        console.log("succesfully bookmarked tab ", tabNode);
-	      });
-	    }
-	    // Now do an explicit get of subtree to get node populated with children
-	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
-	      var fullFolderNode = folderNodes[0];
-	
-	      // Note: Only now do we actually change the state to managed!
-	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
-	      // or have no children because of the asynchrony of creating bookmarks.
-	      // There might still be a race condition here since
-	      // the bookmarks for children may not have been created yet.
-	      // Haven't seen evidence of this so far.     
-	      winStore.attachBookmarkFolder(tabWindow, fullFolderNode, title);
-	      cb(tabWindow);
-	    });
-	  });
-	}
-	
-	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-	
-	function unmanageWindow(winStore, tabWindow) {
-	  console.log("unmanageWindow");
-	  if (!winStore.archiveFolderId) {
-	    alert("could not move managed window folder to archive -- no archive folder");
-	    return;
-	  }
-	  // TODO: what happens if a folder with same name already exists in archive folder?
-	  chrome.bookmarks.move(tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, function (resultNode) {
-	    console.log("unmanageWindow: bookmark folder moved to archive folder");
-	    winStore.unmanageWindow(tabWindow);
-	  });
-	}
-	
-	function revertWindow(winStore, tabWindow) {
-	  var tabs = tabWindow.chromeWindow.tabs;
-	  var currentTabIds = tabs.map(function (t) {
-	    return t.id;
-	  });
-	
-	  // re-open bookmarks:
-	  var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
-	    return bm.url;
-	  });
-	  for (var i = 0; i < urls.length; i++) {
-	    // need to open it:
-	    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
-	    chrome.tabs.create(tabInfo);
-	  };
-	
-	  // blow away all the existing tabs:
-	  chrome.tabs.remove(currentTabIds, function () {
-	    var windowId = tabWindow.chromeWindow.id;
-	    // refresh window details:
-	    chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
-	      winStore.syncChromeWindow(chromeWindow);
-	    });
-	  });
-	}
-
-/***/ },
-
-/***/ 364:
-/*!********************************!*\
-  !*** ./src/js/immTabWindow.js ***!
-  \********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Representation of tabbed windows using Immutable.js
-	 */
-	
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	exports.makeFolderTabWindow = makeFolderTabWindow;
-	exports.makeChromeTabWindow = makeChromeTabWindow;
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var _underscore = __webpack_require__(/*! underscore */ 2);
-	
-	var _ = _interopRequireWildcard(_underscore);
-	
-	var _immutable = __webpack_require__(/*! immutable */ 365);
-	
-	var Immutable = _interopRequireWildcard(_immutable);
-	
-	/**
-	 * An item in a tabbed window
-	 *
-	 * A tab item may be associated with an open tab, a bookmark, or both
-	 */
-	var TabItem = Immutable.Record({
-	  title: '',
-	  url: '',
-	  favIconUrl: '',
-	
-	  saved: false,
-	  savedBookmarkId: '',
-	
-	  open: false, // Note: This may differ from open state of containing window!
-	  openTabId: -1,
-	  active: false
-	});
-	
-	/**
-	 * A TabWindow
-	 *
-	 * Tab windows have a title and a set of tab items.
-	 *
-	 * A TabWindow has 3 possible states:
-	 *   (open,!saved)   - An open Chrome window that has not had its tabs saved
-	 *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
-	 *   (!open,saved)   - A previously saved window that is not currently open
-	 */
-	
-	var TabWindow = (function (_Immutable$Record) {
-	  _inherits(TabWindow, _Immutable$Record);
-	
-	  function TabWindow() {
-	    _classCallCheck(this, TabWindow);
-	
-	    _get(Object.getPrototypeOf(TabWindow.prototype), 'constructor', this).apply(this, arguments);
-	  }
-	
-	  /**
-	   * Initialize a TabItem from a bookmark
-	   * 
-	   * Returned TabItem is closed (not associated with an open tab)
-	   */
-	
-	  _createClass(TabWindow, [{
-	    key: 'title',
-	    get: function get() {
-	      if (this.saved) return this.savedTitle;
-	
-	      var activeTab = this.tabItems.find(function (t) {
-	        return t.active;
-	      });
-	
-	      if (!activeTab) {
-	        // shouldn't happen!
-	        console.warn("TabWindow.getTitle(): No active tab found: ", this);
-	        return '';
-	      }
-	
-	      return activeTab.title;
-	    }
-	  }]);
-	
-	  return TabWindow;
-	})(Immutable.Record({
-	  saved: false,
-	  savedTitle: '',
-	  savedFolderId: -1,
-	
-	  open: false,
-	  openWindowId: -1,
-	
-	  tabItems: Immutable.Seq() // <TabItem>
-	}));
-	
-	function makeBookmarkedTabItem(bm) {
-	  var tabItem = new TabItem({
-	    title: bm.title,
-	    url: bm.url,
-	    favIconUrl: bm.favIconUrl,
-	
-	    saved: true,
-	    savedBookmarkId: bm.id
-	  });
-	  return tabItem;
-	}
-	
-	/**
-	 * Initialize a TabItem from an open Chrome tab
-	 */
-	function makeOpenTabItem(tab) {
-	  var tabItem = new TabItem({
-	    title: tab.title,
-	    url: tab.url,
-	    favIconUrl: tab.favIconUrl,
-	    open: true,
-	    openTabId: tab.id,
-	    active: tab.active
-	  });
-	  return tabItem;
-	}
-	
-	/**
-	 * Initialize an unopened TabWindow from a bookmarks folder
-	 */
-	
-	function makeFolderTabWindow(bookmarkFolder) {
-	  var tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
-	  var tabWindow = new TabWindow({
-	    saved: true,
-	    savedTitle: bookmarkFolder.title,
-	    savedFolderId: bookmarkFolder.id,
-	    tabItems: Immutable.Seq(tabItems)
-	  });
-	
-	  return tabWindow;
-	}
-	
-	/**
-	 * Initialize a TabWindow from an open Chrome window
-	 */
-	
-	function makeChromeTabWindow(chromeWindow) {
-	  var tabItems = chromeWindow.tabs.map(makeOpenTabItem);
-	  var tabWindow = new TabWindow({
-	    open: true,
-	    openWindowId: chromeWindow.id,
-	    tabItems: Immutable.Seq(tabItems)
-	  });
-	
-	  var tabsArr = tabWindow.tabItems.toArray();
-	  return tabWindow;
-	}
-
-/***/ },
-
-/***/ 365:
+/* 3 */
 /*!***************************************!*\
   !*** ./~/immutable/dist/immutable.js ***!
   \***************************************/
@@ -8024,7 +6931,831 @@
 	
 	}));
 
-/***/ }
+/***/ },
+/* 4 */
+/*!*****************************!*\
+  !*** ./src/js/tabWindow.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
 
-/******/ });
+	/**
+	 * Representation of tabbed windows using Immutable.js
+	 */
+	
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	
+	exports.mergeOpenTabs = mergeOpenTabs;
+	exports.resetSavedWindow = resetSavedWindow;
+	exports.makeFolderTabWindow = makeFolderTabWindow;
+	exports.makeChromeTabWindow = makeChromeTabWindow;
+	exports.updateWindow = updateWindow;
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var _underscore = __webpack_require__(/*! underscore */ 2);
+	
+	var _ = _interopRequireWildcard(_underscore);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 3);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	/**
+	 * An item in a tabbed window.
+	 *
+	 * May be associated with an open tab, a bookmark, or both
+	 */
+	var TabItem = Immutable.Record({
+	  title: '',
+	  url: '',
+	  favIconUrl: '',
+	
+	  saved: false,
+	  savedBookmarkId: '',
+	  savedTabIndex: 0, // index from bookmark
+	
+	  open: false, // Note: Saved tabs may be closed even when containing window is open
+	  openTabId: -1,
+	  active: false,
+	  openTabIndex: 0 // index of open tab in its window
+	});
+	
+	/**
+	 * Initialize a TabItem from a bookmark
+	 * 
+	 * Returned TabItem is closed (not associated with an open tab)
+	 */
+	function makeBookmarkedTabItem(bm) {
+	  var tabItem = new TabItem({
+	    title: bm.title,
+	    url: bm.url,
+	    favIconUrl: bm.favIconUrl,
+	
+	    saved: true,
+	    savedBookmarkId: bm.id,
+	    savedTabIndex: bm.index
+	  });
+	  return tabItem;
+	}
+	
+	/**
+	 * Initialize a TabItem from an open Chrome tab
+	 */
+	function makeOpenTabItem(tab) {
+	  var tabItem = new TabItem({
+	    title: tab.title,
+	    url: tab.url,
+	    favIconUrl: tab.favIconUrl,
+	    open: true,
+	    openTabId: tab.id,
+	    active: tab.active,
+	    openTabIndex: tab.index
+	  });
+	  return tabItem;
+	}
+	
+	/**
+	 * Returns the base saved state of a tab item (no open tab info)
+	 */
+	function resetSavedItem(ti) {
+	  return ti.remove('open').remove('openTabId').remove('active').remove('openTabIndex');
+	}
+	
+	/**
+	 * Gather open tab items and a set of non-open saved tabItems from the given
+	 * open tabs and tab items based on URL matching, without regard to 
+	 * tab ordering.  Auxiliary helper function for mergeOpenTabs.
+	 */
+	function getOpenTabInfo(tabItems, openTabs) {
+	  var chromeOpenTabItems = openTabs.map(makeOpenTabItem);
+	  // console.log("getOpenTabInfo: openTabs: ", openTabs);
+	  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
+	  var openUrlMap = Immutable.Map(chromeOpenTabItems.map(function (ti) {
+	    return [ti.url, ti];
+	  }));
+	
+	  // console.log("getOpenTabInfo: openUrlMap :" + JSON.stringify(openUrlMap,null,4));
+	
+	  // Now we need to do two things:
+	  // 1. augment chromeOpenTabItems with bookmark Ids / saved state (if it exists)
+	  // 2. figure out which savedTabItems are not in openTabs
+	  var savedItems = tabItems.filter(function (ti) {
+	    return ti.saved;
+	  });
+	  // Restore the saved items to their base state (no open tab info), since we
+	  // only want to pick up open tab info from what was passed in in openTabs
+	  var baseSavedItems = savedItems.map(resetSavedItem);
+	
+	  var savedUrlMap = Immutable.Map(baseSavedItems.map(function (ti) {
+	    return [ti.url, ti];
+	  }));
+	  // console.log("getOpenTabInfo: savedUrlMap :" + JSON.stringify(savedUrlMap,null,4));
+	
+	  function mergeTabItems(openItem, savedItem) {
+	    return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedIndex', savedItem.savedIndex);
+	  }
+	  var mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
+	
+	  // console.log("getOpenTabInfo: mergedMap :" + JSON.stringify(mergedMap,null,4));
+	
+	  // partition mergedMap into open and closed tabItems:
+	  var partitionedMap = mergedMap.toIndexedSeq().groupBy(function (ti) {
+	    return ti.open;
+	  });
+	
+	  return partitionedMap;
+	}
+	
+	/**
+	 * Merge currently open tabs from an open Chrome window with tabItem state of a saved
+	 * tabWindow
+	 *
+	 * @param {Seq<TabItem>} tabItems -- previous TabItem state
+	 * @param {[Tab]} openTabs -- currently open tabs from Chrome window
+	 *
+	 * @returns {Seq<TabItem>} TabItems reflecting current window state
+	 */
+	
+	function mergeOpenTabs(tabItems, openTabs) {
+	  var tabInfo = getOpenTabInfo(tabItems, openTabs);
+	
+	  /* TODO: Use algorithm from OLDtabWindow.js to determine tab order.
+	   * For now, let's just concat open and closed tabs, in their sorted order.
+	   */
+	  var openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy(function (tiA, tiB) {
+	    return tiA.openTabIndex - tiB.openTabIndex;
+	  });
+	  var closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy(function (tiA, tiB) {
+	    return tiA.savedTabIndex - tiB.savedTabIndex;
+	  });
+	
+	  var mergedTabItems = openTabItems.concat(closedTabItems);
+	
+	  return mergedTabItems;
+	}
+	
+	/**
+	 * A TabWindow
+	 *
+	 * Tab windows have a title and a set of tab items.
+	 *
+	 * A TabWindow has 3 possible states:
+	 *   (open,!saved)   - An open Chrome window that has not had its tabs saved
+	 *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
+	 *   (!open,saved)   - A previously saved window that is not currently open
+	 */
+	
+	var TabWindow = (function (_Immutable$Record) {
+	  _inherits(TabWindow, _Immutable$Record);
+	
+	  function TabWindow() {
+	    _classCallCheck(this, TabWindow);
+	
+	    _get(Object.getPrototypeOf(TabWindow.prototype), 'constructor', this).apply(this, arguments);
+	  }
+	
+	  /**
+	   * reset a window to its base saved state (after window is closed) 
+	   */
+	
+	  _createClass(TabWindow, [{
+	    key: 'title',
+	    get: function get() {
+	      if (this.saved) return this.savedTitle;
+	
+	      var activeTab = this.tabItems.find(function (t) {
+	        return t.active;
+	      });
+	
+	      if (!activeTab) {
+	        // shouldn't happen!
+	        console.warn("TabWindow.get title(): No active tab found: ", this.toJS());
+	        return '';
+	      }
+	
+	      return activeTab.title;
+	    }
+	  }]);
+	
+	  return TabWindow;
+	})(Immutable.Record({
+	  saved: false,
+	  savedTitle: '',
+	  savedFolderId: -1,
+	
+	  open: false,
+	  openWindowId: -1,
+	  focused: false,
+	
+	  tabItems: Immutable.Seq() // <TabItem>
+	}));
+	
+	function resetSavedWindow(tabWindow) {
+	  var savedItems = tabWindow.tabItems.filter(function (ti) {
+	    return ti.saved;
+	  });
+	  var resetSavedItems = savedItems.map(resetSavedItem);
+	
+	  return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems', resetSavedItems);
+	}
+	
+	/**
+	 * Initialize an unopened TabWindow from a bookmarks folder
+	 */
+	
+	function makeFolderTabWindow(bookmarkFolder) {
+	  var tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
+	  var tabWindow = new TabWindow({
+	    saved: true,
+	    savedTitle: bookmarkFolder.title,
+	    savedFolderId: bookmarkFolder.id,
+	    tabItems: Immutable.Seq(tabItems)
+	  });
+	
+	  return tabWindow;
+	}
+	
+	/**
+	 * Initialize a TabWindow from an open Chrome window
+	 */
+	
+	function makeChromeTabWindow(chromeWindow) {
+	  var tabItems = chromeWindow.tabs.map(makeOpenTabItem);
+	  var tabWindow = new TabWindow({
+	    open: true,
+	    openWindowId: chromeWindow.id,
+	    focused: chromeWindow.focused,
+	    tabItems: Immutable.Seq(tabItems)
+	  });
+	
+	  return tabWindow;
+	}
+	
+	/**
+	 * update a TabWindow from a current snapshot of the Chrome Window
+	 *
+	 * @param {TabWindow} tabWindow - TabWindow to be updated
+	 * @param {ChromeWindow} chromeWindow - current snapshot of Chrome window state
+	 *
+	 * @return {TabWindow} Updated TabWindow
+	 */
+	
+	function updateWindow(tabWindow, chromeWindow) {
+	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
+	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
+	  return updWindow;
+	}
+
+/***/ },
+/* 5 */
+/*!****************************!*\
+  !*** ./~/events/events.js ***!
+  \****************************/
+/***/ function(module, exports) {
+
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+	
+	function EventEmitter() {
+	  this._events = this._events || {};
+	  this._maxListeners = this._maxListeners || undefined;
+	}
+	module.exports = EventEmitter;
+	
+	// Backwards-compat with node 0.10.x
+	EventEmitter.EventEmitter = EventEmitter;
+	
+	EventEmitter.prototype._events = undefined;
+	EventEmitter.prototype._maxListeners = undefined;
+	
+	// By default EventEmitters will print a warning if more than 10 listeners are
+	// added to it. This is a useful default which helps finding memory leaks.
+	EventEmitter.defaultMaxListeners = 10;
+	
+	// Obviously not all Emitters should be limited to 10. This function allows
+	// that to be increased. Set to zero for unlimited.
+	EventEmitter.prototype.setMaxListeners = function(n) {
+	  if (!isNumber(n) || n < 0 || isNaN(n))
+	    throw TypeError('n must be a positive number');
+	  this._maxListeners = n;
+	  return this;
+	};
+	
+	EventEmitter.prototype.emit = function(type) {
+	  var er, handler, len, args, i, listeners;
+	
+	  if (!this._events)
+	    this._events = {};
+	
+	  // If there is no 'error' event listener then throw.
+	  if (type === 'error') {
+	    if (!this._events.error ||
+	        (isObject(this._events.error) && !this._events.error.length)) {
+	      er = arguments[1];
+	      if (er instanceof Error) {
+	        throw er; // Unhandled 'error' event
+	      }
+	      throw TypeError('Uncaught, unspecified "error" event.');
+	    }
+	  }
+	
+	  handler = this._events[type];
+	
+	  if (isUndefined(handler))
+	    return false;
+	
+	  if (isFunction(handler)) {
+	    switch (arguments.length) {
+	      // fast cases
+	      case 1:
+	        handler.call(this);
+	        break;
+	      case 2:
+	        handler.call(this, arguments[1]);
+	        break;
+	      case 3:
+	        handler.call(this, arguments[1], arguments[2]);
+	        break;
+	      // slower
+	      default:
+	        len = arguments.length;
+	        args = new Array(len - 1);
+	        for (i = 1; i < len; i++)
+	          args[i - 1] = arguments[i];
+	        handler.apply(this, args);
+	    }
+	  } else if (isObject(handler)) {
+	    len = arguments.length;
+	    args = new Array(len - 1);
+	    for (i = 1; i < len; i++)
+	      args[i - 1] = arguments[i];
+	
+	    listeners = handler.slice();
+	    len = listeners.length;
+	    for (i = 0; i < len; i++)
+	      listeners[i].apply(this, args);
+	  }
+	
+	  return true;
+	};
+	
+	EventEmitter.prototype.addListener = function(type, listener) {
+	  var m;
+	
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+	
+	  if (!this._events)
+	    this._events = {};
+	
+	  // To avoid recursion in the case that type === "newListener"! Before
+	  // adding it to the listeners, first emit "newListener".
+	  if (this._events.newListener)
+	    this.emit('newListener', type,
+	              isFunction(listener.listener) ?
+	              listener.listener : listener);
+	
+	  if (!this._events[type])
+	    // Optimize the case of one listener. Don't need the extra array object.
+	    this._events[type] = listener;
+	  else if (isObject(this._events[type]))
+	    // If we've already got an array, just append.
+	    this._events[type].push(listener);
+	  else
+	    // Adding the second element, need to change to array.
+	    this._events[type] = [this._events[type], listener];
+	
+	  // Check for listener leak
+	  if (isObject(this._events[type]) && !this._events[type].warned) {
+	    var m;
+	    if (!isUndefined(this._maxListeners)) {
+	      m = this._maxListeners;
+	    } else {
+	      m = EventEmitter.defaultMaxListeners;
+	    }
+	
+	    if (m && m > 0 && this._events[type].length > m) {
+	      this._events[type].warned = true;
+	      console.error('(node) warning: possible EventEmitter memory ' +
+	                    'leak detected. %d listeners added. ' +
+	                    'Use emitter.setMaxListeners() to increase limit.',
+	                    this._events[type].length);
+	      if (typeof console.trace === 'function') {
+	        // not supported in IE 10
+	        console.trace();
+	      }
+	    }
+	  }
+	
+	  return this;
+	};
+	
+	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+	
+	EventEmitter.prototype.once = function(type, listener) {
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+	
+	  var fired = false;
+	
+	  function g() {
+	    this.removeListener(type, g);
+	
+	    if (!fired) {
+	      fired = true;
+	      listener.apply(this, arguments);
+	    }
+	  }
+	
+	  g.listener = listener;
+	  this.on(type, g);
+	
+	  return this;
+	};
+	
+	// emits a 'removeListener' event iff the listener was removed
+	EventEmitter.prototype.removeListener = function(type, listener) {
+	  var list, position, length, i;
+	
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+	
+	  if (!this._events || !this._events[type])
+	    return this;
+	
+	  list = this._events[type];
+	  length = list.length;
+	  position = -1;
+	
+	  if (list === listener ||
+	      (isFunction(list.listener) && list.listener === listener)) {
+	    delete this._events[type];
+	    if (this._events.removeListener)
+	      this.emit('removeListener', type, listener);
+	
+	  } else if (isObject(list)) {
+	    for (i = length; i-- > 0;) {
+	      if (list[i] === listener ||
+	          (list[i].listener && list[i].listener === listener)) {
+	        position = i;
+	        break;
+	      }
+	    }
+	
+	    if (position < 0)
+	      return this;
+	
+	    if (list.length === 1) {
+	      list.length = 0;
+	      delete this._events[type];
+	    } else {
+	      list.splice(position, 1);
+	    }
+	
+	    if (this._events.removeListener)
+	      this.emit('removeListener', type, listener);
+	  }
+	
+	  return this;
+	};
+	
+	EventEmitter.prototype.removeAllListeners = function(type) {
+	  var key, listeners;
+	
+	  if (!this._events)
+	    return this;
+	
+	  // not listening for removeListener, no need to emit
+	  if (!this._events.removeListener) {
+	    if (arguments.length === 0)
+	      this._events = {};
+	    else if (this._events[type])
+	      delete this._events[type];
+	    return this;
+	  }
+	
+	  // emit removeListener for all listeners on all events
+	  if (arguments.length === 0) {
+	    for (key in this._events) {
+	      if (key === 'removeListener') continue;
+	      this.removeAllListeners(key);
+	    }
+	    this.removeAllListeners('removeListener');
+	    this._events = {};
+	    return this;
+	  }
+	
+	  listeners = this._events[type];
+	
+	  if (isFunction(listeners)) {
+	    this.removeListener(type, listeners);
+	  } else {
+	    // LIFO order
+	    while (listeners.length)
+	      this.removeListener(type, listeners[listeners.length - 1]);
+	  }
+	  delete this._events[type];
+	
+	  return this;
+	};
+	
+	EventEmitter.prototype.listeners = function(type) {
+	  var ret;
+	  if (!this._events || !this._events[type])
+	    ret = [];
+	  else if (isFunction(this._events[type]))
+	    ret = [this._events[type]];
+	  else
+	    ret = this._events[type].slice();
+	  return ret;
+	};
+	
+	EventEmitter.listenerCount = function(emitter, type) {
+	  var ret;
+	  if (!emitter._events || !emitter._events[type])
+	    ret = 0;
+	  else if (isFunction(emitter._events[type]))
+	    ret = 1;
+	  else
+	    ret = emitter._events[type].length;
+	  return ret;
+	};
+	
+	function isFunction(arg) {
+	  return typeof arg === 'function';
+	}
+	
+	function isNumber(arg) {
+	  return typeof arg === 'number';
+	}
+	
+	function isObject(arg) {
+	  return typeof arg === 'object' && arg !== null;
+	}
+	
+	function isUndefined(arg) {
+	  return arg === void 0;
+	}
+
+
+/***/ },
+/* 6 */
+/*!***************************!*\
+  !*** ./src/js/actions.js ***!
+  \***************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * get all open Chrome windows and synchronize state with our tab window store
+	 *
+	 * cb -- if non-null, no-argument callback to call when complete
+	 *
+	 */
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.syncChromeWindows = syncChromeWindows;
+	exports.openWindow = openWindow;
+	exports.activateTab = activateTab;
+	exports.closeTab = closeTab;
+	exports.closeWindow = closeWindow;
+	exports.manageWindow = manageWindow;
+	exports.unmanageWindow = unmanageWindow;
+	exports.revertWindow = revertWindow;
+	
+	function syncChromeWindows(winStore, cb) {
+	  var t_preGet = performance.now();
+	  chrome.windows.getAll({ populate: true }, function (windowList) {
+	    var t_postGet = performance.now();
+	    console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
+	    winStore.syncWindowList(windowList);
+	    if (cb) cb();
+	  });
+	}
+	
+	/**
+	 * restore a bookmark window.
+	 *
+	 * N.B.: NOT exported; called from openWindow
+	 */
+	function restoreBookmarkWindow(winStore, tabWindow) {
+	  console.log("restoreBookmarkWindow: ", tabWindow);
+	  var self = this;
+	  /*
+	   * special case handling of replacing the contents of a fresh window 
+	   */
+	  chrome.windows.getLastFocused({ populate: true }, function (currentChromeWindow) {
+	    var urls = [];
+	    var tabs = tabWindow.getTabItems();
+	    var urls = tabs.map(function (item) {
+	      return item.url;
+	    });
+	    function cf(chromeWindow) {
+	      console.log("restoreBookmarkWindow: cf");
+	      winStore.attachChromeWindow(tabWindow, chromeWindow);
+	    }
+	    console.log("current chrome window: ", currentChromeWindow);
+	    if (currentChromeWindow.tabs.length === 1 && currentChromeWindow.tabs[0].url === "chrome://newtab/") {
+	      console.log("found new window -- replacing contents");
+	      var origTabId = currentChromeWindow.tabs[0].id;
+	      // new window -- replace contents with urls:
+	      for (var i = 0; i < urls.length; i++) {
+	        // First use our existing tab:
+	        if (i == 0) {
+	          chrome.tabs.update(origTabId, { url: urls[i] });
+	        } else {
+	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[i] };
+	          chrome.tabs.create(tabInfo);
+	        }
+	      }
+	    } else {
+	      // normal case -- create a new window for these urls:
+	      chrome.windows.create({ url: urls, focused: true, type: 'normal' }, cf);
+	    }
+	  });
+	}
+	
+	function openWindow(winStore, tabWindow) {
+	  var self = this;
+	
+	  if (tabWindow.open) {
+	    // existing, open window -- just transfer focus
+	    chrome.windows.update(tabWindow.openWindowId, { focused: true });
+	    // TODO: update focus in winStore
+	  } else {
+	      // bookmarked window -- need to open it!
+	      restoreBookmarkWindow(winStore, tabWindow);
+	    }
+	}
+	
+	// activate a specific tab:
+	function activateTab(winStore, tabWindow, tab, tabIndex) {
+	  var self = this;
+	  console.log("activateTab: ", tabWindow, tab);
+	  if (tabWindow.open) {
+	    // OK, so we know this window is open.  What about the specific tab?
+	    if (tab.open) {
+	      // Tab is already open, just make it active:
+	      console.log("making tab active");
+	      chrome.tabs.update(tab.id, { active: true }, function () {
+	        console.log("making tab's window active");
+	        chrome.windows.update(tabWindow.openWindowId, { focused: true });
+	      });
+	    } else {
+	      // restore this bookmarked tab:
+	      var createOpts = {
+	        windowId: tabWindow.openWindowId,
+	        url: tab.url,
+	        index: tabIndex,
+	        active: true
+	      };
+	      console.log("restoring bookmarked tab");
+	      chrome.tabs.create(createOpts, callback);
+	    }
+	  } else {
+	    console.log("activateTab: opening non-open window");
+	    openWindow(tabWindow);
+	    // TODO: activate chosen tab after opening window!
+	  }
+	}
+	
+	function closeTab(winStore, windowId, tabId) {
+	  console.log("closeTab: closing tab ", windowId, tabId);;
+	  var self = this;
+	  chrome.tabs.remove(tabId, function () {
+	    winStore.handleTabClosed(windowId, tabId);
+	  });
+	}
+	
+	function closeWindow(winStore, tabWindow) {
+	  console.log("closeWindow: ", tabWindow);
+	  if (!tabWindow.open) {
+	    console.log("closeWindow: request to close non-open window, ignoring...");
+	    return;
+	  }
+	  var self = this;
+	  chrome.windows.remove(tabWindow.openWindowId, function () {
+	    winStore.handleTabWindowClosed(tabWindow);
+	  });
+	}
+	
+	/*
+	 * save the specified tab window and make it a managed window
+	 */
+	
+	function manageWindow(winStore, tabWindow, title, cb) {
+	  var tabmanFolderId = winStore.folderId;
+	
+	  // and write out a Bookmarks folder for this newly managed window:
+	  if (!tabmanFolderId) {
+	    alert("Could not save bookmarks -- no tab manager folder");
+	  }
+	  var windowFolder = { parentId: tabmanFolderId,
+	    title: title
+	  };
+	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
+	    console.log("succesfully created bookmarks folder ", windowFolderNode);
+	    console.log("for window: ", tabWindow);
+	    var tabItems = tabWindow.tabItems.toArray();
+	    for (var i = 0; i < tabItems.length; i++) {
+	      var tabItem = tabItems[i];
+	      // bookmark for this tab:
+	      var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
+	      chrome.bookmarks.create(tabMark, function (tabNode) {
+	        console.log("succesfully bookmarked tab ", tabNode);
+	      });
+	    }
+	    // Now do an explicit get of subtree to get node populated with children
+	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
+	      var fullFolderNode = folderNodes[0];
+	
+	      // Note: Only now do we actually change the state to managed!
+	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
+	      // or have no children because of the asynchrony of creating bookmarks.
+	      // There might still be a race condition here since
+	      // the bookmarks for children may not have been created yet.
+	      // Haven't seen evidence of this so far.     
+	      winStore.attachBookmarkFolder(tabWindow, fullFolderNode, title);
+	      cb(tabWindow);
+	    });
+	  });
+	}
+	
+	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
+	
+	function unmanageWindow(winStore, tabWindow) {
+	  throw new Error("unmanageWindow -- TODO");
+	  console.log("unmanageWindow");
+	  if (!winStore.archiveFolderId) {
+	    alert("could not move managed window folder to archive -- no archive folder");
+	    return;
+	  }
+	  // TODO: what happens if a folder with same name already exists in archive folder?
+	  chrome.bookmarks.move(tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, function (resultNode) {
+	    console.log("unmanageWindow: bookmark folder moved to archive folder");
+	    winStore.unmanageWindow(tabWindow);
+	  });
+	}
+	
+	function revertWindow(winStore, tabWindow) {
+	  throw new Error("reverWindow -- TODO!");
+	  var tabs = tabWindow.chromeWindow.tabs;
+	  var currentTabIds = tabs.map(function (t) {
+	    return t.id;
+	  });
+	
+	  // re-open bookmarks:
+	  var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
+	    return bm.url;
+	  });
+	  for (var i = 0; i < urls.length; i++) {
+	    // need to open it:
+	    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
+	    chrome.tabs.create(tabInfo);
+	  };
+	
+	  // blow away all the existing tabs:
+	  chrome.tabs.remove(currentTabIds, function () {
+	    var windowId = tabWindow.chromeWindow.id;
+	    // refresh window details:
+	    chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
+	      winStore.syncChromeWindow(chromeWindow);
+	    });
+	  });
+	}
+
+/***/ }
+/******/ ]);
 //# sourceMappingURL=bgHelper.bundle.js.map

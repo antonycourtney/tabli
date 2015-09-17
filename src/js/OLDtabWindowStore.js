@@ -7,7 +7,6 @@
 'use strict';
 
 import * as _ from 'underscore';
-import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import EventEmitter from 'events';
 
@@ -52,27 +51,24 @@ export default class TabWindowStore extends EventEmitter {
 
   constructor(folderId,archiveFolderId) {
     super();
-    this.windowIdMap = Immutable.Map();  // maps from chrome window id for open windows
-    this.bookmarkIdMap = Immutable.Map();
+    this.windowIdMap = {};  // maps from chrome window id for open windows
+    this.bookmarkIdMap = {};
     this.viewListeners = [];
     this.notifyCallback = null;
     this.folderId = folderId;
     this.archiveFolderId = archiveFolderId;
   }
 
-  /**
-   * Update store to include the specified window, indexed by 
-   * open window id or bookmark id
-   *
-   * Note that if an earlier snapshot of tabWindow is in the store, it will be
-   * replaced
+  /*
+   * add a new Tab window to global maps:
    */
   addTabWindow(tabWindow) {
-    if (tabWindow.open) {
-      this.windowIdMap = this.windowIdMap.set(tabWindow.openWindowId,tabWindow);
+    var chromeWindow = tabWindow.chromeWindow;
+    if (chromeWindow) {
+      this.windowIdMap[ chromeWindow.id ] = tabWindow;
     }
-    if (tabWindow.saved) {
-      this.bookmarkIdMap = this.bookmarkIdMap.set(tabWindow.savedFolderId,tabWindow);
+    if (tabWindow.bookmarkFolder) {
+      this.bookmarkIdMap[ tabWindow.bookmarkFolder.id ] = tabWindow;
     }
   }
 
@@ -85,29 +81,27 @@ export default class TabWindowStore extends EventEmitter {
    */
   handleTabWindowClosed(tabWindow) {
     console.log("handleTabWindowClosed: ", tabWindow);
-    this.windowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
-    this.bookmarkIdMap = TabWindow.resetSavedWindow(tabWindow);
+    var windowId = tabWindow.chromeWindow && tabWindow.chromeWindow.id;
+    if (windowId)
+      delete this.windowIdMap[ windowId ];    
     this.emit("change");
   }
 
   removeBookmarkIdMapEntry(tabWindow) {
     console.log("removeBookmarkIdMapEntry: ", tabWindow);
-    this.bookmarkIdMap = this.bookmarkIdMap.delete(tabWindow.savedFolderId);
+    var bookmarkId = tabWindow.bookmarkFolder && tabWindow.bookmarkFolder.id;
+    if (bookmarkId)
+      delete this.bookmarkIdMap[bookmarkId];
     this.emit("change");
   }
 
   unmanageWindow(tabWindow) {
-    this.removeBookmarkIdMapEntry(tabWindow);
-
-    // disconnect from the previously associated bookmark folder and re-register
-    const umWindow = tabWindow.set('saved',false).set('savedFolderId',-1);
-    this.addTabWindow(umWindow);    
+    this.removeBookmarkIdMapEntry(tabWindow);    
+    tabWindow._managed = false;
+    tabWindow.bookmarkFolder = null;  // disconnect from this bookmark folder
   }
 
-  /* TODO!  Need to make sure we're clear on our sync / reconciliation strategy first */
   revertTabWindow( tabWindow, callback ) {
-    throw new Error("revertTabWindow: TODO -- not ported to immutable yet!");
-
     var tabs = tabWindow.chromeWindow.tabs;
     var currentTabIds = tabs.map( function ( t ) { return t.id; } );
 
@@ -137,23 +131,16 @@ export default class TabWindowStore extends EventEmitter {
   attachChromeWindow(tabWindow,chromeWindow) {
     console.log("attachChromeWindow: ", tabWindow, chromeWindow);
     // Was this Chrome window id previously associated with some other tab window?
-    const oldTabWindow = this.windowIdMap.get(chromeWindow.id);
+    var oldTabWindow = this.windowIdMap[chromeWindow.id];
     if (oldTabWindow) {
       // This better not be a managed window...
       console.log("found previous tab window -- detaching");
       console.log("oldTabWindow: ", oldTabWindow);
       this.removeTabWindow(oldTabWindow);
     }
-
-    const attachedTabItems = TabWindow.mergeOpenTabs(tabWindow.tabItems,chromeWindow.tabs);
-
-    const attachedTabWindow =
-      tabWindow
-        .set('open',true)
-        .set('openWindowId',chromeWindow.id)
-        .set('tabItems',attachedTabItems);
-
-    this.addTabWindow(attachedTabWindow);
+    tabWindow.chromeWindow = chromeWindow;
+    tabWindow.open = true;
+    this.windowIdMap[ chromeWindow.id ] = tabWindow;
   }
 
 
@@ -161,8 +148,6 @@ export default class TabWindowStore extends EventEmitter {
    * attach a bookmark folder to a specific tab window (after managing)
    */
   attachBookmarkFolder(tabWindow,bookmarkFolder,title) {
-      throw new Error("TODO - need to port to immutable");  
-
       tabWindow.bookmarkFolder = bookmarkFolder;
 
       //
@@ -176,9 +161,80 @@ export default class TabWindowStore extends EventEmitter {
       this.emit("change");
   }
 
+  handleChromeWindowRemoved(windowId) {
+    console.log("handleChromeWindowRemoved: ", windowId);
+    var tabWindow = this.windowIdMap[windowId];
+    if( !tabWindow ) {
+      console.warn("window id not found -- ignoring");
+    } else {
+      if (!(tabWindow.isManaged())) { 
+        // unmanaged window -- just remove
+        this.removeTabWindow(tabWindow);
+      } else {
+        // managed window -- mark as closed and dissociate chrome window
+        tabWindow.open = false;
+        tabWindow.chromeWindow = null;
+        this.removeWindowMapEntries(tabWindow);
+      }      
+    }
+  }
+
+  handleChromeWindowFocusChanged(windowId) {
+    /* TODO / FIXME: more efficient rep for focused window */
+    var tabWindows = this.getAll();
+
+    for ( var i = 0; i < tabWindows.length; i++ ) {
+      var tabWindow = tabWindows[ i ];
+      if( tabWindow ) {
+        tabWindow._focused = false;
+      }
+    }
+    if (windowId != chrome.windows.WINDOW_ID_NONE) {
+      var tabWindow = this.windowIdMap[windowId];
+      if (!tabWindow) {
+        console.warn("Got focus event for unknown window id ", windowId );
+        return;
+      } 
+      tabWindow._focused = true;
+    }
+  }
+
+  handleChromeTabActivated(tabId,windowId) {
+    var tabWindow = this.windowIdMap[windowId];
+    if( !tabWindow ) {
+      console.warn("window id not found -- ignoring");
+    } else {
+      var tabs = tabWindow.chromeWindow.tabs;
+      if (tabs) {
+        for (var i = 0; i < tabs.length; i++) {
+          var tab = tabs[i];
+          tab.active = (tab.id==tabId);
+        }
+      }  
+    }    
+  }
+
+
+  handleChromeTabCreated(tab) {
+    var tabWindow = this.windowIdMap[tab.windowId];
+    if (!tabWindow) {
+      console.warn("Got tab created event for unknown window ", tab);
+    } else {
+      console.log("handleChromeTabCreated: ", tabWindow, tab);
+      if (!tabWindow.chromeWindow) {
+        console.warn("got tab created for bad chromeWindow");
+      }
+      if (!tabWindow.chromeWindow.tabs) {
+        console.warn("first tab in chrome window; initializing...");
+        tabWindow.chromeWindow.tabs = [tab];
+      } else {
+        // append this tab onto tabs at index: 
+        tabWindow.chromeWindow.tabs.splice(tab.index,0,tab);
+      }
+    }
+  }
 
   handleTabClosed(windowId,tabId) {
-    throw new Error("TODO: port handleTabClosed to immutable");
     var tabWindow = this.windowIdMap[windowId];
     if (!tabWindow) {
       console.warn("Got tab removed event for unknown window ", windowId, tabId);
@@ -193,6 +249,60 @@ export default class TabWindowStore extends EventEmitter {
   }
 
 
+  handleChromeTabRemoved(tabId,removeInfo) {
+    if (removeInfo.isWindowClosing) {
+      console.log("handleChromeTabRemoved: window closing, ignoring...");
+      // Window is closing, ignore...
+      return;
+    }
+    this.handleTabClosed(removeInfo.windowId,tabId);
+  }
+
+  handleChromeTabUpdated(tabId,changeInfo,tab) {
+    console.log("handleChromeTabUpdated: ", tabId, changeInfo, tab);
+    var tabWindow = this.windowIdMap[tab.windowId];
+    if (!tabWindow) {
+      console.warn("Got tab updated event for unknown window ", tab);
+      return;
+    } 
+    console.log("handleChromeTabUpdated: ", tabWindow, tab);
+    if (!tabWindow.chromeWindow) {
+      console.warn("got tab Updated for bad chromeWindow");
+    }
+    if (!tabWindow.chromeWindow.tabs) {
+      console.warn("No tabs in chrome Window; dropping update...");
+      tabWindow.chromeWindow.tabs = [tab];
+    } else {
+      /* we should be able to trust tab.index, but this seems safer... */
+      var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
+      if (tabIndex==null) {
+        console.warn("Got tab update for unknown tab: ", tabId, tab);
+        return;
+      }
+      tabWindow.chromeWindow.tabs[tabIndex] = tab;
+    }
+  }
+
+  handleChromeTabReplaced(addedTabId,removedTabId) {
+    console.log("handleChromeTabReplaced: ", addedTabId, removedTabId);
+    var tabWindows = this.getAll();
+    var [removedTabWindow,removedIndex] = findTabId(tabWindows, removedTabId);
+    if (removedTabWindow) {
+      var tab = removedTabWindow.chromeWindow.tabs[removedIndex]
+      console.log("found removed tab: ", tab);
+      tab.id = addedTabId;
+      // Unfortunately we may not get any events giving us essential info on the
+      // added tab.
+      // Call chrome.tabs.get and then call handleTabUpdate directly
+      chrome.tabs.get(addedTabId,(tab) => {
+        console.log("Got replaced tab detail: ", tab);
+        window.fluxState.flux.actions.chromeTabUpdated(tab.id,{},tab);
+      });
+    } else {
+      console.log("removed tab id not found!");
+    }
+  }
+
   /**
    * Synchronize internal state of our store with snapshot
    * of current Chrome window state
@@ -201,20 +311,16 @@ export default class TabWindowStore extends EventEmitter {
    * @param noEmit suppress emitting change event if true. Useful to batch changes, i.e. syncWindowList
    */
   syncChromeWindow(chromeWindow,noEmit) {
-    var tabWindow = this.windowIdMap.get(chromeWindow.id);
+    var tabWindow = this.windowIdMap[chromeWindow.id];
     if( !tabWindow ) {
       console.log( "syncChromeWindow: detected new window id: ", chromeWindow.id );
-      tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
+      tabWindow = TabWindow.makeChromeTabWindow( chromeWindow );
       this.addTabWindow(tabWindow);
     } else {
       // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
-
-      const updWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
       // Set chromeWindow to current snapshot of tab contents:
-
-      // console.log("updated window: ", updWindow.toJS());
-
-      this.addTabWindow(updWindow);
+      tabWindow.chromeWindow = chromeWindow;
+      tabWindow.open = true;
     }
     if (!noEmit) {
       this.emit("change");
@@ -230,6 +336,7 @@ export default class TabWindowStore extends EventEmitter {
    * internal map of open windows
    */
   syncWindowList(chromeWindowList) {
+
     var tabWindows = this.getOpen();
 
     // Iterate through tab windows (our current list of open windows)
@@ -237,8 +344,10 @@ export default class TabWindowStore extends EventEmitter {
     var chromeIds = _.pluck(chromeWindowList,'id');
     var chromeIdSet = new Set(chromeIds);
     tabWindows.forEach((tw) => {
-      if (!chromeIdSet.has(tw.openWindowId)) {
+      if (!chromeIdSet.has(tw.chromeWindow.id)) {
         console.log("syncWindowList: detected closed window: ", tw);
+        // mark it closed (only matters for bookmarked windows):
+        tw.open = false;
         // And remove it from open window map:
         this.handleTabWindowClosed(tw);
       }
@@ -254,19 +363,20 @@ export default class TabWindowStore extends EventEmitter {
    * get the currently open tab windows
    */ 
   getOpen() {
-    const openWindows = this.windowIdMap.toIndexedSeq().toArray();
+    var openWindows = _.values(this.windowIdMap);
     return openWindows;    
   }
 
   getAll() {
-    const openWindows = this.getOpen();
-    const closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter((w) => !(w.open)).toArray();
-    return openWindows.concat(closedSavedWindows);
+    var openWindows = _.values(this.windowIdMap);
+    var managedWindows = _.values(this.bookmarkIdMap);
+    var closedManagedWindows = _.filter(managedWindows, (w) => { return !(w.open); });
+    return closedManagedWindows.concat(openWindows);
   }
 
   // returns a tabWindow or undefined
-  getTabWindowByChromeId(windowId) {
-    return this.windowIdMap.get(windowId);
+  getTabWindowByChromeId(chromeId) {
+    return this.windowIdMap[chromeId];
   }
 
   /*
@@ -287,7 +397,6 @@ export default class TabWindowStore extends EventEmitter {
   }
 
   removeViewListener(id) {
-    console.log("removeViewListener: removing listener id ", id);
     var listener = this.viewListeners[id];
     if (listener) {
       this.removeListener("change",listener);
