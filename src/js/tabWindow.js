@@ -4,7 +4,7 @@
 
 'use strict';
 
-import * as _ from 'underscore';
+import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 
 /**
@@ -122,7 +122,7 @@ export function resetSavedWindow(tabWindow) {
 /**
  * Initialize an unopened TabWindow from a bookmarks folder
  */
-export function makeFolderTabWindow( bookmarkFolder ) {
+export function makeFolderTabWindow(bookmarkFolder) {
   const tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
   const tabWindow = new TabWindow({ 
     saved: true,

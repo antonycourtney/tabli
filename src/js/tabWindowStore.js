@@ -6,7 +6,7 @@
  */
 'use strict';
 
-import * as _ from 'underscore';
+import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import EventEmitter from 'events';
@@ -24,29 +24,6 @@ function findTabIndex(chromeWindow,targetTabId) {
   }
   return null;
 } 
-
-/**
- * find the TabWindow and index for a particular tab id.
- *
- * TODO / FIXME: Could be improved by maintaining a map by tab id
- *
- * spectacularly inefficient (linear)
- * returns:
- *    [ TabWindow t, Number tabIndex ]
- * or
- *     [] -- if not found
- */
-function findTabId(tabWindows,targetTabId) {
-  for (var i = 0; i < tabWindows.length; i++) {
-    var tabWindow = tabWindows[i];
-    if (tabWindow && tabWindow.open) {
-      var targetIdx = findTabIndex(tabWindow.chromeWindow,targetTabId);
-      if (targetIdx != null)
-        return [tabWindow, targetIdx];
-    }
-  }
-  return [];
-}
 
 export default class TabWindowStore extends EventEmitter {
 

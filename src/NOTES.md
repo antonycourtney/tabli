@@ -25,6 +25,8 @@ X Instead of single listener reg, using port/disconnected technique to GC popup 
 
 - Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned
 
-- More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs.
+- More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs. Not enough paddingRight on checkbox input -- runs in to favIcon
 
 - Don't show close button for closed windows
+
+- Need a tabWindow test for what happens when we duplicate a tab with the same URL
