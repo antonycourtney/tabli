@@ -29,9 +29,7 @@ function restoreBookmarkWindow(winStore, tabWindow) {
    * special case handling of replacing the contents of a fresh window 
    */    
   chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
-    var urls = [];
-    var tabs = tabWindow.getTabItems();
-    var urls = tabs.map( function (item) { return item.url; } );
+    const urls = tabWindow.tabItems.map((ti) => ti.url).toArray();
     function cf( chromeWindow ) {
       console.log("restoreBookmarkWindow: cf");
       winStore.attachChromeWindow(tabWindow,chromeWindow);
@@ -47,8 +45,8 @@ function restoreBookmarkWindow(winStore, tabWindow) {
         if (i==0) {
           chrome.tabs.update( origTabId, { url: urls[i] } );
         } else {
-          var tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
-          chrome.tabs.create( tabInfo );
+          const tabInfo = { windowId: currentChromeWindow.id, url: urls[ i ] };
+          chrome.tabs.create(tabInfo);
         }
       }
     } else {

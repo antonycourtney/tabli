@@ -28,7 +28,7 @@ function loadManagedWindows(winStore,tabManFolder ) {
     }
     folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder));
   }
-  winStore.addTabWindows(folderTabWindows);
+  winStore.registerTabWindows(folderTabWindows);
 }
 
 /*

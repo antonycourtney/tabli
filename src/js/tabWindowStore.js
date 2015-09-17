@@ -67,7 +67,7 @@ export default class TabWindowStore extends EventEmitter {
    * Note that if an earlier snapshot of tabWindow is in the store, it will be
    * replaced
    */
-  addTabWindow(tabWindow) {
+  registerTabWindow(tabWindow) {
     if (tabWindow.open) {
       this.windowIdMap = this.windowIdMap.set(tabWindow.openWindowId,tabWindow);
     }
@@ -76,17 +76,22 @@ export default class TabWindowStore extends EventEmitter {
     }
   }
 
-  addTabWindows(tabWindows) {
-    _.each(tabWindows, (w) => { this.addTabWindow(w); } );
+  registerTabWindows(tabWindows) {
+    _.each(tabWindows, (w) => { this.registerTabWindow(w); } );
   }
 
   /* We distinguish between removing an entry from map of open windows (windowIdMap)
    * because when closing a bookmarked window, we only wish to remove it from former
    */
   handleTabWindowClosed(tabWindow) {
-    console.log("handleTabWindowClosed: ", tabWindow);
+    console.log("handleTabWindowClosed: ", tabWindow.toJS());
     this.windowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
-    this.bookmarkIdMap = TabWindow.resetSavedWindow(tabWindow);
+
+    const revertedWindow = TabWindow.resetSavedWindow(tabWindow);
+
+    console.log("handleTabWindowClosed: revertedWindow: ", revertedWindow.toJS());
+
+    this.registerTabWindow(revertedWindow);
     this.emit("change");
   }
 
@@ -101,7 +106,7 @@ export default class TabWindowStore extends EventEmitter {
 
     // disconnect from the previously associated bookmark folder and re-register
     const umWindow = tabWindow.set('saved',false).set('savedFolderId',-1);
-    this.addTabWindow(umWindow);    
+    this.registerTabWindow(umWindow);    
   }
 
   /* TODO!  Need to make sure we're clear on our sync / reconciliation strategy first */
@@ -145,15 +150,9 @@ export default class TabWindowStore extends EventEmitter {
       this.removeTabWindow(oldTabWindow);
     }
 
-    const attachedTabItems = TabWindow.mergeOpenTabs(tabWindow.tabItems,chromeWindow.tabs);
+    const attachedTabWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
 
-    const attachedTabWindow =
-      tabWindow
-        .set('open',true)
-        .set('openWindowId',chromeWindow.id)
-        .set('tabItems',attachedTabItems);
-
-    this.addTabWindow(attachedTabWindow);
+    this.registerTabWindow(attachedTabWindow);
   }
 
 
@@ -172,7 +171,7 @@ export default class TabWindowStore extends EventEmitter {
       tabWindow._managedTitle = title;
 
       // And re-register in store maps:
-      this.addTabWindow(tabWindow);
+      this.registerTabWindow(tabWindow);
       this.emit("change");
   }
 
@@ -205,7 +204,7 @@ export default class TabWindowStore extends EventEmitter {
     if( !tabWindow ) {
       console.log( "syncChromeWindow: detected new window id: ", chromeWindow.id );
       tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
-      this.addTabWindow(tabWindow);
+      this.registerTabWindow(tabWindow);
     } else {
       // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
 
@@ -214,7 +213,7 @@ export default class TabWindowStore extends EventEmitter {
 
       // console.log("updated window: ", updWindow.toJS());
 
-      this.addTabWindow(updWindow);
+      this.registerTabWindow(updWindow);
     }
     if (!noEmit) {
       this.emit("change");
