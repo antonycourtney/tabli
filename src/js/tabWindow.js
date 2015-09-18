@@ -12,20 +12,33 @@ import * as Immutable from 'immutable';
  *
  * May be associated with an open tab, a bookmark, or both
  */
-var TabItem = Immutable.Record({
-  title: '',
+class TabItem extends Immutable.Record({
   url: '',
-  favIconUrl: '',
 
+  /* Saved state fields
+  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
+  // We should perhaps break these out into their own Record type 
   saved: false,
   savedBookmarkId: '',
   savedBookmarkIndex: 0,   // position in bookmark folder
+  savedTitle: '',
 
+  // Note: Must be kept in sync with resetSavedItem
+  // Again: Suggests we should possibly break these out into their own record type
   open: false,    // Note: Saved tabs may be closed even when containing window is open
   openTabId: -1,
   active: false,
-  openTabIndex: 0  // index of open tab in its window
-});
+  openTabIndex: 0,  // index of open tab in its window
+  favIconUrl: '',
+  tabTitle: ''
+}) {
+  get title() {
+    if (this.open)
+      return this.tabTitle;
+
+    return this.savedTitle;
+  }
+}
 
 /**
  * Initialize a TabItem from a bookmark
@@ -34,11 +47,11 @@ var TabItem = Immutable.Record({
  */
 function makeBookmarkedTabItem(bm) {
   const tabItem = new TabItem({
-    title: bm.title,
     url: bm.url,
-    favIconUrl: bm.favIconUrl,
 
     saved: true,
+    savedTitle: bm.title,
+
     savedBookmarkId: bm.id,
     savedBookmarkIndex: bm.index
   });
@@ -50,10 +63,10 @@ function makeBookmarkedTabItem(bm) {
  */
 function makeOpenTabItem(tab) {
   const tabItem = new TabItem({
-    title: tab.title,
     url: tab.url,
     favIconUrl: tab.favIconUrl,
     open: true,
+    tabTitle: tab.title,
     openTabId: tab.id,
     active: tab.active,
     openTabIndex: tab.index
@@ -65,9 +78,8 @@ function makeOpenTabItem(tab) {
  * Returns the base saved state of a tab item (no open tab info)
  */
 function resetSavedItem(ti) {
-  return ti.remove('open').remove('openTabId').remove('active').remove('openTabIndex');
+  return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
 } 
-
 
 /**
  * A TabWindow
@@ -117,12 +129,10 @@ export function resetSavedWindow(tabWindow) {
   return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems',resetSavedItems);
 } 
 
-
-
 /**
  * Initialize an unopened TabWindow from a bookmarks folder
  */
-export function makeFolderTabWindow(bookmarkFolder) {
+export function makeFolderTabWindow( bookmarkFolder ) {
   const tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
   const tabWindow = new TabWindow({ 
     saved: true,
@@ -177,7 +187,8 @@ function getOpenTabInfo(tabItems,openTabs) {
   function mergeTabItems(openItem,savedItem) {
     return openItem.set('saved',true)
       .set('savedBookmarkId',savedItem.savedBookmarkId)
-      .set('savedBookmarkIndex',savedItem.savedBookmarkIndex);
+      .set('savedBookmarkIndex',savedItem.savedBookmarkIndex)
+      .set('savedTitle',savedItem.savedTitle);
   } 
   const mergedMap = openUrlMap.mergeWith(mergeTabItems,savedUrlMap);
 

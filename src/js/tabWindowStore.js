@@ -86,32 +86,6 @@ export default class TabWindowStore extends EventEmitter {
     this.registerTabWindow(umWindow);    
   }
 
-  /* TODO!  Need to make sure we're clear on our sync / reconciliation strategy first */
-  revertTabWindow( tabWindow, callback ) {
-    throw new Error("revertTabWindow: TODO -- not ported to immutable yet!");
-
-    var tabs = tabWindow.chromeWindow.tabs;
-    var currentTabIds = tabs.map( function ( t ) { return t.id; } );
-
-    // re-open bookmarks:
-    var urls = tabWindow.bookmarkFolder.children.map( function (bm) { return bm.url; } );
-    for ( var i = 0; i < urls.length; i++ ) {
-      // need to open it:
-      var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[ i ] };
-      chrome.tabs.create( tabInfo );
-    };        
-
-    // blow away all the existing tabs:
-    chrome.tabs.remove( currentTabIds, function() {
-      var windowId = tabWindow.chromeWindow.id;
-      tabWindow.chromeWindow = null;
-      // refresh window details:
-      chrome.windows.get( windowId, { populate: true }, function ( chromeWindow ) {
-        tabWindow.chromeWindow = chromeWindow;
-        callback();
-      });
-    });
-  }
 
   /**
    * attach a Chrome window to a specific tab window (after opening a saved window)
@@ -131,7 +105,6 @@ export default class TabWindowStore extends EventEmitter {
 
     this.registerTabWindow(attachedTabWindow);
   }
-
 
   /**
    * attach a bookmark folder to a specific tab window (after managing)

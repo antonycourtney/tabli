@@ -1,5 +1,7 @@
 'use strict';
 
+import * as TabWindow from './tabWindow';
+
 /**
  * get all open Chrome windows and synchronize state with our tab window store
  *
@@ -177,24 +179,26 @@ export function unmanageWindow(winStore,tabWindow) {
 }
 
 export function revertWindow(winStore,tabWindow) {
-  throw new Error("reverWindow -- TODO!");
-  var tabs = tabWindow.chromeWindow.tabs;
-  var currentTabIds = tabs.map( (t) => { return t.id; } );
+  const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openTabId).toArray();
 
-  // re-open bookmarks:
-  var urls = tabWindow.bookmarkFolder.children.map( function (bm) { return bm.url; } );
-  for ( var i = 0; i < urls.length; i++ ) {
+  const revertedTabWindow = TabWindow.resetSavedWindow(tabWindow);
+
+  // re-open saved URLs:
+  // We need to do this before removing current tab ids or window will close
+  var savedUrls = revertedTabWindow.tabItems.map((ti) => ti.url).toArray();
+
+  for ( var i = 0; i < savedUrls.length; i++ ) {
     // need to open it:
-    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[ i ] };
+    var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[ i ] };
     chrome.tabs.create( tabInfo );
   };        
 
   // blow away all the existing tabs:
   chrome.tabs.remove( currentTabIds, function() {
-    var windowId = tabWindow.chromeWindow.id;
+    var windowId = tabWindow.openWindowId;
     // refresh window details:
     chrome.windows.get( windowId, { populate: true }, function ( chromeWindow ) {
-      winStore.syncChromeWindow(chromeWindow);      
+      winStore.syncChromeWindow(chromeWindow);
     });
   });
 }

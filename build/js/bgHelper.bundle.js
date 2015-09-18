@@ -299,39 +299,6 @@
 	      this.registerTabWindow(umWindow);
 	    }
 	
-	    /* TODO!  Need to make sure we're clear on our sync / reconciliation strategy first */
-	  }, {
-	    key: 'revertTabWindow',
-	    value: function revertTabWindow(tabWindow, callback) {
-	      throw new Error("revertTabWindow: TODO -- not ported to immutable yet!");
-	
-	      var tabs = tabWindow.chromeWindow.tabs;
-	      var currentTabIds = tabs.map(function (t) {
-	        return t.id;
-	      });
-	
-	      // re-open bookmarks:
-	      var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
-	        return bm.url;
-	      });
-	      for (var i = 0; i < urls.length; i++) {
-	        // need to open it:
-	        var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
-	        chrome.tabs.create(tabInfo);
-	      };
-	
-	      // blow away all the existing tabs:
-	      chrome.tabs.remove(currentTabIds, function () {
-	        var windowId = tabWindow.chromeWindow.id;
-	        tabWindow.chromeWindow = null;
-	        // refresh window details:
-	        chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
-	          tabWindow.chromeWindow = chromeWindow;
-	          callback();
-	        });
-	      });
-	    }
-	
 	    /**
 	     * attach a Chrome window to a specific tab window (after opening a saved window)
 	     */
@@ -17913,33 +17880,60 @@
 	 *
 	 * May be associated with an open tab, a bookmark, or both
 	 */
-	var TabItem = Immutable.Record({
-	  title: '',
-	  url: '',
-	  favIconUrl: '',
 	
+	var TabItem = (function (_Immutable$Record) {
+	  _inherits(TabItem, _Immutable$Record);
+	
+	  function TabItem() {
+	    _classCallCheck(this, TabItem);
+	
+	    _get(Object.getPrototypeOf(TabItem.prototype), 'constructor', this).apply(this, arguments);
+	  }
+	
+	  /**
+	   * Initialize a TabItem from a bookmark
+	   * 
+	   * Returned TabItem is closed (not associated with an open tab)
+	   */
+	
+	  _createClass(TabItem, [{
+	    key: 'title',
+	    get: function get() {
+	      if (this.open) return this.tabTitle;
+	
+	      return this.savedTitle;
+	    }
+	  }]);
+	
+	  return TabItem;
+	})(Immutable.Record({
+	  url: '',
+	
+	  /* Saved state fields
+	  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
+	  // We should perhaps break these out into their own Record type
 	  saved: false,
 	  savedBookmarkId: '',
 	  savedBookmarkIndex: 0, // position in bookmark folder
+	  savedTitle: '',
 	
+	  // Note: Must be kept in sync with resetSavedItem
+	  // Again: Suggests we should possibly break these out into their own record type
 	  open: false, // Note: Saved tabs may be closed even when containing window is open
 	  openTabId: -1,
 	  active: false,
-	  openTabIndex: 0 // index of open tab in its window
-	});
+	  openTabIndex: 0, // index of open tab in its window
+	  favIconUrl: '',
+	  tabTitle: ''
+	}));
 	
-	/**
-	 * Initialize a TabItem from a bookmark
-	 * 
-	 * Returned TabItem is closed (not associated with an open tab)
-	 */
 	function makeBookmarkedTabItem(bm) {
 	  var tabItem = new TabItem({
-	    title: bm.title,
 	    url: bm.url,
-	    favIconUrl: bm.favIconUrl,
 	
 	    saved: true,
+	    savedTitle: bm.title,
+	
 	    savedBookmarkId: bm.id,
 	    savedBookmarkIndex: bm.index
 	  });
@@ -17951,10 +17945,10 @@
 	 */
 	function makeOpenTabItem(tab) {
 	  var tabItem = new TabItem({
-	    title: tab.title,
 	    url: tab.url,
 	    favIconUrl: tab.favIconUrl,
 	    open: true,
+	    tabTitle: tab.title,
 	    openTabId: tab.id,
 	    active: tab.active,
 	    openTabIndex: tab.index
@@ -17966,7 +17960,7 @@
 	 * Returns the base saved state of a tab item (no open tab info)
 	 */
 	function resetSavedItem(ti) {
-	  return ti.remove('open').remove('openTabId').remove('active').remove('openTabIndex');
+	  return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
 	}
 	
 	/**
@@ -17980,8 +17974,8 @@
 	 *   (!open,saved)   - A previously saved window that is not currently open
 	 */
 	
-	var TabWindow = (function (_Immutable$Record) {
-	  _inherits(TabWindow, _Immutable$Record);
+	var TabWindow = (function (_Immutable$Record2) {
+	  _inherits(TabWindow, _Immutable$Record2);
 	
 	  function TabWindow() {
 	    _classCallCheck(this, TabWindow);
@@ -18097,7 +18091,7 @@
 	  // console.log("getOpenTabInfo: savedUrlMap :" + JSON.stringify(savedUrlMap,null,4));
 	
 	  function mergeTabItems(openItem, savedItem) {
-	    return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex);
+	    return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex).set('savedTitle', savedItem.savedTitle);
 	  }
 	  var mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
 	
@@ -18468,17 +18462,11 @@
 /*!***************************!*\
   !*** ./src/js/actions.js ***!
   \***************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	/**
-	 * get all open Chrome windows and synchronize state with our tab window store
-	 *
-	 * cb -- if non-null, no-argument callback to call when complete
-	 *
-	 */
-	Object.defineProperty(exports, "__esModule", {
+	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
 	exports.syncChromeWindows = syncChromeWindows;
@@ -18489,6 +18477,19 @@
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
 	exports.revertWindow = revertWindow;
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	/**
+	 * get all open Chrome windows and synchronize state with our tab window store
+	 *
+	 * cb -- if non-null, no-argument callback to call when complete
+	 *
+	 */
 	
 	function syncChromeWindows(winStore, cb) {
 	  var t_preGet = performance.now();
@@ -18663,25 +18664,29 @@
 	}
 	
 	function revertWindow(winStore, tabWindow) {
-	  throw new Error("reverWindow -- TODO!");
-	  var tabs = tabWindow.chromeWindow.tabs;
-	  var currentTabIds = tabs.map(function (t) {
-	    return t.id;
-	  });
+	  var currentTabIds = tabWindow.tabItems.filter(function (ti) {
+	    return ti.open;
+	  }).map(function (ti) {
+	    return ti.openTabId;
+	  }).toArray();
 	
-	  // re-open bookmarks:
-	  var urls = tabWindow.bookmarkFolder.children.map(function (bm) {
-	    return bm.url;
-	  });
-	  for (var i = 0; i < urls.length; i++) {
+	  var revertedTabWindow = TabWindow.resetSavedWindow(tabWindow);
+	
+	  // re-open saved URLs:
+	  // We need to do this before removing current tab ids or window will close
+	  var savedUrls = revertedTabWindow.tabItems.map(function (ti) {
+	    return ti.url;
+	  }).toArray();
+	
+	  for (var i = 0; i < savedUrls.length; i++) {
 	    // need to open it:
-	    var tabInfo = { windowId: tabWindow.chromeWindow.id, url: urls[i] };
+	    var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
 	    chrome.tabs.create(tabInfo);
 	  };
 	
 	  // blow away all the existing tabs:
 	  chrome.tabs.remove(currentTabIds, function () {
-	    var windowId = tabWindow.chromeWindow.id;
+	    var windowId = tabWindow.openWindowId;
 	    // refresh window details:
 	    chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
 	      winStore.syncChromeWindow(chromeWindow);

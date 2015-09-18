@@ -508,7 +508,7 @@ var TabWindow = React.createClass({
 
   renderTabItems: function(tabWindow,tabs) {
     var items = [];
-    for (var i = 0; i < tabs.size; i++ ) {
+    for (var i = 0; i < tabs.count(); i++ ) {
       var id = "tabItem-" + i;
       var tabItem = <TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs.get(i)} key={id} tabIndex={i} />;
       items.push(tabItem);
@@ -531,7 +531,8 @@ var TabWindow = React.createClass({
     var tabWindow = this.props.tabWindow;
     var tabs = tabWindow.tabItems;
 
-    if (tabs.size==0)
+    // TODO: This was part of old hacky search impl to hide windows w/ no match; should probably go
+    if (tabs.count()==0)
       return null;
 
     /*
