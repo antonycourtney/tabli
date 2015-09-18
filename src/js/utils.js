@@ -36,6 +36,28 @@ export function parseURL(url) {
   };
 }
 
+/**
+ * chain a sequence of asynchronous actions
+ *
+
+ */
+export function seqActions(actions,seed,onCompleted) {
+  var index = 0;
+
+  function invokeNext(v) {
+    var action = actions[index];
+    action(v,(res) => {
+      index = index + 1;
+      if (index < actions.length) {
+        invokeNext(res);
+      } else {
+        onCompleted(res);
+      }
+    });
+  }
+  invokeNext(seed);  
+}
+
 /*
 var CONTEXT_MENU_ID = 99;
 var contextMenuCreated = false;

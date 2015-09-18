@@ -40,8 +40,9 @@
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /*!****************************!*\
   !*** ./src/js/bgHelper.js ***!
   \****************************/
@@ -164,7 +165,8 @@
 	main();
 
 /***/ },
-/* 1 */
+
+/***/ 1:
 /*!**********************************!*\
   !*** ./src/js/tabWindowStore.js ***!
   \**********************************/
@@ -321,24 +323,19 @@
 	    }
 	
 	    /**
-	     * attach a bookmark folder to a specific tab window (after managing)
+	     * attach a bookmark folder to a specific chrome window
 	     */
 	  }, {
 	    key: 'attachBookmarkFolder',
-	    value: function attachBookmarkFolder(tabWindow, bookmarkFolder, title) {
-	      throw new Error("TODO - need to port to immutable");
+	    value: function attachBookmarkFolder(bookmarkFolder, chromeWindow) {
+	      var folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
 	
-	      tabWindow.bookmarkFolder = bookmarkFolder;
-	
-	      //
-	      // HACK: breaking the tabWindow abstraction
-	      //
-	      tabWindow._managed = true;
-	      tabWindow._managedTitle = title;
+	      var mergedTabWindow = TabWindow.updateWindow(folderTabWindow, chromeWindow);
 	
 	      // And re-register in store maps:
-	      this.registerTabWindow(tabWindow);
+	      this.registerTabWindow(mergedTabWindow);
 	      this.emit("change");
+	      return mergedTabWindow;
 	    }
 	  }, {
 	    key: 'handleTabClosed',
@@ -488,7 +485,8 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 2 */
+
+/***/ 2:
 /*!***************************!*\
   !*** ./~/lodash/index.js ***!
   \***************************/
@@ -12849,7 +12847,8 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/buildin/module.js */ 3)(module), (function() { return this; }())))
 
 /***/ },
-/* 3 */
+
+/***/ 3:
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/
@@ -12868,7 +12867,8 @@
 
 
 /***/ },
-/* 4 */
+
+/***/ 4:
 /*!***************************************!*\
   !*** ./~/immutable/dist/immutable.js ***!
   \***************************************/
@@ -17836,7 +17836,8 @@
 	}));
 
 /***/ },
-/* 5 */
+
+/***/ 5:
 /*!*****************************!*\
   !*** ./src/js/tabWindow.js ***!
   \*****************************/
@@ -18033,6 +18034,7 @@
 	 */
 	
 	function makeFolderTabWindow(bookmarkFolder) {
+	  console.log("makeFolderTabWindow: ", bookmarkFolder);
 	  var tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
 	  var tabWindow = new TabWindow({
 	    saved: true,
@@ -18067,8 +18069,8 @@
 	 */
 	function getOpenTabInfo(tabItems, openTabs) {
 	  var chromeOpenTabItems = openTabs.map(makeOpenTabItem);
-	  // console.log("getOpenTabInfo: openTabs: ", openTabs);
-	  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
+	  console.log("getOpenTabInfo: openTabs: ", openTabs);
+	  console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems, null, 4));
 	  var openUrlMap = Immutable.Map(chromeOpenTabItems.map(function (ti) {
 	    return [ti.url, ti];
 	  }));
@@ -18142,13 +18144,15 @@
 	 */
 	
 	function updateWindow(tabWindow, chromeWindow) {
+	  console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
 	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
 	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
 	  return updWindow;
 	}
 
 /***/ },
-/* 6 */
+
+/***/ 6:
 /*!****************************!*\
   !*** ./~/events/events.js ***!
   \****************************/
@@ -18458,7 +18462,8 @@
 
 
 /***/ },
-/* 7 */
+
+/***/ 7:
 /*!***************************!*\
   !*** ./src/js/actions.js ***!
   \***************************/
@@ -18483,6 +18488,10 @@
 	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	var _utils = __webpack_require__(/*! ./utils */ 366);
+	
+	var utils = _interopRequireWildcard(_utils);
 	
 	/**
 	 * get all open Chrome windows and synchronize state with our tab window store
@@ -18623,26 +18632,28 @@
 	    console.log("succesfully created bookmarks folder ", windowFolderNode);
 	    console.log("for window: ", tabWindow);
 	    var tabItems = tabWindow.tabItems.toArray();
-	    for (var i = 0; i < tabItems.length; i++) {
-	      var tabItem = tabItems[i];
-	      // bookmark for this tab:
-	      var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
-	      chrome.bookmarks.create(tabMark, function (tabNode) {
-	        console.log("succesfully bookmarked tab ", tabNode);
-	      });
-	    }
-	    // Now do an explicit get of subtree to get node populated with children
-	    chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
-	      var fullFolderNode = folderNodes[0];
 	
-	      // Note: Only now do we actually change the state to managed!
-	      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
-	      // or have no children because of the asynchrony of creating bookmarks.
-	      // There might still be a race condition here since
-	      // the bookmarks for children may not have been created yet.
-	      // Haven't seen evidence of this so far.     
-	      winStore.attachBookmarkFolder(tabWindow, fullFolderNode, title);
-	      cb(tabWindow);
+	    var bookmarkActions = tabItems.map(function (tabItem) {
+	      function makeBookmarkAction(v, cb) {
+	        var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
+	        chrome.bookmarks.create(tabMark, function (tabNode) {
+	          cb(tabNode);
+	        });
+	      }
+	      return makeBookmarkAction;
+	    });
+	
+	    utils.seqActions(bookmarkActions, null, function (bmNode) {
+	      // Now do an explicit get of subtree to get node populated with children
+	      chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
+	        var fullFolderNode = folderNodes[0];
+	
+	        // We'll retrieve the latest chrome Window state and attach that:
+	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
+	          var savedTabWindow = winStore.attachBookmarkFolder(fullFolderNode, chromeWindow);
+	          cb(savedTabWindow);
+	        });
+	      });
 	    });
 	  });
 	}
@@ -18694,6 +18705,102 @@
 	  });
 	}
 
+/***/ },
+
+/***/ 366:
+/*!*************************!*\
+  !*** ./src/js/utils.js ***!
+  \*************************/
+/***/ function(module, exports) {
+
+	/**
+	 * 
+	 * Common utility routines
+	 */
+	'use strict';
+	
+	// This function creates a new anchor element and uses location
+	// properties (inherent) to get the desired URL data. Some String
+	// operations are used (to normalize results across browsers).
+	// From http://james.padolsey.com/javascript/parsing-urls-with-the-dom/
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports.parseURL = parseURL;
+	exports.seqActions = seqActions;
+	
+	function parseURL(url) {
+	  var a = document.createElement('a');
+	  a.href = url;
+	  return {
+	    source: url,
+	    protocol: a.protocol.replace(':', ''),
+	    host: a.hostname,
+	    port: a.port,
+	    query: a.search,
+	    params: (function () {
+	      var ret = {},
+	          seg = a.search.replace(/^\?/, '').split('&'),
+	          len = seg.length,
+	          i = 0,
+	          s;
+	      for (; i < len; i++) {
+	        if (!seg[i]) {
+	          continue;
+	        }
+	        s = seg[i].split('=');
+	        ret[s[0]] = s[1];
+	      }
+	      return ret;
+	    })(),
+	    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
+	    hash: a.hash.replace('#', ''),
+	    path: a.pathname.replace(/^([^\/])/, '/$1'),
+	    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [, ''])[1],
+	    segments: a.pathname.replace(/^\//, '').split('/')
+	  };
+	}
+	
+	/**
+	 * chain a sequence of asynchronous actions
+	 *
+	
+	 */
+	
+	function seqActions(actions, seed, onCompleted) {
+	  var index = 0;
+	
+	  function invokeNext(v) {
+	    var action = actions[index];
+	    action(v, function (res) {
+	      index = index + 1;
+	      if (index < actions.length) {
+	        invokeNext(res);
+	      } else {
+	        onCompleted(res);
+	      }
+	    });
+	  }
+	  invokeNext(seed);
+	}
+	
+	/*
+	var CONTEXT_MENU_ID = 99;
+	var contextMenuCreated = false;
+
+	function initContextMenu() {
+	  var sendToMenuItem = { type: "normal",
+	                     id: CONTEXT_MENU_ID,
+	                     title: "Open Link in Existing Window",
+	                     contexts: [ "link" ]
+	                    };
+	  chrome.contextMenus.create( sendToMenuItem, function() {
+	    contextMenuCreated = true;
+	  });
+	}
+	*/
+
 /***/ }
-/******/ ]);
+
+/******/ });
 //# sourceMappingURL=bgHelper.bundle.js.map

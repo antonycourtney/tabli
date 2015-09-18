@@ -107,22 +107,17 @@ export default class TabWindowStore extends EventEmitter {
   }
 
   /**
-   * attach a bookmark folder to a specific tab window (after managing)
+   * attach a bookmark folder to a specific chrome window
    */
-  attachBookmarkFolder(tabWindow,bookmarkFolder,title) {
-      throw new Error("TODO - need to port to immutable");  
+  attachBookmarkFolder(bookmarkFolder,chromeWindow) {
+    const folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
 
-      tabWindow.bookmarkFolder = bookmarkFolder;
+    const mergedTabWindow = TabWindow.updateWindow(folderTabWindow,chromeWindow);
 
-      //
-      // HACK: breaking the tabWindow abstraction
-      //
-      tabWindow._managed = true;
-      tabWindow._managedTitle = title;
-
-      // And re-register in store maps:
-      this.registerTabWindow(tabWindow);
-      this.emit("change");
+    // And re-register in store maps:
+    this.registerTabWindow(mergedTabWindow);
+    this.emit("change");
+    return mergedTabWindow;
   }
 
 
@@ -140,7 +135,6 @@ export default class TabWindowStore extends EventEmitter {
     }
     this.emit("change");
   }
-
 
   /**
    * Synchronize internal state of our store with snapshot

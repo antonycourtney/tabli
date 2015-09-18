@@ -1,6 +1,7 @@
 'use strict';
 
 import * as TabWindow from './tabWindow';
+import * as utils from './utils';
 
 /**
  * get all open Chrome windows and synchronize state with our tab window store
@@ -139,28 +140,30 @@ export function manageWindow(winStore,tabWindow,title,cb) {
     console.log( "succesfully created bookmarks folder ", windowFolderNode );
     console.log( "for window: ", tabWindow );
     var tabItems = tabWindow.tabItems.toArray();
-    for( var i = 0; i < tabItems.length; i++ ) {
-      var tabItem = tabItems[ i ];
-      // bookmark for this tab:
-      var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
-      chrome.bookmarks.create( tabMark, function( tabNode ) {
-        console.log( "succesfully bookmarked tab ", tabNode );
-      });
-    }
-    // Now do an explicit get of subtree to get node populated with children
-    chrome.bookmarks.getSubTree( windowFolderNode.id, function ( folderNodes ) {
-      var fullFolderNode = folderNodes[ 0 ];
 
-      // Note: Only now do we actually change the state to managed!
-      // This is to avoid a nasty race condition where the bookmarkFolder would be undefined
-      // or have no children because of the asynchrony of creating bookmarks.
-      // There might still be a race condition here since
-      // the bookmarks for children may not have been created yet.
-      // Haven't seen evidence of this so far.      
-      winStore.attachBookmarkFolder(tabWindow,fullFolderNode,title);
-      cb(tabWindow);
-    } );
-  } );    
+    var bookmarkActions = tabItems.map((tabItem) => {
+      function makeBookmarkAction(v,cb) {
+        const tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
+        chrome.bookmarks.create( tabMark, function( tabNode ) {
+          cb(tabNode);
+        });
+      }
+      return makeBookmarkAction;
+    });
+
+    utils.seqActions(bookmarkActions,null,(bmNode) => {
+      // Now do an explicit get of subtree to get node populated with children
+      chrome.bookmarks.getSubTree( windowFolderNode.id, function ( folderNodes ) {
+        var fullFolderNode = folderNodes[ 0 ];
+
+        // We'll retrieve the latest chrome Window state and attach that:
+        chrome.windows.get(tabWindow.openWindowId,{populate: true}, (chromeWindow) => {
+          const savedTabWindow = winStore.attachBookmarkFolder(fullFolderNode,chromeWindow);
+          cb(savedTabWindow);
+        });
+      } );
+    });
+  });    
 }
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */

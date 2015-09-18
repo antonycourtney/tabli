@@ -7,6 +7,7 @@
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 
+
 /**
  * An item in a tabbed window.
  *
@@ -133,6 +134,7 @@ export function resetSavedWindow(tabWindow) {
  * Initialize an unopened TabWindow from a bookmarks folder
  */
 export function makeFolderTabWindow( bookmarkFolder ) {
+  console.log("makeFolderTabWindow: ", bookmarkFolder);
   const tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
   const tabWindow = new TabWindow({ 
     saved: true,
@@ -167,8 +169,8 @@ export function makeChromeTabWindow(chromeWindow) {
  */
 function getOpenTabInfo(tabItems,openTabs) {
   const chromeOpenTabItems = openTabs.map(makeOpenTabItem);
-  // console.log("getOpenTabInfo: openTabs: ", openTabs);
-  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
+  console.log("getOpenTabInfo: openTabs: ", openTabs);
+  console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
   const openUrlMap = Immutable.Map(chromeOpenTabItems.map((ti) => [ti.url,ti]));
 
   // console.log("getOpenTabInfo: openUrlMap :" + JSON.stringify(openUrlMap,null,4));
@@ -232,6 +234,7 @@ function mergeOpenTabs(tabItems,openTabs) {
  * @return {TabWindow} Updated TabWindow
  */
 export function updateWindow(tabWindow,chromeWindow) {
+  console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
   const mergedTabItems = mergeOpenTabs(tabWindow.tabItems,chromeWindow.tabs);
   const updWindow = tabWindow
                       .set('tabItems',mergedTabItems)
