@@ -80,7 +80,14 @@ function makeOpenTabItem(tab) {
  */
 function resetSavedItem(ti) {
   return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
-} 
+}
+
+/**
+ * Return the base state of an open tab (no saved tab info)
+ */
+function resetOpenItem(ti) {
+  return ti.remove('saved').remove('savedBookmarkId').remove('savedBookmarkIndex').remove('savedTitle');
+}
 
 /**
  * A TabWindow
@@ -131,12 +138,24 @@ class TabWindow extends Immutable.Record({
 /**
  * reset a window to its base saved state (after window is closed) 
  */
-export function resetSavedWindow(tabWindow) {
+export function removeOpenWindowState(tabWindow) {
   const savedItems = tabWindow.tabItems.filter((ti) => ti.saved);
   const resetSavedItems = savedItems.map(resetSavedItem);
 
   return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems',resetSavedItems);
 } 
+
+/*
+ * remove any saved state, keeping only open tab and window state
+ *
+ * Used when unsave'ing a saved window
+ */
+export function removeSavedWindowState(tabWindow) {
+  const openItems = tabWindow.tabItems.filter((ti) => ti.open);
+  const resetOpenItems = openItems.map(resetOpenItem);
+
+  return tabWindow.remove('saved').remove('savedFolderId').remove('savedTitle');
+}
 
 /**
  * Initialize an unopened TabWindow from a bookmarks folder

@@ -64,8 +64,7 @@ export default class TabWindowStore extends EventEmitter {
     console.log("handleTabWindowClosed: ", tabWindow.toJS());
     this.windowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
 
-    const revertedWindow = TabWindow.resetSavedWindow(tabWindow);
-
+    const revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
     console.log("handleTabWindowClosed: revertedWindow: ", revertedWindow.toJS());
 
     this.registerTabWindow(revertedWindow);
@@ -80,10 +79,11 @@ export default class TabWindowStore extends EventEmitter {
 
   unmanageWindow(tabWindow) {
     this.removeBookmarkIdMapEntry(tabWindow);
-
     // disconnect from the previously associated bookmark folder and re-register
-    const umWindow = tabWindow.set('saved',false).set('savedFolderId',-1);
-    this.registerTabWindow(umWindow);    
+    const umWindow = TabWindow.removeSavedWindowState(tabWindow);
+
+    this.registerTabWindow(umWindow);   
+    this.emit("change"); 
   }
 
 

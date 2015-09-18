@@ -1245,8 +1245,7 @@
 	      console.log("handleTabWindowClosed: ", tabWindow.toJS());
 	      this.windowIdMap = this.windowIdMap['delete'](tabWindow.openWindowId);
 	
-	      var revertedWindow = TabWindow.resetSavedWindow(tabWindow);
-	
+	      var revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
 	      console.log("handleTabWindowClosed: revertedWindow: ", revertedWindow.toJS());
 	
 	      this.registerTabWindow(revertedWindow);
@@ -1263,10 +1262,11 @@
 	    key: 'unmanageWindow',
 	    value: function unmanageWindow(tabWindow) {
 	      this.removeBookmarkIdMapEntry(tabWindow);
-	
 	      // disconnect from the previously associated bookmark folder and re-register
-	      var umWindow = tabWindow.set('saved', false).set('savedFolderId', -1);
+	      var umWindow = TabWindow.removeSavedWindowState(tabWindow);
+	
 	      this.registerTabWindow(umWindow);
+	      this.emit("change");
 	    }
 	
 	    /**
@@ -18813,7 +18813,8 @@
 	
 	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 	
-	exports.resetSavedWindow = resetSavedWindow;
+	exports.removeOpenWindowState = removeOpenWindowState;
+	exports.removeSavedWindowState = removeSavedWindowState;
 	exports.makeFolderTabWindow = makeFolderTabWindow;
 	exports.makeChromeTabWindow = makeChromeTabWindow;
 	exports.updateWindow = updateWindow;
@@ -18922,6 +18923,13 @@
 	}
 	
 	/**
+	 * Return the base state of an open tab (no saved tab info)
+	 */
+	function resetOpenItem(ti) {
+	  return ti.remove('saved').remove('savedBookmarkId').remove('savedBookmarkIndex').remove('savedTitle');
+	}
+	
+	/**
 	 * A TabWindow
 	 *
 	 * Tab windows have a title and a set of tab items.
@@ -18989,13 +18997,28 @@
 	  tabItems: Immutable.Seq() // <TabItem>
 	}));
 	
-	function resetSavedWindow(tabWindow) {
+	function removeOpenWindowState(tabWindow) {
 	  var savedItems = tabWindow.tabItems.filter(function (ti) {
 	    return ti.saved;
 	  });
 	  var resetSavedItems = savedItems.map(resetSavedItem);
 	
 	  return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems', resetSavedItems);
+	}
+	
+	/*
+	 * remove any saved state, keeping only open tab and window state
+	 *
+	 * Used when unsave'ing a saved window
+	 */
+	
+	function removeSavedWindowState(tabWindow) {
+	  var openItems = tabWindow.tabItems.filter(function (ti) {
+	    return ti.open;
+	  });
+	  var resetOpenItems = openItems.map(resetOpenItem);
+	
+	  return tabWindow.remove('saved').remove('savedFolderId').remove('savedTitle');
 	}
 	
 	/**
@@ -19676,14 +19699,13 @@
 	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
 	
 	function unmanageWindow(winStore, tabWindow) {
-	  throw new Error("unmanageWindow -- TODO");
-	  console.log("unmanageWindow");
+	  console.log("unmanageWindow: ", tabWindow.toJS());
 	  if (!winStore.archiveFolderId) {
 	    alert("could not move managed window folder to archive -- no archive folder");
 	    return;
 	  }
-	  // TODO: what happens if a folder with same name already exists in archive folder?
-	  chrome.bookmarks.move(tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, function (resultNode) {
+	  // Could potentially disambiguate names in archive folder...
+	  chrome.bookmarks.move(tabWindow.savedFolderId, { parentId: winStore.archiveFolderId }, function (resultNode) {
 	    console.log("unmanageWindow: bookmark folder moved to archive folder");
 	    winStore.unmanageWindow(tabWindow);
 	  });
@@ -19696,7 +19718,7 @@
 	    return ti.openTabId;
 	  }).toArray();
 	
-	  var revertedTabWindow = TabWindow.resetSavedWindow(tabWindow);
+	  var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
 	
 	  // re-open saved URLs:
 	  // We need to do this before removing current tab ids or window will close

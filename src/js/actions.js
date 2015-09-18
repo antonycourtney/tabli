@@ -183,14 +183,13 @@ export function manageWindow(winStore,tabWindow,title,cb) {
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
 export function unmanageWindow(winStore,tabWindow) {
-  throw new Error("unmanageWindow -- TODO");
-  console.log("unmanageWindow");
+  console.log("unmanageWindow: ", tabWindow.toJS());
   if( !winStore.archiveFolderId ) {
     alert( "could not move managed window folder to archive -- no archive folder" );
     return;
   }
-  // TODO: what happens if a folder with same name already exists in archive folder?
-  chrome.bookmarks.move( tabWindow.bookmarkFolder.id, { parentId: winStore.archiveFolderId }, (resultNode) => {
+  // Could potentially disambiguate names in archive folder...
+  chrome.bookmarks.move( tabWindow.savedFolderId, { parentId: winStore.archiveFolderId }, (resultNode) => {
     console.log("unmanageWindow: bookmark folder moved to archive folder");
     winStore.unmanageWindow(tabWindow);
   });
@@ -199,7 +198,7 @@ export function unmanageWindow(winStore,tabWindow) {
 export function revertWindow(winStore,tabWindow) {
   const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openTabId).toArray();
 
-  const revertedTabWindow = TabWindow.resetSavedWindow(tabWindow);
+  const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
 
   // re-open saved URLs:
   // We need to do this before removing current tab ids or window will close
