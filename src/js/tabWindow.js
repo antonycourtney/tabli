@@ -113,10 +113,18 @@ class TabWindow extends Immutable.Record({
     if (!activeTab) {
       // shouldn't happen!
       console.warn("TabWindow.get title(): No active tab found: ", this.toJS());
-      return '';
+
+      var openTabItem = this.tabItems.find((t) => t.open);
+      if (!openTabItem)
+        return '';
+      return openTabItem.title;
     }
 
     return activeTab.title;    
+  }
+
+  get openTabCount() {
+    return this.tabItems.count((ti) => ti.open);
   }
 }
 
@@ -134,7 +142,6 @@ export function resetSavedWindow(tabWindow) {
  * Initialize an unopened TabWindow from a bookmarks folder
  */
 export function makeFolderTabWindow( bookmarkFolder ) {
-  console.log("makeFolderTabWindow: ", bookmarkFolder);
   const tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
   const tabWindow = new TabWindow({ 
     saved: true,
@@ -169,8 +176,8 @@ export function makeChromeTabWindow(chromeWindow) {
  */
 function getOpenTabInfo(tabItems,openTabs) {
   const chromeOpenTabItems = openTabs.map(makeOpenTabItem);
-  console.log("getOpenTabInfo: openTabs: ", openTabs);
-  console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
+  // console.log("getOpenTabInfo: openTabs: ", openTabs);
+  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
   const openUrlMap = Immutable.Map(chromeOpenTabItems.map((ti) => [ti.url,ti]));
 
   // console.log("getOpenTabInfo: openUrlMap :" + JSON.stringify(openUrlMap,null,4));
@@ -234,7 +241,7 @@ function mergeOpenTabs(tabItems,openTabs) {
  * @return {TabWindow} Updated TabWindow
  */
 export function updateWindow(tabWindow,chromeWindow) {
-  console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
+  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
   const mergedTabItems = mergeOpenTabs(tabWindow.tabItems,chromeWindow.tabs);
   const updWindow = tabWindow
                       .set('tabItems',mergedTabItems)
@@ -242,4 +249,29 @@ export function updateWindow(tabWindow,chromeWindow) {
                       .set('open',true)
                       .set('openWindowId',chromeWindow.id);
   return updWindow;
+}
+
+/**
+ * handle a tab that's been closed
+ *
+ * @param {TabWindow} tabWindow - tab window with tab that's been closed
+ * @param {Number} tabId -- Chrome id of closed tab
+ *
+ * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
+ */
+export function closeTab(tabWindow,tabId) {
+  console.log("closeTab: ", tabWindow, tabId);
+  var [index,tabItem] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
+
+  console.log("closeTab: ", index, tabItem);
+  var updItems;
+
+  if (tabItem.saved) {
+    var updTabItem = resetSavedItem(tabItem);
+    updItems = tabWindow.tabItems.splice(index,1,updTabItem);
+  } else {
+    updItems = tabWindow.tabItems.splice(index,1);
+  }
+
+  return tabWindow.set('tabItems',updItems);
 }

@@ -121,18 +121,9 @@ export default class TabWindowStore extends EventEmitter {
   }
 
 
-  handleTabClosed(windowId,tabId) {
-    throw new Error("TODO: port handleTabClosed to immutable");
-    var tabWindow = this.windowIdMap[windowId];
-    if (!tabWindow) {
-      console.warn("Got tab removed event for unknown window ", windowId, tabId);
-      return;
-    }
-    var chromeWindow = tabWindow.chromeWindow;
-    var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
-    if (tabIndex!=null) {
-      tabWindow.chromeWindow.tabs.splice(tabIndex,1);
-    }
+  handleTabClosed(tabWindow,tabId) {
+    var updWindow = TabWindow.closeTab(tabWindow,tabId);
+    this.registerTabWindow(updWindow);
     this.emit("change");
   }
 
@@ -146,7 +137,6 @@ export default class TabWindowStore extends EventEmitter {
   syncChromeWindow(chromeWindow,noEmit) {
     var tabWindow = this.windowIdMap.get(chromeWindow.id);
     if( !tabWindow ) {
-      console.log( "syncChromeWindow: detected new window id: ", chromeWindow.id );
       tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
       this.registerTabWindow(tabWindow);
     } else {

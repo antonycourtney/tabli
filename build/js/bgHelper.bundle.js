@@ -339,18 +339,9 @@
 	    }
 	  }, {
 	    key: 'handleTabClosed',
-	    value: function handleTabClosed(windowId, tabId) {
-	      throw new Error("TODO: port handleTabClosed to immutable");
-	      var tabWindow = this.windowIdMap[windowId];
-	      if (!tabWindow) {
-	        console.warn("Got tab removed event for unknown window ", windowId, tabId);
-	        return;
-	      }
-	      var chromeWindow = tabWindow.chromeWindow;
-	      var tabIndex = findTabIndex(tabWindow.chromeWindow, tabId);
-	      if (tabIndex != null) {
-	        tabWindow.chromeWindow.tabs.splice(tabIndex, 1);
-	      }
+	    value: function handleTabClosed(tabWindow, tabId) {
+	      var updWindow = TabWindow.closeTab(tabWindow, tabId);
+	      this.registerTabWindow(updWindow);
 	      this.emit("change");
 	    }
 	
@@ -366,7 +357,6 @@
 	    value: function syncChromeWindow(chromeWindow, noEmit) {
 	      var tabWindow = this.windowIdMap.get(chromeWindow.id);
 	      if (!tabWindow) {
-	        console.log("syncChromeWindow: detected new window id: ", chromeWindow.id);
 	        tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
 	        this.registerTabWindow(tabWindow);
 	      } else {
@@ -17853,6 +17843,8 @@
 	  value: true
 	});
 	
+	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+	
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 	
 	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
@@ -17861,6 +17853,7 @@
 	exports.makeFolderTabWindow = makeFolderTabWindow;
 	exports.makeChromeTabWindow = makeChromeTabWindow;
 	exports.updateWindow = updateWindow;
+	exports.closeTab = closeTab;
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 	
@@ -18000,10 +17993,22 @@
 	      if (!activeTab) {
 	        // shouldn't happen!
 	        console.warn("TabWindow.get title(): No active tab found: ", this.toJS());
-	        return '';
+	
+	        var openTabItem = this.tabItems.find(function (t) {
+	          return t.open;
+	        });
+	        if (!openTabItem) return '';
+	        return openTabItem.title;
 	      }
 	
 	      return activeTab.title;
+	    }
+	  }, {
+	    key: 'openTabCount',
+	    get: function get() {
+	      return this.tabItems.count(function (ti) {
+	        return ti.open;
+	      });
 	    }
 	  }]);
 	
@@ -18034,7 +18039,6 @@
 	 */
 	
 	function makeFolderTabWindow(bookmarkFolder) {
-	  console.log("makeFolderTabWindow: ", bookmarkFolder);
 	  var tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
 	  var tabWindow = new TabWindow({
 	    saved: true,
@@ -18069,8 +18073,8 @@
 	 */
 	function getOpenTabInfo(tabItems, openTabs) {
 	  var chromeOpenTabItems = openTabs.map(makeOpenTabItem);
-	  console.log("getOpenTabInfo: openTabs: ", openTabs);
-	  console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems, null, 4));
+	  // console.log("getOpenTabInfo: openTabs: ", openTabs);
+	  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
 	  var openUrlMap = Immutable.Map(chromeOpenTabItems.map(function (ti) {
 	    return [ti.url, ti];
 	  }));
@@ -18144,10 +18148,44 @@
 	 */
 	
 	function updateWindow(tabWindow, chromeWindow) {
-	  console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
+	  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
 	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
 	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
 	  return updWindow;
+	}
+	
+	/**
+	 * handle a tab that's been closed
+	 *
+	 * @param {TabWindow} tabWindow - tab window with tab that's been closed
+	 * @param {Number} tabId -- Chrome id of closed tab
+	 *
+	 * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
+	 */
+	
+	function closeTab(tabWindow, tabId) {
+	  console.log("closeTab: ", tabWindow, tabId);
+	
+	  var _tabWindow$tabItems$findEntry = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.open && ti.openTabId === tabId;
+	  });
+	
+	  var _tabWindow$tabItems$findEntry2 = _slicedToArray(_tabWindow$tabItems$findEntry, 2);
+	
+	  var index = _tabWindow$tabItems$findEntry2[0];
+	  var tabItem = _tabWindow$tabItems$findEntry2[1];
+	
+	  console.log("closeTab: ", index, tabItem);
+	  var updItems;
+	
+	  if (tabItem.saved) {
+	    var updTabItem = resetSavedItem(tabItem);
+	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	  } else {
+	    updItems = tabWindow.tabItems.splice(index, 1);
+	  }
+	
+	  return tabWindow.set('tabItems', updItems);
 	}
 
 /***/ },
@@ -18594,11 +18632,26 @@
 	  }
 	}
 	
-	function closeTab(winStore, windowId, tabId) {
-	  console.log("closeTab: closing tab ", windowId, tabId);;
-	  var self = this;
+	function closeTab(winStore, tabWindow, tabId) {
+	  console.log("closeTab: closing tab ", tabWindow.toJS(), tabId);;
+	
+	  var openTabCount = tabWindow.openTabCount;
 	  chrome.tabs.remove(tabId, function () {
-	    winStore.handleTabClosed(windowId, tabId);
+	    console.log("closeTab: tab closed");
+	    if (openTabCount == 1) {
+	      winStore.handleTabWindowClosed(tabWindow);
+	    } else {
+	      console.log("closeTab: syncing window state");
+	      /*
+	       * We'd like to do a full chrome.windows.get here so that we get the currently active tab
+	       * but amazingly we still see the closed tab when we do that!
+	      chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
+	        console.log("closeTab: got window state: ", chromeWindow);
+	        winStore.syncChromeWindow(chromeWindow);
+	      });
+	      */
+	      winStore.handleTabClosed(tabWindow, tabId);
+	    }
 	  });
 	}
 	

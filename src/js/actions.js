@@ -103,11 +103,26 @@ export function activateTab(winStore,tabWindow,tab,tabIndex) {
   }        
 }
 
-export function closeTab(winStore,windowId,tabId) {
-  console.log("closeTab: closing tab ", windowId, tabId);;
-  var self = this;
+export function closeTab(winStore,tabWindow,tabId) {
+  console.log("closeTab: closing tab ",tabWindow.toJS(), tabId);;
+
+  const openTabCount = tabWindow.openTabCount;
   chrome.tabs.remove(tabId,() => {
-    winStore.handleTabClosed(windowId,tabId);
+    console.log("closeTab: tab closed");
+    if (openTabCount==1) {
+      winStore.handleTabWindowClosed(tabWindow);      
+    } else {
+      console.log("closeTab: syncing window state")
+      /*
+       * We'd like to do a full chrome.windows.get here so that we get the currently active tab
+       * but amazingly we still see the closed tab when we do that!
+      chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
+        console.log("closeTab: got window state: ", chromeWindow);
+        winStore.syncChromeWindow(chromeWindow);
+      });
+      */
+      winStore.handleTabClosed(tabWindow,tabId);
+    }
   });
 }
 

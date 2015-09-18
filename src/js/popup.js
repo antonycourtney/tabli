@@ -387,7 +387,6 @@ var TabItem = React.createClass({
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
     var tabIndex = this.props.tabIndex;
-
     // console.log("TabItem: handleClick: tab: ", tab);
 
     actions.activateTab(this.props.winStore,tabWindow,tab,tabIndex);
@@ -396,11 +395,10 @@ var TabItem = React.createClass({
   handleClose: function() {
     if (!this.props.tabWindow.open)
       return;
-    var windowId = this.props.tabWindow.openWindowId;
     if (!this.props.tab.open)
       return;
     var tabId = this.props.tab.openTabId;
-    actions.closeTab(this.props.winStore,windowId,tabId);
+    actions.closeTab(this.props.winStore,this.props.tabWindow,tabId);
   }, 
 
   render: function() {
