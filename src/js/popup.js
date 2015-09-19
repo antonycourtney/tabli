@@ -444,6 +444,7 @@ var TabItem = React.createClass({
     var tabActiveStyle = tab.active ? styles.activeSpan : null;
     var tabTitleStyles = m(styles.text,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
+    var selectedStyle = this.props.isSelected ? styles.tabItemSelected : null;
 
     var closeStyle = m(styles.headerButton,styles.closeButton);
     var closeButton = <HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
@@ -451,7 +452,7 @@ var TabItem = React.createClass({
                           onClick={this.handleClose} />
 
     return (
-      <div style={m(styles.noWrap,styles.tabItem,hoverStyle)}
+      <div style={m(styles.noWrap,styles.tabItem,hoverStyle,selectedStyle)}
           onMouseOut={this.handleMouseOut} 
           onMouseOver={this.handleMouseOver}
           onClick={this.handleClick} >
@@ -508,7 +509,13 @@ var FilteredTabWindow = React.createClass({
     var items = [];
     for (var i = 0; i < tabs.count(); i++ ) {
       var id = "tabItem-" + i;
-      var tabItem = <TabItem winStore={this.props.winStore} tabWindow={tabWindow} tab={tabs.get(i)} key={id} tabIndex={i} />;
+      const isSelected = (i==this.props.selectedTabIndex);
+      var tabItem = <TabItem winStore={this.props.winStore} 
+                      tabWindow={tabWindow} 
+                      tab={tabs.get(i)} 
+                      key={id} 
+                      tabIndex={i} 
+                      isSelected={isSelected} />;
       items.push(tabItem);
     };
 
@@ -618,23 +625,49 @@ var WindowListSection = React.createClass({
   }
 });
 
+const KEY_UP = 38;
+const KEY_DOWN = 40;
+const KEY_ENTER = 13;
+
 var SearchBar = React.createClass({
   handleChange() {
     const searchStr=this.refs.searchInput.getDOMNode().value;
     this.props.onSearchInput(searchStr);
   },
 
+  handleKeyDown(e) {
+    if (e.keyCode===KEY_UP) {
+      if (this.props.onSearchUp) {
+        e.preventDefault();
+        this.props.onSearchUp();
+      }
+    }
+    if (e.keyCode===KEY_DOWN) {
+      if (this.props.onSearchDown) {
+        e.preventDefault();
+        this.props.onSearchDown();
+      }
+    }
+    if (e.keyCode==KEY_ENTER) {
+      if (this.props.onSearchEnter) {
+        e.preventDefault();
+        this.props.onSearchEnter();
+      }
+    }
+  },
+
   render() {
     return (
       <div style={styles.searchBar}>
         <input style={styles.searchInput} type="text" ref="searchInput" placeholder="Search..." 
-          onChange={this.handleChange} />
+          onChange={this.handleChange} onKeyDown={this.handleKeyDown} />
       </div>
     );  
   }
 });
 
 var TabWindowList = React.createClass({
+
 
   render: function() {
     console.log("TabWindowList: render");
@@ -649,17 +682,14 @@ var TabWindowList = React.createClass({
       var id = "tabWindow" + i;
       var isOpen = tabWindow.open;
       var isFocused = tabWindow.focused;
-      var isSelected = tabWindow === this.props.selectedWindow;
-      var selectedTab = null;
-      if (isSelected) {
-        selectedTab = this.props.selectedTab;
-      }
+      var isSelected = (i==this.props.selectedWindowIndex);
+      const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
       var windowElem = <FilteredTabWindow winStore={this.props.winStore} 
                           filteredTabWindow={filteredTabWindow} key={id} 
                           searchStr={this.props.searchStr} 
                           searchRE={this.props.searchRE}
                           isSelected={isSelected}
-                          selectedTab={selectedTab}
+                          selectedTabIndex={selectedTabIndex}
                           />;
       if (isFocused) {
         focusedWindowElem = windowElem;
@@ -817,6 +847,131 @@ var SaveModal = React.createClass({
 
 });
 
+function tabCount(searchStr,filteredTabWindow) {
+  var ret = (searchStr.length > 0) ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+  return ret;
+}
+
+function selectedTab(filteredTabWindow,searchStr,tabIndex) {
+  if (searchStr.length==0) {
+    var tabWindow = filteredTabWindow.tabWindow;
+    var tabItem = tabWindow.tabItems.get(tabIndex);
+    return tabItem;
+  } else {
+    var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
+    return filteredItem.tabItem;
+  }
+}
+
+/**
+ * An element that manages the selection.
+ *
+ * We want this as a distinct element from its parent TabMan, because it does local state management
+ * and validation that should happen with respect to the (already calculated) props containing
+ * filtered windows that we receive from above
+ */
+var SelectablePopup = React.createClass({
+  getInitialState: function() {
+    return {
+      selectedWindowIndex: 0,
+      selectedTabIndex: 0
+    };
+  },
+
+  handlePrevSelection: function() {
+    if (this.props.filteredWindows.length===0)
+      return;
+    const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
+    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+
+    if (this.state.selectedTabIndex > 0) {
+      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
+    } else {
+      // Already on first tab, try to back up to previous window:
+      if (this.state.selectedWindowIndex > 0 ) {
+        const prevWindowIndex = this.state.selectedWindowIndex - 1;
+        const prevWindow = this.props.filteredWindows[prevWindowIndex];
+        const prevTabCount = (this.props.searchStr.length > 0) ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
+
+        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
+      }
+    }
+  },
+
+  handleNextSelection: function() {
+    if (this.props.filteredWindows.length===0)
+      return;
+    const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
+    const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+
+    if ((this.state.selectedTabIndex + 1) < tabCount) {
+      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
+    } else {
+      // Already on last tab, try to advance to next window:
+      if ((this.state.selectedWindowIndex + 1) < this.props.filteredWindows.length) {
+        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
+      }
+    }
+  },
+
+  handleSelectionEnter: function() {
+    if (this.props.filteredWindows.length==0)
+      return;
+
+    // TODO: deal with this.state.selectedTabIndex==-1
+
+    const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
+    const selectedTabItem=selectedTab(selectedWindow,this.props.searchStr,this.state.selectedTabIndex);
+    console.log("opening: ", selectedTabItem.toJS());
+    actions.activateTab(this.props.winStore,selectedWindow.tabWindow,selectedTabItem,this.state.selectedTabIndex);
+  },
+
+  componentWillReceiveProps: function(nextProps) {
+    var selectedWindowIndex = this.state.selectedWindowIndex;
+    var selectedTabIndex = this.state.selectedTabIndex;
+    var nextFilteredWindows = nextProps.filteredWindows;
+
+    console.log("selection props: ", nextFilteredWindows);
+
+    if (selectedWindowIndex >= nextFilteredWindows.length) {
+      if (nextFilteredWindows.length==0) {
+        this.setState({selectedWindowIndex: 0, selectedTabIndex: -1});
+        console.log("resetting indices");
+      } else {
+        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
+        this.setState({selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: tabCount(this.props.searchStr,lastWindow) - 1});
+      }
+    } else {
+      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
+      var nextTabIndex = Math.min(this.state.selectedTabIndex,tabCount(this.props.searchStr,nextSelectedWindow) - 1);
+      this.setState({selectedTabIndex: nextTabIndex});
+    }
+  }, 
+
+  render: function() {
+    console.log("selection: ", this.state.selectedWindowIndex, this.state.selectedTabIndex);
+    return (
+      <div>
+        <WindowListSection>
+          <SearchBar onSearchInput={this.props.onSearchInput} 
+                     onSearchUp={this.handlePrevSelection} 
+                     onSearchDown={this.handleNextSelection}
+                     onSearchEnter={this.handleSelectionEnter}
+                     />
+        </WindowListSection>        
+        <TabWindowList winStore={this.props.winStore} 
+                         filteredWindows={this.props.filteredWindows} 
+                         appComponent={this.props.appComponent}
+                         searchStr={this.props.searchStr}
+                         searchRE={this.props.searchRE}
+                         selectedWindowIndex={this.state.selectedWindowIndex}
+                         selectedTabIndex={this.state.selectedTabIndex}
+                         />
+      </div> 
+    );
+  }
+});
+
 var TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
@@ -845,8 +1000,6 @@ var TabMan = React.createClass({
     st.modalIsOpen = false;
     st.searchStr = '';
     st.searchRE = null;
-    st.selectedWindow = w0;
-    st.selectedTab = null;
     return st;
   },
 
@@ -898,20 +1051,17 @@ var TabMan = React.createClass({
       console.log("filteredWindows: ", filteredWindows);
       var ret = (
         <div>
-          <WindowListSection>
-            <SearchBar onSearchInput={this.handleSearchInput}/>
-          </WindowListSection>        
-          <TabWindowList winStore={this.state.winStore} 
-                           filteredWindows={filteredWindows} 
-                           appComponent={this}
-                           searchStr={this.state.searchStr}
-                           searchRE={this.state.searchRE}
-                           selectedWindow={this.state.selectedWindow}
-                           selectedTab={this.state.selectedTab}
-                           />
+          <SelectablePopup 
+            onSearchInput={this.handleSearchInput}
+            winStore={this.state.winStore} 
+            filteredWindows={filteredWindows} 
+            appComponent={this}
+            searchStr={this.state.searchStr}
+            searchRE={this.state.searchRE}
+          />
           {modal}
-        </div> 
-       );
+        </div>
+      );
     } catch (e) {
       console.error( "App Component: caught exception during render: " );
       console.error( e.stack );
