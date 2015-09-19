@@ -7,13 +7,12 @@
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 
-
 /**
  * An item in a tabbed window.
  *
  * May be associated with an open tab, a bookmark, or both
  */
-class TabItem extends Immutable.Record({
+export class TabItem extends Immutable.Record({
   url: '',
 
   /* Saved state fields
@@ -99,7 +98,7 @@ function resetOpenItem(ti) {
  *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
  *   (!open,saved)   - A previously saved window that is not currently open
  */
-class TabWindow extends Immutable.Record({
+export class TabWindow extends Immutable.Record({
   saved: false,
   savedTitle: '',
   savedFolderId: -1,
@@ -108,10 +107,26 @@ class TabWindow extends Immutable.Record({
   openWindowId: -1,
   focused: false,
 
+  _title: null,
+
   tabItems: Immutable.Seq()   // <TabItem>
 }) {
 
+  constructor(defaultValues) {
+    super(_.extend(defaultValues,{_title: {} }));
+  }
+
+  // Hacky hack to compute title lazily and cache result 
   get title() {
+    var titleObj = this._title;
+
+    if (!(_.has(titleObj,'value'))) {
+      titleObj.value = this.computeTitle();
+    }
+    return titleObj.value;
+  }
+
+  computeTitle() {
     if (this.saved)
       return this.savedTitle;
 
@@ -126,7 +141,6 @@ class TabWindow extends Immutable.Record({
         return '';
       return openTabItem.title;
     }
-
     return activeTab.title;    
   }
 

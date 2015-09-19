@@ -67,6 +67,10 @@
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
+	var _searchOps = __webpack_require__(/*! ./searchOps */ 367);
+	
+	var searchOps = _interopRequireWildcard(_searchOps);
+	
 	// import * as objectAssign from 'object-assign';
 	
 	__webpack_require__(/*! babel/polyfill */ 165);
@@ -414,7 +418,6 @@
 	      });
 	    }
 	
-	    var windowTitle = tabWindow.title;
 	    var openStyle = tabWindow.open ? styles.open : styles.closed;
 	    var titleStyle = m(styles.text, styles.noWrap, styles.windowTitle, openStyle);
 	    var closeStyle = m(styles.headerButton, styles.closeButton);
@@ -540,8 +543,8 @@
 	
 	});
 	
-	var TabWindow = React.createClass({
-	  displayName: 'TabWindow',
+	var FilteredTabWindow = React.createClass({
+	  displayName: 'FilteredTabWindow',
 	
 	  mixins: [Hoverable],
 	
@@ -557,16 +560,16 @@
 	
 	  handleOpen: function handleOpen() {
 	    console.log("handleOpen", this, this.props);
-	    actions.openWindow(this.props.winStore, this.props.tabWindow);
+	    actions.openWindow(this.props.winStore, this.props.filteredTabWindow.tabWindow);
 	  },
 	
 	  handleClose: function handleClose(event) {
 	    // console.log("handleClose");
-	    actions.closeWindow(this.props.winStore, this.props.tabWindow);
+	    actions.closeWindow(this.props.winStore, this.props.filteredTabWindow.tabWindow);
 	  },
 	
 	  handleRevert: function handleRevert(event) {
-	    actions.revertWindow(this.props.winStore, this.props.tabWindow);
+	    actions.revertWindow(this.props.winStore, this.props.filteredTabWindow.tabWindow);
 	  },
 	
 	  /* expanded state follows window open/closed state unless it is 
@@ -574,7 +577,7 @@
 	   */
 	  getExpandedState: function getExpandedState() {
 	    if (this.state.expanded === null) {
-	      return this.props.tabWindow.open;
+	      return this.props.filteredTabWindow.tabWindow.open;
 	    } else {
 	      return this.state.expanded;
 	    }
@@ -603,11 +606,16 @@
 	  },
 	
 	  render: function render() {
-	    var tabWindow = this.props.tabWindow;
-	    var tabs = tabWindow.tabItems;
-	
-	    // TODO: This was part of old hacky search impl to hide windows w/ no match; should probably go
-	    if (tabs.count() == 0) return null;
+	    var filteredTabWindow = this.props.filteredTabWindow;
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabs;
+	    if (this.props.searchStr.length == 0) {
+	      tabs = tabWindow.tabItems;
+	    } else {
+	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
+	        return fti.tabItem;
+	      });
+	    }
 	
 	    /*
 	     * optimization:  Let's only render tabItems if expanded
@@ -720,32 +728,31 @@
 	    var openWindows = [];
 	    var savedWindows = [];
 	
-	    var tabWindows = this.props.sortedWindows;
-	    for (var i = 0; i < tabWindows.length; i++) {
-	      var tabWindow = tabWindows[i];
+	    var filteredWindows = this.props.filteredWindows;
+	    for (var i = 0; i < filteredWindows.length; i++) {
+	      var filteredTabWindow = filteredWindows[i];
+	      var tabWindow = filteredTabWindow.tabWindow;
 	      var id = "tabWindow" + i;
-	      if (tabWindow) {
-	        var isOpen = tabWindow.open;
-	        var isFocused = tabWindow.focused;
-	        var isSelected = tabWindow === this.props.selectedWindow;
-	        var selectedTab = null;
-	        if (isSelected) {
-	          selectedTab = this.props.selectedTab;
-	        }
-	        var windowElem = React.createElement(TabWindow, { winStore: this.props.winStore,
-	          tabWindow: tabWindow, key: id,
-	          searchStr: this.props.searchStr,
-	          searchRE: this.props.searchRE,
-	          isSelected: isSelected,
-	          selectedTab: selectedTab
-	        });
-	        if (isFocused) {
-	          focusedWindowElem = windowElem;
-	        } else if (isOpen) {
-	          openWindows.push(windowElem);
-	        } else {
-	          savedWindows.push(windowElem);
-	        }
+	      var isOpen = tabWindow.open;
+	      var isFocused = tabWindow.focused;
+	      var isSelected = tabWindow === this.props.selectedWindow;
+	      var selectedTab = null;
+	      if (isSelected) {
+	        selectedTab = this.props.selectedTab;
+	      }
+	      var windowElem = React.createElement(FilteredTabWindow, { winStore: this.props.winStore,
+	        filteredTabWindow: filteredTabWindow, key: id,
+	        searchStr: this.props.searchStr,
+	        searchRE: this.props.searchRE,
+	        isSelected: isSelected,
+	        selectedTab: selectedTab
+	      });
+	      if (isFocused) {
+	        focusedWindowElem = windowElem;
+	      } else if (isOpen) {
+	        openWindows.push(windowElem);
+	      } else {
+	        savedWindows.push(windowElem);
 	      }
 	    }
 	
@@ -943,9 +950,6 @@
 	
 	    var sortedWindows = tabWindows.sort(windowCmpFn);
 	
-	    // var w0Title = sortedWindows[0].title;
-	    // console.log("TabMan: window 0 title: '" + w0Title + "'");
-	
 	    return {
 	      winStore: winStore,
 	      sortedWindows: sortedWindows
@@ -963,13 +967,11 @@
 	  getInitialState: function getInitialState() {
 	    var st = this.getStateFromStore(this.props.winStore);
 	
+	    var w0 = st.sortedWindows[0];
+	
 	    st.modalIsOpen = false;
 	    st.searchStr = '';
 	    st.searchRE = null;
-	    var w0 = st.sortedWindows[0];
-	
-	    console.log("getInitialState: w0: ", w0.toJS());
-	
 	    st.selectedWindow = w0;
 	    st.selectedTab = null;
 	    return st;
@@ -982,7 +984,7 @@
 	    if (searchStr.length > 0) {
 	      searchRE = new RegExp(searchStr, "i");
 	    }
-	    console.log("search input: '", searchStr, "'");
+	    console.log("search input: '" + searchStr + "'");
 	    this.setState({ searchStr: searchStr, searchRE: searchRE });
 	  },
 	
@@ -1021,6 +1023,8 @@
 	  render: function render() {
 	    try {
 	      var modal = this.renderModal();
+	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
+	      console.log("filteredWindows: ", filteredWindows);
 	      var ret = React.createElement(
 	        'div',
 	        null,
@@ -1030,7 +1034,7 @@
 	          React.createElement(SearchBar, { onSearchInput: this.handleSearchInput })
 	        ),
 	        React.createElement(TabWindowList, { winStore: this.state.winStore,
-	          sortedWindows: this.state.sortedWindows,
+	          filteredWindows: filteredWindows,
 	          appComponent: this,
 	          searchStr: this.state.searchStr,
 	          searchRE: this.state.searchRE,
@@ -1425,12 +1429,12 @@
 	  }, {
 	    key: 'removeViewListener',
 	    value: function removeViewListener(id) {
-	      console.log("removeViewListener: removing listener id ", id);
+	      // console.log("removeViewListener: removing listener id ", id);
 	      var listener = this.viewListeners[id];
 	      if (listener) {
 	        this.removeListener("change", listener);
 	      } else {
-	        console.warn("clearViewListener: No listener found for id ", id);
+	        console.warn("removeViewListener: No listener found for id ", id);
 	      }
 	      delete this.viewListeners[id];
 	    }
@@ -18886,6 +18890,7 @@
 	  tabTitle: ''
 	}));
 	
+	exports.TabItem = TabItem;
 	function makeBookmarkedTabItem(bm) {
 	  var tabItem = new TabItem({
 	    url: bm.url,
@@ -18943,19 +18948,21 @@
 	var TabWindow = (function (_Immutable$Record2) {
 	  _inherits(TabWindow, _Immutable$Record2);
 	
-	  function TabWindow() {
+	  function TabWindow(defaultValues) {
 	    _classCallCheck(this, TabWindow);
 	
-	    _get(Object.getPrototypeOf(TabWindow.prototype), 'constructor', this).apply(this, arguments);
+	    _get(Object.getPrototypeOf(TabWindow.prototype), 'constructor', this).call(this, _.extend(defaultValues, { _title: {} }));
 	  }
 	
 	  /**
 	   * reset a window to its base saved state (after window is closed) 
 	   */
 	
+	  // Hacky hack to compute title lazily and cache result
+	
 	  _createClass(TabWindow, [{
-	    key: 'title',
-	    get: function get() {
+	    key: 'computeTitle',
+	    value: function computeTitle() {
 	      if (this.saved) return this.savedTitle;
 	
 	      var activeTab = this.tabItems.find(function (t) {
@@ -18972,8 +18979,17 @@
 	        if (!openTabItem) return '';
 	        return openTabItem.title;
 	      }
-	
 	      return activeTab.title;
+	    }
+	  }, {
+	    key: 'title',
+	    get: function get() {
+	      var titleObj = this._title;
+	
+	      if (!_.has(titleObj, 'value')) {
+	        titleObj.value = this.computeTitle();
+	      }
+	      return titleObj.value;
 	    }
 	  }, {
 	    key: 'openTabCount',
@@ -18994,8 +19010,12 @@
 	  openWindowId: -1,
 	  focused: false,
 	
+	  _title: null,
+	
 	  tabItems: Immutable.Seq() // <TabItem>
 	}));
+	
+	exports.TabWindow = TabWindow;
 	
 	function removeOpenWindowState(tabWindow) {
 	  var savedItems = tabWindow.tabItems.filter(function (ti) {
@@ -57447,6 +57467,113 @@
 	  });
 	}
 	*/
+
+/***/ },
+/* 367 */
+/*!*****************************!*\
+  !*** ./src/js/searchOps.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Search and filter operations on TabWindows
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports.matchTabItem = matchTabItem;
+	exports.matchTabWindow = matchTabWindow;
+	exports.filterTabWindows = filterTabWindows;
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+	
+	var _lodash = __webpack_require__(/*! lodash */ 2);
+	
+	var _ = _interopRequireWildcard(_lodash);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	/**
+	 * A TabItem augmented with search results
+	 */
+	var FilteredTabItem = Immutable.Record({
+	  tabItem: new TabWindow.TabItem(),
+	
+	  urlMatches: null,
+	  titleMatches: null
+	});
+	
+	/**
+	 * Use a RegExp to match a particular TabItem
+	 *
+	 * @return {FilteredTabItem} filtered item (or null if no match)
+	 */
+	
+	function matchTabItem(tabItem, searchExp) {
+	  var urlMatches = tabItem.url.match(searchExp);
+	  var titleMatches = tabItem.title.match(searchExp);
+	
+	  if (urlMatches === null && titleMatches === null) return null;
+	
+	  return new FilteredTabItem({ tabItem: tabItem, urlMatches: urlMatches, titleMatches: titleMatches });
+	}
+	
+	/**
+	 * A TabWindow augmented with search results
+	 */
+	var FilteredTabWindow = Immutable.Record({
+	  tabWindow: new TabWindow.TabWindow(),
+	  titleMatches: [],
+	  itemMatches: Immutable.Seq() // matching tab items
+	});
+	
+	/**
+	 * Match a TabWindow using a Regexp
+	 *
+	 */
+	
+	function matchTabWindow(tabWindow, searchExp) {
+	  var itemMatches = tabWindow.tabItems.map(function (ti) {
+	    return matchTabItem(ti, searchExp);
+	  }).filter(function (fti) {
+	    return fti !== null;
+	  });
+	  var titleMatches = tabWindow.title.match(searchExp);
+	
+	  if (titleMatches === null && itemMatches.count() === 0) return null;
+	
+	  return FilteredTabWindow({ tabWindow: tabWindow, titleMatches: titleMatches, itemMatches: itemMatches });
+	}
+	
+	/**
+	 * filter an array of TabWindows using a searchRE to obtain
+	 * an array of FilteredTabWindow
+	 */
+	
+	function filterTabWindows(tabWindows, searchExp) {
+	  var res;
+	  if (searchExp === null) {
+	    res = _.map(tabWindows, function (tw) {
+	      return new FilteredTabWindow({ tabWindow: tw });
+	    });
+	  } else {
+	    var mappedWindows = _.map(tabWindows, function (tw) {
+	      return matchTabWindow(tw, searchExp);
+	    });
+	    res = _.filter(mappedWindows, function (fw) {
+	      return fw !== null;
+	    });
+	  }
+	  return res;
+	}
 
 /***/ }
 /******/ ]);

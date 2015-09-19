@@ -95,7 +95,9 @@ function main() {
   initWinStore(function (winStore) {
     console.log("init: done reading bookmarks.");
     window.winStore = winStore;
-    actions.syncChromeWindows(winStore);
+    actions.syncChromeWindows(winStore,() => {
+      console.log("initial sync of chrome windows complete.");
+    });
     setupConnectionListener(winStore);
   });
 }

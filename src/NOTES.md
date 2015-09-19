@@ -6,6 +6,8 @@ X Fix tab window sort order: Focused Window, Open Windows (alphabetical by title
 
 (!!) - Add event handled for check box for bookmarking / un-bookmarking a tab
 
+- PERFORMANCE:  It turns out that TabWindow.get title() is getting called quite a lot...why??  Is it during sorting during render?  That would make sense.  Can we somehow calculate this field lazily so that we won't have to recalc it?
+
 - review actions.js with tabWindowStore.js.  Make sure every action has the right corresponding entry points in TabWindowStore, with correct change notifications.
 
 - Mark all the handleChromeXXX methods in TabWindowStore as deprecated (or just remove)

@@ -157,7 +157,9 @@
 	  initWinStore(function (winStore) {
 	    console.log("init: done reading bookmarks.");
 	    window.winStore = winStore;
-	    actions.syncChromeWindows(winStore);
+	    actions.syncChromeWindows(winStore, function () {
+	      console.log("initial sync of chrome windows complete.");
+	    });
 	    setupConnectionListener(winStore);
 	  });
 	}
@@ -457,12 +459,12 @@
 	  }, {
 	    key: 'removeViewListener',
 	    value: function removeViewListener(id) {
-	      console.log("removeViewListener: removing listener id ", id);
+	      // console.log("removeViewListener: removing listener id ", id);
 	      var listener = this.viewListeners[id];
 	      if (listener) {
 	        this.removeListener("change", listener);
 	      } else {
-	        console.warn("clearViewListener: No listener found for id ", id);
+	        console.warn("removeViewListener: No listener found for id ", id);
 	      }
 	      delete this.viewListeners[id];
 	    }
@@ -17922,6 +17924,7 @@
 	  tabTitle: ''
 	}));
 	
+	exports.TabItem = TabItem;
 	function makeBookmarkedTabItem(bm) {
 	  var tabItem = new TabItem({
 	    url: bm.url,
@@ -17979,19 +17982,21 @@
 	var TabWindow = (function (_Immutable$Record2) {
 	  _inherits(TabWindow, _Immutable$Record2);
 	
-	  function TabWindow() {
+	  function TabWindow(defaultValues) {
 	    _classCallCheck(this, TabWindow);
 	
-	    _get(Object.getPrototypeOf(TabWindow.prototype), 'constructor', this).apply(this, arguments);
+	    _get(Object.getPrototypeOf(TabWindow.prototype), 'constructor', this).call(this, _.extend(defaultValues, { _title: {} }));
 	  }
 	
 	  /**
 	   * reset a window to its base saved state (after window is closed) 
 	   */
 	
+	  // Hacky hack to compute title lazily and cache result
+	
 	  _createClass(TabWindow, [{
-	    key: 'title',
-	    get: function get() {
+	    key: 'computeTitle',
+	    value: function computeTitle() {
 	      if (this.saved) return this.savedTitle;
 	
 	      var activeTab = this.tabItems.find(function (t) {
@@ -18008,8 +18013,17 @@
 	        if (!openTabItem) return '';
 	        return openTabItem.title;
 	      }
-	
 	      return activeTab.title;
+	    }
+	  }, {
+	    key: 'title',
+	    get: function get() {
+	      var titleObj = this._title;
+	
+	      if (!_.has(titleObj, 'value')) {
+	        titleObj.value = this.computeTitle();
+	      }
+	      return titleObj.value;
 	    }
 	  }, {
 	    key: 'openTabCount',
@@ -18030,8 +18044,12 @@
 	  openWindowId: -1,
 	  focused: false,
 	
+	  _title: null,
+	
 	  tabItems: Immutable.Seq() // <TabItem>
 	}));
+	
+	exports.TabWindow = TabWindow;
 	
 	function removeOpenWindowState(tabWindow) {
 	  var savedItems = tabWindow.tabItems.filter(function (ti) {

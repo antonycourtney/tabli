@@ -220,12 +220,12 @@ export default class TabWindowStore extends EventEmitter {
   }
 
   removeViewListener(id) {
-    console.log("removeViewListener: removing listener id ", id);
+    // console.log("removeViewListener: removing listener id ", id);
     var listener = this.viewListeners[id];
     if (listener) {
       this.removeListener("change",listener);
     } else {
-      console.warn("clearViewListener: No listener found for id ", id);
+      console.warn("removeViewListener: No listener found for id ", id);
     }
     delete this.viewListeners[id];
   }

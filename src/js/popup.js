@@ -4,6 +4,7 @@ import * as $ from 'jquery';
 import * as React from 'react';
 import * as actions from './actions';
 import * as Immutable from 'immutable';
+import * as searchOps from './searchOps';
 
 // import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
@@ -346,7 +347,6 @@ var WindowHeader = React.createClass({
                           />;
     }
 
-    var windowTitle = tabWindow.title;   
     var openStyle = tabWindow.open ? styles.open : styles.closed;
     var titleStyle = m(styles.text,styles.noWrap,styles.windowTitle,openStyle);
     var closeStyle = m(styles.headerButton,styles.closeButton);
@@ -465,7 +465,7 @@ var TabItem = React.createClass({
 
 });
 
-var TabWindow = React.createClass({
+var FilteredTabWindow = React.createClass({
   mixins: [Hoverable],
 
   contextTypes: {
@@ -480,16 +480,16 @@ var TabWindow = React.createClass({
 
   handleOpen: function() {
     console.log("handleOpen", this, this.props);
-    actions.openWindow(this.props.winStore,this.props.tabWindow);
+    actions.openWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    actions.closeWindow(this.props.winStore,this.props.tabWindow);
+    actions.closeWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow);
   },
 
   handleRevert: function(event) {
-    actions.revertWindow(this.props.winStore,this.props.tabWindow);
+    actions.revertWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow);
   },
 
 
@@ -498,7 +498,7 @@ var TabWindow = React.createClass({
    */
   getExpandedState: function() {
     if (this.state.expanded === null) {
-      return this.props.tabWindow.open;
+      return this.props.filteredTabWindow.tabWindow.open;
     } else {
       return this.state.expanded;
     }
@@ -526,12 +526,14 @@ var TabWindow = React.createClass({
   },
 
   render: function () {
-    var tabWindow = this.props.tabWindow;
-    var tabs = tabWindow.tabItems;
-
-    // TODO: This was part of old hacky search impl to hide windows w/ no match; should probably go
-    if (tabs.count()==0)
-      return null;
+    var filteredTabWindow = this.props.filteredTabWindow;
+    var tabWindow = filteredTabWindow.tabWindow;
+    var tabs;
+    if (this.props.searchStr.length==0) {
+      tabs = tabWindow.tabItems;
+    } else {
+      tabs = filteredTabWindow.itemMatches.map((fti) => fti.tabItem);
+    }
 
     /*
      * optimization:  Let's only render tabItems if expanded
@@ -640,32 +642,31 @@ var TabWindowList = React.createClass({
     var openWindows = [];
     var savedWindows = [];
 
-    var tabWindows = this.props.sortedWindows;    
-    for (var i=0; i < tabWindows.length; i++) {
-      var tabWindow = tabWindows[i];
+    var filteredWindows = this.props.filteredWindows;    
+    for (var i=0; i < filteredWindows.length; i++) {
+      var filteredTabWindow = filteredWindows[i];
+      var tabWindow = filteredTabWindow.tabWindow;
       var id = "tabWindow" + i;
-      if (tabWindow) {
-          var isOpen = tabWindow.open;
-          var isFocused = tabWindow.focused;
-          var isSelected = tabWindow === this.props.selectedWindow;
-          var selectedTab = null;
-          if (isSelected) {
-            selectedTab = this.props.selectedTab;
-          }
-          var windowElem = <TabWindow winStore={this.props.winStore} 
-                              tabWindow={tabWindow} key={id} 
-                              searchStr={this.props.searchStr} 
-                              searchRE={this.props.searchRE}
-                              isSelected={isSelected}
-                              selectedTab={selectedTab}
-                              />;
-          if (isFocused) {
-            focusedWindowElem = windowElem;
-          } else if (isOpen) {
-            openWindows.push(windowElem);
-          } else {
-            savedWindows.push(windowElem);
-          }
+      var isOpen = tabWindow.open;
+      var isFocused = tabWindow.focused;
+      var isSelected = tabWindow === this.props.selectedWindow;
+      var selectedTab = null;
+      if (isSelected) {
+        selectedTab = this.props.selectedTab;
+      }
+      var windowElem = <FilteredTabWindow winStore={this.props.winStore} 
+                          filteredTabWindow={filteredTabWindow} key={id} 
+                          searchStr={this.props.searchStr} 
+                          searchRE={this.props.searchRE}
+                          isSelected={isSelected}
+                          selectedTab={selectedTab}
+                          />;
+      if (isFocused) {
+        focusedWindowElem = windowElem;
+      } else if (isOpen) {
+        openWindows.push(windowElem);
+      } else {
+        savedWindows.push(windowElem);
       }
     }
 
@@ -820,11 +821,7 @@ var TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
 
-
     var sortedWindows = tabWindows.sort(windowCmpFn);
-
-    // var w0Title = sortedWindows[0].title;
-    // console.log("TabMan: window 0 title: '" + w0Title + "'");
 
     return {
       winStore: winStore,
@@ -843,13 +840,11 @@ var TabMan = React.createClass({
   getInitialState: function() {
     var st = this.getStateFromStore(this.props.winStore);
 
+    const w0 = st.sortedWindows[0];
+
     st.modalIsOpen = false;
     st.searchStr = '';
     st.searchRE = null;
-    const w0 = st.sortedWindows[0];
-
-    console.log("getInitialState: w0: ", w0.toJS());
-
     st.selectedWindow = w0;
     st.selectedTab = null;
     return st;
@@ -862,7 +857,7 @@ var TabMan = React.createClass({
     if (searchStr.length > 0) {
       searchRE = new RegExp(searchStr,"i");
     }
-    console.log("search input: '",searchStr,"'");
+    console.log("search input: '" + searchStr + "'");
     this.setState({ searchStr, searchRE });
   },
 
@@ -899,13 +894,15 @@ var TabMan = React.createClass({
   render: function() {
     try {
       const modal = this.renderModal();
+      const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows,this.state.searchRE);      
+      console.log("filteredWindows: ", filteredWindows);
       var ret = (
         <div>
           <WindowListSection>
             <SearchBar onSearchInput={this.handleSearchInput}/>
           </WindowListSection>        
           <TabWindowList winStore={this.state.winStore} 
-                           sortedWindows={this.state.sortedWindows} 
+                           filteredWindows={filteredWindows} 
                            appComponent={this}
                            searchStr={this.state.searchStr}
                            searchRE={this.state.searchRE}
