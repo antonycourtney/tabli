@@ -9,7 +9,7 @@
     "default_title": "Subjective Tab Manager"
   },
   "background": {
-    "scripts": ["js/bgHelper.bundle.js"],
+    "scripts": ["js/common.js","js/bgHelper.bundle.js"],
     "persistent": true
   },  
   "permissions": [

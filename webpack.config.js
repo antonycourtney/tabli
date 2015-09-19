@@ -1,4 +1,10 @@
 // webpack.config.js
+
+var webpack = require('webpack');
+
+var commonsPlugin =
+  new webpack.optimize.CommonsChunkPlugin('common.js');
+
 module.exports = {
     entry: {
         popup: "./src/js/popup.js",
@@ -8,6 +14,7 @@ module.exports = {
         path: "./build/js",
         filename: "[name].bundle.js"
     },
+    plugins: [commonsPlugin],
     module: {
         loaders: [
             { test: /\.(js|jsx)$/, exclude: /node_modules/, loader: "babel-loader" },
