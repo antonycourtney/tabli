@@ -931,8 +931,6 @@ var SelectablePopup = React.createClass({
     var selectedTabIndex = this.state.selectedTabIndex;
     var nextFilteredWindows = nextProps.filteredWindows;
 
-    console.log("selection props: ", nextFilteredWindows);
-
     if (selectedWindowIndex >= nextFilteredWindows.length) {
       if (nextFilteredWindows.length==0) {
         this.setState({selectedWindowIndex: 0, selectedTabIndex: -1});
@@ -949,7 +947,6 @@ var SelectablePopup = React.createClass({
   }, 
 
   render: function() {
-    console.log("selection: ", this.state.selectedWindowIndex, this.state.selectedTabIndex);
     return (
       <div>
         <WindowListSection>
@@ -976,8 +973,11 @@ var TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
 
+    var t_preSort = performance.now();
     var sortedWindows = tabWindows.sort(windowCmpFn);
+    var t_postSort = performance.now();
 
+    console.log("sorting windows took ", t_postSort - t_preSort, " ms");
     return {
       winStore: winStore,
       sortedWindows
@@ -1048,7 +1048,6 @@ var TabMan = React.createClass({
     try {
       const modal = this.renderModal();
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows,this.state.searchRE);      
-      console.log("filteredWindows: ", filteredWindows);
       var ret = (
         <div>
           <SelectablePopup 
@@ -1088,7 +1087,6 @@ var TabMan = React.createClass({
     // winStore.setViewListener(this.viewListener);
 
     var listenerId = winStore.addViewListener(this.viewListener);
-    console.log("added view listener: ", listenerId);
     sendHelperMessage({ listenerId });
   },
 });

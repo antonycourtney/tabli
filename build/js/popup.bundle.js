@@ -1054,8 +1054,6 @@
 	    var selectedTabIndex = this.state.selectedTabIndex;
 	    var nextFilteredWindows = nextProps.filteredWindows;
 	
-	    console.log("selection props: ", nextFilteredWindows);
-	
 	    if (selectedWindowIndex >= nextFilteredWindows.length) {
 	      if (nextFilteredWindows.length == 0) {
 	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
@@ -1072,7 +1070,6 @@
 	  },
 	
 	  render: function render() {
-	    console.log("selection: ", this.state.selectedWindowIndex, this.state.selectedTabIndex);
 	    return React.createElement(
 	      'div',
 	      null,
@@ -1103,8 +1100,11 @@
 	  getStateFromStore: function getStateFromStore(winStore) {
 	    var tabWindows = winStore.getAll();
 	
+	    var t_preSort = performance.now();
 	    var sortedWindows = tabWindows.sort(windowCmpFn);
+	    var t_postSort = performance.now();
 	
+	    console.log("sorting windows took ", t_postSort - t_preSort, " ms");
 	    return {
 	      winStore: winStore,
 	      sortedWindows: sortedWindows
@@ -1177,7 +1177,6 @@
 	    try {
 	      var modal = this.renderModal();
 	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
-	      console.log("filteredWindows: ", filteredWindows);
 	      var ret = React.createElement(
 	        'div',
 	        null,
@@ -1219,7 +1218,6 @@
 	    // winStore.setViewListener(this.viewListener);
 	
 	    var listenerId = winStore.addViewListener(this.viewListener);
-	    console.log("added view listener: ", listenerId);
 	    sendHelperMessage({ listenerId: listenerId });
 	  }
 	});
@@ -19696,7 +19694,10 @@
 	  chrome.windows.getAll({ populate: true }, function (windowList) {
 	    var t_postGet = performance.now();
 	    console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
+	    var t_preSync = performance.now();
 	    winStore.syncWindowList(windowList);
+	    var t_postSync = performance.now();
+	    console.log("syncChromeWindows: syncWindowList took ", t_postSync - t_preSync, " ms");
 	    if (cb) cb();
 	  });
 	}
