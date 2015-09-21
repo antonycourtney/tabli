@@ -95,6 +95,8 @@ function setupConnectionListener(winStore) {
 
 /**
  * dump all windows -- useful for creating performance tests
+ *
+ * NOTE:  Requires the "downloads" permission in the manifest!
  */
 function dumpAll(winStore) {
   const allWindows = winStore.getAll();
