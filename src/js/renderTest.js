@@ -77,29 +77,6 @@ function loadTestData(callback) {
  */ 
 function renderTest() {
   loadTestData(renderPage);
-/*
-  var bgw = chrome.extension.getBackgroundPage();
-  var winStore = bgw.winStore;
-
-  actions.syncChromeWindows(winStore,logWrap( () => {
-    console.log("postLoadRender: window sync complete");
-
-    var t_preRender = performance.now();
-    var elemId = document.getElementById('windowList-region');
-    Perf.start();
-    var windowListComponent = <Components.TabMan winStore={winStore} />;
-    React.render( windowListComponent, elemId ); 
-    Perf.stop();
-    var t_postRender = performance.now();
-    console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
-    console.log("inclusive:");
-    Perf.printInclusive();
-    console.log("exclusive:");
-    Perf.printExclusive();
-    console.log("wasted:");
-    Perf.printWasted();
-  }));
-*/
 }
 
 /*

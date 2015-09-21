@@ -8,6 +8,7 @@
 import TabWindowStore from './tabWindowStore';
 import * as TabWindow from './tabWindow';
 import * as actions from './actions';
+import * as React from 'react';
 
 var popupPort = null;
 const tabmanFolderTitle = "Subjective Tab Manager";
