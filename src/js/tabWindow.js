@@ -139,6 +139,7 @@ export class TabWindow extends Immutable.Record({
       var openTabItem = this.tabItems.find((t) => t.open);
       if (!openTabItem)
         return '';
+      console.log("computeTitle: returning: '" + openTabItem.title + "'");
       return openTabItem.title;
     }
     return activeTab.title;    

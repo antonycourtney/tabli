@@ -4,17 +4,23 @@ X Modal dialog for saving a tab window
 
 X Fix tab window sort order: Focused Window, Open Windows (alphabetical by title), Saved (closed) Windows
 
+Performance:
+   - Using react Perf tools we seem to be spending considerable time in HeaderButton.  Let's get a consistent, reproducible performance test
+     to verify this by taking a snapshot of winStore    
+
+(!!!) - restoring a closed saved tab not working
+
 (!!) - Add event handled for check box for bookmarking / un-bookmarking a tab
 
-- PERFORMANCE:  It turns out that TabWindow.get title() is getting called quite a lot...why??  Is it during sorting during render?  That would make sense.  Can we somehow calculate this field lazily so that we won't have to recalc it?
+X PERFORMANCE:  It turns out that TabWindow.get title() is getting called quite a lot...why??  Is it during sorting during render?  That would make sense.  Can we somehow calculate this field lazily so that we won't have to recalc it?
 
 - review actions.js with tabWindowStore.js.  Make sure every action has the right corresponding entry points in TabWindowStore, with correct change notifications.
 
-- Mark all the handleChromeXXX methods in TabWindowStore as deprecated (or just remove)
+X Mark all the handleChromeXXX methods in TabWindowStore as deprecated (or just remove)
 
-- Try to determine if the calls to TabWindow.getTabItems are expensive and figure out if there's a way we can lazily cache them. Don't want to be doing sort() operations on mouse motion.
+X Try to determine if the calls to TabWindow.getTabItems are expensive and figure out if there's a way we can lazily cache them. Don't want to be doing sort() operations on mouse motion.
 
-- Finish moving to inline styles -- delete most / all of tabman.css !
+X Finish moving to inline styles -- delete most / all of tabman.css !
 
 - Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
 

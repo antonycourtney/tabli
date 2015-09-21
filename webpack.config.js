@@ -7,6 +7,7 @@ var commonsPlugin =
 
 module.exports = {
     entry: {
+      renderTest: "./src/js/renderTest.js",
         popup: "./src/js/popup.js",
         bgHelper: "./src/js/bgHelper.js"
     },

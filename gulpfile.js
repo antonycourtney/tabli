@@ -70,6 +70,14 @@ gulp.task('build_images', function() {
         .pipe(gulp.dest('build/images'));
 });
 
+gulp.task('build_testData', function() {
+    gutil.log("copy test data to build");
+
+    return gulp.src('test/*.json')
+        .pipe(gulp.dest('build/testData'));
+});
+
+
 // Copy all bootstrap files from node_modules/bootstrap/dist:
 gulp.task('build_bootstrap', function() {
     gutil.log("copy bootstrap/dist from node_modules to build");
@@ -78,7 +86,7 @@ gulp.task('build_bootstrap', function() {
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('build_assets',['build_bootstrap','build_html','build_images']);
+gulp.task('build_assets',['build_bootstrap','build_html','build_images','build_testData']);
 
 // Build and watch cycle (another option for development)
 // Advantage: No server required, can run app from filesystem

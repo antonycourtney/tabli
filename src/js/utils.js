@@ -58,6 +58,22 @@ export function seqActions(actions,seed,onCompleted) {
   invokeNext(seed);  
 }
 
+// wrapper to log exceptions
+export function logWrap( f ) {
+  function wf() {
+    try {
+      var ret = f.apply( this, arguments );
+    } catch( e ) {
+      console.error( "logWrap: caught exception invoking function: " );
+      console.error( e.stack );
+      throw e;
+    }
+    return ret;
+  }
+  return wf;
+}
+
+
 /*
 var CONTEXT_MENU_ID = 99;
 var contextMenuCreated = false;

@@ -91,12 +91,30 @@ function setupConnectionListener(winStore) {
   });
 }
 
+/**
+ * dump all windows -- useful for creating performance tests
+ */
+function dumpAll(winStore) {
+  const allWindows = winStore.getAll();
+
+  const jsWindows = allWindows.map((tw) => tw.toJS());
+
+  const dumpObj = {allWindows: jsWindows};
+
+  const dumpStr = JSON.stringify(dumpObj,null,2);
+
+  const winBlob = new Blob([dumpStr], {type:"application/json"});
+  const url = URL.createObjectURL(winBlob);
+  chrome.downloads.download({url: url,filename: 'winSnap.json'});
+}
+
 function main() {
   initWinStore(function (winStore) {
     console.log("init: done reading bookmarks.");
     window.winStore = winStore;
     actions.syncChromeWindows(winStore,() => {
       console.log("initial sync of chrome windows complete.");
+      // dumpAll(winStore);
     });
     setupConnectionListener(winStore);
   });
