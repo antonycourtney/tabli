@@ -27,10 +27,6 @@ function renderPage(testData) {
 
   const tabWindows = allWindows.map(makeTabWindow);
 
-  console.log("tabWindows: ", tabWindows.map((tw) => tw.toJS() ) );
-
-  console.log("window titles:", tabWindows.map((tw) => tw.title));
-
   var mockWinStore = new TabWindowStore(-1,-1);
 
 
@@ -38,19 +34,23 @@ function renderPage(testData) {
   console.log("Created mockWinStore and registered test windows");
   var t_preRender = performance.now();
   var elemId = document.getElementById('windowList-region');
-  Perf.start();
+  if (Perf)
+    Perf.start();
+ 
   var windowListComponent = <Components.TabMan winStore={mockWinStore} />;
   React.render( windowListComponent, elemId ); 
-  Perf.stop();
   var t_postRender = performance.now();
+  if (Perf)
+    Perf.stop();
   console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
-  console.log("inclusive:");
-  Perf.printInclusive();
-  console.log("exclusive:");
-  Perf.printExclusive();
-  console.log("wasted:");
-  Perf.printWasted();
-
+  if (Perf) {
+    console.log("inclusive:");
+    Perf.printInclusive();
+    console.log("exclusive:");
+    Perf.printExclusive();
+    console.log("wasted:");
+    Perf.printWasted();
+  }
 }
 
 
