@@ -29,16 +29,49 @@ function renderPage(testData) {
 
   var mockWinStore = new TabWindowStore(-1,-1);
 
+  var bgPage = chrome.extension.getBackgroundPage();
+
+  var renderTestSavedHTML = bgPage.renderTestSavedHTML;
+
+/*
+  const savedNode = bgPage.savedNode;
+  console.log("Saved node from bg page: ", savedNode);
+*/
 
   mockWinStore.registerTabWindows(tabWindows);
   console.log("Created mockWinStore and registered test windows");
   var t_preRender = performance.now();
-  var elemId = document.getElementById('windowList-region');
+  var parentNode = document.getElementById('windowList-region');
+
   if (Perf)
     Perf.start();
  
-  var windowListComponent = <Components.TabMan winStore={mockWinStore} />;
-  React.render( windowListComponent, elemId ); 
+  /*
+  if (savedNode) {
+    var newNode = document.importNode(savedNode, true);
+    if (parentNode.firstChild===null) {
+      parentNode.appendChild(newNode);
+    } else {
+      parentNode.replaceChild(newNode,parentNode.firstChild);
+    }
+  }
+  */
+  if (renderTestSavedHTML) {
+    console.log("Got saved HTML, setting...");
+    parentNode.innerHTML = renderTestSavedHTML;
+    var t_postSet = performance.now();
+    console.log("time to set initial HTML: ", t_postSet - t_preRender);
+  }
+  /*
+   * Use setTimeout so we have a chance to finish the initial render
+   */
+  // pass noListener since we don't want to receive updates from the store.
+  // There won't be any such updates (since we created the store) but the listener mechanism
+  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
+  // that connection.
+  var appElement = <Components.TabMan winStore={mockWinStore} noListener={true} />;  
+  React.render( appElement, parentNode );
+
   var t_postRender = performance.now();
   if (Perf)
     Perf.stop();
@@ -51,8 +84,13 @@ function renderPage(testData) {
     console.log("wasted:");
     Perf.printWasted();
   }
-}
+  console.log("After rendering, parentNode: ", parentNode);
 
+  var renderedString = React.renderToString(appElement);
+  // console.log("rendered string: ", renderedString);
+  // bgPage.savedNode = parentNode.firstChild;
+  bgPage.renderTestSavedHTML = renderedString;
+}
 
 var testStateUrl = "testData/winSnap.json";
 

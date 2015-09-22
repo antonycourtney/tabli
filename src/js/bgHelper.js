@@ -9,7 +9,8 @@ import TabWindowStore from './tabWindowStore';
 import * as TabWindow from './tabWindow';
 import * as actions from './actions';
 import * as React from 'react';
-import {addons} from 'react/addons'; 
+import {addons} from 'react/addons';
+import * as Components from './components';
 
 var popupPort = null;
 const tabmanFolderTitle = "Subjective Tab Manager";
@@ -119,6 +120,13 @@ function main() {
     actions.syncChromeWindows(winStore,() => {
       console.log("initial sync of chrome windows complete.");
       // dumpAll(winStore);
+
+      // Let's do an initial render and save the result for faster load by popup:
+      const appElement = <Components.TabMan winStore={winStore} noListener={true} />;  
+  
+      const renderedString = React.renderToString(appElement);
+      console.log("rendered initial HTML");
+      window.savedHTML = renderedString;
     });
     setupConnectionListener(winStore);
   });

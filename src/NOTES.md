@@ -8,9 +8,13 @@ Performance:
    - Using react Perf tools we seem to be spending considerable time in HeaderButton.  Let's get a consistent, reproducible performance test
      to verify this by taking a snapshot of winStore    
 
-(!!!) - restoring a closed saved tab not working
+!! - restoring a closed saved tab not working
 
-(!!) - Add event handled for check box for bookmarking / un-bookmarking a tab
+!! - Add event handled for check box for bookmarking / un-bookmarking a tab
+
+!! - Need to adjust scroll position when using arrow keys
+
+!! - Should be able to open a saved window from keyboard
 
 X PERFORMANCE:  It turns out that TabWindow.get title() is getting called quite a lot...why??  Is it during sorting during render?  That would make sense.  Can we somehow calculate this field lazily so that we won't have to recalc it?
 

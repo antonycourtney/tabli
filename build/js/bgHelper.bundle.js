@@ -34,6 +34,10 @@ webpackJsonp([0],[
 	
 	var _reactAddons = __webpack_require__(/*! react/addons */ 165);
 	
+	var _components = __webpack_require__(/*! ./components */ 183);
+	
+	var Components = _interopRequireWildcard(_components);
+	
 	var popupPort = null;
 	var tabmanFolderTitle = "Subjective Tab Manager";
 	var archiveFolderTitle = "_Archive";
@@ -144,6 +148,13 @@ webpackJsonp([0],[
 	    actions.syncChromeWindows(winStore, function () {
 	      console.log("initial sync of chrome windows complete.");
 	      // dumpAll(winStore);
+	
+	      // Let's do an initial render and save the result for faster load by popup:
+	      var appElement = React.createElement(Components.TabMan, { winStore: winStore, noListener: true });
+	
+	      var renderedString = React.renderToString(appElement);
+	      console.log("rendered initial HTML");
+	      window.savedHTML = renderedString;
 	    });
 	    setupConnectionListener(winStore);
 	  });

@@ -279,6 +279,8 @@ var Hoverable = {
   }  
 };
 
+const buttonSpacer = <div style={styles.headerButton} />;
+
 // A button that will merge in hoverStyle when hovered over
 var HeaderButton = React.createClass({
   mixins: [Hoverable,PureRenderMixin],
@@ -295,7 +297,7 @@ var HeaderButton = React.createClass({
      * try to fast path the non-visible case with a simple spacer
      */
     if (!this.props.visible) {
-      return <div style={styles.headerButton} />;
+      return buttonSpacer;
     }
     // const visibilityStyle = this.props.visible ? styles.visible : styles.hidden;
     var hoverStyle = (this.state.hovering && this.props.hoverStyle) ? this.props.hoverStyle : null;
@@ -310,9 +312,6 @@ var HeaderButton = React.createClass({
 var WindowHeader = React.createClass({
   mixins:[Hoverable,PureRenderMixin],
 
-  contextTypes: {
-    appComponent: React.PropTypes.object.isRequired
-  },
 
   handleUnmanageClick: function(event) {
     console.log("unamange: ", this.props.tabWindow);
@@ -324,7 +323,7 @@ var WindowHeader = React.createClass({
     console.log("manage: ", this.props.tabWindow);
     event.preventDefault();
     var tabWindow = this.props.tabWindow;
-    var appComponent = this.context.appComponent;
+    var appComponent = this.props.appComponent;
     appComponent.openSaveModal(tabWindow);
 
     event.stopPropagation();
@@ -478,10 +477,6 @@ var TabItem = React.createClass({
 var FilteredTabWindow = React.createClass({
   mixins: [Hoverable],
 
-  contextTypes: {
-    appComponent: React.PropTypes.object.isRequired
-  },
-
   getInitialState: function() {
     // Note:  We initialize this with null rather than false so that it will follow
     // open / closed state of window
@@ -515,6 +510,11 @@ var FilteredTabWindow = React.createClass({
   },
 
   renderTabItems: function(tabWindow,tabs) {
+    /*
+     * We tried explicitly checking for expanded state and
+     * returning null if not expanded, but (somewhat surprisingly) it
+     * was no faster, even with dozens of hidden tabs
+     */
     var items = [];
     for (var i = 0; i < tabs.count(); i++ ) {
       var id = "tabItem-" + i;
@@ -524,7 +524,9 @@ var FilteredTabWindow = React.createClass({
                       tab={tabs.get(i)} 
                       key={id} 
                       tabIndex={i} 
-                      isSelected={isSelected} />;
+                      isSelected={isSelected}
+                      appComponent={this.props.appComponent}
+                       />;
       items.push(tabItem);
     };
 
@@ -571,6 +573,7 @@ var FilteredTabWindow = React.createClass({
           onOpen={this.handleOpen}
           onRevert={this.handleRevert}
           onClose={this.handleClose}
+          appComponent={this.props.appComponent}
         />;
 
     var selectedStyle=this.props.isSelected ? styles.tabWindowSelected : null;
@@ -679,7 +682,6 @@ var TabWindowList = React.createClass({
 
 
   render: function() {
-    console.log("TabWindowList: render");
     var focusedWindowElem = [];
     var openWindows = [];
     var savedWindows = [];
@@ -697,8 +699,9 @@ var TabWindowList = React.createClass({
                           filteredTabWindow={filteredTabWindow} key={id} 
                           searchStr={this.props.searchStr} 
                           searchRE={this.props.searchRE}
-                          isSelected={isSelected}
+                          isSelected={isSelected}                          
                           selectedTabIndex={selectedTabIndex}
+                          appComponent={this.props.appComponent}
                           />;
       if (isFocused) {
         focusedWindowElem = windowElem;
@@ -804,7 +807,7 @@ var SaveModal = React.createClass({
    */
   handleClose(e) {
     e.preventDefault();
-    var appComponent = this.context.appComponent;
+    var appComponent = this.props.appComponent;
     this.props.onClose();
     e.stopPropagation();    
   },
@@ -982,23 +985,12 @@ var TabMan = React.createClass({
   getStateFromStore: function(winStore) {
     var tabWindows = winStore.getAll();
 
-    var t_preSort = performance.now();
     var sortedWindows = tabWindows.sort(windowCmpFn);
-    var t_postSort = performance.now();
 
-    console.log("sorting windows took ", t_postSort - t_preSort, " ms");
     return {
       winStore: winStore,
       sortedWindows
     };
-  },
-
-  childContextTypes: {
-     appComponent: React.PropTypes.object.isRequired
-  },
-
-  getChildContext: function() {
-    return { appComponent: this };
   },
 
   getInitialState: function() {
@@ -1048,6 +1040,7 @@ var TabMan = React.createClass({
                 tabWindow={this.state.saveTabWindow}
                 onClose={this.closeSaveModal} 
                 onSubmit={this.doSave}
+                appComponent={this}
                 />;
     }
     return modal;
@@ -1079,6 +1072,9 @@ var TabMan = React.createClass({
   },
 
   componentWillMount: function() {
+    if (this.props.noListener)
+      return;
+
     var winStore = this.props.winStore;
     /*
      * This listener on the store is essential for triggering a (recursive) re-render

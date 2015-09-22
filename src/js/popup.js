@@ -12,20 +12,55 @@ const {PureRenderMixin, Perf} = addons;
 /**
  * Main entry point to rendering the popup window
  */ 
-function renderPopup() {
-  var bgw = chrome.extension.getBackgroundPage();
-  var winStore = bgw.winStore;
+function renderPopup(currentWindowId) {
+  var t_preRender = performance.now();
+  var bgPage = chrome.extension.getBackgroundPage();
+  var winStore = bgPage.winStore;
 
-  actions.syncChromeWindows(winStore,logWrap( () => {
-    console.log("postLoadRender: window sync complete");
+  var savedHTML = bgPage.savedHTML;
 
-    var t_preRender = performance.now();
-    var elemId = document.getElementById('windowList-region');
-    var windowListComponent = <Components.TabMan winStore={winStore} />;
-    React.render( windowListComponent, elemId ); 
+  var parentNode = document.getElementById('windowList-region');
+
+  /*
+   * We do a quick immediate render using saved HTML and then use setTimeout()
+   * to initate a more complete sync operation
+   */
+
+  if (savedHTML) {
+    parentNode.innerHTML = savedHTML;
+    var t_postSet = performance.now();
+    console.log("time to set initial HTML: ", t_postSet - t_preRender);    
+  }
+
+
+  function doRender() {
+    /* Now let's render *before* sync'ing so that we match the pre-rendered HTML... */
+    var appElement = <Components.TabMan winStore={winStore} />;
+    React.render( appElement, parentNode ); 
     var t_postRender = performance.now();
-    console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
-  }));
+    console.log("full render complete. render time: (", t_postRender - t_preRender, " ms)");    
+
+    // And sync our window state, which may update the UI...
+    actions.syncChromeWindows(winStore,logWrap( () => {
+      console.log("postLoadRender: window sync complete");
+
+      winStore.setCurrentWindow(currentWindowId);
+
+      // And render/save our HTML:
+      var renderedString = React.renderToString(appElement);
+      // console.log("rendered string: ", renderedString);
+      bgPage.savedHTML = renderedString;
+      console.log("Updated savedHTML");
+    }));
+  }
+
+  setTimeout(doRender,0);
+}
+
+function getFocusedAndRender() {
+  chrome.windows.getCurrent(null, (currentWindow) => {
+    renderPopup(currentWindow.id);
+  })
 }
 
 /*
@@ -39,7 +74,7 @@ function renderPopup() {
  *
  */
 function main() {
-  window.onload = renderPopup;
+  window.onload = getFocusedAndRender;
 }
 
 main();

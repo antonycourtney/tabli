@@ -20,7 +20,7 @@ export function syncChromeWindows(winStore,cb) {
       console.log("syncChromeWindows: syncWindowList took ", t_postSync - t_preSync, " ms");
       if (cb)
         cb();
-   });
+  });
 }
 
 /**

@@ -202,6 +202,22 @@ export default class TabWindowStore extends EventEmitter {
     return this.windowIdMap.get(windowId);
   }
 
+  setCurrentWindow(windowId) {
+    const tabWindow = this.getTabWindowByChromeId(windowId);
+
+    if (!tabWindow) {
+      console.log("setCurrentWindow: window id ", windowId, "not found");
+      return;
+    }
+    // TODO: We really should find any other window with focus===true and clear it,
+    // but that doesn't seem to happen at the moment
+
+    const updWindow = tabWindow.set('focused', true);
+    this.registerTabWindow(updWindow);
+    this.emit("change");
+  }
+
+
   /*
    * Add a view listener and return its listener id
    *
