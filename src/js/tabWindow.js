@@ -107,23 +107,14 @@ export class TabWindow extends Immutable.Record({
   openWindowId: -1,
   focused: false,
 
-  _title: null,
-
   tabItems: Immutable.Seq()   // <TabItem>
 }) {
 
-  constructor(defaultValues) {
-    super(_.extend(defaultValues,{_title: {} }));
-  }
-
-  // Hacky hack to compute title lazily and cache result 
   get title() {
-    var titleObj = this._title;
-
-    if (!(_.has(titleObj,'value'))) {
-      titleObj.value = this.computeTitle();
+    if (this._title === undefined) {
+      this._title = this.computeTitle()
     }
-    return titleObj.value;
+    return this._title;
   }
 
   computeTitle() {
