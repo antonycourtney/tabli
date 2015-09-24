@@ -1,11 +1,10 @@
 {
-  "name": "tabman",
-  "version": "0.7.2",
+  "name": "tabli",
+  "version": "0.8.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/antonycourtney/tabman.git"
+    "url": "https://github.com/antonycourtney/tabli.git"
   },
-  "main": "tabman.js",
   "dependencies": {
     "events": "^1.0.2",
     "immutable": "^3.7.5",
