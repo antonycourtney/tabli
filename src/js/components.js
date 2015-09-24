@@ -177,7 +177,8 @@ var styles = {
     background:'rgba(0,0,0,0.6)',
     zIndex: 5,
     width: '100%',
-    height: '100%'
+    height: '100%',
+    display: 'flex'
   },
   modalContainer: {
     width: 300,
@@ -185,7 +186,7 @@ var styles = {
     zIndex: 10,
     borderRadius: 3,
     background: '#fff',
-    margin: '200px auto',
+    margin: 'auto',
     border: '1px solid #bababa',   
     display: 'flex',
     flexDirection: 'column'     
