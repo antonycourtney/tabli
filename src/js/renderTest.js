@@ -5,7 +5,6 @@ import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import TabWindowStore from './tabWindowStore';
 import * as _ from 'lodash';
-import * as actions from './actions';
 import * as Components from './components';
 import {logWrap} from './utils';
 
@@ -27,7 +26,7 @@ function renderPage(testData) {
 
   const tabWindows = allWindows.map(makeTabWindow);
 
-  var mockWinStore = new TabWindowStore(-1,-1);
+  var emptyWinStore = new TabWindowStore();
 
   var bgPage = chrome.extension.getBackgroundPage();
 
@@ -38,8 +37,10 @@ function renderPage(testData) {
   console.log("Saved node from bg page: ", savedNode);
 */
 
-  mockWinStore.registerTabWindows(tabWindows);
+  const mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
   console.log("Created mockWinStore and registered test windows");
+  console.log("mock winStore: ", mockWinStore.toJS());
+
   var t_preRender = performance.now();
   var parentNode = document.getElementById('windowList-region');
 

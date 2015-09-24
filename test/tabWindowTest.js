@@ -173,6 +173,9 @@ test('makeFolderTabWindow', (t) => {
     // dumpDiffs(tabWindowJS,expectedTabWindow);
 
     t.deepEqual(tabWindowJS,expectedTabWindow,'makeFolderTabWindow basic functionality');
+
+    t.equal(tabWindow.title,"d3 docs",'saved window title matches bookmark folder');
+
     t.end();
 });
 
@@ -579,8 +582,8 @@ test('chromeTabWindow',(t) => {
   const updTabWindow  = TabWindow.updateWindow(baseTabWindow,chromeWindowSnap2);
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()));
 
-  console.log("Updated tab window: ");
-  console.log(JSON.stringify(updTabWindowJS,null,2));
+  // console.log("Updated tab window: ");
+  // console.log(JSON.stringify(updTabWindowJS,null,2));
 
   const updTitle = updTabWindow.title;
   t.equal(updTitle,"Fluxxor - Home", 'Correct title after closing previously active tab and updating window');

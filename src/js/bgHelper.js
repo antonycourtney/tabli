@@ -11,6 +11,7 @@ import * as actions from './actions';
 import * as React from 'react';
 import {addons} from 'react/addons';
 import * as Components from './components';
+import RefCell from './refCell';
 
 var popupPort = null;
 const tabmanFolderTitle = "Subjective Tab Manager";
@@ -31,7 +32,7 @@ function loadManagedWindows(winStore,tabManFolder ) {
     }
     folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder));
   }
-  winStore.registerTabWindows(folderTabWindows);
+  return winStore.registerTabWindows(folderTabWindows);
 }
 
 /*
@@ -74,24 +75,36 @@ function initWinStore(cb) {
         archiveFolderId = archiveFolder.id;
         chrome.bookmarks.getSubTree(tabManFolder.id,function (subTreeNodes) {
           console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
-          var winStore = new TabWindowStore(tabmanFolderId,archiveFolderId);
-          loadManagedWindows(winStore,subTreeNodes[0]);
-          cb(winStore);
+          const baseWinStore = new TabWindowStore({folderId: tabmanFolderId, archiveFolderId });
+          const loadedWinStore = loadManagedWindows(baseWinStore,subTreeNodes[0]);
+          cb(loadedWinStore);
         });
       })
     });
   });
 }
 
-function setupConnectionListener(winStore) {
+function setupConnectionListener(storeRef) {
   chrome.runtime.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(msg) {
       var listenerId = msg.listenerId;
       port.onDisconnect.addListener(() => {
-        winStore.removeViewListener(listenerId);
+        storeRef.removeViewListener(listenerId);
+        console.log("Removed view listener ", listenerId);
       });
     });
   });
+}
+
+
+/**
+ * Download the specified object as JSON (for testing)
+ */
+function downloadJSON(dumpObj,filename) {
+  const dumpStr = JSON.stringify(dumpObj,null,2);
+  const winBlob = new Blob([dumpStr], {type:"application/json"});
+  const url = URL.createObjectURL(winBlob);
+  chrome.downloads.download({url,filename});  
 }
 
 /**
@@ -106,29 +119,54 @@ function dumpAll(winStore) {
 
   const dumpObj = {allWindows: jsWindows};
 
-  const dumpStr = JSON.stringify(dumpObj,null,2);
+  downloadJSON(dumpObj,'winStoreSnap.json');
+}
 
-  const winBlob = new Blob([dumpStr], {type:"application/json"});
-  const url = URL.createObjectURL(winBlob);
-  chrome.downloads.download({url: url,filename: 'winSnap.json'});
+function dumpChromeWindows() {
+  chrome.windows.getAll({populate: true}, (chromeWindows) => {
+    downloadJSON({chromeWindows},'chromeWindowSnap.json');
+  });
+}
+
+/**
+ * create a TabMan element, render it to HTML and save it for fast loading when 
+ * opening the popup
+ */
+function makeRenderListener(storeRef) {
+  function renderAndSave() {
+    const winStore = storeRef.getValue();
+
+    /* Let's create a dummy app element to render our current store 
+     * React.renderToString() will remount the component, so really want a fresh element here with exactly
+     * the store state we wish to render and save.
+     */
+    const renderAppElement = <Components.TabMan storeRef={null} initialWinStore={winStore} noListener={true} />;  
+    const renderedString = React.renderToString(renderAppElement);
+    console.log("renderAndSave: updated saved store and HTML");
+    window.savedStore = winStore;
+    window.savedHTML = renderedString;
+  }
+  return renderAndSave;
 }
 
 function main() {
-  initWinStore(function (winStore) {
-    console.log("init: done reading bookmarks.");
-    window.winStore = winStore;
-    actions.syncChromeWindows(winStore,() => {
+  initWinStore(function (bmStore) {
+    console.log("init: done reading bookmarks: ", bmStore);
+    // window.winStore = winStore;
+    actions.syncChromeWindows(bmStore,(syncedStore) => {
       console.log("initial sync of chrome windows complete.");
-      // dumpAll(winStore);
+      window.storeRef = new RefCell(syncedStore);
 
-      // Let's do an initial render and save the result for faster load by popup:
-      const appElement = <Components.TabMan winStore={winStore} noListener={true} />;  
-  
-      const renderedString = React.renderToString(appElement);
-      console.log("rendered initial HTML");
-      window.savedHTML = renderedString;
+      // dumpAll(winStore);
+      // dumpChromeWindows();
+
+      const renderListener = makeRenderListener(window.storeRef);
+      // And call it once to get started:
+      renderListener();
+      storeRef.on("change", renderListener);
+
+      setupConnectionListener(window.storeRef);
     });
-    setupConnectionListener(winStore);
   });
 }
 

@@ -9,34 +9,13 @@
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
-import EventEmitter from 'events';
 
-/*
- * find the index of a tab in a ChromeWindow by its tab Id
- *
- * just dumb linear search for now
- */
-function findTabIndex(chromeWindow,targetTabId) {
-  for (var i = 0; i < chromeWindow.tabs.length; i++) {
-    var tab = chromeWindow.tabs[i];
-    if (tab.id == targetTabId)
-      return i;
-  }
-  return null;
-} 
-
-export default class TabWindowStore extends EventEmitter {
-
-  constructor(folderId,archiveFolderId) {
-    super();
-    this.windowIdMap = Immutable.Map();  // maps from chrome window id for open windows
-    this.bookmarkIdMap = Immutable.Map();
-    this.viewListeners = [];
-    this.notifyCallback = null;
-    this.folderId = folderId;
-    this.archiveFolderId = archiveFolderId;
-  }
-
+export default class TabWindowStore extends Immutable.Record({
+  windowIdMap: Immutable.Map(),     // maps from chrome window id for open windows
+  bookmarkIdMap: Immutable.Map(),   // maps from bookmark id for saved windows
+  folderId: -1,
+  archiveFolderId: -1  
+}) {
   /**
    * Update store to include the specified window, indexed by 
    * open window id or bookmark id
@@ -45,47 +24,38 @@ export default class TabWindowStore extends EventEmitter {
    * replaced
    */
   registerTabWindow(tabWindow) {
-    if (tabWindow.open) {
-      this.windowIdMap = this.windowIdMap.set(tabWindow.openWindowId,tabWindow);
-    }
-    if (tabWindow.saved) {
-      this.bookmarkIdMap = this.bookmarkIdMap.set(tabWindow.savedFolderId,tabWindow);
-    }
+    const nextWindowIdMap = 
+      (tabWindow.open) ?  this.windowIdMap.set(tabWindow.openWindowId,tabWindow) : this.windowIdMap;
+    const nextBookmarkIdMap =
+      (tabWindow.saved) ? this.bookmarkIdMap.set(tabWindow.savedFolderId,tabWindow) : this.bookmarkIdMap;
+
+    return this.set('windowIdMap',nextWindowIdMap).set('bookmarkIdMap',nextBookmarkIdMap);
   }
 
   registerTabWindows(tabWindows) {
-    _.each(tabWindows, (w) => { this.registerTabWindow(w); } );
+    return _.reduce(tabWindows, (acc,w) => acc.registerTabWindow(w), this);
   }
 
-  /* We distinguish between removing an entry from map of open windows (windowIdMap)
-   * because when closing a bookmarked window, we only wish to remove it from former
-   */
   handleTabWindowClosed(tabWindow) {
+    /*
+     * We only remove window from map of open windows (windowIdMap) but then we re-register
+     * reverted window to ensure 
+     * We distinguish between removing an entry from map of open windows (windowIdMap)
+     * and removing frombecause when closing a bookmarked window, we only wish to remove it from former
+     */
     console.log("handleTabWindowClosed: ", tabWindow.toJS());
-    this.windowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
+    const closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
 
     const revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
     console.log("handleTabWindowClosed: revertedWindow: ", revertedWindow.toJS());
 
-    this.registerTabWindow(revertedWindow);
-    this.emit("change");
+    return this.set('windowIdMap',closedWindowIdMap).registerTabWindow(revertedWindow);
   }
 
-  removeBookmarkIdMapEntry(tabWindow) {
-    console.log("removeBookmarkIdMapEntry: ", tabWindow);
-    this.bookmarkIdMap = this.bookmarkIdMap.delete(tabWindow.savedFolderId);
-    this.emit("change");
+  handleTabClosed(tabWindow,tabId) {
+    var updWindow = TabWindow.closeTab(tabWindow,tabId);
+    return this.registerTabWindow(updWindow);
   }
-
-  unmanageWindow(tabWindow) {
-    this.removeBookmarkIdMapEntry(tabWindow);
-    // disconnect from the previously associated bookmark folder and re-register
-    const umWindow = TabWindow.removeSavedWindowState(tabWindow);
-
-    this.registerTabWindow(umWindow);   
-    this.emit("change"); 
-  }
-
 
   /**
    * attach a Chrome window to a specific tab window (after opening a saved window)
@@ -94,68 +64,27 @@ export default class TabWindowStore extends EventEmitter {
     console.log("attachChromeWindow: ", tabWindow, chromeWindow);
     // Was this Chrome window id previously associated with some other tab window?
     const oldTabWindow = this.windowIdMap.get(chromeWindow.id);
-    if (oldTabWindow) {
-      // This better not be a managed window...
-      console.log("found previous tab window -- detaching");
-      console.log("oldTabWindow: ", oldTabWindow);
-      this.removeTabWindow(oldTabWindow);
-    }
+
+    // A store without that window id
+    const rmStore = oldTabWindow ? this.removeTabWindow(oldTabWindow) : this;
 
     const attachedTabWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
-
-    this.registerTabWindow(attachedTabWindow);
-  }
-
-  /**
-   * attach a bookmark folder to a specific chrome window
-   */
-  attachBookmarkFolder(bookmarkFolder,chromeWindow) {
-    const folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
-
-    const mergedTabWindow = TabWindow.updateWindow(folderTabWindow,chromeWindow);
-
-    // And re-register in store maps:
-    this.registerTabWindow(mergedTabWindow);
-    this.emit("change");
-    return mergedTabWindow;
+    return rmStore.registerTabWindow(attachedTabWindow);
   }
 
 
-  handleTabClosed(tabWindow,tabId) {
-    var updWindow = TabWindow.closeTab(tabWindow,tabId);
-    this.registerTabWindow(updWindow);
-    this.emit("change");
-  }
 
   /**
    * Synchronize internal state of our store with snapshot
    * of current Chrome window state
    *
    * @param chromeWindow window to synchronize
-   * @param noEmit suppress emitting change event if true. Useful to batch changes, i.e. syncWindowList
    */
-  syncChromeWindow(chromeWindow,noEmit) {
-    var tabWindow = this.windowIdMap.get(chromeWindow.id);
-    if( !tabWindow ) {
-      tabWindow = TabWindow.makeChromeTabWindow(chromeWindow);
-      this.registerTabWindow(tabWindow);
-    } else {
-      // console.log( "syncChromeWindow: cache hit for window id: ", chromeWindow.id );
+  syncChromeWindow(chromeWindow) {
+    const prevTabWindow = this.windowIdMap.get(chromeWindow.id);
+    const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow,chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 
-      const updWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
-      // Set chromeWindow to current snapshot of tab contents:
-
-      // console.log("updated window: ", updWindow.toJS());
-
-      this.registerTabWindow(updWindow);
-    }
-    if (!noEmit) {
-      this.emit("change");
-    }
-  }
-
-  handleChromeWindowCreated(chromeWindow) {
-    this.syncChromeWindow(chromeWindow);
+    return this.registerTabWindow(tabWindow);
   }
 
   /**
@@ -169,19 +98,53 @@ export default class TabWindowStore extends EventEmitter {
     // closing any not in chromeWindowList:
     var chromeIds = _.pluck(chromeWindowList,'id');
     var chromeIdSet = new Set(chromeIds);
-    tabWindows.forEach((tw) => {
-      if (!chromeIdSet.has(tw.openWindowId)) {
-        console.log("syncWindowList: detected closed window: ", tw);
-        // And remove it from open window map:
-        this.handleTabWindowClosed(tw);
-      }
-    });
 
-    // Now iterate through chromeWindowList and find any chrome windows not in our map of open windows:
-    chromeWindowList.forEach((cw) => { this.syncChromeWindow(cw,true); });
+    var closedWindows = _.filter(tabWindows,(tw) => !chromeIdSet.has(tw.openWindowId));
 
-    this.emit("change");
+    var closedWinStore = _.reduce(closedWindows,(acc,tw) => acc.handleTabWindowClosed(tw), this);
+
+    // Now update all open windows:
+    return _.reduce(chromeWindowList, (acc,cw) => acc.syncChromeWindow(cw), closedWinStore);
   }   
+
+  setCurrentWindow(windowId) {
+    const tabWindow = this.getTabWindowByChromeId(windowId);
+
+    if (!tabWindow) {
+      console.log("setCurrentWindow: window id ", windowId, "not found");
+      return;
+    }
+
+    // TODO: We really should find any other window with focus===true and clear it
+    const updWindow = tabWindow.set('focused', true);
+    return this.registerTabWindow(updWindow);
+  }
+
+  removeBookmarkIdMapEntry(tabWindow) {
+    console.log("removeBookmarkIdMapEntry: ", tabWindow);
+    return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));
+  }
+
+  unmanageWindow(tabWindow) {
+    // Get a view of this store with tabWindow removed from bookmarkIdMap:
+    const rmStore = this.removeBookmarkIdMapEntry(tabWindow);
+
+    // disconnect from the previously associated bookmark folder and re-register
+    const umWindow = TabWindow.removeSavedWindowState(tabWindow);
+    return rmStore.registerTabWindow(umWindow);   
+  }
+
+  /**
+   * attach a bookmark folder to a specific chrome window
+   */
+  attachBookmarkFolder(bookmarkFolder,chromeWindow) {
+    const folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
+
+    const mergedTabWindow = TabWindow.updateWindow(folderTabWindow,chromeWindow);
+
+    // And re-register in store maps:
+    return this.registerTabWindow(mergedTabWindow);
+  }
 
   /**
    * get the currently open tab windows
@@ -200,49 +163,5 @@ export default class TabWindowStore extends EventEmitter {
   // returns a tabWindow or undefined
   getTabWindowByChromeId(windowId) {
     return this.windowIdMap.get(windowId);
-  }
-
-  setCurrentWindow(windowId) {
-    const tabWindow = this.getTabWindowByChromeId(windowId);
-
-    if (!tabWindow) {
-      console.log("setCurrentWindow: window id ", windowId, "not found");
-      return;
-    }
-    // TODO: We really should find any other window with focus===true and clear it,
-    // but that doesn't seem to happen at the moment
-
-    const updWindow = tabWindow.set('focused', true);
-    this.registerTabWindow(updWindow);
-    this.emit("change");
-  }
-
-
-  /*
-   * Add a view listener and return its listener id
-   *
-   * We have our own interface here because we don't have a reliable destructor / close event 
-   * on the chrome extension popup window
-   */
-  addViewListener(listener) {
-    // check to ensure this listener not yet registered:
-    var idx = this.viewListeners.indexOf(listener);
-    if (idx===-1) {
-      idx = this.viewListeners.length;
-      this.viewListeners.push(listener);
-      this.on("change",listener);
-    }
-    return idx;
-  }
-
-  removeViewListener(id) {
-    // console.log("removeViewListener: removing listener id ", id);
-    var listener = this.viewListeners[id];
-    if (listener) {
-      this.removeListener("change",listener);
-    } else {
-      console.warn("removeViewListener: No listener found for id ", id);
-    }
-    delete this.viewListeners[id];
-  }
+  }  
 }

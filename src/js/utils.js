@@ -73,6 +73,18 @@ export function logWrap( f ) {
   return wf;
 }
 
+/**
+ * construct an 'a -> () function that just sets the given refCell; 
+ * can be passed as final callback argument to any of the functions in
+ * actions module
+ */
+export function refSetter(refCell) {
+  function setter(val) {
+    console.log("refSetter: updating value");
+    refCell.setValue(val);
+  }
+  return setter;
+} 
 
 /*
 var CONTEXT_MENU_ID = 99;

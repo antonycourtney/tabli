@@ -5,6 +5,7 @@ import * as React from 'react';
 import * as actions from './actions';
 import * as Immutable from 'immutable';
 import * as searchOps from './searchOps';
+import * as utils from './utils';
 
 // import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
@@ -315,7 +316,8 @@ var WindowHeader = React.createClass({
 
   handleUnmanageClick: function(event) {
     console.log("unamange: ", this.props.tabWindow);
-    actions.unmanageWindow(this.props.winStore,this.props.tabWindow);
+    event.preventDefault();
+    actions.unmanageWindow(this.props.winStore,this.props.tabWindow,this.props.storeUpdateHandler);
     event.stopPropagation();
   },
 
@@ -362,7 +364,8 @@ var WindowHeader = React.createClass({
     // visibility of both the revert button and close button appearing after the window title.
 
     var revertButton = <HeaderButton baseStyle={m(styles.headerButton,styles.revertButton)} 
-                          visible={this.state.hovering && managed && tabWindow.open} 
+                          // visible={this.state.hovering && managed && tabWindow.open} 
+                          visible={managed && tabWindow.open}
                           title="Revert to bookmarked tabs (Close other tabs)" 
                           onClick={this.props.onRevert} />
 
@@ -397,7 +400,7 @@ var TabItem = React.createClass({
     var tabIndex = this.props.tabIndex;
     // console.log("TabItem: handleClick: tab: ", tab);
 
-    actions.activateTab(this.props.winStore,tabWindow,tab,tabIndex);
+    actions.activateTab(this.props.winStore,tabWindow,tab,tabIndex,this.props.storeUpdateHandler);
   },
 
   handleClose: function() {
@@ -406,7 +409,7 @@ var TabItem = React.createClass({
     if (!this.props.tab.open)
       return;
     var tabId = this.props.tab.openTabId;
-    actions.closeTab(this.props.winStore,this.props.tabWindow,tabId);
+    actions.closeTab(this.props.winStore,this.props.tabWindow,tabId,this.props.storeUpdateHandler);
   }, 
 
   render: function() {
@@ -485,16 +488,16 @@ var FilteredTabWindow = React.createClass({
 
   handleOpen: function() {
     console.log("handleOpen", this, this.props);
-    actions.openWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow);
+    actions.openWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    actions.closeWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow);
+    actions.closeWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
   },
 
   handleRevert: function(event) {
-    actions.revertWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow);
+    actions.revertWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
   },
 
 
@@ -519,7 +522,8 @@ var FilteredTabWindow = React.createClass({
     for (var i = 0; i < tabs.count(); i++ ) {
       var id = "tabItem-" + i;
       const isSelected = (i==this.props.selectedTabIndex);
-      var tabItem = <TabItem winStore={this.props.winStore} 
+      var tabItem = <TabItem winStore={this.props.winStore}
+                      storeUpdateHandler={this.props.storeUpdateHandler}  
                       tabWindow={tabWindow} 
                       tab={tabs.get(i)} 
                       key={id} 
@@ -567,6 +571,7 @@ var FilteredTabWindow = React.createClass({
 
     var windowHeader = 
       <WindowHeader winStore={this.props.winStore}
+          storeUpdateHandler={this.props.storeUpdateHandler} 
           tabWindow={tabWindow} 
           expanded={expanded} 
           onExpand={this.handleExpand} 
@@ -671,7 +676,7 @@ var SearchBar = React.createClass({
   render() {
     return (
       <div style={styles.searchBar}>
-        <input style={styles.searchInput} type="text" ref="searchInput" placeholder="Search..." 
+        <input style={styles.searchInput} type="text" ref="searchInput" id="searchBox" placeholder="Search..." 
           onChange={this.handleChange} onKeyDown={this.handleKeyDown} />
       </div>
     );  
@@ -695,7 +700,8 @@ var TabWindowList = React.createClass({
       var isFocused = tabWindow.focused;
       var isSelected = (i==this.props.selectedWindowIndex);
       const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
-      var windowElem = <FilteredTabWindow winStore={this.props.winStore} 
+      var windowElem = <FilteredTabWindow winStore={this.props.winStore}
+                          storeUpdateHandler={this.props.storeUpdateHandler}  
                           filteredTabWindow={filteredTabWindow} key={id} 
                           searchStr={this.props.searchStr} 
                           searchRE={this.props.searchRE}
@@ -875,6 +881,7 @@ function selectedTab(filteredTabWindow,searchStr,tabIndex) {
   }
 }
 
+
 /**
  * An element that manages the selection.
  *
@@ -968,7 +975,8 @@ var SelectablePopup = React.createClass({
                      onSearchEnter={this.handleSelectionEnter}
                      />
         </WindowListSection>        
-        <TabWindowList winStore={this.props.winStore} 
+        <TabWindowList winStore={this.props.winStore}
+                         storeUpdateHandler={this.props.storeUpdateHandler} 
                          filteredWindows={this.props.filteredWindows} 
                          appComponent={this.props.appComponent}
                          searchStr={this.props.searchStr}
@@ -981,8 +989,8 @@ var SelectablePopup = React.createClass({
   }
 });
 
-var TabMan = React.createClass({
-  getStateFromStore: function(winStore) {
+var TabMan = React.createClass({  
+  storeAsState: function(winStore) {
     var tabWindows = winStore.getAll();
 
     var sortedWindows = tabWindows.sort(windowCmpFn);
@@ -994,7 +1002,7 @@ var TabMan = React.createClass({
   },
 
   getInitialState: function() {
-    var st = this.getStateFromStore(this.props.winStore);
+    var st = this.storeAsState(this.props.initialWinStore);
 
     const w0 = st.sortedWindows[0];
 
@@ -1026,9 +1034,10 @@ var TabMan = React.createClass({
 
   /* handler for save modal */
   doSave(titleStr) {
-    actions.manageWindow(this.state.winStore,this.state.saveTabWindow,titleStr,(w) => {
-      console.log("finished saving: ", w);
+    actions.manageWindow(this.state.winStore,this.state.saveTabWindow,titleStr,(nextStore) => {
+      console.log("window saved");
       this.closeSaveModal();
+      utils.refSetter(this.props.storeRef)(nextStore);      
     });
   },
 
@@ -1053,8 +1062,9 @@ var TabMan = React.createClass({
       var ret = (
         <div>
           <SelectablePopup 
-            onSearchInput={this.handleSearchInput}
+            onSearchInput={this.handleSearchInput}            
             winStore={this.state.winStore} 
+            storeUpdateHandler={utils.refSetter(this.props.storeRef)}
             filteredWindows={filteredWindows} 
             appComponent={this}
             searchStr={this.state.searchStr}
@@ -1075,23 +1085,16 @@ var TabMan = React.createClass({
     if (this.props.noListener)
       return;
 
-    var winStore = this.props.winStore;
+    const storeRef=this.props.storeRef;
     /*
-     * This listener on the store is essential for triggering a (recursive) re-render
+     * This listener is essential for triggering a (recursive) re-render
      * in response to a state change.
      */
-    // Save viewListener so we can remove it in componentWillUnmount
-    this.viewListener = () => {
-      this.setState(this.getStateFromStore(winStore));      
-    };
-    // We used to just do:
-    // winStore.on("change",this.viewListener);
-    // but that leaked because unfortunately componentWillUnmount never gets called
-    // when popup closes.
-    // Now we use setViewListener, which ensures at most one view listener:
-    // winStore.setViewListener(this.viewListener);
-
-    var listenerId = winStore.addViewListener(this.viewListener);
+    var listenerId = storeRef.addViewListener(() => {
+      console.log("TabMan: viewListener: updating store from storeRef");
+      this.setState(this.storeAsState(storeRef.getValue()));
+    });
+    // console.log("componentWillMount: added view listener: ", listenerId);
     sendHelperMessage({ listenerId });
   },
 });

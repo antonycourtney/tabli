@@ -11,7 +11,7 @@ webpackJsonp([2],[
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 	
-	var _reactAddons = __webpack_require__(/*! react/addons */ 165);
+	var _reactAddons = __webpack_require__(/*! react/addons */ 164);
 	
 	var React = _interopRequireWildcard(_reactAddons);
 	
@@ -31,15 +31,11 @@ webpackJsonp([2],[
 	
 	var _ = _interopRequireWildcard(_lodash);
 	
-	var _actions = __webpack_require__(/*! ./actions */ 7);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _components = __webpack_require__(/*! ./components */ 183);
+	var _components = __webpack_require__(/*! ./components */ 182);
 	
 	var Components = _interopRequireWildcard(_components);
 	
-	var _utils = __webpack_require__(/*! ./utils */ 8);
+	var _utils = __webpack_require__(/*! ./utils */ 7);
 	
 	var PureRenderMixin = _reactAddons.addons.PureRenderMixin;
 	var Perf = _reactAddons.addons.Perf;
@@ -61,7 +57,7 @@ webpackJsonp([2],[
 	
 	  var tabWindows = allWindows.map(makeTabWindow);
 	
-	  var mockWinStore = new _tabWindowStore2['default'](-1, -1);
+	  var emptyWinStore = new _tabWindowStore2['default']();
 	
 	  var bgPage = chrome.extension.getBackgroundPage();
 	
@@ -72,8 +68,10 @@ webpackJsonp([2],[
 	    console.log("Saved node from bg page: ", savedNode);
 	  */
 	
-	  mockWinStore.registerTabWindows(tabWindows);
+	  var mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
 	  console.log("Created mockWinStore and registered test windows");
+	  console.log("mock winStore: ", mockWinStore.toJS());
+	
 	  var t_preRender = performance.now();
 	  var parentNode = document.getElementById('windowList-region');
 	

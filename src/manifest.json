@@ -13,7 +13,7 @@
     "persistent": true
   },  
   "permissions": [
-    "storage", "tabs", "bookmarks"
+    "downloads", "storage", "tabs", "bookmarks"
   ],
   "icons": {
     "16": "images/glyphicons_154_more_windows.png",
