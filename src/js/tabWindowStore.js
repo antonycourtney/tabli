@@ -39,9 +39,8 @@ export default class TabWindowStore extends Immutable.Record({
   handleTabWindowClosed(tabWindow) {
     /*
      * We only remove window from map of open windows (windowIdMap) but then we re-register
-     * reverted window to ensure 
-     * We distinguish between removing an entry from map of open windows (windowIdMap)
-     * and removing frombecause when closing a bookmarked window, we only wish to remove it from former
+     * reverted window to ensure that a reverted version of saved window stays in
+     * bookmarkIdMap.
      */
     console.log("handleTabWindowClosed: ", tabWindow.toJS());
     const closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
@@ -56,6 +55,17 @@ export default class TabWindowStore extends Immutable.Record({
     var updWindow = TabWindow.closeTab(tabWindow,tabId);
     return this.registerTabWindow(updWindow);
   }
+
+  handleTabSaved(tabWindow,tabItem,tabNode) {
+    var updWindow = TabWindow.saveTab(tabWindow,tabItem,tabNode);
+    return this.registerTabWindow(updWindow);
+  }
+
+  handleTabUnsaved(tabWindow,tabItem) {
+    var updWindow = TabWindow.unsaveTab(tabWindow,tabItem);
+    return this.registerTabWindow(updWindow);
+  }
+
 
   /**
    * attach a Chrome window to a specific tab window (after opening a saved window)

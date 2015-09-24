@@ -1,4 +1,4 @@
-# Tabli - A Window and Tab Manager for Google Chrome
+# Tabli - A Chrome Tab Manager
 
 *Antony Courtney*
 

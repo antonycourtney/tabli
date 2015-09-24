@@ -1,11 +1,6 @@
 # TODO
 
 
-!! - Add event handler for check box for bookmarking / un-bookmarking a tab
-
-!! - Need to adjust scroll position when using arrow keys
-
-X - Should be able to open a saved window from keyboard
 
 - Modal confirmation dialog before reverting a saved window
 
@@ -15,19 +10,21 @@ X - Should be able to open a saved window from keyboard
 
 - PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
 
-- Arrow keys should move a whole window when window closed
+- Arrow keys should move a whole window when window closed / not expanded
 
 - Need a button on top to link to help
 
 - Need a basic quick reference Help page with keyboard shortcuts
+
+- Need an Introduction / Quick Start page
+
+========= After 0.8.2:
 
 - Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle expand on closed, saved windows
 
 - Try to cache FavIcons of windows when opened and use them for closed tabs
 
 - Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
-
-=========
 
 - Carol feature req:  Status bar showing numbers of Open Windows and Tabs (and maybe Saved winbows?)
 
@@ -36,6 +33,12 @@ X - Should be able to open a saved window from keyboard
 - Don't show close button for closed windows
 
 - Need a tabWindow test for what happens when we duplicate a tab with the same URL
+
+X - Add event handler for check box for bookmarking / un-bookmarking a tab
+
+X - Need to adjust scroll position when using arrow keys
+
+X - Should be able to open a saved window from keyboard
 
 X Modal dialog for saving a tab window
 

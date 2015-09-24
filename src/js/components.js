@@ -413,6 +413,19 @@ var TabItem = React.createClass({
     actions.closeTab(this.props.winStore,this.props.tabWindow,tabId,this.props.storeUpdateHandler);
   }, 
 
+  handleBookmarkTabItem: function(event) {
+    event.stopPropagation();
+    console.log("bookmark tab: ", this.props.tab.toJS());
+    actions.saveTab(this.props.winStore,this.props.tabWindow,this.props.tab,this.props.storeUpdateHandler);
+  },
+
+  handleUnbookmarkTabItem: function(event) {
+    event.stopPropagation();
+    console.log("unbookmark tab: ", this.props.tab.toJS());
+    actions.unsaveTab(this.props.winStore,this.props.tabWindow,this.props.tab,this.props.storeUpdateHandler);
+  },
+
+
   render: function() {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
@@ -434,11 +447,17 @@ var TabItem = React.createClass({
       var hoverVisible = this.state.hovering ? styles.visible : styles.hidden;
 
       if (tab.saved ) {
-        tabCheckItem = <button style={m(styles.headerButton,styles.tabManagedButton)} title="Remove bookmark for this tab" />;
+        tabCheckItem = <button style={m(styles.headerButton,styles.tabManagedButton)} 
+                              title="Remove bookmark for this tab" 
+                              onClick={this.handleUnbookmarkTabItem}
+                              />;
         // TODO: callback
       } else {
-        tabCheckItem = <input style={m(styles.headerButton,hoverVisible,styles.headerCheckBox)} type="checkbox" title="Bookmark this tab" />;
-        //tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
+        tabCheckItem = <input style={m(styles.headerButton,hoverVisible,styles.headerCheckBox)} 
+                              type="checkbox" 
+                              title="Bookmark this tab" 
+                              onClick={this.handleBookmarkTabItem}
+                              />;
       }
     } else {
       // insert a spacer:

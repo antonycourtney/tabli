@@ -170,9 +170,8 @@
 	    value: function handleTabWindowClosed(tabWindow) {
 	      /*
 	       * We only remove window from map of open windows (windowIdMap) but then we re-register
-	       * reverted window to ensure 
-	       * We distinguish between removing an entry from map of open windows (windowIdMap)
-	       * and removing frombecause when closing a bookmarked window, we only wish to remove it from former
+	       * reverted window to ensure that a reverted version of saved window stays in
+	       * bookmarkIdMap.
 	       */
 	      console.log("handleTabWindowClosed: ", tabWindow.toJS());
 	      var closedWindowIdMap = this.windowIdMap['delete'](tabWindow.openWindowId);
@@ -186,6 +185,18 @@
 	    key: 'handleTabClosed',
 	    value: function handleTabClosed(tabWindow, tabId) {
 	      var updWindow = TabWindow.closeTab(tabWindow, tabId);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabSaved',
+	    value: function handleTabSaved(tabWindow, tabItem, tabNode) {
+	      var updWindow = TabWindow.saveTab(tabWindow, tabItem, tabNode);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabUnsaved',
+	    value: function handleTabUnsaved(tabWindow, tabItem) {
+	      var updWindow = TabWindow.unsaveTab(tabWindow, tabItem);
 	      return this.registerTabWindow(updWindow);
 	    }
 	
@@ -17708,6 +17719,8 @@
 	exports.makeChromeTabWindow = makeChromeTabWindow;
 	exports.updateWindow = updateWindow;
 	exports.closeTab = closeTab;
+	exports.saveTab = saveTab;
+	exports.unsaveTab = unsaveTab;
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 	
@@ -18074,6 +18087,62 @@
 	
 	  return tabWindow.set('tabItems', updItems);
 	}
+	
+	/**
+	 * Update a tab's saved state
+	 *
+	 * @param {TabWindow} tabWindow - tab window with tab that's been closed
+	 * @param {TabItem} tabItem -- open tab that has been saved
+	 * @param {BookmarkTreeNode} tabNode -- bookmark node for saved bookmark
+	 *
+	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
+	 */
+	
+	function saveTab(tabWindow, tabItem, tabNode) {
+	  var _tabWindow$tabItems$findEntry3 = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.open && ti.openTabId === tabItem.openTabId;
+	  });
+	
+	  var _tabWindow$tabItems$findEntry32 = _slicedToArray(_tabWindow$tabItems$findEntry3, 1);
+	
+	  var index = _tabWindow$tabItems$findEntry32[0];
+	
+	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
+	
+	  var updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	
+	  return tabWindow.set('tabItems', updItems);
+	}
+	
+	/**
+	 * Update a tab's saved state when tab has been 'unsaved' (i.e. bookmark removed)
+	 *
+	 * @param {TabWindow} tabWindow - tab window with tab that's been unsaved
+	 * @param {TabItem} tabItem -- open tab that has been saved
+	 *
+	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
+	 */
+	
+	function unsaveTab(tabWindow, tabItem) {
+	  var _tabWindow$tabItems$findEntry4 = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId;
+	  });
+	
+	  var _tabWindow$tabItems$findEntry42 = _slicedToArray(_tabWindow$tabItems$findEntry4, 1);
+	
+	  var index = _tabWindow$tabItems$findEntry42[0];
+	
+	  var updTabItem = resetOpenItem(tabItem);
+	
+	  var updItems;
+	  if (updTabItem.open) {
+	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	  } else {
+	    // It's neither open nor saved, so just get rid of it...
+	    updItems = tabWindow.tabItems.splice(index, 1);
+	  }
+	  return tabWindow.set('tabItems', updItems);
+	}
 
 /***/ },
 /* 6 */
@@ -18091,6 +18160,8 @@
 	exports.syncChromeWindows = syncChromeWindows;
 	exports.openWindow = openWindow;
 	exports.closeTab = closeTab;
+	exports.saveTab = saveTab;
+	exports.unsaveTab = unsaveTab;
 	exports.closeWindow = closeWindow;
 	exports.activateTab = activateTab;
 	exports.revertWindow = revertWindow;
@@ -18218,6 +18289,24 @@
 	      var nextStore = winStore.handleTabClosed(tabWindow, tabId);
 	      cb(nextStore);
 	    }
+	  });
+	}
+	
+	function saveTab(winStore, tabWindow, tabItem, cb) {
+	  var tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
+	  chrome.bookmarks.create(tabMark, function (tabNode) {
+	    console.log("Successfully added bookmark for tab '", tabItem.title, "'");
+	    var nextStore = winStore.handleTabSaved(tabWindow, tabItem, tabNode);
+	    cb(nextStore);
+	  });
+	}
+	
+	function unsaveTab(winStore, tabWindow, tabItem, cb) {
+	  var tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
+	  chrome.bookmarks.remove(tabItem.savedBookmarkId, function () {
+	    console.log("Successfully removed bookmark for tab '", tabItem.title, "'");
+	    var nextStore = winStore.handleTabUnsaved(tabWindow, tabItem);
+	    cb(nextStore);
 	  });
 	}
 	
@@ -41953,6 +42042,18 @@
 	    actions.closeTab(this.props.winStore, this.props.tabWindow, tabId, this.props.storeUpdateHandler);
 	  },
 	
+	  handleBookmarkTabItem: function handleBookmarkTabItem(event) {
+	    event.stopPropagation();
+	    console.log("bookmark tab: ", this.props.tab.toJS());
+	    actions.saveTab(this.props.winStore, this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler);
+	  },
+	
+	  handleUnbookmarkTabItem: function handleUnbookmarkTabItem(event) {
+	    event.stopPropagation();
+	    console.log("unbookmark tab: ", this.props.tab.toJS());
+	    actions.unsaveTab(this.props.winStore, this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler);
+	  },
+	
 	  render: function render() {
 	    var tabWindow = this.props.tabWindow;
 	    var tab = this.props.tab;
@@ -41972,16 +42073,22 @@
 	      var hoverVisible = this.state.hovering ? styles.visible : styles.hidden;
 	
 	      if (tab.saved) {
-	        tabCheckItem = React.createElement('button', { style: m(styles.headerButton, styles.tabManagedButton), title: 'Remove bookmark for this tab' });
+	        tabCheckItem = React.createElement('button', { style: m(styles.headerButton, styles.tabManagedButton),
+	          title: 'Remove bookmark for this tab',
+	          onClick: this.handleUnbookmarkTabItem
+	        });
 	        // TODO: callback
 	      } else {
-	          tabCheckItem = React.createElement('input', { style: m(styles.headerButton, hoverVisible, styles.headerCheckBox), type: 'checkbox', title: 'Bookmark this tab' });
-	          //tabCheckItem.onchange = makeTabAddBookmarkHandler( tab );
+	          tabCheckItem = React.createElement('input', { style: m(styles.headerButton, hoverVisible, styles.headerCheckBox),
+	            type: 'checkbox',
+	            title: 'Bookmark this tab',
+	            onClick: this.handleBookmarkTabItem
+	          });
 	        }
 	    } else {
-	        // insert a spacer:
-	        tabCheckItem = React.createElement('div', { style: styles.headerButton });
-	      }
+	      // insert a spacer:
+	      tabCheckItem = React.createElement('div', { style: styles.headerButton });
+	    }
 	
 	    var fiSrc = tab.favIconUrl ? tab.favIconUrl : "";
 	    // Skip the chrome FAVICONs; they just throw when accessed.

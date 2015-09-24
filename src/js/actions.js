@@ -115,6 +115,25 @@ export function closeTab(winStore,tabWindow,tabId,cb) {
   });
 }
 
+export function saveTab(winStore,tabWindow,tabItem,cb) {
+  const tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
+  chrome.bookmarks.create( tabMark, ( tabNode ) => { 
+    console.log( "Successfully added bookmark for tab '", tabItem.title, "'" );
+    const nextStore = winStore.handleTabSaved(tabWindow,tabItem,tabNode);
+    cb(nextStore);
+  });    
+}
+
+export function unsaveTab(winStore,tabWindow,tabItem,cb) {
+  const tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
+  chrome.bookmarks.remove( tabItem.savedBookmarkId, () => { 
+    console.log( "Successfully removed bookmark for tab '", tabItem.title, "'" );
+    const nextStore = winStore.handleTabUnsaved(tabWindow,tabItem);
+    cb(nextStore);
+  });    
+}
+
+
 export function closeWindow(winStore,tabWindow,cb) {
   console.log("closeWindow: ", tabWindow);
   if (!tabWindow.open) {
