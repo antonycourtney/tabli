@@ -7,13 +7,15 @@
 
 !! - Should be able to open a saved window from keyboard
 
-- PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
-- Arrow keys should move a whole window when window closed
-- Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle open/closed
+- Modal confirmation dialog before reverting a saved window
 
 - Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned
 
 - More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs. Not enough paddingRight on checkbox input -- runs in to favIcon
+
+- PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
+- Arrow keys should move a whole window when window closed
+- Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle open/closed
 
 - Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
 

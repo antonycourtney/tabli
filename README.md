@@ -1,4 +1,4 @@
-# Subjective Tab Manager
+# Tabli Tab Manager
 
 *Antony Courtney*
 
@@ -12,17 +12,17 @@ Google Chrome is an excellent web browser but has limited features for managing 
 
   * While Chrome supports rudimentary features for saving and organizing URLs as bookmarks, there is no direct connection between saved bookmarks and open windows and tabs.  This makes it difficult to use Chrome to efficiently browse the ever-increasing volume of reference documentation available on the web.
 
-The Subjective Tab Manager is my attempt to improve window and tab management in Chrome.  Subjective Tab Manager is a Chrome Extension that adds a *browser action* with a popup window to Chrome:
+Tabli is my attempt to improve window and tab management in Chrome. Tabli is a Chrome Extension that adds a *browser action* with a popup window to Chrome:
 
-![Screenshot of Subjective Tab Manager Popup](screenshots/Subjective-screenshot.png "Subjective Tab Manager screenshot")
+![Screenshot of Tabli Popup](screenshots/tabli-screenshot.png "Tabli screenshot")
 
-The popup can be used to quickly scroll through all open windows and tabs and switch to or close any open window or tab with a single click.  The Subjective Tab Manager also supports saving and restoring sets of tabs ( "Bookmarked Windows" ).
+The popup can be used to quickly scroll through all open windows and tabs and switch to or close any open window or tab with a single click.  Tabli also supports saving and restoring sets of tabs ( "Bookmarked Windows" ).
 
 ## Installation
 
-To install the alpha release of Subjective Tab Manager do the following:
+To install the alpha release of Tabli do the following:
 
-1. Download the packed extension file **tabman.crx** and save it to your computer.  ( *Subjective Tab Manager is currently in limited alpha release. Please email me directly if you are interested in being an alpha tester and I'll send you a download link.* )
+1. Download the packed extension file **tabman.crx** and save it to your computer.  ( *Tabli is currently in limited alpha release. Please email me directly if you are interested in being an alpha tester and I'll send you a download link.* )
 
 2. Click the Chrome menu icon (the "Cheeseburger" icon with 3 horizontal lines) on the browser toolbar.
 
@@ -36,11 +36,11 @@ See [Chrome's Third Party Extension Install Page](https://support.google.com/chr
 
 ## Usage
 
-Here is a quick summary of the main components in the Subjective Tab Manager interface:
+Here is a quick summary of the main components in the Tabli interface:
 
-![Screenshot of Subjective Tab Manager Popup](screenshots/Subjective-screenshot-annotated.png "Subjective Tab Manager screenshot")
+![Screenshot of Tabli Popup](screenshots/tabli-screenshot-annotated.png "Tabli screenshot")
 
-1. Clicking on the Subjective Tab Manager icon in the toolbar will open the popup window.  The popup window shows a scrollable list of summary information for all open windows and all "Bookmarked Windows" (whether open or not).
+1. Clicking on the Tabli icon in the toolbar will open the popup window.  The popup window shows a scrollable list of summary information for all open windows and all "Bookmarked Windows" (whether open or not).
 
 2. Clicking on the header bar for any window will make that window the active window.  Within a window summary, clicking on the title of any tab will switch to the containing window and make the selected tab the active tab.    
 
@@ -54,11 +54,11 @@ If a window has been bookmarked, clicking on the bookmark checkbox for the windo
 
 ### Getting Started and Best Practice
 
-How you organize and bookmark your windows is obviously...well...subjective.  But the way I use the extension for reference documentation is this: I typically open a window per topic ( Such as "d3" or "Python" or "HTML5 and CSS" ), open the main high-level entry pages related to the topic in a few tabs in that window, and then bookmark the window in that state.  See the "Python Docs" Bookmarked window in the screenshot above for an example.  
+How you organize and bookmark your windows is largely a matter of personal preference. But the way I use Tabli for reference documentation is this: I typically open a window per topic ( Such as "d3" or "Python" or "HTML5 and CSS" ), open the main high-level entry pages related to the topic in a few tabs in that window, and then bookmark the window in that state.  See the "Python Docs" Bookmarked window in the screenshot above for an example.  
 
 ## Known Issues / Planned Extensions
 
-Subjective Tab Manager is still very much a work-in-progress.  Some of the features I am considering before a first official release:
+Tabli is still very much a work-in-progress.  Some of the features I am considering before a first official release:
 
 ### Planned Features
 
@@ -68,7 +68,7 @@ Subjective Tab Manager is still very much a work-in-progress.  Some of the featu
 
 * URL Pattern Matching - I would like to be able to associate URL patterns with a bookmarked window so that, for example, all *.facebook.com URLs will open in a bookmarked "Facebook" window.
 
-* Duplicate Detection - Subjective Tab Manager should keep track of all the URLs currently open. If the user opens an URL that is already open, it should offer to switch to that tab instead of opening a new one.
+* Duplicate Detection - Tabli should keep track of all the URLs currently open. If the user opens an URL that is already open, it should offer to switch to that tab instead of opening a new one.
 
 * Revert at tab level - While Revert of a whole window is useful, it may also be useful to track an individual bookmarked tab, and offer an interface to revert just that one tab back to its original bookmark.
 
@@ -80,10 +80,9 @@ Subjective Tab Manager is still very much a work-in-progress.  Some of the featu
 
 ### Related Work
 
-Subjective Tab Manager was inspired by a similar Chrome Extension called [Project Tab Manager](https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia?hl=en), and the design grew out of my experiences using that extension.  The main differences are that Subjective Tab Manager provides features for browsing and managing all open windows and tabs ( not just bookmarked ones ), and offers facilities for identifying how a bookmarked window has drifted from its original state and efficiently reverting to that original state.
+Tabli was inspired by a similar Chrome Extension called [Project Tab Manager](https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia?hl=en), and the design grew out of my experiences using that extension.  The main differences are that Tabli provides features for browsing and managing all open windows and tabs ( not just bookmarked ones ), and offers facilities for identifying how a bookmarked window has drifted from its original state and efficiently reverting to that original state.
 
 ## Feedback
 
-I welcome candid feedback, suggestions and bug reports, especially during this "Friends Only" alpha release.  Please let me know your experience with Subjective Tab Manager, for better or for worse!
+I welcome candid feedback, suggestions and bug reports, especially during this "Friends Only" alpha release.  Please let me know your experience with Tabli, for better or for worse!
 
-Email me at *firstname.lastname*@gmail.com.
