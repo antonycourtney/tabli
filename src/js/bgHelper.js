@@ -14,7 +14,7 @@ import * as Components from './components';
 import RefCell from './refCell';
 
 var popupPort = null;
-const tabmanFolderTitle = "Subjective Tab Manager";
+const tabmanFolderTitle = "Tabli Saved Windows";
 const archiveFolderTitle = "_Archive";
 
 /* On startup load managed windows from bookmarks folder */

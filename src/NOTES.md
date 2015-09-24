@@ -5,7 +5,7 @@
 
 !! - Need to adjust scroll position when using arrow keys
 
-!! - Should be able to open a saved window from keyboard
+X - Should be able to open a saved window from keyboard
 
 - Modal confirmation dialog before reverting a saved window
 
@@ -14,10 +14,22 @@
 - More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs. Not enough paddingRight on checkbox input -- runs in to favIcon
 
 - PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
+
 - Arrow keys should move a whole window when window closed
-- Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle open/closed
+
+- Need a button on top to link to help
+
+- Need a basic quick reference Help page with keyboard shortcuts
+
+- Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle expand on closed, saved windows
+
+- Try to cache FavIcons of windows when opened and use them for closed tabs
 
 - Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
+
+=========
+
+- Carol feature req:  Status bar showing numbers of Open Windows and Tabs (and maybe Saved winbows?)
 
 - KM req: Audible indicator! See "audible" in Tabs API
 

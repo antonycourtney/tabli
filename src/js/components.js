@@ -548,6 +548,14 @@ var FilteredTabWindow = React.createClass({
     this.setState({expanded: expand});
   },
 
+
+  componentWillReceiveProps: function(nextProps) {
+    if (nextProps.isSelected && !this.props.isSelected) {
+      // scroll div for this window into view:
+      React.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+    }
+  },
+
   render: function () {
     var filteredTabWindow = this.props.filteredTabWindow;
     var tabWindow = filteredTabWindow.tabWindow;
@@ -586,7 +594,7 @@ var FilteredTabWindow = React.createClass({
     var windowStyles=m(styles.tabWindow,styles.expandablePanel,selectedStyle);
 
     return (
-      <div style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
+      <div ref="windowDiv" style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
         {windowHeader}
         {tabItems}
       </div>
