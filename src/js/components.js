@@ -103,7 +103,7 @@ var styles = {
     width: 16,
     height: 16,
     marginLeft: 1,
-    marginRight: 0 
+    marginRight: 1 
   },
   spacer: {
     // backgroundColor: 'red', // for debugging
@@ -453,7 +453,9 @@ var TabItem = React.createClass({
                               />;
         // TODO: callback
       } else {
-        tabCheckItem = <input style={m(styles.headerButton,hoverVisible,styles.headerCheckBox)} 
+        // We used to include headerCheckbox, but that only set width and height
+        // to something to 13x13; we want 16x16 from headerButton
+        tabCheckItem = <input style={m(styles.headerButton,hoverVisible)} 
                               type="checkbox" 
                               title="Bookmark this tab" 
                               onClick={this.handleBookmarkTabItem}

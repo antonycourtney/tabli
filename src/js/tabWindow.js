@@ -288,7 +288,6 @@ export function closeTab(tabWindow,tabId) {
   console.log("closeTab: ", tabWindow, tabId);
   var [index,tabItem] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
 
-  console.log("closeTab: ", index, tabItem);
   var updItems;
 
   if (tabItem.saved) {
@@ -311,37 +310,15 @@ export function closeTab(tabWindow,tabId) {
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function saveTab(tabWindow,tabItem,tabNode) {
-  var [index] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabItem.openTabId);      
+  var [index] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabItem.tabId);      
 
   const updTabItem=tabItem.set('saved',true)
                       .set('savedTitle',tabNode.title)
                       .set('savedBookmarkId',tabNode.id)
                       .set('savedBookmarkIndex',tabNode.index);
 
+  consle.log("Updated tab item: ", updTabItem.toJS());
   const updItems = tabWindow.tabItems.splice(index,1,updTabItem);
 
-  return tabWindow.set('tabItems',updItems);
-}
-
-/**
- * Update a tab's saved state when tab has been 'unsaved' (i.e. bookmark removed)
- *
- * @param {TabWindow} tabWindow - tab window with tab that's been unsaved
- * @param {TabItem} tabItem -- open tab that has been saved
- *
- * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
- */
-export function unsaveTab(tabWindow,tabItem) {
-  var [index] = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId);      
-
-  const updTabItem = resetOpenItem(tabItem);
-
-  var updItems;
-  if (updTabItem.open) {
-    updItems = tabWindow.tabItems.splice(index,1,updTabItem);
-  } else {
-    // It's neither open nor saved, so just get rid of it...
-    updItems = tabWindow.tabItems.splice(index,1);
-  }
   return tabWindow.set('tabItems',updItems);
 }

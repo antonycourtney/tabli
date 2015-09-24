@@ -1,7 +1,6 @@
 # TODO
 
 
-
 - Modal confirmation dialog before reverting a saved window
 
 - Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned

@@ -17720,7 +17720,6 @@
 	exports.updateWindow = updateWindow;
 	exports.closeTab = closeTab;
 	exports.saveTab = saveTab;
-	exports.unsaveTab = unsaveTab;
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 	
@@ -18075,7 +18074,6 @@
 	  var index = _tabWindow$tabItems$findEntry2[0];
 	  var tabItem = _tabWindow$tabItems$findEntry2[1];
 	
-	  console.log("closeTab: ", index, tabItem);
 	  var updItems;
 	
 	  if (tabItem.saved) {
@@ -18100,7 +18098,7 @@
 	
 	function saveTab(tabWindow, tabItem, tabNode) {
 	  var _tabWindow$tabItems$findEntry3 = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tabItem.openTabId;
+	    return ti.open && ti.openTabId === tabItem.tabId;
 	  });
 	
 	  var _tabWindow$tabItems$findEntry32 = _slicedToArray(_tabWindow$tabItems$findEntry3, 1);
@@ -18109,38 +18107,9 @@
 	
 	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
 	
+	  consle.log("Updated tab item: ", updTabItem.toJS());
 	  var updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 	
-	  return tabWindow.set('tabItems', updItems);
-	}
-	
-	/**
-	 * Update a tab's saved state when tab has been 'unsaved' (i.e. bookmark removed)
-	 *
-	 * @param {TabWindow} tabWindow - tab window with tab that's been unsaved
-	 * @param {TabItem} tabItem -- open tab that has been saved
-	 *
-	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
-	 */
-	
-	function unsaveTab(tabWindow, tabItem) {
-	  var _tabWindow$tabItems$findEntry4 = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId;
-	  });
-	
-	  var _tabWindow$tabItems$findEntry42 = _slicedToArray(_tabWindow$tabItems$findEntry4, 1);
-	
-	  var index = _tabWindow$tabItems$findEntry42[0];
-	
-	  var updTabItem = resetOpenItem(tabItem);
-	
-	  var updItems;
-	  if (updTabItem.open) {
-	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
-	  } else {
-	    // It's neither open nor saved, so just get rid of it...
-	    updItems = tabWindow.tabItems.splice(index, 1);
-	  }
 	  return tabWindow.set('tabItems', updItems);
 	}
 
@@ -41728,7 +41697,7 @@
 	    width: 16,
 	    height: 16,
 	    marginLeft: 1,
-	    marginRight: 0
+	    marginRight: 1
 	  },
 	  spacer: {
 	    // backgroundColor: 'red', // for debugging
@@ -42079,7 +42048,9 @@
 	        });
 	        // TODO: callback
 	      } else {
-	          tabCheckItem = React.createElement('input', { style: m(styles.headerButton, hoverVisible, styles.headerCheckBox),
+	          // We used to include headerCheckbox, but that only set width and height
+	          // to something to 13x13; we want 16x16 from headerButton
+	          tabCheckItem = React.createElement('input', { style: m(styles.headerButton, hoverVisible),
 	            type: 'checkbox',
 	            title: 'Bookmark this tab',
 	            onClick: this.handleBookmarkTabItem
