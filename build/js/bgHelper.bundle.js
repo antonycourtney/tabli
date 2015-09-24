@@ -71,13 +71,15 @@ webpackJsonp([0],{
 	 * for the named child
 	 */
 	function ensureChildFolder(parentNode, childFolderName, callback) {
-	  for (var i = 0; i < parentNode.children.length; i++) {
-	    var childFolder = parentNode.children[i];
-	    if (childFolder.title.toLowerCase() === childFolderName.toLowerCase()) {
-	      // exists
-	      console.log("found target child folder: ", childFolderName);
-	      callback(childFolder);
-	      return true;
+	  if (parentNode.children) {
+	    for (var i = 0; i < parentNode.children.length; i++) {
+	      var childFolder = parentNode.children[i];
+	      if (childFolder.title.toLowerCase() === childFolderName.toLowerCase()) {
+	        // exists
+	        console.log("found target child folder: ", childFolderName);
+	        callback(childFolder);
+	        return true;
+	      }
 	    }
 	  }
 	  console.log("Child folder ", childFolderName, " Not found, creating...");
