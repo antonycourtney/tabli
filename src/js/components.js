@@ -691,16 +691,17 @@ var SearchBar = React.createClass({
   },
 
   handleKeyDown(e) {
+    const pagedNav = e.ctrlKey;
     if (e.keyCode===KEY_UP) {
       if (this.props.onSearchUp) {
         e.preventDefault();
-        this.props.onSearchUp();
+        this.props.onSearchUp(pagedNav);
       }
     }
     if (e.keyCode===KEY_DOWN) {
       if (this.props.onSearchDown) {
         e.preventDefault();
-        this.props.onSearchDown();
+        this.props.onSearchDown(pagedNav);
       }
     }
     if (e.keyCode==KEY_ENTER) {
@@ -935,13 +936,13 @@ var SelectablePopup = React.createClass({
     };
   },
 
-  handlePrevSelection: function() {
+  handlePrevSelection: function(byPage) {
     if (this.props.filteredWindows.length===0)
       return;
     const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
     // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
 
-    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0) {
+    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
       this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
     } else {
       // Already on first tab, try to back up to previous window:
@@ -955,7 +956,7 @@ var SelectablePopup = React.createClass({
     }
   },
 
-  handleNextSelection: function() {
+  handleNextSelection: function(byPage) {
     if (this.props.filteredWindows.length===0)
       return;
     const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
@@ -963,7 +964,7 @@ var SelectablePopup = React.createClass({
 
     // We'd prefer to use expanded state of window rather then open/closed state,
     // but that's hidden in the component...
-    if (selectedWindow.tabWindow.open && (this.state.selectedTabIndex + 1) < tabCount) {
+    if (selectedWindow.tabWindow.open && (this.state.selectedTabIndex + 1) < tabCount && !byPage) {
       this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
     } else {
       // Already on last tab, try to advance to next window:
