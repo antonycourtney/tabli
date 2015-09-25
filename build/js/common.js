@@ -42586,7 +42586,7 @@
 	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
 	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
 	
-	    if (this.state.selectedTabIndex > 0) {
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0) {
 	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
 	    } else {
 	      // Already on first tab, try to back up to previous window:
@@ -42605,7 +42605,9 @@
 	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
 	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
 	
-	    if (this.state.selectedTabIndex + 1 < tabCount) {
+	    // We'd prefer to use expanded state of window rather then open/closed state,
+	    // but that's hidden in the component...
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount) {
 	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
 	    } else {
 	      // Already on last tab, try to advance to next window:

@@ -1,12 +1,8 @@
 # TODO
 
-
 - Modal confirmation dialog before reverting a saved window
 
-
 - PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
-
-- Arrow keys should move a whole window when window closed / not expanded
 
 - Need a button on top to link to help
 
@@ -31,6 +27,8 @@
 - Need a tabWindow test for what happens when we duplicate a tab with the same URL
 
 ----- done:
+
+X Arrow keys should move a whole window when window not expanded
 
 X Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned
 
