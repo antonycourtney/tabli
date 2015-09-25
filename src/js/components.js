@@ -6,6 +6,7 @@ import * as actions from './actions';
 import * as Immutable from 'immutable';
 import * as searchOps from './searchOps';
 import * as utils from './utils';
+import * as TabWindow from './tabWindow';
 
 // import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
@@ -105,6 +106,31 @@ var styles = {
     marginLeft: 1,
     marginRight: 1 
   },
+  dialogButton: {
+    outline: 'none',
+    border: 'none',
+    marginLeft: 4,
+    marginRight: 4,
+    marginTop: 4,
+    marginBottom: 8,
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingLeft: 12,
+    paddingRight: 12,
+    borderRadius: 3,
+    verticalAlign: 'center',
+    display: 'flex',
+    fontWeight: 600,
+    fontSize: 12,
+    textAlign: 'center',
+    backgroundColor: '#e0e1e2',
+    color: 'rgba(0,0,0,.6)'
+  },
+  primaryButton: {
+    backgroundColor: '#1678c2',
+    color: '#fff',
+
+  },
   spacer: {
     // backgroundColor: 'red', // for debugging
     // height: 8, // for debugging
@@ -199,11 +225,23 @@ var styles = {
     display: 'flex',
     flexDirection: 'column'     
   },
+  simpleTabContainer: {
+    width: 250,
+    marginLeft: 8,
+    marginRight: 8,
+    paddingLeft: 4,
+    paddingRight: 4,
+    paddingTop: 4,
+    paddingBottom: 4,
+    border: '1px solid #bababa',
+    borderRadius: 3       
+  },
   modalBodyContainer: {
     display: 'flex',
-    height: 50
+    minHeight: 50,
+    flexDirection: 'column'
   },
-  modalBodyContents: {
+  centerContents: {
     margin: 'auto'
   },
   dialogInfo: {
@@ -212,7 +250,7 @@ var styles = {
   },
   dialogInfoContents: {
     marginLeft: 10,
-    marginTop: 10,
+    marginTop: 4,
     marginBottom: 10
   },
   windowListSection: {
@@ -230,6 +268,10 @@ var styles = {
   },
   searchInput: {
     width: '100%'
+  },
+  alignRight: {
+    display: 'flex',
+    justifyContent: 'flex-end'
   }
 }
 
@@ -527,7 +569,8 @@ var FilteredTabWindow = React.createClass({
   },
 
   handleRevert: function(event) {
-    actions.revertWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
+    var appComponent = this.props.appComponent;
+    appComponent.openRevertModal(this.props.filteredTabWindow);  
   },
 
 
@@ -683,6 +726,7 @@ var WindowListSection = React.createClass({
 const KEY_UP = 38;
 const KEY_DOWN = 40;
 const KEY_ENTER = 13;
+const KEY_ESC = 27;
 
 var SearchBar = React.createClass({
   handleChange() {
@@ -835,32 +879,121 @@ var ModalBody = React.createClass({
   render() {
     return (
       <div style={styles.modalBodyContainer}>
-        <div style={styles.modalBodyContents}>
-          {this.props.children}
-        </div>
+        {this.props.children}
       </div>
     );
   }
 });
 
 /*
- * Modal dialog for saving a bookmarked window
+ * Modal dialog for reverting a bookmarked window
  */
-var SaveModal = React.createClass({
-  /* The duplication of handleClose here and in Modal is hideous, but
-   * not obvious how to avoid
-   */
-  handleClose(e) {
-    e.preventDefault();
-    var appComponent = this.props.appComponent;
-    this.props.onClose();
-    e.stopPropagation();    
-  },
+var RevertModal = React.createClass({
   handleKeyDown(e) {
-    if (e.keyCode==27) {
+    if (e.keyCode==KEY_ESC) {
       // ESC key
       e.preventDefault();
-      this.handleClose(e);
+      this.props.onClose(e);
+    } else if (e.keyCode==KEY_ENTER) {
+      this.handleSubmit(e);
+    }
+  },
+  handleSubmit(e) {
+    e.preventDefault();
+    this.props.onSubmit(this.props.tabWindow);
+  },
+  renderItem(tabItem) {
+    var fiSrc=tabItem.favIconUrl ? tabItem.favIconUrl : "";
+    // Skip the chrome FAVICONs; they just throw when accessed.
+    if (fiSrc.indexOf("chrome://theme/")==0) {
+      fiSrc="";
+    }
+    var tabFavIcon = <img style={styles.favIcon} src={fiSrc} />;
+    const tabOpenStyle = tabItem.open ? null : styles.closed;
+    var tabActiveStyle = tabItem.active ? styles.activeSpan : null;
+    var tabTitleStyles = m(styles.text,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
+    return(
+        <div style={styles.noWrap} >
+          {tabFavIcon}
+          <span style={tabTitleStyles}>{tabItem.title}</span>
+          <div style={styles.spacer} />
+        </div>
+      );    
+  },
+  renderTabItems(tabItems) {
+    const itemElems = tabItems.map(this.renderItem);
+    return (
+      <div style={styles.tabList}>
+        {itemElems}
+      </div>
+    );  
+  },
+  render() {
+    const tabWindow = this.props.tabWindow;
+    const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
+    const savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map((ti) => ti.url));
+
+    const itemsToClose = tabWindow.tabItems.filter((ti) => !(savedUrlsSet.has(ti.url)));
+    const closeItemsElem = this.renderTabItems(itemsToClose);
+
+    const itemsToReload = tabWindow.tabItems.filter((ti) => savedUrlsSet.has(ti.url));
+    const reloadItemsElem = this.renderTabItems(itemsToReload);
+
+    var closeSection = null;
+    if (itemsToClose.count() > 0) {
+      closeSection = (
+        <div>
+          <p>The following tabs will be closed:</p>
+          <div style={styles.simpleTabContainer}>
+            {closeItemsElem}
+          </div>
+          <br/>
+        </div>
+        );
+    }
+    return (
+      <Modal title="Revert Saved Window?" onClose={this.props.onClose} >
+        <ModalBody>
+          <div style={styles.dialogInfoContents}>
+            {closeSection}
+            <p>The following tabs will be reloaded:</p>
+              <div style={styles.simpleTabContainer}>
+                {reloadItemsElem}
+              </div>
+            <br/>
+            <p>This action can not be undone.</p>
+          </div>
+          <div style={m(styles.alignRight)}>
+            <div style={m(styles.dialogButton,styles.primaryButton)} 
+                 onClick={this.handleSubmit}
+                 ref="okButton"
+                 tabIndex={0}
+                 onKeyDown={this.handleKeyDown}>OK</div>  
+            <div style={styles.dialogButton}
+                  onClick={this.props.onClose}
+                  tabIndex={0}
+                  >Cancel</div>  
+          </div>
+        </ModalBody>      
+      </Modal>
+    );
+  },
+
+  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
+  componentDidMount() {
+    console.log("revertModal: did mount");
+    this.refs.okButton.getDOMNode().focus();
+  }
+
+
+});
+
+var SaveModal = React.createClass({
+  handleKeyDown(e) {
+    if (e.keyCode==KEY_ESC) {
+      // ESC key
+      e.preventDefault();
+      this.props.onClose(e);
     }
   },
   handleSubmit(e) {
@@ -871,21 +1004,23 @@ var SaveModal = React.createClass({
   },
   render() {
     return (
-      <Modal title="Save Tabs" focusRef="titleInput" onClose={this.handleClose} >
+      <Modal title="Save Tabs" focusRef="titleInput" onClose={this.props.onClose} >
         <ModalInfo>
           <span>Save all tabs in this window</span> 
         </ModalInfo>
         <ModalBody>
-          <form className="dialog-form" onSubmit={this.handleSubmit}>
-            <fieldset>
-              <label htmlFor="title">Window Title</label>
-              <input type="text" name="title" id="title" ref="titleInput"
-                autoFocus={true}
-                defaultValue={this.props.initialTitle}
-                onKeyDown={this.handleKeyDown}
-               />
-            </fieldset>
-          </form>
+          <div style={styles.centerContents}>
+            <form className="dialog-form" onSubmit={this.handleSubmit}>
+              <fieldset>
+                <label htmlFor="title">Window Title</label>
+                <input type="text" name="title" id="title" ref="titleInput"
+                  autoFocus={true}
+                  defaultValue={this.props.initialTitle}
+                  onKeyDown={this.handleKeyDown}
+                 />
+              </fieldset>
+            </form>
+          </div>
         </ModalBody>      
       </Modal>
     );
@@ -1047,7 +1182,9 @@ var TabMan = React.createClass({
 
     const w0 = st.sortedWindows[0];
 
-    st.modalIsOpen = false;
+    st.saveModalIsOpen = false;
+    st.revertModalIsOpen = false;
+    st.revertTabWindow = null;
     st.searchStr = '';
     st.searchRE = null;
     return st;
@@ -1073,6 +1210,15 @@ var TabMan = React.createClass({
     this.setState({saveModalIsOpen: false});
   },
 
+  openRevertModal(filteredTabWindow) {
+    this.setState({revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow} );
+  },
+
+  closeRevertModal() {
+    this.setState({revertModalIsOpen: false, revertTabWindow: null});
+  },
+
+
   /* handler for save modal */
   doSave(titleStr) {
     actions.manageWindow(this.state.winStore,this.state.saveTabWindow,titleStr,(nextStore) => {
@@ -1080,10 +1226,17 @@ var TabMan = React.createClass({
       this.closeSaveModal();
       utils.refSetter(this.props.storeRef)(nextStore);      
     });
+    this.closeSaveModal();
   },
 
-  /* render modal (or not) based on this.state.modalIsOpen */
-  renderModal() {
+  doRevert(tabWindow) {
+    const updateHandler = utils.refSetter(this.props.storeRef);
+    actions.revertWindow(this.state.winStore,this.state.revertTabWindow,updateHandler);
+    this.closeRevertModal();    
+  },
+
+  /* render save modal (or not) based on this.state.saveModalIsOpen */
+  renderSaveModal() {
     var modal = null;
     if (this.state.saveModalIsOpen) {
       modal = <SaveModal initialTitle={this.state.saveInitialTitle} 
@@ -1096,9 +1249,24 @@ var TabMan = React.createClass({
     return modal;
   },
 
+  /* render revert modal (or not) based on this.state.revertModalIsOpen */
+  renderRevertModal() {
+    var modal = null;
+    if (this.state.revertModalIsOpen) {
+      modal = <RevertModal 
+                tabWindow={this.state.revertTabWindow}
+                onClose={this.closeRevertModal} 
+                onSubmit={this.doRevert}
+                appComponent={this}
+                />;
+    }
+    return modal;
+  },
+
   render: function() {
     try {
-      const modal = this.renderModal();
+      const saveModal = this.renderSaveModal();
+      const revertModal = this.renderRevertModal();
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows,this.state.searchRE);
       var ret = (
         <div>
@@ -1111,7 +1279,8 @@ var TabMan = React.createClass({
             searchStr={this.state.searchStr}
             searchRE={this.state.searchRE}
           />
-          {modal}
+          {saveModal}
+          {revertModal}
         </div>
       );
     } catch (e) {

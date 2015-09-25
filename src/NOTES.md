@@ -2,7 +2,7 @@
 
 - Modal confirmation dialog before reverting a saved window
 
-- PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
+- Need a way to close a tab from the keyboard  (DEL?  Shift-Del? Ctrl-Del? )
 
 - Need a button on top to link to help
 
@@ -27,6 +27,8 @@
 - Need a tabWindow test for what happens when we duplicate a tab with the same URL
 
 ----- done:
+
+X PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
 
 X Arrow keys should move a whole window when window not expanded
 
