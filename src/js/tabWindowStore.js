@@ -42,11 +42,9 @@ export default class TabWindowStore extends Immutable.Record({
      * reverted window to ensure that a reverted version of saved window stays in
      * bookmarkIdMap.
      */
-    console.log("handleTabWindowClosed: ", tabWindow.toJS());
     const closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
 
     const revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
-    console.log("handleTabWindowClosed: revertedWindow: ", revertedWindow.toJS());
 
     return this.set('windowIdMap',closedWindowIdMap).registerTabWindow(revertedWindow);
   }
@@ -71,7 +69,6 @@ export default class TabWindowStore extends Immutable.Record({
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */
   attachChromeWindow(tabWindow,chromeWindow) {
-    console.log("attachChromeWindow: ", tabWindow, chromeWindow);
     // Was this Chrome window id previously associated with some other tab window?
     const oldTabWindow = this.windowIdMap.get(chromeWindow.id);
 
@@ -131,7 +128,6 @@ export default class TabWindowStore extends Immutable.Record({
   }
 
   removeBookmarkIdMapEntry(tabWindow) {
-    console.log("removeBookmarkIdMapEntry: ", tabWindow);
     return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));
   }
 

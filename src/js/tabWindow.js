@@ -130,7 +130,6 @@ export class TabWindow extends Immutable.Record({
       var openTabItem = this.tabItems.find((t) => t.open);
       if (!openTabItem)
         return '';
-      console.log("computeTitle: returning: '" + openTabItem.title + "'");
       return openTabItem.title;
     }
     return activeTab.title;    
@@ -285,7 +284,7 @@ export function updateWindow(tabWindow,chromeWindow) {
  * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
  */
 export function closeTab(tabWindow,tabId) {
-  console.log("closeTab: ", tabWindow, tabId);
+  // console.log("closeTab: ", tabWindow, tabId);
   var [index,tabItem] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
 
   var updItems;
@@ -317,7 +316,6 @@ export function saveTab(tabWindow,tabItem,tabNode) {
                       .set('savedBookmarkId',tabNode.id)
                       .set('savedBookmarkIndex',tabNode.index);
 
-  consle.log("Updated tab item: ", updTabItem.toJS());
   const updItems = tabWindow.tabItems.splice(index,1,updTabItem);
 
   return tabWindow.set('tabItems',updItems);
