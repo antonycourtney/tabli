@@ -3,9 +3,6 @@
 
 - Modal confirmation dialog before reverting a saved window
 
-- Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned
-
-- More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs. Not enough paddingRight on checkbox input -- runs in to favIcon
 
 - PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
 
@@ -32,6 +29,12 @@
 - Don't show close button for closed windows
 
 - Need a tabWindow test for what happens when we duplicate a tab with the same URL
+
+----- done:
+
+X Check out what's going on with Medium.com favicon -- seems to be smaller than 16x16; make sure we had to fixed size. Tabs from Medium appear to be misaligned
+
+X More layout jank: We seem to have different sizes for the checkbox input and the checkbox icon for bookmarked tabs. Not enough paddingRight on checkbox input -- runs in to favIcon
 
 X - Add event handler for check box for bookmarking / un-bookmarking a tab
 

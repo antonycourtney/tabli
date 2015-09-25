@@ -130,6 +130,14 @@ var styles = {
     WebkitMaskImage: 'url("../images/status-9.png")',
     backgroundColor: '#7472ff'
   },
+  /* checkboxes seems to obey width and height, but ignore padding
+   * so we'll hack margin instead.
+   */
+  tabCheckItem: {
+    width: 13,
+    height: 13,
+    margin: '3px 3px 3px 3px'
+  },
   windowManagedButton: {
     WebkitMaskImage: 'url("../images/Status-9.png")',
     backgroundColor: '#7472ff'
@@ -455,7 +463,7 @@ var TabItem = React.createClass({
       } else {
         // We used to include headerCheckbox, but that only set width and height
         // to something to 13x13; we want 16x16 from headerButton
-        tabCheckItem = <input style={m(styles.headerButton,hoverVisible)} 
+        tabCheckItem = <input style={m(styles.headerButton,hoverVisible,styles.tabCheckItem)} 
                               type="checkbox" 
                               title="Bookmark this tab" 
                               onClick={this.handleBookmarkTabItem}
