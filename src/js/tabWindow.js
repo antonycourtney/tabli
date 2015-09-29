@@ -46,17 +46,19 @@ export class TabItem extends Immutable.Record({
  * Returned TabItem is closed (not associated with an open tab)
  */
 function makeBookmarkedTabItem(bm) {
-  if (bm.url === undefined) {
+  var urlStr = bm.url;
+  if (!urlStr) {
     console.error("makeBookmarkedTabItem: Malformed bookmark: missing URL!: ", bm);
+    urlStr = '';  // better than null or undefined!
   }
   if (bm.title === undefined) {
     console.warn("makeBookmarkedTabItem: Bookmark title undefined (ignoring...): ", bm);
   }
   const tabItem = new TabItem({
-    url: bm.url,
+    url: urlStr,
 
     saved: true,
-    savedTitle: _.get(bm,'title',bm.url),
+    savedTitle: _.get(bm,'title',urlStr),
 
     savedBookmarkId: bm.id,
     savedBookmarkIndex: bm.index
@@ -69,17 +71,19 @@ function makeBookmarkedTabItem(bm) {
  * Initialize a TabItem from an open Chrome tab
  */
 function makeOpenTabItem(tab) {
-  if (!tab.url) {
+  var urlStr = tab.url;
+  if (!urlStr) {
     console.error("malformed tab -- no URL: ", tab);
+    urlStr = '';
   }
   if (!tab.title) {
     console.warn("tab missing title (ignoring...): ", tab);
   }
   const tabItem = new TabItem({
-    url: tab.url,
+    url: urlStr,
     favIconUrl: tab.favIconUrl,
     open: true,
-    tabTitle: _.get(tab,'title',tab.url),
+    tabTitle: _.get(tab,'title',urlStr),
     openTabId: tab.id,
     active: tab.active,
     openTabIndex: tab.index
