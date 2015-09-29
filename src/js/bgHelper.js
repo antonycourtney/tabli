@@ -92,7 +92,7 @@ function setupConnectionListener(storeRef) {
       var listenerId = msg.listenerId;
       port.onDisconnect.addListener(() => {
         storeRef.removeViewListener(listenerId);
-        console.log("Removed view listener ", listenerId);
+        // console.log("Removed view listener ", listenerId);
       });
     });
   });
@@ -144,7 +144,7 @@ function makeRenderListener(storeRef) {
      */
     const renderAppElement = <Components.TabMan storeRef={null} initialWinStore={winStore} noListener={true} />;  
     const renderedString = React.renderToString(renderAppElement);
-    console.log("renderAndSave: updated saved store and HTML");
+    // console.log("renderAndSave: updated saved store and HTML");
     window.savedStore = winStore;
     window.savedHTML = renderedString;
   }

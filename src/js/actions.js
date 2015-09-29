@@ -26,11 +26,11 @@ export function syncChromeWindows(winStore,cb) {
   var t_preGet = performance.now();
   chrome.windows.getAll( {populate: true}, function (windowList) {
       var t_postGet = performance.now();
-      // console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
+      console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
       var t_preSync = performance.now();
       const nextStore = winStore.syncWindowList(windowList);
       var t_postSync = performance.now();
-      // console.log("syncChromeWindows: syncWindowList took ", t_postSync - t_preSync, " ms");
+      console.log("syncChromeWindows: syncWindowList took ", t_postSync - t_preSync, " ms");
       if (cb)
         cb(nextStore);
   });
