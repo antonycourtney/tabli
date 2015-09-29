@@ -590,3 +590,254 @@ test('chromeTabWindow',(t) => {
 
   t.end();
 });
+
+// A window with no active tab
+const chromeWindowSnap3 =
+    {
+      "alwaysOnTop": false,
+      "focused": false,
+      "height": 957,
+      "id": 442,
+      "incognito": false,
+      "left": 428,
+      "state": "normal",
+      "tabs": [
+        {
+          "active": false,
+          "audible": false,
+          "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+          "height": 862,
+          "highlighted": false,
+          "id": 443,
+          "incognito": false,
+          "index": 0,
+          "muted": false,
+          "mutedCause": "",
+          "pinned": false,
+          "selected": false,
+          "status": "complete",
+          "title": "Component API | React",
+          "url": "http://facebook.github.io/react/docs/component-api.html",
+          "width": 1258,
+          "windowId": 442
+        },
+        {
+          "active": false,
+          "audible": false,
+          "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+          "height": 862,
+          "highlighted": false,
+          "id": 445,
+          "incognito": false,
+          "index": 1,
+          "muted": false,
+          "mutedCause": "",
+          "pinned": false,
+          "selected": false,
+          "status": "complete",
+          "title": "Tutorial | React",
+          "url": "http://facebook.github.io/react/docs/tutorial.html",
+          "width": 1258,
+          "windowId": 442
+        },
+        {
+          "active": false,
+          "audible": false,
+          "favIconUrl": "http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d",
+          "height": 862,
+          "highlighted": false,
+          "id": 447,
+          "incognito": false,
+          "index": 2,
+          "muted": false,
+          "mutedCause": "",
+          "pinned": false,
+          "selected": false,
+          "status": "complete",
+          "title": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
+          "url": "http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat",
+          "width": 1258,
+          "windowId": 442
+        },
+        {
+          "active": false,
+          "audible": false,
+          "height": 862,
+          "highlighted": false,
+          "id": 449,
+          "incognito": false,
+          "index": 3,
+          "muted": false,
+          "mutedCause": "",
+          "pinned": false,
+          "selected": false,
+          "status": "complete",
+          "title": "Flux | Application Architecture for Building User Interfaces",
+          "url": "http://facebook.github.io/flux/docs/overview.html#content",
+          "width": 1258,
+          "windowId": 442
+        },
+        {
+          "active": false,
+          "audible": false,
+          "favIconUrl": "http://fluxxor.com/favicon.ico",
+          "height": 862,
+          "highlighted": false,
+          "id": 451,
+          "incognito": false,
+          "index": 4,
+          "muted": false,
+          "mutedCause": "",
+          "pinned": false,
+          "selected": false,
+          "status": "complete",
+          "title": "Fluxxor - Home",
+          "url": "http://fluxxor.com/",
+          "width": 1258,
+          "windowId": 442
+        },
+        {
+          "active": false,
+          "audible": false,
+          "favIconUrl": "http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png",
+          "height": 862,
+          "highlighted": false,
+          "id": 453,
+          "incognito": false,
+          "index": 5,
+          "muted": false,
+          "mutedCause": "",
+          "pinned": false,
+          "selected": false,
+          "status": "complete",
+          "title": "FixedDataTable",
+          "url": "http://facebook.github.io/fixed-data-table/",
+          "width": 1258,
+          "windowId": 442
+        }
+      ],
+      "top": 222,
+      "type": "normal",
+      "width": 1258
+    };
+
+/*
+ * make sure we still get a deterministic title even when no tab active */
+test('noActiveTabTitle', (t) => {
+  const baseTabWindow = TabWindow.makeChromeTabWindow(chromeWindowSnap3);
+
+  const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
+
+  const baseTitle = baseTabWindow.title;
+
+  t.equal(baseTitle,chromeWindowSnap3.tabs[0].title,'use first tab title when no active tab');
+  t.end();
+});
+
+
+test('missingSourceFieldsTests',(t) => {
+  const bmFolder0 = 
+    {
+      "children": [
+        {
+          "dateAdded": 1395768341441,
+          "id": "432",
+          "index": 0,
+          "parentId": "431",
+          // title deliberately omitted
+          "url": "https://github.com/mbostock/d3/wiki/API-Reference"
+        }
+      ],
+      "dateAdded": 1395768341427,
+      "dateGroupModified": 1430260300118,
+      "id": "431",
+      "index": 4,
+      "parentId": "377",
+      "title": "d3 docs"      
+    };
+
+  const tabWindow = TabWindow.makeFolderTabWindow(bmFolder0);
+  const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()));
+  // console.log("makeFolderTabWindow returned:");
+  // console.log(JSON.stringify(tabWindowJS,null,2));
+
+  const bmTabItem = tabWindow.tabItems.get(0);
+  const bmTabTitle = bmTabItem.title;
+  t.equal(bmTabTitle,bmFolder0.children[0].url,'Revert to url when bookmark title missing');
+
+  // window is still folder title:
+  const windowTitle = tabWindow.title;
+
+  // Let's use URL for title of untitled tabs:
+  t.equal(windowTitle,bmFolder0.title,'use bookmark folder for window title');
+
+  // TODO: Now omit folder title...
+  const bmFolder1 = 
+    {
+      "children": [
+        {
+          "dateAdded": 1395768341441,
+          "id": "432",
+          "index": 0,
+          "parentId": "431",
+          title: "d3 API Reference",
+          "url": "https://github.com/mbostock/d3/wiki/API-Reference"
+        }
+      ],
+      "dateAdded": 1395768341427,
+      "dateGroupModified": 1430260300118,
+      "id": "431",
+      "index": 4,
+      "parentId": "377"
+      // title deliberately omitted
+    };
+
+  const tabWindow1 = TabWindow.makeFolderTabWindow(bmFolder1);
+  const tabWindow1JS = JSON.parse(JSON.stringify(tabWindow1.toJS()));
+
+  const tabWindow1Title = tabWindow1.title;
+
+  // revert to title of first tab:
+  t.equal(tabWindow1Title,bmFolder1.children[0].title,'null folder title reverts to tab title');
+
+  const chromeWindowSnap4 =
+      {
+        "alwaysOnTop": false,
+        "focused": false,
+        "height": 957,
+        "id": 442,
+        "incognito": false,
+        "left": 428,
+        "state": "normal",
+        "tabs": [
+          {
+            "active": true,
+            "audible": false,
+            "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+            "height": 862,
+            "highlighted": false,
+            "id": 443,
+            "incognito": false,
+            "index": 0,
+            "muted": false,
+            "mutedCause": "",
+            "pinned": false,
+            "selected": false,
+            "status": "complete",
+            // title deliberately omitted
+            "url": "http://facebook.github.io/react/docs/component-api.html",
+            "width": 1258,
+            "windowId": 442
+          }
+        ]
+      };
+
+  const chromeTabWindow = TabWindow.makeChromeTabWindow(chromeWindowSnap4);
+  const chromeTabWindowJS = JSON.parse(JSON.stringify(chromeTabWindow.toJS()));
+
+  const chromeTabWindowTitle = chromeTabWindow.title;
+
+  t.equal(chromeTabWindow.title,chromeWindowSnap4.tabs[0].url,'Fall back to url for tabs with no title');
+
+  t.end();
+});

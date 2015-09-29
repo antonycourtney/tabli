@@ -46,15 +46,22 @@ export class TabItem extends Immutable.Record({
  * Returned TabItem is closed (not associated with an open tab)
  */
 function makeBookmarkedTabItem(bm) {
+  if (bm.url === undefined) {
+    console.error("makeBookmarkedTabItem: Malformed bookmark: missing URL!: ", bm);
+  }
+  if (bm.title === undefined) {
+    console.warn("makeBookmarkedTabItem: Bookmark title undefined (ignoring...): ", bm);
+  }
   const tabItem = new TabItem({
     url: bm.url,
 
     saved: true,
-    savedTitle: bm.title,
+    savedTitle: _.get(bm,'title',bm.url),
 
     savedBookmarkId: bm.id,
     savedBookmarkIndex: bm.index
   });
+
   return tabItem;
 }
 
@@ -62,11 +69,17 @@ function makeBookmarkedTabItem(bm) {
  * Initialize a TabItem from an open Chrome tab
  */
 function makeOpenTabItem(tab) {
+  if (!tab.url) {
+    console.error("malformed tab -- no URL: ", tab);
+  }
+  if (!tab.title) {
+    console.warn("tab missing title (ignoring...): ", tab);
+  }
   const tabItem = new TabItem({
     url: tab.url,
     favIconUrl: tab.favIconUrl,
     open: true,
-    tabTitle: tab.title,
+    tabTitle: _.get(tab,'title',tab.url),
     openTabId: tab.id,
     active: tab.active,
     openTabIndex: tab.index
@@ -166,12 +179,19 @@ export function removeSavedWindowState(tabWindow) {
  * Initialize an unopened TabWindow from a bookmarks folder
  */
 export function makeFolderTabWindow( bookmarkFolder ) {
-  const tabItems = bookmarkFolder.children.map(makeBookmarkedTabItem);
+  const tabItems = Immutable.Seq(bookmarkFolder.children.map(makeBookmarkedTabItem));
+  var fallbackTitle = '';
+  if (bookmarkFolder.title === undefined) {
+    console.error("makeFolderTabWindow: malformed bookmarkFolder -- missing title: ", bookmarkFolder);
+    if (tabItems.count() > 0) {
+      fallbackTitle = tabItems.get(0).title;
+    }    
+  }
   const tabWindow = new TabWindow({ 
     saved: true,
-    savedTitle: bookmarkFolder.title,
+    savedTitle: _.get(bookmarkFolder,'title',fallbackTitle),
     savedFolderId: bookmarkFolder.id,
-    tabItems: Immutable.Seq(tabItems)
+    tabItems
   });
 
   return tabWindow;
