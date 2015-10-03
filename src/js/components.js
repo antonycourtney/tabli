@@ -727,6 +727,7 @@ const KEY_UP = 38;
 const KEY_DOWN = 40;
 const KEY_ENTER = 13;
 const KEY_ESC = 27;
+const KEY_TAB = 9;
 
 var SearchBar = React.createClass({
   handleChange() {
@@ -735,17 +736,30 @@ var SearchBar = React.createClass({
   },
 
   handleKeyDown(e) {
-    const pagedNav = e.ctrlKey;
+    // console.log("handleKeyDown: ", _.omit(e,_.isObject));
     if (e.keyCode===KEY_UP) {
       if (this.props.onSearchUp) {
         e.preventDefault();
-        this.props.onSearchUp(pagedNav);
+        this.props.onSearchUp(e.ctrlKey);
       }
     }
     if (e.keyCode===KEY_DOWN) {
       if (this.props.onSearchDown) {
         e.preventDefault();
-        this.props.onSearchDown(pagedNav);
+        this.props.onSearchDown(e.ctrlKey);
+      }
+    }
+    if (e.keyCode===KEY_TAB) {
+      // We need to determine if it was forward or backwards tab:
+      // N.B. we still try and use e.ctrlKey to determine paged
+      // nav, but that key combo consumed by Chrome before we see it...
+      if (this.props.onSearchUp && this.props.onSearchDown) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          this.props.onSearchUp(e.ctrlKey);
+        } else {
+          this.props.onSearchDown(e.ctrlKey);
+        }
       }
     }
     if (e.keyCode==KEY_ENTER) {
