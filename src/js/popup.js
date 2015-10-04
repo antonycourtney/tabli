@@ -23,7 +23,7 @@ function logHTML(labelStr,htmlStr) {
 function renderPopup(currentWindowId) {
   var t_preRender = performance.now();
   var bgPage = chrome.extension.getBackgroundPage();
-
+  
   var storeRef = bgPage.storeRef;
   var savedStore = bgPage.savedStore;
   var savedHTML = bgPage.savedHTML;

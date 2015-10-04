@@ -72,10 +72,11 @@ export default class TabWindowStore extends Immutable.Record({
     // Was this Chrome window id previously associated with some other tab window?
     const oldTabWindow = this.windowIdMap.get(chromeWindow.id);
 
-    // A store without that window id
-    const rmStore = oldTabWindow ? this.removeTabWindow(oldTabWindow) : this;
+    // A store without oldTabWindow
+    const rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this;
 
     const attachedTabWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
+
     return rmStore.registerTabWindow(attachedTabWindow);
   }
 

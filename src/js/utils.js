@@ -60,6 +60,7 @@ export function seqActions(actions,seed,onCompleted) {
 
 // wrapper to log exceptions
 export function logWrap( f ) {
+
   function wf() {
     try {
       var ret = f.apply( this, arguments );
