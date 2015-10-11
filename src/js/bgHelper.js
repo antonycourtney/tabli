@@ -11,7 +11,7 @@ import * as actions from './actions';
 import * as React from 'react';
 import {addons} from 'react/addons';
 import * as Components from './components';
-import RefCell from './refCell';
+import ViewRef from './viewRef';
 
 var popupPort = null;
 const tabmanFolderTitle = "Tabli Saved Windows";
@@ -155,9 +155,11 @@ function main() {
   initWinStore(function (bmStore) {
     console.log("init: done reading bookmarks: ", bmStore);
     // window.winStore = winStore;
-    actions.syncChromeWindows(bmStore,(syncedStore) => {
+    actions.syncChromeWindows((uf) => {
       console.log("initial sync of chrome windows complete.");
-      window.storeRef = new RefCell(syncedStore);
+      const syncedStore = uf(bmStore);
+
+      window.storeRef = new ViewRef(syncedStore);
 
       // dumpAll(winStore);
       // dumpChromeWindows();

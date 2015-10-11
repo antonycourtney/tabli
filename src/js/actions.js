@@ -6,33 +6,28 @@ import * as utils from './utils';
 /**
  * sync a single Chrome window by its Chrome window id
  *
- * @param {TabWindowStore} winStore -- store before synchronization
- * @param {function} cb -- callback to call with updated store  
+ * @param {function} cb -- callback to update state 
  */
-export function syncChromeWindowById(winStore,windowId,cb) {
+export function syncChromeWindowById(windowId,cb) {
   chrome.windows.get(windowId,{populate: true}, (chromeWindow) => {
-    const nextStore = winStore.syncChromeWindow(chromeWindow);
-    cb(nextStore);
+    cb((state) => state.syncChromeWindow(chromeWindow));
   });
 }
 
 /**
  * get all open Chrome windows and synchronize state with our tab window store
  *
- * @param {TabWindowStore} winStore -- store before synchronization
- * @param {function} cb -- callback to call with updated store  
+ * @param {function} cb -- callback to updated state  
  */
-export function syncChromeWindows(winStore,cb) {
+export function syncChromeWindows(cb) {
   var t_preGet = performance.now();
   chrome.windows.getAll( {populate: true}, function (windowList) {
       var t_postGet = performance.now();
       console.log("syncChromeWindows: chrome.windows.getAll took ", t_postGet - t_preGet, " ms");
       var t_preSync = performance.now();
-      const nextStore = winStore.syncWindowList(windowList);
+      cb((state) => state.syncWindowList(windowList));
       var t_postSync = performance.now();
       console.log("syncChromeWindows: syncWindowList took ", t_postSync - t_preSync, " ms");
-      if (cb)
-        cb(nextStore);
   });
 }
 
@@ -41,16 +36,15 @@ export function syncChromeWindows(winStore,cb) {
  *
  * N.B.: NOT exported; called from openWindow
  */
-function restoreBookmarkWindow(winStore, tabWindow, cb) {
+function restoreBookmarkWindow(tabWindow,cb) {
   var self = this;
   /*
    * special case handling of replacing the contents of a fresh window 
    */    
   chrome.windows.getLastFocused( {populate: true }, function (currentChromeWindow) {
     const urls = tabWindow.tabItems.map((ti) => ti.url).toArray();
-    function cf( chromeWindow ) {
-      const nextStore = winStore.attachChromeWindow(tabWindow,chromeWindow);
-      cb(nextStore);
+    function cf(chromeWindow) {
+      cb((state) => state.attachChromeWindow(tabWindow,chromeWindow));
     }
     if ((currentChromeWindow.tabs.length===1) &&
         (currentChromeWindow.tabs[0].url==="chrome://newtab/")) {
@@ -75,7 +69,7 @@ function restoreBookmarkWindow(winStore, tabWindow, cb) {
   });
 }
 
-export function openWindow(winStore,tabWindow,cb) {
+export function openWindow(tabWindow,cb) {
   var self = this;
 
   if (tabWindow.open) {
@@ -84,17 +78,16 @@ export function openWindow(winStore,tabWindow,cb) {
     // TODO: update focus in winStore
   } else {
     // bookmarked window -- need to open it!
-    restoreBookmarkWindow(winStore,tabWindow,cb);      
+    restoreBookmarkWindow(tabWindow,cb);      
   }    
 }
 
-export function closeTab(winStore,tabWindow,tabId,cb) {
+export function closeTab(tabWindow,tabId,cb) {
 
   const openTabCount = tabWindow.openTabCount;
   chrome.tabs.remove(tabId,() => {
     if (openTabCount==1) {
-      const nextStore = winStore.handleTabWindowClosed(tabWindow);
-      cb(nextStore);
+      cb((state) => state.handleTabWindowClosed(tabWindow));
     } else {
       /*
        * We'd like to do a full chrome.windows.get here so that we get the currently active tab
@@ -104,48 +97,45 @@ export function closeTab(winStore,tabWindow,tabId,cb) {
         winStore.syncChromeWindow(chromeWindow);
       });
       */
-      const nextStore = winStore.handleTabClosed(tabWindow,tabId);
-      cb(nextStore);      
+      cb((state) => state.handleTabClosed(tabWindow,tabId));
     }
   });
 }
 
-export function saveTab(winStore,tabWindow,tabItem,cb) {
+export function saveTab(tabWindow,tabItem,cb) {
   const tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
   chrome.bookmarks.create( tabMark, ( tabNode ) => { 
-    const nextStore = winStore.handleTabSaved(tabWindow,tabItem,tabNode);
-    cb(nextStore);
+    cb((state) => state.handleTabSaved(tabWindow,tabItem,tabNode));
   });    
 }
 
-export function unsaveTab(winStore,tabWindow,tabItem,cb) {
+export function unsaveTab(tabWindow,tabItem,cb) {
   const tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
   chrome.bookmarks.remove( tabItem.savedBookmarkId, () => { 
-    const nextStore = winStore.handleTabUnsaved(tabWindow,tabItem);
-    cb(nextStore);
+    cb((state) => state.handleTabUnsaved(tabWindow,tabItem));
   });    
 }
 
 
-export function closeWindow(winStore,tabWindow,cb) {
+export function closeWindow(tabWindow,cb) {
   if (!tabWindow.open) {
     console.log("closeWindow: request to close non-open window, ignoring...");
     return;
   }
   var self = this;
   chrome.windows.remove( tabWindow.openWindowId, function() {
-    cb(winStore.handleTabWindowClosed(tabWindow));
+    cb((state) => state.handleTabWindowClosed(tabWindow));
   });
 }
 
 // activate a specific tab:
-export function activateTab(winStore,tabWindow,tab,tabIndex,cb) {
+export function activateTab(tabWindow,tab,tabIndex,cb) {
   var self = this;
   // console.log("activateTab: ", tabWindow, tab );
 
   // handler to call after performing updates to resync the given window:
   function updateHandler() {
-    syncChromeWindowById(winStore,tabWindow.openWindowId,cb);
+    syncChromeWindowById(tabWindow.openWindowId,cb);
   }
 
   if( tabWindow.open ) {
@@ -171,11 +161,11 @@ export function activateTab(winStore,tabWindow,tab,tabIndex,cb) {
   } else {
     // console.log("activateTab: opening non-open window");
     // TODO: insert our own callback so we can activate chosen tab after opening window!
-    openWindow(winStore,tabWindow,cb);
+    openWindow(tabWindow,cb);
   }
 }
 
-export function revertWindow(winStore,tabWindow,cb) {
+export function revertWindow(tabWindow,cb) {
   const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openTabId).toArray();
 
   const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
@@ -192,21 +182,20 @@ export function revertWindow(winStore,tabWindow,cb) {
 
   // blow away all the existing tabs:
   chrome.tabs.remove( currentTabIds, function() {
-    syncChromeWindowById(winStore,tabWindow.openWindowId,cb);
+    syncChromeWindowById(tabWindow.openWindowId,cb);
   });
 }
 
 /*
  * save the specified tab window and make it a managed window
  */
-export function manageWindow(winStore,tabWindow,title,cb) {
-  const tabmanFolderId = winStore.folderId;
+export function manageWindow(tabliFolderId,tabWindow,title,cb) {
 
   // and write out a Bookmarks folder for this newly managed window:
-  if( !tabmanFolderId ) {
+  if( !tabliFolderId ) {
     alert( "Could not save bookmarks -- no tab manager folder" );
   }
-  var windowFolder = { parentId: tabmanFolderId,
+  var windowFolder = { parentId: tabliFolderId,
                        title: title,
                      };
   chrome.bookmarks.create( windowFolder, function( windowFolderNode ) {
@@ -231,8 +220,7 @@ export function manageWindow(winStore,tabWindow,title,cb) {
 
         // We'll retrieve the latest chrome Window state and attach that:
         chrome.windows.get(tabWindow.openWindowId,{populate: true}, (chromeWindow) => {
-          const nextStore = winStore.attachBookmarkFolder(fullFolderNode,chromeWindow);
-          cb(nextStore);
+          cb((state) => state.attachBookmarkFolder(fullFolderNode,chromeWindow));
         });
       } );
     });
@@ -240,16 +228,15 @@ export function manageWindow(winStore,tabWindow,title,cb) {
 }
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-export function unmanageWindow(winStore,tabWindow,cb) {
+export function unmanageWindow(archiveFolderId,tabWindow,cb) {
   // console.log("unmanageWindow: ", tabWindow.toJS());
-  if( !winStore.archiveFolderId ) {
+  if( !archiveFolderId ) {
     alert( "could not move managed window folder to archive -- no archive folder" );
     return;
   }
   // Could potentially disambiguate names in archive folder...
-  chrome.bookmarks.move( tabWindow.savedFolderId, { parentId: winStore.archiveFolderId }, (resultNode) => {
+  chrome.bookmarks.move( tabWindow.savedFolderId, { parentId: archiveFolderId }, (resultNode) => {
     // console.log("unmanageWindow: bookmark folder moved to archive folder");
-    const nextStore = winStore.unmanageWindow(tabWindow);
-    cb(nextStore);
+    cb((state) => state.unmanageWindow(tabWindow));
   });
 }

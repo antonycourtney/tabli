@@ -1,14 +1,10 @@
 # TODO
 
-- Modal confirmation dialog before reverting a saved window
+X Modal confirmation dialog before reverting a saved window
 
 - Need a way to close a tab from the keyboard  (DEL?  Shift-Del? Ctrl-Del? )
 
-- Need a button on top to link to help
-
-- Need a basic quick reference Help page with keyboard shortcuts
-
-- Need an Introduction / Quick Start page
+- Need a button on top to link to help (usage manual)
 
 ========= After 0.8.2:
 
@@ -27,6 +23,10 @@
 - Need a tabWindow test for what happens when we duplicate a tab with the same URL
 
 ----- done:
+
+X Need a basic quick reference Help page with keyboard shortcuts
+
+X Need an Introduction / Quick Start page
 
 X PgDn (Ctrl-Down, Ctrl-Up) should move to next/prev window
 

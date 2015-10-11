@@ -5,7 +5,7 @@ import * as React from 'react';
 import * as actions from './actions';
 import * as Immutable from 'immutable';
 import * as searchOps from './searchOps';
-import * as utils from './utils';
+import {refUpdater} from 'oneref';
 import * as TabWindow from './tabWindow';
 
 // import * as objectAssign from 'object-assign';
@@ -368,7 +368,8 @@ var WindowHeader = React.createClass({
   handleUnmanageClick: function(event) {
     console.log("unamange: ", this.props.tabWindow);
     event.preventDefault();
-    actions.unmanageWindow(this.props.winStore,this.props.tabWindow,this.props.storeUpdateHandler);
+    const archiveFolderId = this.props.winStore.archiveFolderId;
+    actions.unmanageWindow(archiveFolderId,this.props.tabWindow,this.props.storeUpdateHandler);
     event.stopPropagation();
   },
 
@@ -451,7 +452,7 @@ var TabItem = React.createClass({
     var tabIndex = this.props.tabIndex;
     // console.log("TabItem: handleClick: tab: ", tab);
 
-    actions.activateTab(this.props.winStore,tabWindow,tab,tabIndex,this.props.storeUpdateHandler);
+    actions.activateTab(tabWindow,tab,tabIndex,this.props.storeUpdateHandler);
   },
 
   handleClose: function() {
@@ -460,19 +461,19 @@ var TabItem = React.createClass({
     if (!this.props.tab.open)
       return;
     var tabId = this.props.tab.openTabId;
-    actions.closeTab(this.props.winStore,this.props.tabWindow,tabId,this.props.storeUpdateHandler);
+    actions.closeTab(this.props.tabWindow,tabId,this.props.storeUpdateHandler);
   }, 
 
   handleBookmarkTabItem: function(event) {
     event.stopPropagation();
     console.log("bookmark tab: ", this.props.tab.toJS());
-    actions.saveTab(this.props.winStore,this.props.tabWindow,this.props.tab,this.props.storeUpdateHandler);
+    actions.saveTab(this.props.tabWindow,this.props.tab,this.props.storeUpdateHandler);
   },
 
   handleUnbookmarkTabItem: function(event) {
     event.stopPropagation();
     console.log("unbookmark tab: ", this.props.tab.toJS());
-    actions.unsaveTab(this.props.winStore,this.props.tabWindow,this.props.tab,this.props.storeUpdateHandler);
+    actions.unsaveTab(this.props.tabWindow,this.props.tab,this.props.storeUpdateHandler);
   },
 
 
@@ -560,12 +561,12 @@ var FilteredTabWindow = React.createClass({
 
   handleOpen: function() {
     console.log("handleOpen", this, this.props);
-    actions.openWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
+    actions.openWindow(this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    actions.closeWindow(this.props.winStore,this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
+    actions.closeWindow(this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
   },
 
   handleRevert: function(event) {
@@ -1132,7 +1133,7 @@ var SelectablePopup = React.createClass({
     const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
     const selectedTabItem=selectedTab(selectedWindow,this.props.searchStr,this.state.selectedTabIndex);
     console.log("opening: ", selectedTabItem.toJS());
-    actions.activateTab(this.props.winStore,selectedWindow.tabWindow,selectedTabItem,this.state.selectedTabIndex);
+    actions.activateTab(selectedWindow.tabWindow,selectedTabItem,this.state.selectedTabIndex);
   },
 
   componentWillReceiveProps: function(nextProps) {
@@ -1235,17 +1236,15 @@ var TabMan = React.createClass({
 
   /* handler for save modal */
   doSave(titleStr) {
-    actions.manageWindow(this.state.winStore,this.state.saveTabWindow,titleStr,(nextStore) => {
-      console.log("window saved");
-      this.closeSaveModal();
-      utils.refSetter(this.props.storeRef)(nextStore);      
-    });
+    const storeRef = this.props.storeRef;
+    const tabliFolderId = storeRef.getValue().folderId;
+    actions.manageWindow(tabliFolderId,this.state.saveTabWindow,titleStr,refUpdater(storeRef));      
     this.closeSaveModal();
   },
 
   doRevert(tabWindow) {
-    const updateHandler = utils.refSetter(this.props.storeRef);
-    actions.revertWindow(this.state.winStore,this.state.revertTabWindow,updateHandler);
+    const updateHandler = refUpdater(this.props.storeRef);
+    actions.revertWindow(this.state.revertTabWindow,updateHandler);
     this.closeRevertModal();    
   },
 
@@ -1287,7 +1286,7 @@ var TabMan = React.createClass({
           <SelectablePopup 
             onSearchInput={this.handleSearchInput}            
             winStore={this.state.winStore} 
-            storeUpdateHandler={utils.refSetter(this.props.storeRef)}
+            storeUpdateHandler={refUpdater(this.props.storeRef)}
             filteredWindows={filteredWindows} 
             appComponent={this}
             searchStr={this.state.searchStr}

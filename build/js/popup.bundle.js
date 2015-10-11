@@ -79,8 +79,9 @@ webpackJsonp([1],[
 	    console.log("full render complete. render time: (", t_postRender - t_preRender, " ms)");
 	
 	    // And sync our window state, which may update the UI...
-	    actions.syncChromeWindows(savedStore, (0, _utils.logWrap)(function (syncStore) {
+	    actions.syncChromeWindows((0, _utils.logWrap)(function (uf) {
 	      // console.log("postLoadRender: window sync complete");
+	      var syncStore = uf(savedStore);
 	
 	      // And set current focused window:
 	      var nextStore = syncStore.setCurrentWindow(currentWindowId);

@@ -1,37 +1,22 @@
-/**
- * A mutable ref cell that supports node's EventEmitter to enable
- * registration of listeners to be notified when the ref cell is
- * updated
- *
- */
 'use strict';
 
-import EventEmitter from 'events';
+import * as OneRef from 'oneref';
 
-export default class RefCell extends EventEmitter {
+/**
+ * A wrapper around OneRef.Ref that tracks listeners by numeric id
+ * so that we can share a ref between background page and popup
+ * in Chrome extension and clean up when popup goes away
+ *
+ * 
+ */
+
+export default class ViewRef extends OneRef.Ref {
   /**
-   * construct a new RefCell with initial value v
+   * construct a new ViewRef with initial value v
    */
   constructor(v) {
-    super();
-    this._value = v;
+    super(v);
     this.viewListeners = [];
-  }
-
-
-  /**
-   * get the current value of this ref cell
-   */
-  getValue() {
-    return this._value;
-  } 
-
-  /**
-   * update contents of this cell (and notify any listeners)
-   */
-  setValue(v) {
-    this._value = v;
-    this.emit("change");
   }
 
   /*

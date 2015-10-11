@@ -23,7 +23,7 @@ function logHTML(labelStr,htmlStr) {
 function renderPopup(currentWindowId) {
   var t_preRender = performance.now();
   var bgPage = chrome.extension.getBackgroundPage();
-  
+
   var storeRef = bgPage.storeRef;
   var savedStore = bgPage.savedStore;
   var savedHTML = bgPage.savedHTML;
@@ -61,8 +61,9 @@ function renderPopup(currentWindowId) {
     console.log("full render complete. render time: (", t_postRender - t_preRender, " ms)");    
 
     // And sync our window state, which may update the UI...
-    actions.syncChromeWindows(savedStore,logWrap( (syncStore) => {
+    actions.syncChromeWindows(logWrap( (uf) => {
       // console.log("postLoadRender: window sync complete");
+      const syncStore = uf(savedStore);
 
       // And set current focused window:
       const nextStore = syncStore.setCurrentWindow(currentWindowId);
