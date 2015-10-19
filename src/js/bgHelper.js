@@ -5,7 +5,7 @@
  */
 'use strict';
 
-import TabWindowStore from './tabWindowStore';
+import TabManagerState from './tabManagerState';
 import * as TabWindow from './tabWindow';
 import * as actions from './actions';
 import * as React from 'react';
@@ -77,7 +77,7 @@ function initWinStore(cb) {
         archiveFolderId = archiveFolder.id;
         chrome.bookmarks.getSubTree(tabManFolder.id,function (subTreeNodes) {
           console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
-          const baseWinStore = new TabWindowStore({folderId: tabmanFolderId, archiveFolderId });
+          const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId });
           const loadedWinStore = loadManagedWindows(baseWinStore,subTreeNodes[0]);
           cb(loadedWinStore);
         });

@@ -3,7 +3,7 @@
 import * as React from 'react/addons';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
-import TabWindowStore from './tabWindowStore';
+import TabManagerState from './tabManagerState';
 import * as _ from 'lodash';
 import * as Components from './components';
 import {logWrap} from './utils';
@@ -26,7 +26,7 @@ function renderPage(testData) {
 
   const tabWindows = allWindows.map(makeTabWindow);
 
-  var emptyWinStore = new TabWindowStore();
+  var emptyWinStore = new TabManagerState();
 
   var bgPage = chrome.extension.getBackgroundPage();
 

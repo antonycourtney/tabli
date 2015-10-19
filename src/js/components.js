@@ -11,7 +11,6 @@ import * as TabWindow from './tabWindow';
 // import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
 
-import * as TabWindowStore from './tabWindowStore';
 import {addons} from 'react/addons'; 
 const {PureRenderMixin, Perf} = addons;
 

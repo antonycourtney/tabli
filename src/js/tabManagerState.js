@@ -1,5 +1,5 @@
 /**
- * long-lived application state for Subjective tab manager
+ * application state for tab manager
  *
  * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
  * and then retrieve the instance from the background window in the popup
@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 
-export default class TabWindowStore extends Immutable.Record({
+export default class TabManagerState extends Immutable.Record({
   windowIdMap: Immutable.Map(),     // maps from chrome window id for open windows
   bookmarkIdMap: Immutable.Map(),   // maps from bookmark id for saved windows
   folderId: -1,
