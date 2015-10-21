@@ -41544,6 +41544,10 @@
 	    WebkitMaskImage: 'url("../images/Multimedia-64.png")',
 	    backgroundColor: '#505050'
 	  },
+	  emptyFavIcon: {
+	    WebkitMaskImage: 'url("../images/Files-26.png")',
+	    backgroundColor: '#969696'
+	  },
 	  /* checkboxes seems to obey width and height, but ignore padding
 	   * so we'll hack margin instead.
 	   */
@@ -41913,7 +41917,9 @@
 	      fiSrc = "";
 	    }
 	
-	    var tabFavIcon = React.createElement('img', { style: styles.favIcon, src: fiSrc });
+	    var emptyFavIcon = React.createElement('div', { style: m(styles.headerButton, styles.emptyFavIcon) });
+	
+	    var tabFavIcon = fiSrc.length > 0 ? React.createElement('img', { style: styles.favIcon, src: fiSrc }) : emptyFavIcon;
 	
 	    var tabActiveStyle = tab.active ? styles.activeSpan : null;
 	    var tabTitleStyles = m(styles.text, styles.tabTitle, styles.noWrap, tabOpenStyle, tabActiveStyle);

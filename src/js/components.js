@@ -159,6 +159,10 @@ var styles = {
     WebkitMaskImage: 'url("../images/Multimedia-64.png")',
     backgroundColor: '#505050'
   },  
+  emptyFavIcon: {
+    WebkitMaskImage: 'url("../images/Files-26.png")',
+    backgroundColor: '#969696'
+  },  
   /* checkboxes seems to obey width and height, but ignore padding
    * so we'll hack margin instead.
    */
@@ -446,6 +450,7 @@ var WindowHeader = React.createClass({
   }
 });
 
+
 var TabItem = React.createClass({
   mixins:[Hoverable],
 
@@ -526,7 +531,9 @@ var TabItem = React.createClass({
       fiSrc="";
     }
 
-    var tabFavIcon = <img style={styles.favIcon} src={fiSrc} />;
+    const emptyFavIcon = <div style={m(styles.headerButton,styles.emptyFavIcon)} />;
+
+    var tabFavIcon = (fiSrc.length > 0) ? <img style={styles.favIcon} src={fiSrc} /> : emptyFavIcon;
 
     var tabActiveStyle = tab.active ? styles.activeSpan : null;
     var tabTitleStyles = m(styles.text,styles.tabTitle,styles.noWrap,tabOpenStyle,tabActiveStyle);
