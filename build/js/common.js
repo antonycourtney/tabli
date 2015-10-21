@@ -17520,6 +17520,7 @@
 	  return TabItem;
 	})(Immutable.Record({
 	  url: '',
+	  audible: false,
 	
 	  /* Saved state fields
 	  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
@@ -17571,11 +17572,14 @@
 	    console.error("malformed tab -- no URL: ", tab);
 	    urlStr = '';
 	  }
-	  if (!tab.title) {
-	    console.warn("tab missing title (ignoring...): ", tab);
-	  }
+	  /*
+	    if (!tab.title) {
+	      console.warn("tab missing title (ignoring...): ", tab);
+	    }
+	  */
 	  var tabItem = new TabItem({
 	    url: urlStr,
+	    audible: tab.audible,
 	    favIconUrl: tab.favIconUrl,
 	    open: true,
 	    tabTitle: _.get(tab, 'title', urlStr),
@@ -41536,6 +41540,10 @@
 	    WebkitMaskImage: 'url("../images/status-9.png")',
 	    backgroundColor: '#7472ff'
 	  },
+	  audibleIcon: {
+	    WebkitMaskImage: 'url("../images/Multimedia-64.png")',
+	    backgroundColor: '#505050'
+	  },
 	  /* checkboxes seems to obey width and height, but ignore padding
 	   * so we'll hack margin instead.
 	   */
@@ -41912,6 +41920,8 @@
 	    var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
 	    var selectedStyle = this.props.isSelected ? styles.tabItemSelected : null;
 	
+	    var audibleIcon = tab.audible ? React.createElement('div', { style: m(styles.headerButton, styles.audibleIcon) }) : null;
+	
 	    var closeStyle = m(styles.headerButton, styles.closeButton);
 	    var closeButton = React.createElement(HeaderButton, { baseStyle: closeStyle, visible: tab.open && this.state.hovering,
 	      hoverStyle: styles.closeButtonHover, title: 'Close Tab',
@@ -41931,6 +41941,7 @@
 	        tabTitle
 	      ),
 	      React.createElement('div', { style: styles.spacer }),
+	      audibleIcon,
 	      closeButton
 	    );
 	  }

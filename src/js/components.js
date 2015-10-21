@@ -155,6 +155,10 @@ var styles = {
     WebkitMaskImage: 'url("../images/status-9.png")',
     backgroundColor: '#7472ff'
   },
+  audibleIcon: {
+    WebkitMaskImage: 'url("../images/Multimedia-64.png")',
+    backgroundColor: '#505050'
+  },  
   /* checkboxes seems to obey width and height, but ignore padding
    * so we'll hack margin instead.
    */
@@ -529,6 +533,8 @@ var TabItem = React.createClass({
     var hoverStyle = this.state.hovering ? styles.tabItemHover : null;
     var selectedStyle = this.props.isSelected ? styles.tabItemSelected : null;
 
+    const audibleIcon = tab.audible ? <div style={m(styles.headerButton,styles.audibleIcon)} /> : null;
+
     var closeStyle = m(styles.headerButton,styles.closeButton);
     var closeButton = <HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering} 
                           hoverStyle={styles.closeButtonHover} title="Close Tab" 
@@ -543,6 +549,7 @@ var TabItem = React.createClass({
         {tabFavIcon}
         <span style={tabTitleStyles}>{tabTitle}</span>
         <div style={styles.spacer} />
+        {audibleIcon}
         {closeButton}
       </div>);
   }

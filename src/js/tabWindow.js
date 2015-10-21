@@ -14,6 +14,7 @@ import * as Immutable from 'immutable';
  */
 export class TabItem extends Immutable.Record({
   url: '',
+  audible: false,
 
   /* Saved state fields
   /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
@@ -76,11 +77,14 @@ function makeOpenTabItem(tab) {
     console.error("malformed tab -- no URL: ", tab);
     urlStr = '';
   }
+/*
   if (!tab.title) {
     console.warn("tab missing title (ignoring...): ", tab);
   }
+*/
   const tabItem = new TabItem({
     url: urlStr,
+    audible: tab.audible,
     favIconUrl: tab.favIconUrl,
     open: true,
     tabTitle: _.get(tab,'title',urlStr),
