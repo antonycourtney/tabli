@@ -18167,7 +18167,6 @@
 	 */
 	
 	function manageWindow(tabliFolderId, tabWindow, title, cb) {
-	
 	  // and write out a Bookmarks folder for this newly managed window:
 	  if (!tabliFolderId) {
 	    alert("Could not save bookmarks -- no tab manager folder");
@@ -18183,9 +18182,7 @@
 	    var bookmarkActions = tabItems.map(function (tabItem) {
 	      function makeBookmarkAction(v, cb) {
 	        var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
-	        chrome.bookmarks.create(tabMark, function (tabNode) {
-	          cb(tabNode);
-	        });
+	        chrome.bookmarks.create(tabMark, cb);
 	      }
 	      return makeBookmarkAction;
 	    });
@@ -18197,6 +18194,9 @@
 	
 	        // We'll retrieve the latest chrome Window state and attach that:
 	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
+	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
+	          // set chromeWindow.focused to last focused state (tabWindow.focused)
+	          chromeWindow.focused = tabWindow.focused;
 	          cb(function (state) {
 	            return state.attachBookmarkFolder(fullFolderNode, chromeWindow);
 	          });
