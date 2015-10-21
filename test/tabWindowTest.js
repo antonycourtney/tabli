@@ -100,7 +100,8 @@ test('makeFolderTabWindow', (t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "",
-          "tabTitle": ""
+          "tabTitle": "",
+          "audible": false
         },
         {
           "url": "http://d3js.org/",
@@ -113,7 +114,8 @@ test('makeFolderTabWindow', (t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "",
-          "tabTitle": ""
+          "tabTitle": "",
+          "audible": false          
         },
         {
           "url": "https://github.com/mbostock/d3/wiki/Gallery",
@@ -126,7 +128,8 @@ test('makeFolderTabWindow', (t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "",
-          "tabTitle": ""
+          "tabTitle": "",
+          "audible": false          
         },
         {
           "url": "https://github.com/mbostock/d3/wiki/Tutorials",
@@ -139,7 +142,8 @@ test('makeFolderTabWindow', (t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "",
-          "tabTitle": ""
+          "tabTitle": "",
+          "audible": false          
         },
         {
           "url": "http://bl.ocks.org/mbostock/6123708",
@@ -152,7 +156,8 @@ test('makeFolderTabWindow', (t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "",
-          "tabTitle": ""
+          "tabTitle": "",
+          "audible": false          
         },
         {
           "url": "http://bl.ocks.org/mbostock/1667367",
@@ -165,12 +170,14 @@ test('makeFolderTabWindow', (t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "",
-          "tabTitle": ""
+          "tabTitle": "",
+          "audible": false          
         }
       ]
     };
 
-    // dumpDiffs(tabWindowJS,expectedTabWindow);
+    console.log("diffs between tabWindowJS and expected:");
+    dumpDiffs(tabWindowJS,expectedTabWindow);
 
     t.deepEqual(tabWindowJS,expectedTabWindow,'makeFolderTabWindow basic functionality');
 
@@ -487,7 +494,8 @@ test('chromeTabWindow',(t) => {
           "active": false,
           "openTabIndex": 0,
           "favIconUrl": "http://facebook.github.io/react/favicon.ico",
-          "tabTitle": "Component API | React"
+          "tabTitle": "Component API | React",
+          "audible": false          
         },
         {
           "url": "http://facebook.github.io/react/docs/tutorial.html",
@@ -500,7 +508,8 @@ test('chromeTabWindow',(t) => {
           "active": false,
           "openTabIndex": 1,
           "favIconUrl": "http://facebook.github.io/react/favicon.ico",
-          "tabTitle": "Tutorial | React"
+          "tabTitle": "Tutorial | React",
+          "audible": false          
         },
         {
           "url": "http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat",
@@ -513,7 +522,8 @@ test('chromeTabWindow',(t) => {
           "active": false,
           "openTabIndex": 2,
           "favIconUrl": "http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d",
-          "tabTitle": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow"
+          "tabTitle": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
+          "audible": false          
         },
         {
           "url": "http://facebook.github.io/flux/docs/overview.html#content",
@@ -525,7 +535,8 @@ test('chromeTabWindow',(t) => {
           "openTabId": 449,
           "active": false,
           "openTabIndex": 3,
-          "tabTitle": "Flux | Application Architecture for Building User Interfaces"
+          "tabTitle": "Flux | Application Architecture for Building User Interfaces",
+          "audible": false          
         },
         {
           "url": "http://fluxxor.com/",
@@ -538,7 +549,8 @@ test('chromeTabWindow',(t) => {
           "active": false,
           "openTabIndex": 4,
           "favIconUrl": "http://fluxxor.com/favicon.ico",
-          "tabTitle": "Fluxxor - Home"
+          "tabTitle": "Fluxxor - Home",
+          "audible": false
         },
         {
           "url": "http://facebook.github.io/fixed-data-table/",
@@ -551,7 +563,8 @@ test('chromeTabWindow',(t) => {
           "active": false,
           "openTabIndex": 5,
           "favIconUrl": "http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png",
-          "tabTitle": "FixedDataTable"
+          "tabTitle": "FixedDataTable",
+          "audible": false          
         },
         {
           "url": "https://developer.chrome.com/extensions/declare_permissions",
@@ -564,7 +577,8 @@ test('chromeTabWindow',(t) => {
           "active": true,
           "openTabIndex": 6,
           "favIconUrl": "https://www.google.com/images/icons/product/chrome-32.png",
-          "tabTitle": "Declare Permissions - Google Chrome"
+          "tabTitle": "Declare Permissions - Google Chrome",
+          "audible": false          
         }
       ]
     };
