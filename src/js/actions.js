@@ -2,6 +2,7 @@
 
 import * as TabWindow from './tabWindow';
 import * as utils from './utils';
+import * as Immutable from 'immutable';
 
 /**
  * sync a single Chrome window by its Chrome window id
@@ -200,9 +201,14 @@ export function manageWindow(tabliFolderId,tabWindow,title,cb) {
   chrome.bookmarks.create( windowFolder, function( windowFolderNode ) {
     // console.log( "succesfully created bookmarks folder ", windowFolderNode );
     // console.log( "for window: ", tabWindow );
-    var tabItems = tabWindow.tabItems.toArray();
 
-    var bookmarkActions = tabItems.map((tabItem) => {
+    // Let's convert tabItems to Map first to avoid duplicate URLs:
+    const tabItemMap = Immutable.Map(tabWindow.tabItems.map((ti) => [ti.url,ti]));
+
+    // We'll groupBy and then take the first item of each element of the sequence:
+    const uniqTabItems = tabWindow.tabItems.groupBy((ti) => ti.url).toIndexedSeq().map((vs) => vs.get(0)).toArray();
+
+    var bookmarkActions = uniqTabItems.map((tabItem) => {
       function makeBookmarkAction(v,cb) {
         const tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
         chrome.bookmarks.create(tabMark,cb);

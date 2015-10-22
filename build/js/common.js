@@ -17750,14 +17750,14 @@
 	 * tab ordering.  Auxiliary helper function for mergeOpenTabs.
 	 */
 	function getOpenTabInfo(tabItems, openTabs) {
-	  var chromeOpenTabItems = openTabs.map(makeOpenTabItem);
+	  var chromeOpenTabItems = Immutable.Seq(openTabs.map(makeOpenTabItem));
 	  // console.log("getOpenTabInfo: openTabs: ", openTabs);
 	  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
-	  var openUrlMap = Immutable.Map(chromeOpenTabItems.map(function (ti) {
-	    return [ti.url, ti];
+	  var openUrlMap = Immutable.Map(chromeOpenTabItems.groupBy(function (ti) {
+	    return ti.url;
 	  }));
 	
-	  // console.log("getOpenTabInfo: openUrlMap :" + JSON.stringify(openUrlMap,null,4));
+	  // console.log("getOpenTabInfo: openUrlMap: ", openUrlMap.toJS());
 	
 	  // Now we need to do two things:
 	  // 1. augment chromeOpenTabItems with bookmark Ids / saved state (if it exists)
@@ -17769,22 +17769,32 @@
 	  // only want to pick up open tab info from what was passed in in openTabs
 	  var baseSavedItems = savedItems.map(resetSavedItem);
 	
-	  var savedUrlMap = Immutable.Map(baseSavedItems.map(function (ti) {
-	    return [ti.url, ti];
+	  // The entries in savedUrlMap *should* be singletons, but we'll use groupBy to
+	  // get a type-compatible Seq so that we can merge with openUrlMap using
+	  // mergeWith:
+	  var savedUrlMap = Immutable.Map(baseSavedItems.groupBy(function (ti) {
+	    return ti.url;
 	  }));
-	  // console.log("getOpenTabInfo: savedUrlMap :" + JSON.stringify(savedUrlMap,null,4));
+	  // console.log("getOpenTabInfo: savedUrlMap : " + savedUrlMap.toJS());
 	
-	  function mergeTabItems(openItem, savedItem) {
-	    return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex).set('savedTitle', savedItem.savedTitle);
+	  function mergeTabItems(openItems, savedItems) {
+	    var savedItem = savedItems.get(0);
+	    return openItems.map(function (openItem) {
+	      return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex).set('savedTitle', savedItem.savedTitle);
+	    });
 	  }
 	  var mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
+	
+	  // console.log("mergedMap: ", mergedMap.toJS());
 	
 	  // console.log("getOpenTabInfo: mergedMap :" + JSON.stringify(mergedMap,null,4));
 	
 	  // partition mergedMap into open and closed tabItems:
-	  var partitionedMap = mergedMap.toIndexedSeq().groupBy(function (ti) {
+	  var partitionedMap = mergedMap.toIndexedSeq().flatten(true).groupBy(function (ti) {
 	    return ti.open;
 	  });
+	
+	  // console.log("partitionedMap: ", partitionedMap.toJS());
 	
 	  return partitionedMap;
 	}
@@ -17954,6 +17964,10 @@
 	var _utils = __webpack_require__(/*! ./utils */ 7);
 	
 	var utils = _interopRequireWildcard(_utils);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
 	
 	/**
 	 * sync a single Chrome window by its Chrome window id
@@ -18177,9 +18191,20 @@
 	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
 	    // console.log( "succesfully created bookmarks folder ", windowFolderNode );
 	    // console.log( "for window: ", tabWindow );
-	    var tabItems = tabWindow.tabItems.toArray();
 	
-	    var bookmarkActions = tabItems.map(function (tabItem) {
+	    // Let's convert tabItems to Map first to avoid duplicate URLs:
+	    var tabItemMap = Immutable.Map(tabWindow.tabItems.map(function (ti) {
+	      return [ti.url, ti];
+	    }));
+	
+	    // We'll groupBy and then take the first item of each element of the sequence:
+	    var uniqTabItems = tabWindow.tabItems.groupBy(function (ti) {
+	      return ti.url;
+	    }).toIndexedSeq().map(function (vs) {
+	      return vs.get(0);
+	    }).toArray();
+	
+	    var bookmarkActions = uniqTabItems.map(function (tabItem) {
 	      function makeBookmarkAction(v, cb) {
 	        var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
 	        chrome.bookmarks.create(tabMark, cb);

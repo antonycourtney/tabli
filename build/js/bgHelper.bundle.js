@@ -76,7 +76,7 @@ webpackJsonp([0],{
 	      var childFolder = parentNode.children[i];
 	      if (childFolder.title.toLowerCase() === childFolderName.toLowerCase()) {
 	        // exists
-	        console.log("found target child folder: ", childFolderName);
+	        // console.log( "found target child folder: ", childFolderName );
 	        callback(childFolder);
 	        return true;
 	      }
@@ -98,7 +98,7 @@ webpackJsonp([0],{
 	
 	  chrome.bookmarks.getTree(function (tree) {
 	    var otherBookmarksNode = tree[0].children[1];
-	    console.log("otherBookmarksNode: ", otherBookmarksNode);
+	    // console.log( "otherBookmarksNode: ", otherBookmarksNode );
 	    ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, function (tabManFolder) {
 	      console.log("tab manager folder acquired.");
 	      tabmanFolderId = tabManFolder.id;
@@ -106,7 +106,7 @@ webpackJsonp([0],{
 	        console.log("archive folder acquired.");
 	        archiveFolderId = archiveFolder.id;
 	        chrome.bookmarks.getSubTree(tabManFolder.id, function (subTreeNodes) {
-	          console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
+	          // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
 	          var baseWinStore = new _tabManagerState2['default']({ folderId: tabmanFolderId, archiveFolderId: archiveFolderId });
 	          var loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0]);
 	          cb(loadedWinStore);
@@ -184,7 +184,7 @@ webpackJsonp([0],{
 	
 	function main() {
 	  initWinStore(function (bmStore) {
-	    console.log("init: done reading bookmarks: ", bmStore);
+	    // console.log("init: done reading bookmarks: ", bmStore);
 	    // window.winStore = winStore;
 	    actions.syncChromeWindows(function (uf) {
 	      console.log("initial sync of chrome windows complete.");

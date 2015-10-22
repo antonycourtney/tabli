@@ -227,12 +227,12 @@ export function makeChromeTabWindow(chromeWindow) {
  * tab ordering.  Auxiliary helper function for mergeOpenTabs.
  */
 function getOpenTabInfo(tabItems,openTabs) {
-  const chromeOpenTabItems = openTabs.map(makeOpenTabItem);
+  const chromeOpenTabItems = Immutable.Seq(openTabs.map(makeOpenTabItem));
   // console.log("getOpenTabInfo: openTabs: ", openTabs);
   // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
-  const openUrlMap = Immutable.Map(chromeOpenTabItems.map((ti) => [ti.url,ti]));
+  const openUrlMap = Immutable.Map(chromeOpenTabItems.groupBy((ti) => ti.url));
 
-  // console.log("getOpenTabInfo: openUrlMap :" + JSON.stringify(openUrlMap,null,4));
+  // console.log("getOpenTabInfo: openUrlMap: ", openUrlMap.toJS());
 
   // Now we need to do two things:
   // 1. augment chromeOpenTabItems with bookmark Ids / saved state (if it exists)
@@ -242,21 +242,29 @@ function getOpenTabInfo(tabItems,openTabs) {
   // only want to pick up open tab info from what was passed in in openTabs
   const baseSavedItems = savedItems.map(resetSavedItem);
 
-  const savedUrlMap = Immutable.Map(baseSavedItems.map((ti) => [ti.url,ti]));
-  // console.log("getOpenTabInfo: savedUrlMap :" + JSON.stringify(savedUrlMap,null,4));
+  // The entries in savedUrlMap *should* be singletons, but we'll use groupBy to
+  // get a type-compatible Seq so that we can merge with openUrlMap using
+  // mergeWith:
+  const savedUrlMap = Immutable.Map(baseSavedItems.groupBy((ti) => ti.url));
+  // console.log("getOpenTabInfo: savedUrlMap : " + savedUrlMap.toJS());
 
-  function mergeTabItems(openItem,savedItem) {
-    return openItem.set('saved',true)
-      .set('savedBookmarkId',savedItem.savedBookmarkId)
-      .set('savedBookmarkIndex',savedItem.savedBookmarkIndex)
-      .set('savedTitle',savedItem.savedTitle);
+  function mergeTabItems(openItems,savedItems) {
+    const savedItem = savedItems.get(0);
+    return openItems.map((openItem) => openItem.set('saved',true)
+                                        .set('savedBookmarkId',savedItem.savedBookmarkId)
+                                        .set('savedBookmarkIndex',savedItem.savedBookmarkIndex)
+                                        .set('savedTitle',savedItem.savedTitle));
   } 
   const mergedMap = openUrlMap.mergeWith(mergeTabItems,savedUrlMap);
+
+  // console.log("mergedMap: ", mergedMap.toJS());
 
   // console.log("getOpenTabInfo: mergedMap :" + JSON.stringify(mergedMap,null,4));
 
   // partition mergedMap into open and closed tabItems:
-  const partitionedMap = mergedMap.toIndexedSeq().groupBy((ti) => ti.open);
+  const partitionedMap = mergedMap.toIndexedSeq().flatten(true).groupBy((ti) => ti.open);
+
+  // console.log("partitionedMap: ", partitionedMap.toJS());
 
   return partitionedMap;
 }
