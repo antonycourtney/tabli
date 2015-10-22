@@ -187,7 +187,8 @@ export function removeSavedWindowState(tabWindow) {
  * Initialize an unopened TabWindow from a bookmarks folder
  */
 export function makeFolderTabWindow( bookmarkFolder ) {
-  const tabItems = Immutable.Seq(bookmarkFolder.children.map(makeBookmarkedTabItem));
+  const itemChildren = bookmarkFolder.children.filter((node) => 'url' in node);
+  const tabItems = Immutable.Seq(itemChildren.map(makeBookmarkedTabItem));
   var fallbackTitle = '';
   if (bookmarkFolder.title === undefined) {
     console.error("makeFolderTabWindow: malformed bookmarkFolder -- missing title: ", bookmarkFolder);

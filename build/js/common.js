@@ -17710,7 +17710,10 @@
 	 */
 	
 	function makeFolderTabWindow(bookmarkFolder) {
-	  var tabItems = Immutable.Seq(bookmarkFolder.children.map(makeBookmarkedTabItem));
+	  var itemChildren = bookmarkFolder.children.filter(function (node) {
+	    return 'url' in node;
+	  });
+	  var tabItems = Immutable.Seq(itemChildren.map(makeBookmarkedTabItem));
 	  var fallbackTitle = '';
 	  if (bookmarkFolder.title === undefined) {
 	    console.error("makeFolderTabWindow: malformed bookmarkFolder -- missing title: ", bookmarkFolder);
