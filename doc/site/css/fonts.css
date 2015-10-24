@@ -1,0 +1,50 @@
+@font-face {
+    font-family: 'sinkin_sans400_regular';
+    src: url('../fonts/sinkinsans-400regular-webfont.eot');
+    src: url('../fonts/sinkinsans-400regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/sinkinsans-400regular-webfont.woff2') format('woff2'),
+         url('../fonts/sinkinsans-400regular-webfont.woff') format('woff'),
+         url('../fonts/sinkinsans-400regular-webfont.ttf') format('truetype'),
+         url('../fonts/sinkinsans-400regular-webfont.svg#sinkin_sans400_regular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'sinkin_sans700_bold';
+    src: url('../fonts/sinkinsans-700bold-webfont.eot');
+    src: url('../fonts/sinkinsans-700bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/sinkinsans-700bold-webfont.woff2') format('woff2'),
+         url('../fonts/sinkinsans-700bold-webfont.woff') format('woff'),
+         url('../fonts/sinkinsans-700bold-webfont.ttf') format('truetype'),
+         url('../fonts/sinkinsans-700bold-webfont.svg#sinkin_sans700_bold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'sinkin_sans500_medium';
+    src: url('../fonts/sinkinsans-500medium-webfont.eot');
+    src: url('../fonts/sinkinsans-500medium-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/sinkinsans-500medium-webfont.woff2') format('woff2'),
+         url('../fonts/sinkinsans-500medium-webfont.woff') format('woff'),
+         url('../fonts/sinkinsans-500medium-webfont.ttf') format('truetype'),
+         url('../fonts/sinkinsans-500medium-webfont.svg#sinkin_sans500_medium') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'sinkin_sans300_light';
+    src: url('../fonts/sinkinsans-300light-webfont.eot');
+    src: url('../fonts/sinkinsans-300light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/sinkinsans-300light-webfont.woff2') format('woff2'),
+         url('../fonts/sinkinsans-300light-webfont.woff') format('woff'),
+         url('../fonts/sinkinsans-300light-webfont.ttf') format('truetype'),
+         url('../fonts/sinkinsans-300light-webfont.svg#sinkin_sans300_light') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
