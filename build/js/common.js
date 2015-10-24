@@ -41593,6 +41593,9 @@
 	    backgroundColor: '#7472ff',
 	    marginRight: '20px'
 	  },
+	  helpButton: {
+	    color: '#7472ff'
+	  },
 	  closeButton: {
 	    WebkitMaskImage: 'url("../images/interface-77.png")',
 	    backgroundColor: '#888888'
@@ -41684,9 +41687,15 @@
 	    fontWeight: 'bold',
 	    marginBottom: 5
 	  },
-	  searchBar: {},
+	  searchBar: {
+	    display: 'flex',
+	    justifyContent: 'space-between',
+	    alignItems: 'center',
+	    marginBottom: 5
+	  },
 	  searchInput: {
-	    width: '100%'
+	    width: '100%',
+	    maxWidth: 250
 	  },
 	  alignRight: {
 	    display: 'flex',
@@ -42210,11 +42219,13 @@
 	  },
 	
 	  render: function render() {
+	    var helpButton = React.createElement('i', { className: 'fa fa-question-circle fa-2x', style: styles.helpButton });
 	    return React.createElement(
 	      'div',
 	      { style: styles.searchBar },
 	      React.createElement('input', { style: styles.searchInput, type: 'text', ref: 'searchInput', id: 'searchBox', placeholder: 'Search...',
-	        onChange: this.handleChange, onKeyDown: this.handleKeyDown })
+	        onChange: this.handleChange, onKeyDown: this.handleKeyDown }),
+	      helpButton
 	    );
 	  }
 	});

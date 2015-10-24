@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "events": "^1.0.2",
+    "font-awesome": "^4.4.0",
     "immutable": "^3.7.5",
     "jquery": "^2.1.4",
     "lodash": "^3.10.1",

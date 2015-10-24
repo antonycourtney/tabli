@@ -86,7 +86,17 @@ gulp.task('build_bootstrap', function() {
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('build_assets',['build_bootstrap','build_html','build_images','build_testData']);
+// Copy font-awesome css to build/css:
+gulp.task('build_fa', function() {
+    gutil.log("copy font-awesome from node_modules to build");
+
+    return gulp.src(['node_modules/font-awesome/css/*','node_modules/font-awesome/fonts/*'],
+                    {base: 'node_modules/font-awesome/' })
+        .pipe(gulp.dest('build'));
+});
+
+
+gulp.task('build_assets',['build_bootstrap','build_fa','build_html','build_images','build_testData']);
 
 // Build and watch cycle (another option for development)
 // Advantage: No server required, can run app from filesystem
