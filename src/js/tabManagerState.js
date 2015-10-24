@@ -170,5 +170,17 @@ export default class TabManagerState extends Immutable.Record({
   // returns a tabWindow or undefined
   getTabWindowByChromeId(windowId) {
     return this.windowIdMap.get(windowId);
+  }
+
+  countOpenWindows() {
+    return this.windowIdMap.count()
   }  
+
+  countSavedWindows() {
+    return this.bookmarkIdMap.count()
+  }
+
+  countOpenTabs() {
+    return this.windowIdMap.reduce((count,w) => count + w.openTabCount, 0)
+  }
 }

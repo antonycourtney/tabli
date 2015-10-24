@@ -4,6 +4,8 @@ import * as TabWindow from './tabWindow';
 import * as utils from './utils';
 import * as Immutable from 'immutable';
 
+const TABLI_HELP_URL = "http://antonycourtney.github.io/tabli/tabli-usage.html";
+
 /**
  * sync a single Chrome window by its Chrome window id
  *
@@ -245,4 +247,9 @@ export function unmanageWindow(archiveFolderId,tabWindow,cb) {
     // console.log("unmanageWindow: bookmark folder moved to archive folder");
     cb((state) => state.unmanageWindow(tabWindow));
   });
+}
+
+export function showHelp() {
+  console.log("showHelp: opening manual");
+  chrome.tabs.create({url: TABLI_HELP_URL});    
 }

@@ -17957,6 +17957,7 @@
 	exports.revertWindow = revertWindow;
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
+	exports.showHelp = showHelp;
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 	
@@ -17971,6 +17972,8 @@
 	var _immutable = __webpack_require__(/*! immutable */ 4);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var TABLI_HELP_URL = "http://antonycourtney.github.io/tabli/tabli-usage.html";
 	
 	/**
 	 * sync a single Chrome window by its Chrome window id
@@ -18249,6 +18252,11 @@
 	      return state.unmanageWindow(tabWindow);
 	    });
 	  });
+	}
+	
+	function showHelp() {
+	  console.log("showHelp: opening manual");
+	  chrome.tabs.create({ url: TABLI_HELP_URL });
 	}
 
 /***/ },
@@ -41419,8 +41427,6 @@
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
-	// import * as objectAssign from 'object-assign';
-	
 	__webpack_require__(/*! babel/polyfill */ 217);
 	
 	var _reactAddons = __webpack_require__(/*! react/addons */ 164);
@@ -41429,6 +41435,8 @@
 	var Perf = _reactAddons.addons.Perf;
 	
 	var WINDOW_HEADER_HEIGHT = 22;
+	var POPUP_HEADER_HEIGHT = 40;
+	var POPUP_FOOTER_HEIGHT = 25;
 	
 	var styles = {
 	  noWrap: {
@@ -41680,22 +41688,63 @@
 	    borderBottom: '1px solid #bababa',
 	    paddingLeft: 10,
 	    paddingRight: 16,
-	    paddingTop: 12,
+	    paddingTop: 10,
 	    paddingBottom: 4
 	  },
 	  windowListSectionHeader: {
 	    fontWeight: 'bold',
 	    marginBottom: 5
 	  },
-	  searchBar: {
+	  popupHeader: {
+	    width: '100%',
+	    height: POPUP_HEADER_HEIGHT,
+	    position: 'fixed',
+	    top: 0,
+	    background: '#ffffff',
+	    zIndex: 1,
+	    borderBottom: '1px solid #bababa',
+	    paddingLeft: 10,
+	    paddingRight: 16,
+	    paddingTop: 4,
+	    paddingBottom: 4
+	  },
+	  headerContainer: {
 	    display: 'flex',
 	    justifyContent: 'space-between',
 	    alignItems: 'center',
+	    marginTop: 5,
 	    marginBottom: 5
+	  },
+	  popupBody: {
+	    marginTop: POPUP_HEADER_HEIGHT,
+	    marginBottom: POPUP_FOOTER_HEIGHT,
+	    maxHeight: 550,
+	    overflow: 'auto'
+	  },
+	  popupFooter: {
+	    width: '100%',
+	    height: POPUP_FOOTER_HEIGHT,
+	    position: 'fixed',
+	    bottom: 0,
+	    background: '#ffffff',
+	    zIndex: 1,
+	    borderTop: '1px solid #bababa',
+	    paddingLeft: 10,
+	    paddingRight: 16,
+	    paddingTop: 4,
+	    paddingBottom: 4,
+	    fontSize: 11,
+	    display: 'flex',
+	    justifyContent: 'flex-end',
+	    alignItems: 'center',
+	    marginTop: 5
 	  },
 	  searchInput: {
 	    width: '100%',
-	    maxWidth: 250
+	    maxWidth: 285
+	  },
+	  summarySpan: {
+	    marginRight: 5
 	  },
 	  alignRight: {
 	    display: 'flex',
@@ -42169,11 +42218,13 @@
 	  }
 	});
 	
+	var KEY_F1 = 112;
 	var KEY_UP = 38;
 	var KEY_DOWN = 40;
 	var KEY_ENTER = 13;
 	var KEY_ESC = 27;
 	var KEY_TAB = 9;
+	var KEY_QUESTION = 191;
 	
 	var SearchBar = React.createClass({
 	  displayName: 'SearchBar',
@@ -42184,7 +42235,11 @@
 	  },
 	
 	  handleKeyDown: function handleKeyDown(e) {
-	    // console.log("handleKeyDown: ", _.omit(e,_.isObject));
+	    console.log("handleKeyDown: ", _.omit(e, _.isObject));
+	    if (e.keyCode === KEY_F1 || e.keyCode === KEY_QUESTION && e.ctrlKey && e.shiftKey) {
+	      e.preventDefault();
+	      actions.showHelp();
+	    }
 	    if (e.keyCode === KEY_UP) {
 	      if (this.props.onSearchUp) {
 	        e.preventDefault();
@@ -42218,13 +42273,22 @@
 	    }
 	  },
 	
+	  handleHelpClick: function handleHelpClick(e) {
+	    console.log("Help button clicked!");
+	    e.preventDefault();
+	    actions.showHelp();
+	  },
+	
 	  render: function render() {
-	    var helpButton = React.createElement('i', { className: 'fa fa-question-circle fa-2x', style: styles.helpButton });
+	    var helpButton = React.createElement('i', { className: 'fa fa-question-circle fa-lg', style: styles.helpButton,
+	      title: 'Open Tabli Usage Manual', onClick: this.handleHelpClick });
 	    return React.createElement(
 	      'div',
-	      { style: styles.searchBar },
+	      { style: styles.headerContainer },
 	      React.createElement('input', { style: styles.searchInput, type: 'text', ref: 'searchInput', id: 'searchBox', placeholder: 'Search...',
-	        onChange: this.handleChange, onKeyDown: this.handleKeyDown }),
+	        onChange: this.handleChange, onKeyDown: this.handleKeyDown,
+	        title: 'Search Page Titles and URLs'
+	      }),
 	      helpButton
 	    );
 	  }
@@ -42684,27 +42748,48 @@
 	  },
 	
 	  render: function render() {
+	    var winStore = this.props.winStore;
+	    var openTabCount = winStore.countOpenTabs();
+	    var openWinCount = winStore.countOpenWindows();
+	    var savedCount = winStore.countSavedWindows();
+	
+	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
+	    var summarySentence = openTabCount + " Open Tabs. Windows: " + openWinCount + " Open, " + savedCount + " Saved";
+	
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
-	        WindowListSection,
-	        null,
+	        'div',
+	        { style: styles.popupHeader },
 	        React.createElement(SearchBar, { onSearchInput: this.props.onSearchInput,
 	          onSearchUp: this.handlePrevSelection,
 	          onSearchDown: this.handleNextSelection,
 	          onSearchEnter: this.handleSelectionEnter
 	        })
 	      ),
-	      React.createElement(TabWindowList, { winStore: this.props.winStore,
-	        storeUpdateHandler: this.props.storeUpdateHandler,
-	        filteredWindows: this.props.filteredWindows,
-	        appComponent: this.props.appComponent,
-	        searchStr: this.props.searchStr,
-	        searchRE: this.props.searchRE,
-	        selectedWindowIndex: this.state.selectedWindowIndex,
-	        selectedTabIndex: this.state.selectedTabIndex
-	      })
+	      React.createElement(
+	        'div',
+	        { style: styles.popupBody },
+	        React.createElement(TabWindowList, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          filteredWindows: this.props.filteredWindows,
+	          appComponent: this.props.appComponent,
+	          searchStr: this.props.searchStr,
+	          searchRE: this.props.searchRE,
+	          selectedWindowIndex: this.state.selectedWindowIndex,
+	          selectedTabIndex: this.state.selectedTabIndex
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: styles.popupFooter },
+	        React.createElement(
+	          'span',
+	          { style: m(styles.closed, styles.summarySpan) },
+	          summarySentence
+	        )
+	      )
 	    );
 	  }
 	});

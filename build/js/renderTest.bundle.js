@@ -396,6 +396,23 @@ webpackJsonp([2],[
 	    value: function getTabWindowByChromeId(windowId) {
 	      return this.windowIdMap.get(windowId);
 	    }
+	  }, {
+	    key: 'countOpenWindows',
+	    value: function countOpenWindows() {
+	      return this.windowIdMap.count();
+	    }
+	  }, {
+	    key: 'countSavedWindows',
+	    value: function countSavedWindows() {
+	      return this.bookmarkIdMap.count();
+	    }
+	  }, {
+	    key: 'countOpenTabs',
+	    value: function countOpenTabs() {
+	      return this.windowIdMap.reduce(function (count, w) {
+	        return count + w.openTabCount;
+	      }, 0);
+	    }
 	  }]);
 	
 	  return TabManagerState;

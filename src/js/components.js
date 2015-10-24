@@ -8,13 +8,14 @@ import * as searchOps from './searchOps';
 import {refUpdater} from 'oneref';
 import * as TabWindow from './tabWindow';
 
-// import * as objectAssign from 'object-assign';
 import 'babel/polyfill';
 
 import {addons} from 'react/addons'; 
 const {PureRenderMixin, Perf} = addons;
 
-var WINDOW_HEADER_HEIGHT = 22;
+const WINDOW_HEADER_HEIGHT = 22;
+const POPUP_HEADER_HEIGHT = 40;
+const POPUP_FOOTER_HEIGHT = 25;
 
 var styles = {
   noWrap: { 
@@ -267,22 +268,63 @@ var styles = {
     borderBottom: '1px solid #bababa',
     paddingLeft: 10,
     paddingRight: 16,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 4
   },
   windowListSectionHeader: {
     fontWeight: 'bold',
     marginBottom: 5
   },
-  searchBar: {
+  popupHeader: {
+    width: '100%',
+    height: POPUP_HEADER_HEIGHT,
+    position:'fixed',
+    top:0,    
+    background: '#ffffff',
+    zIndex: 1,
+    borderBottom: '1px solid #bababa',
+    paddingLeft: 10,
+    paddingRight: 16,
+    paddingTop: 4,
+    paddingBottom: 4
+  },
+  headerContainer: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 5    
+    marginTop: 5,
+    marginBottom: 5
+  },
+  popupBody: {
+    marginTop: POPUP_HEADER_HEIGHT,
+    marginBottom: POPUP_FOOTER_HEIGHT,
+    maxHeight: 550,
+    overflow: 'auto'
+  },
+  popupFooter: {
+    width: '100%',
+    height: POPUP_FOOTER_HEIGHT,
+    position:'fixed',
+    bottom:0,    
+    background: '#ffffff',
+    zIndex: 1,
+    borderTop: '1px solid #bababa',
+    paddingLeft: 10,
+    paddingRight: 16,
+    paddingTop: 4,
+    paddingBottom: 4,
+    fontSize: 11,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: 5
   },
   searchInput: {
     width: '100%',
-    maxWidth: 250
+    maxWidth: 285
+  },
+  summarySpan: {
+    marginRight: 5
   },
   alignRight: {
     display: 'flex',
@@ -745,11 +787,13 @@ var WindowListSection = React.createClass({
   }
 });
 
+const KEY_F1 = 112;
 const KEY_UP = 38;
 const KEY_DOWN = 40;
 const KEY_ENTER = 13;
 const KEY_ESC = 27;
 const KEY_TAB = 9;
+const KEY_QUESTION = 191;
 
 var SearchBar = React.createClass({
   handleChange() {
@@ -758,7 +802,12 @@ var SearchBar = React.createClass({
   },
 
   handleKeyDown(e) {
-    // console.log("handleKeyDown: ", _.omit(e,_.isObject));
+    console.log("handleKeyDown: ", _.omit(e,_.isObject));
+    if ((e.keyCode===KEY_F1) ||
+        (e.keyCode===KEY_QUESTION && e.ctrlKey && e.shiftKey)) {
+      e.preventDefault();
+      actions.showHelp();
+    }
     if (e.keyCode===KEY_UP) {
       if (this.props.onSearchUp) {
         e.preventDefault();
@@ -792,13 +841,22 @@ var SearchBar = React.createClass({
     }
   },
 
+  handleHelpClick(e) {
+    console.log("Help button clicked!");
+    e.preventDefault();
+    actions.showHelp();
+  },
+
   render() {
     const helpButton = 
-      <i className="fa fa-question-circle fa-2x" style={styles.helpButton}></i>;
+      <i className="fa fa-question-circle fa-lg" style={styles.helpButton} 
+          title="Open Tabli Usage Manual" onClick={this.handleHelpClick}></i>;
     return (
-      <div style={styles.searchBar}>
+      <div style={styles.headerContainer}>
         <input style={styles.searchInput} type="text" ref="searchInput" id="searchBox" placeholder="Search..." 
-          onChange={this.handleChange} onKeyDown={this.handleKeyDown} />
+          onChange={this.handleChange} onKeyDown={this.handleKeyDown} 
+          title="Search Page Titles and URLs"
+          />
         {helpButton}
       </div>
     );  
@@ -1181,24 +1239,37 @@ var SelectablePopup = React.createClass({
   }, 
 
   render: function() {
+    const winStore = this.props.winStore;
+    const openTabCount = winStore.countOpenTabs();
+    const openWinCount = winStore.countOpenWindows();
+    const savedCount=winStore.countSavedWindows();
+
+    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
+    const summarySentence=openTabCount + " Open Tabs. Windows: " + openWinCount + " Open, " + savedCount + " Saved"
+
     return (
       <div>
-        <WindowListSection>
+        <div style={styles.popupHeader}>
           <SearchBar onSearchInput={this.props.onSearchInput} 
                      onSearchUp={this.handlePrevSelection} 
                      onSearchDown={this.handleNextSelection}
                      onSearchEnter={this.handleSelectionEnter}
                      />
-        </WindowListSection>        
-        <TabWindowList winStore={this.props.winStore}
-                         storeUpdateHandler={this.props.storeUpdateHandler} 
-                         filteredWindows={this.props.filteredWindows} 
-                         appComponent={this.props.appComponent}
-                         searchStr={this.props.searchStr}
-                         searchRE={this.props.searchRE}
-                         selectedWindowIndex={this.state.selectedWindowIndex}
-                         selectedTabIndex={this.state.selectedTabIndex}
-                         />
+        </div>
+        <div style={styles.popupBody}>
+          <TabWindowList winStore={this.props.winStore}
+                           storeUpdateHandler={this.props.storeUpdateHandler} 
+                           filteredWindows={this.props.filteredWindows} 
+                           appComponent={this.props.appComponent}
+                           searchStr={this.props.searchStr}
+                           searchRE={this.props.searchRE}
+                           selectedWindowIndex={this.state.selectedWindowIndex}
+                           selectedTabIndex={this.state.selectedTabIndex}
+                           />
+         </div>
+         <div style={styles.popupFooter}>
+          <span style={m(styles.closed,styles.summarySpan)}>{summarySentence}</span>
+         </div>
       </div> 
     );
   }
