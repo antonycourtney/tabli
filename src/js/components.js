@@ -1245,7 +1245,7 @@ var SelectablePopup = React.createClass({
     const savedCount=winStore.countSavedWindows();
 
     // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
-    const summarySentence=openTabCount + " Open Tabs. Windows: " + openWinCount + " Open, " + savedCount + " Saved"
+    const summarySentence="Tabs: " + openTabCount + " Open. Windows: " + openWinCount + " Open, " + savedCount + " Saved."
 
     return (
       <div>

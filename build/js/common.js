@@ -42754,7 +42754,7 @@
 	    var savedCount = winStore.countSavedWindows();
 	
 	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
-	    var summarySentence = openTabCount + " Open Tabs. Windows: " + openWinCount + " Open, " + savedCount + " Saved";
+	    var summarySentence = "Tabs: " + openTabCount + " Open. Windows: " + openWinCount + " Open, " + savedCount + " Saved.";
 	
 	    return React.createElement(
 	      'div',
