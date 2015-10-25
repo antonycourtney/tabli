@@ -10,6 +10,7 @@ var react = require('gulp-react');
 
 var gutil = require("gulp-util");
 var fs = require("fs");
+var include = require('gulp-html-tag-include');
 
 // Delete everything inside the dist directory
 gulp.task('clean', function() {
@@ -25,4 +26,14 @@ gulp.task('build_assets', function() {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task("default", ["build_assets"] );
+gulp.task('html-include', ['build_assets'], function() {
+    return gulp.src('./src/*.html')
+        .pipe(include())
+        .pipe(gulp.dest('./dist/'));
+});
+
+gulp.task('watch', ['html-include'], function() {
+    gulp.watch('./src/**/*.html', ['html-include']);
+});
+
+gulp.task('default', ['watch']);
