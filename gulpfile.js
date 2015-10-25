@@ -13,6 +13,12 @@ var fs = require("fs");
 
 var webpack = require("webpack");
 var webpackConfig = require("./webpack.config.js");
+var buildBranch = require('gulp-build-branch');
+ 
+gulp.task('deploy-gh-pages', function() {
+  return buildBranch({ folder: 'doc/site/dist' });
+});
+
 
 function genJSTask(taskName,destDir,jsxFiles) {
     gulp.task(taskName, function() {
