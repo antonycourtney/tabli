@@ -4,7 +4,7 @@ import * as TabWindow from './tabWindow';
 import * as utils from './utils';
 import * as Immutable from 'immutable';
 
-const TABLI_HELP_URL = "http://antonycourtney.github.io/tabli/usage.html";
+const TABLI_HELP_URL = "http://antonycourtney.github.io/tabli/tabli-usage.html";
 
 /**
  * sync a single Chrome window by its Chrome window id
