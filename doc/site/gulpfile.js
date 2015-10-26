@@ -33,7 +33,7 @@ gulp.task('build_favicon', function() {
     .pipe(gulp.dest('dist/favicon'));
 });
 
-gulp.task('html-include', ['build_assets'], function() {
+gulp.task('html-include', ['build_assets', 'build_favicon'], function() {
     return gulp.src('./src/*.html')
         .pipe(include())
         .pipe(gulp.dest('./dist/'));
