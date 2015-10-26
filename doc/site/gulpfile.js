@@ -26,6 +26,13 @@ gulp.task('build_assets', function() {
         .pipe(gulp.dest('dist'));
 });
 
+gulp.task('build_favicon', function() {
+  gutil.log("copy favicon dir to dist");
+
+  return gulp.src('tabli-favicon.ico/*')
+    .pipe(gulp.dest('dist/favicon'));
+});
+
 gulp.task('html-include', ['build_assets'], function() {
     return gulp.src('./src/*.html')
         .pipe(include())
