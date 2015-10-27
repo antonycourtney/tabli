@@ -17,8 +17,7 @@ var subtree = require('gulp-subtree');
 
 gulp.task('deploy_site', function () {
     return gulp.src('doc/site/dist')
-        .pipe(subtree())
-        .pipe(clean());
+        .pipe(subtree());
 });
 
 function genJSTask(taskName,destDir,jsxFiles) {
