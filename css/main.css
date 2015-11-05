@@ -39,6 +39,9 @@ body{
 .navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover{
 	background:#185d6e;
 }
+.navbar-right {
+  margin-right: 40px;
+}
 h1, h2{
 	color:#328fa6;
 	line-height:1.7;
