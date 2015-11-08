@@ -37,6 +37,7 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   handleTabWindowClosed(tabWindow) {
+    // console.log("handleTabWindowClosed: ", tabWindow.toJS());
     /*
      * We only remove window from map of open windows (windowIdMap) but then we re-register
      * reverted window to ensure that a reverted version of saved window stays in
@@ -69,6 +70,8 @@ export default class TabManagerState extends Immutable.Record({
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */
   attachChromeWindow(tabWindow,chromeWindow) {
+    // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow);
+
     // Was this Chrome window id previously associated with some other tab window?
     const oldTabWindow = this.windowIdMap.get(chromeWindow.id);
 
@@ -76,6 +79,8 @@ export default class TabManagerState extends Immutable.Record({
     const rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this;
 
     const attachedTabWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
+
+    console.log("attachChromeWindow: attachedTabWindow: ", attachedTabWindow.toJS());
 
     return rmStore.registerTabWindow(attachedTabWindow);
   }
@@ -90,6 +95,11 @@ export default class TabManagerState extends Immutable.Record({
    */
   syncChromeWindow(chromeWindow) {
     const prevTabWindow = this.windowIdMap.get(chromeWindow.id);
+    /*
+    if (!prevTabWindow) {
+      console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow);
+    }
+    */
     const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow,chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 
     return this.registerTabWindow(tabWindow);

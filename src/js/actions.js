@@ -73,6 +73,7 @@ function restoreBookmarkWindow(tabWindow,cb) {
 }
 
 export function openWindow(tabWindow,cb) {
+  console.log("actions.openWindow: ", tabWindow.toJS(), cb);
   var self = this;
 
   if (tabWindow.open) {

@@ -1215,7 +1215,7 @@ var SelectablePopup = React.createClass({
     const selectedWindow=this.props.filteredWindows[this.state.selectedWindowIndex];
     const selectedTabItem=selectedTab(selectedWindow,this.props.searchStr,this.state.selectedTabIndex);
     console.log("opening: ", selectedTabItem.toJS());
-    actions.activateTab(selectedWindow.tabWindow,selectedTabItem,this.state.selectedTabIndex);
+    actions.activateTab(selectedWindow.tabWindow,selectedTabItem,this.state.selectedTabIndex,this.props.storeUpdateHandler);
   },
 
   componentWillReceiveProps: function(nextProps) {
