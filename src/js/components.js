@@ -604,7 +604,7 @@ var TabItem = React.createClass({
           onClick={this.handleClick} >
         {tabCheckItem}
         {tabFavIcon}
-        <span style={tabTitleStyles}>{tabTitle}</span>
+        <a href={tab.url} style={tabTitleStyles}>{tabTitle}</a>
         <div style={styles.spacer} />
         {audibleIcon}
         {closeButton}
