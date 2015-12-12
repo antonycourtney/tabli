@@ -9,7 +9,7 @@ module.exports = {
     entry: {
       renderTest: "./src/js/renderTest.js",
       popup: "./src/js/popup.js",
-      newTab: "./src/js/newTab.js",
+      newTabPage: "./src/js/newTabPage.js",
       bgHelper: "./src/js/bgHelper.js"
     },
     output: {

@@ -5,11 +5,12 @@ import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
 import * as _ from 'lodash';
-import * as Components from './components';
 import {logWrap} from './utils';
 
 import {addons} from 'react/addons'; 
 const {PureRenderMixin, Perf} = addons;
+
+import TabliPopup from './components/TabliPopup';
 
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin) {
@@ -70,7 +71,7 @@ function renderPage(testData) {
   // There won't be any such updates (since we created the store) but the listener mechanism
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
-  var appElement = <Components.TabMan winStore={mockWinStore} noListener={true} />;  
+  var appElement = <TabliPopup winStore={mockWinStore} noListener={true} />;  
   React.render( appElement, parentNode );
 
   var t_postRender = performance.now();
