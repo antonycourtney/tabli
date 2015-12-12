@@ -8,8 +8,9 @@ var commonsPlugin =
 module.exports = {
     entry: {
       renderTest: "./src/js/renderTest.js",
-        popup: "./src/js/popup.js",
-        bgHelper: "./src/js/bgHelper.js"
+      popup: "./src/js/popup.js",
+      newTab: "./src/js/newTab.js",
+      bgHelper: "./src/js/bgHelper.js"
     },
     output: {
         path: "./build/js",

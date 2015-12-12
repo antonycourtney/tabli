@@ -1,0 +1,73 @@
+'use strict';
+
+import * as React from 'react';
+import * as Immutable from 'immutable';
+import {addons} from 'react/addons'; 
+import Styles from './styles';
+import * as Util from './util';
+const {PureRenderMixin, Perf} = addons;
+
+import * as actions from '../actions';
+
+import FilteredTabWindow from './FilteredTabWindow';
+import WindowListSection from './WindowListSection';
+
+
+const TabWindowList = React.createClass({
+  render: function() {
+    var focusedWindowElem = [];
+    var openWindows = [];
+    var savedWindows = [];
+
+    var filteredWindows = this.props.filteredWindows;    
+    for (var i=0; i < filteredWindows.length; i++) {
+      var filteredTabWindow = filteredWindows[i];
+      var tabWindow = filteredTabWindow.tabWindow;
+      var id = "tabWindow" + i;
+      var isOpen = tabWindow.open;
+      var isFocused = tabWindow.focused;
+      var isSelected = (i==this.props.selectedWindowIndex);
+      const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
+      var windowElem = <FilteredTabWindow winStore={this.props.winStore}
+                          storeUpdateHandler={this.props.storeUpdateHandler}  
+                          filteredTabWindow={filteredTabWindow} key={id} 
+                          searchStr={this.props.searchStr} 
+                          searchRE={this.props.searchRE}
+                          isSelected={isSelected}                          
+                          selectedTabIndex={selectedTabIndex}
+                          appComponent={this.props.appComponent}
+                          />;
+      if (isFocused) {
+        focusedWindowElem = windowElem;
+      } else if (isOpen) {
+        openWindows.push(windowElem);
+      } else {
+        savedWindows.push(windowElem);
+      }
+    }
+
+    var savedSection = null;
+    if (savedWindows.length > 0) {
+      savedSection = (
+        <WindowListSection title="Saved Closed Windows">
+          {savedWindows}
+        </WindowListSection>
+      );
+    }
+
+
+    return (
+      <div>
+        <WindowListSection title="Current Window">
+          {focusedWindowElem}
+        </WindowListSection>
+        <WindowListSection title="Other Open Windows">
+          {openWindows}
+        </WindowListSection>
+        {savedSection}
+      </div>
+    );    
+  }
+});
+
+export default TabWindowList;

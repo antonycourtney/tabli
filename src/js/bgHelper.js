@@ -10,8 +10,9 @@ import * as TabWindow from './tabWindow';
 import * as actions from './actions';
 import * as React from 'react';
 import {addons} from 'react/addons';
-import * as Components from './components';
 import ViewRef from './viewRef';
+
+import TabliPopup from './components/TabliPopup';
 
 var popupPort = null;
 const tabmanFolderTitle = "Tabli Saved Windows";
@@ -142,7 +143,7 @@ function makeRenderListener(storeRef) {
      * React.renderToString() will remount the component, so really want a fresh element here with exactly
      * the store state we wish to render and save.
      */
-    const renderAppElement = <Components.TabMan storeRef={null} initialWinStore={winStore} noListener={true} />;  
+    const renderAppElement = <TabliPopup storeRef={null} initialWinStore={winStore} noListener={true} />;  
     const renderedString = React.renderToString(renderAppElement);
     // console.log("renderAndSave: updated saved store and HTML");
     window.savedStore = winStore;
