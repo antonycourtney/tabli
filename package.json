@@ -29,12 +29,14 @@
     "gulp-rename": "^1.2.2",
     "gulp-subtree": "^0.1.0",
     "gulp-util": "^3.0.6",
+    "jsdom": "^7.2.1",
     "json-loader": "^0.5.3",
+    "sinon": "^1.17.2",
     "tap-spec": "^4.1.0",
     "tape": "^4.2.0",
     "webpack": "^1.12.2"
   },
   "scripts": {
-    "test": "babel-node ./test/tabWindowtest.js | tap-spec"
+    "test": "babel-node ./test/runAllTests.js | tap-spec"
   }
 }

@@ -1,0 +1,128 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install', '--g', 'node' ]
+2 info using npm@2.1.5
+3 info using node@v0.10.32
+4 silly cache add args [ 'node', null ]
+5 verbose cache add spec node
+6 silly cache add parsed spec { raw: 'node',
+6 silly cache add   scope: null,
+6 silly cache add   name: 'node',
+6 silly cache add   rawSpec: '',
+6 silly cache add   spec: '*',
+6 silly cache add   type: 'range' }
+7 verbose addNamed node@*
+8 silly addNamed semver.valid null
+9 silly addNamed semver.validRange *
+10 silly addNameRange { name: 'node', range: '*', hasData: false }
+11 verbose mapToRegistry name node
+12 verbose mapToRegistry uri https://registry.npmjs.org/node
+13 verbose addNameRange registry:https://registry.npmjs.org/node not in flight; fetching
+14 verbose request on initialization, where is /node
+15 verbose request after pass 1, where is /node
+16 verbose request url raw /node
+17 verbose request resolving registry [ 'https://registry.npmjs.org/', './node' ]
+18 verbose request after pass 2, where is https://registry.npmjs.org/node
+19 verbose request no auth needed
+20 info attempt registry request try #1 at 13:23:26
+21 verbose request using bearer token for auth
+22 verbose request id 3a131d5086e1ef3a
+23 http request GET https://registry.npmjs.org/node
+24 http 200 https://registry.npmjs.org/node
+25 silly registry.get cb [ 200,
+25 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+25 silly registry.get     etag: '"4RB0I162TMBFF7IWMPCBRMD3L"',
+25 silly registry.get     'content-type': 'application/json',
+25 silly registry.get     'cache-control': 'max-age=300',
+25 silly registry.get     'content-length': '1084',
+25 silly registry.get     'accept-ranges': 'bytes',
+25 silly registry.get     date: 'Fri, 18 Dec 2015 21:23:27 GMT',
+25 silly registry.get     via: '1.1 varnish',
+25 silly registry.get     connection: 'keep-alive',
+25 silly registry.get     'x-served-by': 'cache-iad2140-IAD',
+25 silly registry.get     'x-cache': 'MISS',
+25 silly registry.get     'x-cache-hits': '0',
+25 silly registry.get     'x-timer': 'S1450473806.946670,VS0,VE88',
+25 silly registry.get     vary: 'Accept' } ]
+26 silly addNameRange number 2 { name: 'node', range: '*', hasData: true }
+27 silly addNameRange versions [ 'node', [ '0.0.0' ] ]
+28 verbose addNamed node@0.0.0
+29 silly addNamed semver.valid 0.0.0
+30 silly addNamed semver.validRange 0.0.0
+31 warn deprecated node@0.0.0: To update or install node, go to http://nodejs.org/
+32 verbose addRemoteTarball https://registry.npmjs.org/node/-/node-0.0.0.tgz not in flight; adding
+33 verbose addRemoteTarball [ 'https://registry.npmjs.org/node/-/node-0.0.0.tgz',
+33 verbose addRemoteTarball   '288d62f90530c763eff8d4831ee7343ab3d60793' ]
+34 info retry fetch attempt 1 at 13:23:27
+35 info attempt registry request try #1 at 13:23:27
+36 http fetch GET https://registry.npmjs.org/node/-/node-0.0.0.tgz
+37 verbose request using bearer token for auth
+38 http fetch 200 https://registry.npmjs.org/node/-/node-0.0.0.tgz
+39 silly fetchAndShaCheck shasum 288d62f90530c763eff8d4831ee7343ab3d60793
+40 verbose addTmpTarball /var/folders/zm/bb7tf2gn6bz9l5wxbk25ycc80000gn/T/npm-11032-a851cef2/registry.npmjs.org/node/-/node-0.0.0.tgz not in flight; adding
+41 verbose addTmpTarball already have metadata; skipping unpack for node@0.0.0
+42 silly cache afterAdd node@0.0.0
+43 verbose afterAdd /Users/antony/.npm/node/0.0.0/package/package.json not in flight; writing
+44 verbose afterAdd /Users/antony/.npm/node/0.0.0/package/package.json written
+45 silly install resolved [ { name: 'node',
+45 silly install resolved     version: '0.0.0',
+45 silly install resolved     _npmUser: { name: 'isaacs', email: 'i@izs.me' },
+45 silly install resolved     _id: 'node@0.0.0',
+45 silly install resolved     dependencies: {},
+45 silly install resolved     devDependencies: {},
+45 silly install resolved     optionalDependencies: {},
+45 silly install resolved     engines: { node: '*' },
+45 silly install resolved     _engineSupported: true,
+45 silly install resolved     _npmVersion: '1.1.21',
+45 silly install resolved     _nodeVersion: 'v0.7.9-pre',
+45 silly install resolved     _defaultsLoaded: true,
+45 silly install resolved     dist:
+45 silly install resolved      { shasum: '288d62f90530c763eff8d4831ee7343ab3d60793',
+45 silly install resolved        tarball: 'http://registry.npmjs.org/node/-/node-0.0.0.tgz' },
+45 silly install resolved     maintainers: [ [Object] ],
+45 silly install resolved     directories: {},
+45 silly install resolved     deprecated: 'To update or install node, go to http://nodejs.org/',
+45 silly install resolved     homepage: 'http://nodejs.org/api',
+45 silly install resolved     _shasum: '288d62f90530c763eff8d4831ee7343ab3d60793',
+45 silly install resolved     _resolved: 'https://registry.npmjs.org/node/-/node-0.0.0.tgz',
+45 silly install resolved     _from: 'node@*' } ]
+46 info install node@0.0.0 into /usr/local/lib
+47 info installOne node@0.0.0
+48 verbose installOne of node to /usr/local/lib not in flight; installing
+49 verbose lock using /Users/antony/.npm/_locks/node-55ba4836bfa9dc50.lock for /usr/local/lib/node_modules/node
+50 silly install write writing node 0.0.0 to /usr/local/lib/node_modules/node
+51 silly cache addNamed cb node@0.0.0
+52 verbose unbuild lib/node_modules/node
+53 verbose gentlyRm vacuuming /usr/local/lib/node_modules/node
+54 verbose tar unpack /Users/antony/.npm/node/0.0.0/package.tgz
+55 verbose tar unpacking to /usr/local/lib/node_modules/node
+56 verbose gentlyRm vacuuming /usr/local/lib/node_modules/node
+57 silly gunzTarPerm modes [ '755', '644' ]
+58 verbose fstream_path /usr/local/lib/node_modules/node
+59 verbose fstream_type Directory
+60 verbose fstream_class DirWriter
+61 verbose stack Error: EACCES, mkdir '/usr/local/lib/node_modules/node'
+62 verbose fstream_stack /usr/local/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23
+62 verbose fstream_stack /usr/local/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53
+62 verbose fstream_stack Object.oncomplete (fs.js:107:15)
+63 verbose cwd /Users/antony/home/src/chrome-extensions/tabli/test
+64 error Darwin 15.2.0
+65 error argv "node" "/usr/local/bin/npm" "install" "--g" "node"
+66 error node v0.10.32
+67 error npm  v2.1.5
+68 error path /usr/local/lib/node_modules/node
+69 error code EACCES
+70 error errno 3
+71 error Error: EACCES, mkdir '/usr/local/lib/node_modules/node'
+71 error  { [Error: EACCES, mkdir '/usr/local/lib/node_modules/node']
+71 error   errno: 3,
+71 error   code: 'EACCES',
+71 error   path: '/usr/local/lib/node_modules/node',
+71 error   fstream_type: 'Directory',
+71 error   fstream_path: '/usr/local/lib/node_modules/node',
+71 error   fstream_class: 'DirWriter',
+71 error   fstream_stack:
+71 error    [ '/usr/local/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23',
+71 error      '/usr/local/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53',
+71 error      'Object.oncomplete (fs.js:107:15)' ] }
+72 error Please try running this command again as root/Administrator.
+73 verbose exit [ 3, true ]
