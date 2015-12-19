@@ -9,7 +9,7 @@ const {PureRenderMixin, Perf} = addons;
 
 import * as Constants from './constants';
 import * as actions from '../actions';
-
+import * as _ from 'lodash';
 import Hoverable from './Hoverable';
 import WindowHeader from './WindowHeader';
 import TabItem from './TabItem';

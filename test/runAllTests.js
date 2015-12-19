@@ -1,4 +1,4 @@
 'use strict';
 
 import './tabWindowTest';
-import './renderTest';
+import './viewTests';
