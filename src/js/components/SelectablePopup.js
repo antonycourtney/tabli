@@ -7,6 +7,7 @@ import Styles from './styles';
 import * as Util from './util';
 const {PureRenderMixin, Perf} = addons;
 
+import * as actions from '../actions';
 import SearchBar from './SearchBar';
 import TabWindowList from './TabWindowList';
 

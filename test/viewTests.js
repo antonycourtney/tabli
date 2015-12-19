@@ -132,3 +132,41 @@ test('isearch test',(t) => {
   actionsMock.restore();
   t.end();
 })
+
+test('search and open test',(t) => {
+  // Let's stub out all the stubs in actions libs:
+  var actionsMock = sinon.mock(actions);
+
+  actionsMock.expects("activateTab").once();
+
+  const winStore = initialWinStore();
+
+  const component = ReactTestUtils.renderIntoDocument(
+      <TabliPopup storeRef={null} initialWinStore={winStore} noListener={true} />
+    );
+
+  const baseTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
+
+  console.log("search and open test: initial tab items found: ", baseTabItems.length);
+
+  t.equals(baseTabItems.length,14,"Initial tab count");
+
+  const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar);
+
+  const searchInput = searchBar.refs.searchInput;
+
+  searchInput.getDOMNode().value = "git";
+
+
+  ReactTestUtils.Simulate.change(searchInput);
+  const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
+
+  console.log("search and open test: filtered tab items found: ", filteredTabItems.length);
+
+  t.equals(filteredTabItems.length, 8, "filtered tab count");
+
+  ReactTestUtils.Simulate.keyDown(searchInput, {key: "Enter", keyCode: 13, which: 13});
+
+  actionsMock.verify();
+  t.end();
+})
