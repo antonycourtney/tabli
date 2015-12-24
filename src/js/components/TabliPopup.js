@@ -10,8 +10,6 @@ import * as searchOps from '../searchOps';
 import {refUpdater} from 'oneref';
 import * as TabWindow from '../tabWindow';
 
-import 'babel/polyfill';
-
 import * as Modal from './Modal';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
