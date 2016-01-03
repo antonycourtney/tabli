@@ -6,30 +6,25 @@ var commonsPlugin =
   new webpack.optimize.CommonsChunkPlugin('common.js');
 
 module.exports = {
-    entry: {
-      renderTest: "./src/js/renderTest.js",
-      popup: "./src/js/popup.js",
-      newTabPage: "./src/js/newTabPage.js",
-      bgHelper: "./src/js/bgHelper.js"
-    },
-    output: {
-        path: "./build/js",
-        filename: "[name].bundle.js"
-    },
-    plugins: [commonsPlugin],
-    module: {
-        loaders: [
-            { test: /\.(js|jsx)$/, 
-              exclude: /node_modules/, 
-              loader: "babel-loader",
-              query: {
-                presets:['es2015','react']
-              }
-            },
-            { test: /\.(json)$/, loader: "json-loader" }
-        ]
-    },
-    resolve: {
-        extensions: ["", ".js", ".jsx", ".json"]
-    }
+  entry: {
+    popup: "./src/ts/popup.tsx",
+    bgHelper: "./src/ts/bgHelper.tsx",
+  },
+  output: {
+      path: "./build/js",
+      filename: "[name].bundle.js"
+  },
+  plugins: [commonsPlugin],
+  module: {
+      loaders: [
+          { test: /\.(ts|tsx)$/, 
+            exclude: /node_modules/, 
+            loader: "babel-loader?presets=es2015!ts-loader"
+          },
+          { test: /\.(json)$/, loader: "json-loader" }
+      ]
+  },
+  resolve: {
+      extensions: ["", ".js", ".jsx", ".ts", ".tsx", ".json"]
+  }
 };
