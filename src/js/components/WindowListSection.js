@@ -1,13 +1,5 @@
-'use strict';
-
 import * as React from 'react';
-import * as Immutable from 'immutable';
-import {addons} from 'react/addons';
 import Styles from './styles';
-import * as Util from './util';
-const {PureRenderMixin, Perf} = addons;
-
-import * as actions from '../actions';
 
 const WindowListSection = React.createClass({
   render() {

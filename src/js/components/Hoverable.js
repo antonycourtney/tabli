@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * mixin for that maintains a "hovering" state
  * and provides callbacks for mouseOver/mouseOut
@@ -7,16 +5,16 @@
  * of appropriate component
  */
 const Hoverable = {
-  getInitialState: function() {
+  getInitialState() {
     return { hovering: false };
   },
 
-  handleMouseOver: function() {
-    this.setState({hovering: true});
+  handleMouseOver() {
+    this.setState({ hovering: true });
   },
 
-  handleMouseOut: function() {
-    this.setState({hovering: false});
+  handleMouseOut() {
+    this.setState({ hovering: false });
   },
 };
 

@@ -1,5 +1,3 @@
-'use strict';
-
 import * as Constants from './constants';
 
 const styles = {
@@ -208,7 +206,7 @@ const styles = {
     position: 'fixed',
     top: 0,
     left: 0,
-    background:'rgba(0,0,0,0.6)',
+    background: 'rgba(0,0,0,0.6)',
     zIndex: 5,
     width: '100%',
     height: '100%',
@@ -267,8 +265,8 @@ const styles = {
   popupHeader: {
     width: '100%',
     height: Constants.POPUP_HEADER_HEIGHT,
-    position:'fixed',
-    top:0,
+    position: 'fixed',
+    top: 0,
     background: '#ffffff',
     zIndex: 1,
     borderBottom: '1px solid #bababa',
@@ -293,8 +291,8 @@ const styles = {
   popupFooter: {
     width: '100%',
     height: Constants.POPUP_FOOTER_HEIGHT,
-    position:'fixed',
-    bottom:0,
+    position: 'fixed',
+    bottom: 0,
     background: '#ffffff',
     zIndex: 1,
     borderTop: '1px solid #bababa',

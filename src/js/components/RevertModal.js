@@ -1,27 +1,24 @@
-'use strict';
-
 import * as React from 'react';
 import * as Immutable from 'immutable';
-import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
-const {PureRenderMixin, Perf} = addons;
 
 import * as Constants from './constants';
 
-import * as actions from '../actions';
 import * as Modal from './Modal';
+
+import * as TabWindow from '../tabWindow';
 
 /*
  * Modal dialog for reverting a bookmarked window
  */
 const RevertModal = React.createClass({
   handleKeyDown(e) {
-    if (e.keyCode == Constants.KEY_ESC) {
+    if (e.keyCode === Constants.KEY_ESC) {
       // ESC key
       e.preventDefault();
       this.props.onClose(e);
-    } else if (e.keyCode == Constants.KEY_ENTER) {
+    } else if (e.keyCode === Constants.KEY_ENTER) {
       this.handleSubmit(e);
     }
   },
@@ -35,7 +32,7 @@ const RevertModal = React.createClass({
     var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
 
     // Skip the chrome FAVICONs; they just throw when accessed.
-    if (fiSrc.indexOf('chrome://theme/') == 0) {
+    if (fiSrc.indexOf('chrome://theme/') === 0) {
       fiSrc = '';
     }
 
@@ -99,17 +96,22 @@ const RevertModal = React.createClass({
           </div>
           <div style={Util.merge(Styles.alignRight)}>
             <div style={Util.merge(Styles.dialogButton, Styles.primaryButton)}
-                 onClick={this.handleSubmit}
-                 ref="okButton"
-                 tabIndex={0}
-                 onKeyDown={this.handleKeyDown}>OK</div>  
-                                                                                                                                                                                                                                                                                                                                                                                                <div style={Styles.dialogButton}
-                  onClick={this.props.onClose}
-                  tabIndex={0}
-                  >Cancel</div>  
-                                                                                                                                                                                                                                                                                                                                </div>
-        </Modal.Body>      
-                                                                                                                                                                                                </Modal.Dialog>
+              onClick={this.handleSubmit}
+              ref="okButton"
+              tabIndex={0}
+              onKeyDown={this.handleKeyDown}
+            >
+              OK
+            </div>
+            <div style={Styles.dialogButton}
+              onClick={this.props.onClose}
+              tabIndex={0}
+            >
+              Cancel
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal.Dialog>
     );
   },
 

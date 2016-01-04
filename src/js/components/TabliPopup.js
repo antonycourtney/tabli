@@ -1,16 +1,8 @@
-'use strict';
-
 import * as React from 'react';
-import {addons} from 'react/addons';
-import Styles from './styles';
-import * as Util from './util';
 import * as actions from '../actions';
-const {PureRenderMixin, Perf} = addons;
 import * as searchOps from '../searchOps';
-import {refUpdater} from 'oneref';
-import * as TabWindow from '../tabWindow';
+import { refUpdater } from 'oneref';
 
-import * as Modal from './Modal';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import SelectablePopup from './SelectablePopup';
@@ -23,19 +15,19 @@ function windowCmpFn(tabWindowA, tabWindowB) {
   // focused window very first:
   const fA = tabWindowA.focused;
   const fB = tabWindowB.focused;
-  if (fA != fB) {
-    if (fA)
+  if (fA !== fB) {
+    if (fA) {
       return -1;
-    else
-      return 1;
+    }
+    return 1;
   }
 
   // open windows first:
-  if (tabWindowA.open != tabWindowB.open) {
-    if (tabWindowA.open)
+  if (tabWindowA.open !== tabWindowB.open) {
+    if (tabWindowA.open) {
       return -1;
-    else
-      return 1;
+    }
+    return 1;
   }
 
   var tA = tabWindowA.title;
@@ -43,22 +35,31 @@ function windowCmpFn(tabWindowA, tabWindowB) {
   return tA.localeCompare(tB);
 }
 
+/**
+ * send message to BGhelper
+ */
+function sendHelperMessage(msg) {
+  var port = chrome.runtime.connect({ name: 'popup' });
+  port.postMessage(msg);
+  port.onMessage.addListener((response) => {
+    console.log('Got response message: ', response);
+  });
+}
+
 const TabliPopup = React.createClass({
-  storeAsState: function(winStore) {
+  storeAsState(winStore) {
     var tabWindows = winStore.getAll();
 
     var sortedWindows = tabWindows.sort(windowCmpFn);
 
     return {
-      winStore: winStore,
+      winStore,
       sortedWindows,
     };
   },
 
-  getInitialState: function() {
+  getInitialState() {
     var st = this.storeAsState(this.props.initialWinStore);
-
-    const w0 = st.sortedWindows[0];
 
     st.saveModalIsOpen = false;
     st.revertModalIsOpen = false;
@@ -68,8 +69,8 @@ const TabliPopup = React.createClass({
     return st;
   },
 
-  handleSearchInput(searchStr) {
-    searchStr = searchStr.trim();
+  handleSearchInput(rawSearchStr) {
+    const searchStr = rawSearchStr.trim();
 
     var searchRE = null;
     if (searchStr.length > 0) {
@@ -82,19 +83,19 @@ const TabliPopup = React.createClass({
 
   openSaveModal(tabWindow) {
     const initialTitle = tabWindow.title;
-    this.setState({saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow});
+    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
   },
 
   closeSaveModal() {
-    this.setState({saveModalIsOpen: false});
+    this.setState({ saveModalIsOpen: false });
   },
 
   openRevertModal(filteredTabWindow) {
-    this.setState({revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow});
+    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
   },
 
   closeRevertModal() {
-    this.setState({revertModalIsOpen: false, revertTabWindow: null});
+    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
   },
 
   /* handler for save modal */
@@ -105,7 +106,7 @@ const TabliPopup = React.createClass({
     this.closeSaveModal();
   },
 
-  doRevert(tabWindow) {
+  doRevert(tabWindow) { // eslint-disable-line no-unused-vars
     const updateHandler = refUpdater(this.props.storeRef);
     actions.revertWindow(this.state.revertTabWindow, updateHandler);
     this.closeRevertModal();
@@ -115,12 +116,13 @@ const TabliPopup = React.createClass({
   renderSaveModal() {
     var modal = null;
     if (this.state.saveModalIsOpen) {
-      modal = <SaveModal initialTitle={this.state.saveInitialTitle}
-                tabWindow={this.state.saveTabWindow}
-                onClose={this.closeSaveModal}
-                onSubmit={this.doSave}
-                appComponent={this}
-                />;
+      modal = (
+        <SaveModal initialTitle={this.state.saveInitialTitle}
+          tabWindow={this.state.saveTabWindow}
+          onClose={this.closeSaveModal}
+          onSubmit={this.doSave}
+          appComponent={this}
+        />);
     }
 
     return modal;
@@ -130,23 +132,25 @@ const TabliPopup = React.createClass({
   renderRevertModal() {
     var modal = null;
     if (this.state.revertModalIsOpen) {
-      modal = <RevertModal
-                tabWindow={this.state.revertTabWindow}
-                onClose={this.closeRevertModal}
-                onSubmit={this.doRevert}
-                appComponent={this}
-                />;
+      modal = (
+        <RevertModal
+          tabWindow={this.state.revertTabWindow}
+          onClose={this.closeRevertModal}
+          onSubmit={this.doRevert}
+          appComponent={this}
+        />);
     }
 
     return modal;
   },
 
-  render: function() {
+  render() {
+    var ret;
     try {
       const saveModal = this.renderSaveModal();
       const revertModal = this.renderRevertModal();
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
-      var ret = (
+      ret = (
         <div>
           <SelectablePopup
             onSearchInput={this.handleSearchInput}
@@ -170,9 +174,10 @@ const TabliPopup = React.createClass({
     return ret;
   },
 
-  componentWillMount: function() {
-    if (this.props.noListener)
+  componentWillMount() {
+    if (this.props.noListener) {
       return;
+    }
 
     const storeRef = this.props.storeRef;
     /*
@@ -189,15 +194,5 @@ const TabliPopup = React.createClass({
   },
 });
 
-/**
- * send message to BGhelper
- */
-function sendHelperMessage(msg) {
-  var port = chrome.runtime.connect({name: 'popup'});
-  port.postMessage(msg);
-  port.onMessage.addListener(function(msg) {
-    console.log('Got response message: ', msg);
-  });
-}
 
 export default TabliPopup;

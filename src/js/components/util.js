@@ -1,10 +1,7 @@
-'use strict';
-
 /**
  * Object merge operator from the original css-in-js presentation
  */
 export function merge() {
-
   var res = {};
   for (var i = 0; i < arguments.length; i++) {
     if (arguments[i]) {

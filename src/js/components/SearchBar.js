@@ -1,18 +1,9 @@
-'use strict';
-
 import * as React from 'react';
-import * as Immutable from 'immutable';
-import {addons} from 'react/addons';
 import Styles from './styles';
-import * as Util from './util';
-const {PureRenderMixin, Perf} = addons;
 
 import * as Constants from './constants';
 import * as actions from '../actions';
 import * as _ from 'lodash';
-import Hoverable from './Hoverable';
-import WindowHeader from './WindowHeader';
-import TabItem from './TabItem';
 
 const SearchBar = React.createClass({
   handleChange() {
@@ -56,7 +47,7 @@ const SearchBar = React.createClass({
       }
     }
 
-    if (e.keyCode == Constants.KEY_ENTER) {
+    if (e.keyCode === Constants.KEY_ENTER) {
       if (this.props.onSearchEnter) {
         e.preventDefault();
         this.props.onSearchEnter();
@@ -71,15 +62,17 @@ const SearchBar = React.createClass({
   },
 
   render() {
-    const helpButton =
+    const helpButton = (
       <i className="fa fa-question-circle fa-lg" style={Styles.helpButton}
-          title="Open Tabli Usage Manual" onClick={this.handleHelpClick}></i>;
+        title="Open Tabli Usage Manual" onClick={this.handleHelpClick}
+      >
+      </i>);
     return (
       <div style={Styles.headerContainer}>
         <input style={Styles.searchInput} type="text" ref="searchInput" id="searchBox" placeholder="Search..."
           onChange={this.handleChange} onKeyDown={this.handleKeyDown}
           title="Search Page Titles and URLs"
-          />
+        />
         {helpButton}
       </div>
     );

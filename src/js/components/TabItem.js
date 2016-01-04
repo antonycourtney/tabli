@@ -1,19 +1,15 @@
-'use strict';
-
 import * as React from 'react';
-import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 import * as actions from '../actions';
-const {PureRenderMixin, Perf} = addons;
 
 import Hoverable from './Hoverable';
 import HeaderButton from './HeaderButton';
 
 const TabItem = React.createClass({
-  mixins:[Hoverable],
+  mixins: [Hoverable],
 
-  handleClick: function() {
+  handleClick() {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
     var tabIndex = this.props.tabIndex;
@@ -23,28 +19,30 @@ const TabItem = React.createClass({
     actions.activateTab(tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
   },
 
-  handleClose: function() {
-    if (!this.props.tabWindow.open)
+  handleClose() {
+    if (!this.props.tabWindow.open) {
       return;
-    if (!this.props.tab.open)
+    }
+    if (!this.props.tab.open) {
       return;
+    }
     var tabId = this.props.tab.openTabId;
     actions.closeTab(this.props.tabWindow, tabId, this.props.storeUpdateHandler);
   },
 
-  handleBookmarkTabItem: function(event) {
+  handleBookmarkTabItem(event) {
     event.stopPropagation();
     console.log('bookmark tab: ', this.props.tab.toJS());
     actions.saveTab(this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler);
   },
 
-  handleUnbookmarkTabItem: function(event) {
+  handleUnbookmarkTabItem(event) {
     event.stopPropagation();
     console.log('unbookmark tab: ', this.props.tab.toJS());
     actions.unsaveTab(this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler);
   },
 
-  render: function() {
+  render() {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
 
@@ -58,26 +56,29 @@ const TabItem = React.createClass({
     var tabCheckItem;
 
     if (managed) {
-      if (!tab.open)
+      if (!tab.open) {
         tabOpenStyle = Styles.closed;
+      }
 
       var hoverVisible = this.state.hovering ? Styles.visible : Styles.hidden;
 
       if (tab.saved) {
-        tabCheckItem = <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton)}
-                              title="Remove bookmark for this tab"
-                              onClick={this.handleUnbookmarkTabItem}
-                              />;
+        tabCheckItem = (
+          <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton)}
+            title="Remove bookmark for this tab"
+            onClick={this.handleUnbookmarkTabItem}
+          />);
 
         // TODO: callback
       } else {
         // We used to include headerCheckbox, but that only set width and height
         // to something to 13x13; we want 16x16 from headerButton
-        tabCheckItem = <input style={Util.merge(Styles.headerButton, hoverVisible, Styles.tabCheckItem)}
-                              type="checkbox"
-                              title="Bookmark this tab"
-                              onClick={this.handleBookmarkTabItem}
-                              />;
+        tabCheckItem = (
+          <input style={Util.merge(Styles.headerButton, hoverVisible, Styles.tabCheckItem)}
+            type="checkbox"
+            title="Bookmark this tab"
+            onClick={this.handleBookmarkTabItem}
+          />);
       }
     } else {
       // insert a spacer:
@@ -87,7 +88,7 @@ const TabItem = React.createClass({
     var fiSrc = tab.favIconUrl ? tab.favIconUrl : '';
 
     // Skip the chrome FAVICONs; they just throw when accessed.
-    if (fiSrc.indexOf('chrome://theme/') == 0) {
+    if (fiSrc.indexOf('chrome://theme/') === 0) {
       fiSrc = '';
     }
 
@@ -103,15 +104,18 @@ const TabItem = React.createClass({
     const audibleIcon = tab.audible ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null;
 
     var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
-    var closeButton = <HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering}
-                          hoverStyle={Styles.closeButtonHover} title="Close Tab"
-                          onClick={this.handleClose} />;
+    var closeButton = (
+      <HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering}
+        hoverStyle={Styles.closeButtonHover} title="Close Tab"
+        onClick={this.handleClose}
+      />);
 
     return (
       <div style={Util.merge(Styles.noWrap, Styles.tabItem, hoverStyle, selectedStyle)}
-          onMouseOut={this.handleMouseOut}
-          onMouseOver={this.handleMouseOver}
-          onClick={this.handleClick} >
+        onMouseOut={this.handleMouseOut}
+        onMouseOver={this.handleMouseOver}
+        onClick={this.handleClick}
+      >
         {tabCheckItem}
         {tabFavIcon}
         <span style={tabTitleStyles}>{tabTitle}</span>

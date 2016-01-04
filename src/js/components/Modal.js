@@ -1,22 +1,19 @@
-'use strict';
-
 import * as React from 'react';
-import * as Immutable from 'immutable';
-import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
-const {PureRenderMixin, Perf} = addons;
-
-import * as actions from '../actions';
 
 import HeaderButton from './HeaderButton';
 
 /*
  * generic modal dialog component
  */
+
+/* Allow multiple components in this file: */
+/* eslint react/no-multi-comp:0 */
+
 export const Dialog = React.createClass({
 
-  handleClose: function(event) {
+  handleClose(event) {
     console.log('Modal.handleClose: ', event, arguments);
     event.preventDefault();
     this.props.onClose(event);
@@ -27,9 +24,11 @@ export const Dialog = React.createClass({
 
     var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.modalTitle, Styles.open);
     var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
-    var closeButton = <HeaderButton baseStyle={closeStyle} visible={true}
-                          hoverStyle={Styles.closeButtonHover} title="Close Window"
-                          onClick={this.handleClose} />;
+    var closeButton = (
+      <HeaderButton baseStyle={closeStyle} visible
+        hoverStyle={Styles.closeButtonHover} title="Close Window"
+        onClick={this.handleClose}
+      />);
     modalDiv = (
       <div style={Styles.modalOverlay}>
         <div style={Styles.modalContainer}>
@@ -52,7 +51,7 @@ export const Dialog = React.createClass({
 export const Info = React.createClass({
   render() {
     return (
-      <div style={Styles.dialogInfo}>      
+      <div style={Styles.dialogInfo}>
                                                                                                                                                                                                                                                                 <div style={Styles.dialogInfoContents}>
           {this.props.children}
         </div>
