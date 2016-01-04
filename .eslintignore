@@ -7,3 +7,8 @@ build
 server.*.js
 *config.js
 serviceworker.js
+
+# Ignore tests and other ancillary stuff (for now):
+doc
+test
+gulpfile.js

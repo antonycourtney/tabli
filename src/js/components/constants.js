@@ -1,5 +1,3 @@
-'use strict';
-
 export const WINDOW_HEADER_HEIGHT = 22;
 export const POPUP_HEADER_HEIGHT = 40;
 export const POPUP_FOOTER_HEIGHT = 25;
