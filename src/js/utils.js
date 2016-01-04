@@ -2,8 +2,6 @@
  *
  * Common utility routines
  */
-'use strict';
-
 // This function creates a new anchor element and uses location
 // properties (inherent) to get the desired URL data. Some String
 // operations are used (to normalize results across browsers).
@@ -17,7 +15,7 @@ export function parseURL(url) {
     host: a.hostname,
     port: a.port,
     query: a.search,
-    params: (function () {
+    params: (() => {
       var ret = {};
       var seg = a.search.replace(/^\?/, '').split('&');
       var len = seg.length;
@@ -33,10 +31,10 @@ export function parseURL(url) {
       return ret;
     })(),
 
-    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
+    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [null, ''])[1],
     hash: a.hash.replace('#', ''),
     path: a.pathname.replace(/^([^\/])/, '/$1'),
-    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [, ''])[1],
+    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [null, ''])[1],
     segments: a.pathname.replace(/^\//, '').split('/'),
   };
 }
@@ -66,10 +64,10 @@ export function seqActions(actions, seed, onCompleted) {
 
 // wrapper to log exceptions
 export function logWrap(f) {
-
   function wf() {
+    var ret;
     try {
-      var ret = f.apply(this, arguments);
+      ret = f.apply(this, arguments);
     } catch (e) {
       console.error('logWrap: caught exception invoking function: ');
       console.error(e.stack);

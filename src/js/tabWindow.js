@@ -1,9 +1,6 @@
 /**
  * Representation of tabbed windows using Immutable.js
  */
-
-'use strict';
-
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 
@@ -35,8 +32,9 @@ export class TabItem extends Immutable.Record({
   tabTitle: '',
 }) {
   get title() {
-    if (this.open)
+    if (this.open) {
       return this.tabTitle;
+    }
 
     return this.savedTitle;
   }
@@ -143,8 +141,9 @@ export class TabWindow extends Immutable.Record({
   }
 
   computeTitle() {
-    if (this.saved)
+    if (this.saved) {
       return this.savedTitle;
+    }
 
     const activeTab = this.tabItems.find((t) => t.active);
 
@@ -153,8 +152,9 @@ export class TabWindow extends Immutable.Record({
       console.warn('TabWindow.get title(): No active tab found: ', this.toJS());
 
       var openTabItem = this.tabItems.find((t) => t.open);
-      if (!openTabItem)
+      if (!openTabItem) {
         return '';
+      }
       return openTabItem.title;
     }
 
@@ -182,9 +182,6 @@ export function removeOpenWindowState(tabWindow) {
  * Used when unsave'ing a saved window
  */
 export function removeSavedWindowState(tabWindow) {
-  const openItems = tabWindow.tabItems.filter((ti) => ti.open);
-  const resetOpenItems = openItems.map(resetOpenItem);
-
   return tabWindow.remove('saved').remove('savedFolderId').remove('savedTitle');
 }
 
@@ -257,8 +254,8 @@ function getOpenTabInfo(tabItems, openTabs) {
 
   // console.log("getOpenTabInfo: savedUrlMap : " + savedUrlMap.toJS());
 
-  function mergeTabItems(openItems, savedItems) {
-    const savedItem = savedItems.get(0);
+  function mergeTabItems(openItems, mergeSavedItems) {
+    const savedItem = mergeSavedItems.get(0);
     return openItems.map((openItem) => openItem.set('saved', true)
                                         .set('savedBookmarkId', savedItem.savedBookmarkId)
                                         .set('savedBookmarkIndex', savedItem.savedBookmarkIndex)

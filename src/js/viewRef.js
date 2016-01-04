@@ -1,5 +1,3 @@
-'use strict';
-
 import * as OneRef from 'oneref';
 
 /**

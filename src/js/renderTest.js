@@ -1,14 +1,9 @@
-'use strict';
-
 import * as React from 'react/addons';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
-import * as _ from 'lodash';
-import { logWrap } from './utils';
-
 import { addons } from 'react/addons';
-const { PureRenderMixin, Perf } = addons;
+const { Perf } = addons;
 
 import TabliPopup from './components/TabliPopup';
 
@@ -45,8 +40,9 @@ function renderPage(testData) {
   var t_preRender = performance.now();
   var parentNode = document.getElementById('windowList-region');
 
-  if (Perf)
+  if (Perf) {
     Perf.start();
+  }
 
   /*
   if (savedNode) {
@@ -72,12 +68,13 @@ function renderPage(testData) {
   // There won't be any such updates (since we created the store) but the listener mechanism
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
-  var appElement = <TabliPopup winStore={mockWinStore} noListener={true} />;
+  var appElement = <TabliPopup winStore={mockWinStore} noListener />;
   React.render(appElement, parentNode);
 
   var t_postRender = performance.now();
-  if (Perf)
+  if (Perf) {
     Perf.stop();
+  }
   console.log('initial render complete. render time: (', t_postRender - t_preRender, ' ms)');
   if (Perf) {
     console.log('inclusive:');
@@ -102,7 +99,7 @@ var testStateUrl = 'testData/winSnap.json';
 function loadTestData(callback) {
   var request = new XMLHttpRequest();
   request.open('GET', testStateUrl, true);
-  request.onload = function () {
+  request.onload = () => {
     if (request.status >= 200 && request.status < 400) {
       var data = JSON.parse(request.responseText);
       callback(data);

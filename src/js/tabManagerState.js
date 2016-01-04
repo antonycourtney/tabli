@@ -4,8 +4,6 @@
  * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
  * and then retrieve the instance from the background window in the popup
  */
-'use strict';
-
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
@@ -127,7 +125,7 @@ export default class TabManagerState extends Immutable.Record({
 
     if (!tabWindow) {
       console.log('setCurrentWindow: window id ', windowId, 'not found');
-      return;
+      return this;
     }
 
     // TODO: We really should find any other window with focus===true and clear it

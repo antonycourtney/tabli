@@ -1,8 +1,6 @@
 /**
  * Search and filter operations on TabWindows
  */
-'use strict';
-
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
@@ -26,8 +24,9 @@ export function matchTabItem(tabItem, searchExp) {
   var urlMatches = tabItem.url.match(searchExp);
   var titleMatches = tabItem.title.match(searchExp);
 
-  if (urlMatches === null && titleMatches === null)
+  if (urlMatches === null && titleMatches === null) {
     return null;
+  }
 
   return new FilteredTabItem({ tabItem, urlMatches, titleMatches });
 }
@@ -49,8 +48,9 @@ export function matchTabWindow(tabWindow, searchExp) {
   const itemMatches = tabWindow.tabItems.map((ti) => matchTabItem(ti, searchExp)).filter((fti) => fti !== null);
   const titleMatches = tabWindow.title.match(searchExp);
 
-  if (titleMatches === null && itemMatches.count() === 0)
+  if (titleMatches === null && itemMatches.count() === 0) {
     return null;
+  }
 
   return FilteredTabWindow({ tabWindow, titleMatches, itemMatches });
 }

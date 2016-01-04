@@ -19,6 +19,7 @@
         "vars-on-top": 0,
         "no-console": 0,
         "no-alert": 0,
+        "new-cap": 0
     },
     "globals": {
       "chrome": true,
