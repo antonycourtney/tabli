@@ -15,7 +15,7 @@ import * as sinon from 'sinon';
 const ReactTestUtils = React.addons.TestUtils;
 
 function getWindowSnap() {
-  const content = fs.readFileSync("test/chromeWindowSnap.json");
+  const content = fs.readFileSync('test/chromeWindowSnap.json');
   const snap = JSON.parse(content);
   return snap.chromeWindows;
 }
@@ -31,46 +31,46 @@ function initialWinStore() {
   return initWinStore;
 }
 
-test('basic load state',(t) => {
+test('basic load state', (t) => {
   const snap = getWindowSnap();
 
-  t.equal(snap.length,3,"read 3 windows from window snap");
+  t.equal(snap.length, 3, 'read 3 windows from window snap');
   t.end();
 });
 
-test('basic window state',(t) => {
+test('basic window state', (t) => {
   const winStore = initialWinStore();
 
   const openTabCount = winStore.countOpenTabs();
   const openWinCount = winStore.countOpenWindows();
-  const savedCount=winStore.countSavedWindows();
+  const savedCount = winStore.countSavedWindows();
 
   // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
-  const summarySentence="Tabs: " + openTabCount + " Open. Windows: " + openWinCount + " Open, " + savedCount + " Saved."
+  const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
 
-  console.log(summarySentence + "\n");
-  t.equal(openTabCount,14);
-  t.equal(openWinCount,3);
-  t.equal(savedCount,0);
+  console.log(summarySentence + '\n');
+  t.equal(openTabCount, 14);
+  t.equal(openWinCount, 3);
+  t.equal(savedCount, 0);
   t.end();
-})
+});
 
-test('basic render test',(t) => {
+test('basic render test', (t) => {
   const winStore = initialWinStore();
 
   const component = ReactTestUtils.renderIntoDocument(
       <TabliPopup storeRef={null} initialWinStore={winStore} noListener={true} />
     );
 
-  t.notEqual(component,null,"component from renderIntoDocument is not null");
+  t.notEqual(component, null, 'component from renderIntoDocument is not null');
   t.end();
-})
+});
 
-test('basic event test',(t) => {
+test('basic event test', (t) => {
   // Let's stub out all the stubs in actions libs:
   var actionsMock = sinon.mock(actions);
 
-  actionsMock.expects("showHelp").once();
+  actionsMock.expects('showHelp').once();
 
   const winStore = initialWinStore();
 
@@ -78,17 +78,17 @@ test('basic event test',(t) => {
       <TabliPopup storeRef={null} initialWinStore={winStore} noListener={true} />
     );
 
-  const helpButton = ReactTestUtils.findRenderedDOMComponentWithClass(component,'fa-question-circle')
+  const helpButton = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'fa-question-circle');
 
   ReactTestUtils.Simulate.click(helpButton);
 
   // N.B. verify restores mocked methods:
   actionsMock.verify();
-  
-  t.end();
-})
 
-test('isearch test',(t) => {
+  t.end();
+});
+
+test('isearch test', (t) => {
   // Let's stub out all the stubs in actions libs:
   var actionsMock = sinon.mock(actions);
 
@@ -100,17 +100,17 @@ test('isearch test',(t) => {
 
   const baseTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
 
-  console.log("isearch test: initial tab items found: ", baseTabItems.length);
+  console.log('isearch test: initial tab items found: ', baseTabItems.length);
 
-  t.equals(baseTabItems.length,14,"Initial tab count");
+  t.equals(baseTabItems.length, 14, 'Initial tab count');
 
   const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar);
 
   const searchInput = searchBar.refs.searchInput;
 
-  searchInput.getDOMNode().value = "git";
+  searchInput.getDOMNode().value = 'git';
 
-  /* 
+  /*
    * This also works:
   const inputComponents = ReactTestUtils.scryRenderedDOMComponentsWithTag(searchBar,'input')
   console.log("inputComponents: ", inputComponents);
@@ -125,19 +125,19 @@ test('isearch test',(t) => {
 
   const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
 
-  console.log("isearch test: filtered tab items found: ", filteredTabItems.length);
+  console.log('isearch test: filtered tab items found: ', filteredTabItems.length);
 
-  t.equals(filteredTabItems.length, 8, "filtered tab count");
+  t.equals(filteredTabItems.length, 8, 'filtered tab count');
 
   actionsMock.restore();
   t.end();
-})
+});
 
-test('search and open test',(t) => {
+test('search and open test', (t) => {
   // Let's stub out all the stubs in actions libs:
   var actionsMock = sinon.mock(actions);
 
-  actionsMock.expects("activateTab").once();
+  actionsMock.expects('activateTab').once();
 
   const winStore = initialWinStore();
 
@@ -147,26 +147,25 @@ test('search and open test',(t) => {
 
   const baseTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
 
-  console.log("search and open test: initial tab items found: ", baseTabItems.length);
+  console.log('search and open test: initial tab items found: ', baseTabItems.length);
 
-  t.equals(baseTabItems.length,14,"Initial tab count");
+  t.equals(baseTabItems.length, 14, 'Initial tab count');
 
   const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar);
 
   const searchInput = searchBar.refs.searchInput;
 
-  searchInput.getDOMNode().value = "git";
-
+  searchInput.getDOMNode().value = 'git';
 
   ReactTestUtils.Simulate.change(searchInput);
   const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
 
-  console.log("search and open test: filtered tab items found: ", filteredTabItems.length);
+  console.log('search and open test: filtered tab items found: ', filteredTabItems.length);
 
-  t.equals(filteredTabItems.length, 8, "filtered tab count");
+  t.equals(filteredTabItems.length, 8, 'filtered tab count');
 
-  ReactTestUtils.Simulate.keyDown(searchInput, {key: "Enter", keyCode: 13, which: 13});
+  ReactTestUtils.Simulate.keyDown(searchInput, {key: 'Enter', keyCode: 13, which: 13});
 
   actionsMock.verify();
   t.end();
-})
+});

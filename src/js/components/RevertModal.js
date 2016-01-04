@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as Immutable from 'immutable';
-import {addons} from 'react/addons'; 
+import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 const {PureRenderMixin, Perf} = addons;
@@ -17,44 +17,50 @@ import * as Modal from './Modal';
  */
 const RevertModal = React.createClass({
   handleKeyDown(e) {
-    if (e.keyCode==Constants.KEY_ESC) {
+    if (e.keyCode == Constants.KEY_ESC) {
       // ESC key
       e.preventDefault();
       this.props.onClose(e);
-    } else if (e.keyCode==Constants.KEY_ENTER) {
+    } else if (e.keyCode == Constants.KEY_ENTER) {
       this.handleSubmit(e);
     }
   },
+
   handleSubmit(e) {
     e.preventDefault();
     this.props.onSubmit(this.props.tabWindow);
   },
+
   renderItem(tabItem) {
-    var fiSrc=tabItem.favIconUrl ? tabItem.favIconUrl : "";
+    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
+
     // Skip the chrome FAVICONs; they just throw when accessed.
-    if (fiSrc.indexOf("chrome://theme/")==0) {
-      fiSrc="";
+    if (fiSrc.indexOf('chrome://theme/') == 0) {
+      fiSrc = '';
     }
+
     var tabFavIcon = <img style={Styles.favIcon} src={fiSrc} />;
     const tabOpenStyle = tabItem.open ? null : Styles.closed;
     var tabActiveStyle = tabItem.active ? Styles.activeSpan : null;
-    var tabTitleStyles = Util.merge(Styles.text,Styles.tabTitle,Styles.noWrap,tabOpenStyle,tabActiveStyle);
-    return(
+    var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
+    return (
         <div style={Styles.noWrap} >
           {tabFavIcon}
           <span style={tabTitleStyles}>{tabItem.title}</span>
           <div style={Styles.spacer} />
         </div>
-      );    
+      );
   },
+
   renderTabItems(tabItems) {
     const itemElems = tabItems.map(this.renderItem);
     return (
       <div style={Styles.tabList}>
         {itemElems}
       </div>
-    );  
+    );
   },
+
   render() {
     const tabWindow = this.props.tabWindow;
     const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
@@ -78,6 +84,7 @@ const RevertModal = React.createClass({
         </div>
         );
     }
+
     return (
       <Modal.Dialog title="Revert Saved Window?" onClose={this.props.onClose} >
         <Modal.Body>
@@ -91,26 +98,26 @@ const RevertModal = React.createClass({
             <p>This action can not be undone.</p>
           </div>
           <div style={Util.merge(Styles.alignRight)}>
-            <div style={Util.merge(Styles.dialogButton,Styles.primaryButton)} 
+            <div style={Util.merge(Styles.dialogButton, Styles.primaryButton)}
                  onClick={this.handleSubmit}
                  ref="okButton"
                  tabIndex={0}
                  onKeyDown={this.handleKeyDown}>OK</div>  
-            <div style={Styles.dialogButton}
+                                                                                                                                                                                                                                                                                                                                                                                                <div style={Styles.dialogButton}
                   onClick={this.props.onClose}
                   tabIndex={0}
                   >Cancel</div>  
-          </div>
+                                                                                                                                                                                                                                                                                                                                </div>
         </Modal.Body>      
-      </Modal.Dialog>
+                                                                                                                                                                                                </Modal.Dialog>
     );
   },
 
   /* HACK - get focus to the OK button, because tabIndex getting ignored. */
   componentDidMount() {
-    console.log("revertModal: did mount");
+    console.log('revertModal: did mount');
     this.refs.okButton.getDOMNode().focus();
-  }
+  },
 });
 
 export default RevertModal;

@@ -14,7 +14,7 @@ const FilteredTabItem = Immutable.Record({
   tabItem: new TabWindow.TabItem(),
 
   urlMatches: null,
-  titleMatches: null
+  titleMatches: null,
 });
 
 /**
@@ -22,15 +22,15 @@ const FilteredTabItem = Immutable.Record({
  *
  * @return {FilteredTabItem} filtered item (or null if no match)
  */
-export function matchTabItem(tabItem,searchExp) {
+export function matchTabItem(tabItem, searchExp) {
   var urlMatches = tabItem.url.match(searchExp);
   var titleMatches = tabItem.title.match(searchExp);
 
-  if (urlMatches===null && titleMatches===null)
+  if (urlMatches === null && titleMatches === null)
     return null;
 
-  return new FilteredTabItem({tabItem,urlMatches,titleMatches});
-} 
+  return new FilteredTabItem({ tabItem, urlMatches, titleMatches });
+}
 
 /**
  * A TabWindow augmented with search results
@@ -38,34 +38,35 @@ export function matchTabItem(tabItem,searchExp) {
 const FilteredTabWindow = Immutable.Record({
   tabWindow: new TabWindow.TabWindow(),
   titleMatches: [],
-  itemMatches: Immutable.Seq()  // matching tab items
+  itemMatches: Immutable.Seq(),   // matching tab items
 });
 
 /**
  * Match a TabWindow using a Regexp
  *
  */
-export function matchTabWindow(tabWindow,searchExp) {
-  const itemMatches = tabWindow.tabItems.map((ti) => matchTabItem(ti,searchExp)).filter((fti) => fti!==null );
+export function matchTabWindow(tabWindow, searchExp) {
+  const itemMatches = tabWindow.tabItems.map((ti) => matchTabItem(ti, searchExp)).filter((fti) => fti !== null);
   const titleMatches = tabWindow.title.match(searchExp);
 
-  if (titleMatches===null && itemMatches.count()===0)
+  if (titleMatches === null && itemMatches.count() === 0)
     return null;
 
-  return FilteredTabWindow({tabWindow,titleMatches,itemMatches});  
+  return FilteredTabWindow({ tabWindow, titleMatches, itemMatches });
 }
 
 /**
  * filter an array of TabWindows using a searchRE to obtain
  * an array of FilteredTabWindow
  */
-export function filterTabWindows(tabWindows,searchExp) {
+export function filterTabWindows(tabWindows, searchExp) {
   var res;
-  if (searchExp===null) {
-    res = _.map(tabWindows,(tw) => new FilteredTabWindow({tabWindow: tw}));  
+  if (searchExp === null) {
+    res = _.map(tabWindows, (tw) => new FilteredTabWindow({ tabWindow: tw }));
   } else {
-    const mappedWindows = _.map(tabWindows,(tw) => matchTabWindow(tw,searchExp));
-    res = _.filter(mappedWindows,(fw) => fw!==null );
+    const mappedWindows = _.map(tabWindows, (tw) => matchTabWindow(tw, searchExp));
+    res = _.filter(mappedWindows, (fw) => fw !== null);
   }
-  return res;   
+
+  return res;
 }

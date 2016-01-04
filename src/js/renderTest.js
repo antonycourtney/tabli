@@ -5,10 +5,10 @@ import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
 import * as _ from 'lodash';
-import {logWrap} from './utils';
+import { logWrap } from './utils';
 
-import {addons} from 'react/addons'; 
-const {PureRenderMixin, Perf} = addons;
+import { addons } from 'react/addons';
+const { PureRenderMixin, Perf } = addons;
 
 import TabliPopup from './components/TabliPopup';
 
@@ -20,7 +20,7 @@ function makeTabWindow(jsWin) {
 
   const decWin = new TabWindow.TabWindow(jsWin);
   return decWin;
-} 
+}
 
 function renderPage(testData) {
   const allWindows = testData.allWindows;
@@ -33,21 +33,21 @@ function renderPage(testData) {
 
   var renderTestSavedHTML = bgPage.renderTestSavedHTML;
 
-/*
-  const savedNode = bgPage.savedNode;
-  console.log("Saved node from bg page: ", savedNode);
+  /*
+    const savedNode = bgPage.savedNode;
+    console.log("Saved node from bg page: ", savedNode);
 */
 
   const mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
-  console.log("Created mockWinStore and registered test windows");
-  console.log("mock winStore: ", mockWinStore.toJS());
+  console.log('Created mockWinStore and registered test windows');
+  console.log('mock winStore: ', mockWinStore.toJS());
 
   var t_preRender = performance.now();
   var parentNode = document.getElementById('windowList-region');
 
   if (Perf)
     Perf.start();
- 
+
   /*
   if (savedNode) {
     var newNode = document.importNode(savedNode, true);
@@ -59,62 +59,65 @@ function renderPage(testData) {
   }
   */
   if (renderTestSavedHTML) {
-    console.log("Got saved HTML, setting...");
+    console.log('Got saved HTML, setting...');
     parentNode.innerHTML = renderTestSavedHTML;
     var t_postSet = performance.now();
-    console.log("time to set initial HTML: ", t_postSet - t_preRender);
+    console.log('time to set initial HTML: ', t_postSet - t_preRender);
   }
   /*
    * Use setTimeout so we have a chance to finish the initial render
    */
+
   // pass noListener since we don't want to receive updates from the store.
   // There won't be any such updates (since we created the store) but the listener mechanism
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
-  var appElement = <TabliPopup winStore={mockWinStore} noListener={true} />;  
-  React.render( appElement, parentNode );
+  var appElement = <TabliPopup winStore={mockWinStore} noListener={true} />;
+  React.render(appElement, parentNode);
 
   var t_postRender = performance.now();
   if (Perf)
     Perf.stop();
-  console.log("initial render complete. render time: (", t_postRender - t_preRender, " ms)");    
+  console.log('initial render complete. render time: (', t_postRender - t_preRender, ' ms)');
   if (Perf) {
-    console.log("inclusive:");
+    console.log('inclusive:');
     Perf.printInclusive();
-    console.log("exclusive:");
+    console.log('exclusive:');
     Perf.printExclusive();
-    console.log("wasted:");
+    console.log('wasted:');
     Perf.printWasted();
   }
-  console.log("After rendering, parentNode: ", parentNode);
+
+  console.log('After rendering, parentNode: ', parentNode);
 
   var renderedString = React.renderToString(appElement);
+
   // console.log("rendered string: ", renderedString);
   // bgPage.savedNode = parentNode.firstChild;
   bgPage.renderTestSavedHTML = renderedString;
 }
 
-var testStateUrl = "testData/winSnap.json";
+var testStateUrl = 'testData/winSnap.json';
 
 function loadTestData(callback) {
   var request = new XMLHttpRequest();
   request.open('GET', testStateUrl, true);
-  request.onload = function() {
+  request.onload = function () {
     if (request.status >= 200 && request.status < 400) {
       var data = JSON.parse(request.responseText);
       callback(data);
     } else {
       // We reached our target server, but it returned an error
-      console.error("request failed, error: ", request.status, request);
+      console.error('request failed, error: ', request.status, request);
     }
   };
-  request.send();        
-}
 
+  request.send();
+}
 
 /**
  * Main entry point to rendering the popup window
- */ 
+ */
 function renderTest() {
   loadTestData(renderPage);
 }

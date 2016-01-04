@@ -8,16 +8,16 @@
  */
 const Hoverable = {
   getInitialState: function() {
-    return { "hovering": false }
+    return { hovering: false };
   },
 
   handleMouseOver: function() {
-    this.setState({"hovering": true});
+    this.setState({hovering: true});
   },
 
   handleMouseOut: function() {
-    this.setState({"hovering": false});
-  }  
+    this.setState({hovering: false});
+  },
 };
 
 export default Hoverable;

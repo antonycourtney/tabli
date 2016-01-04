@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as Immutable from 'immutable';
-import {addons} from 'react/addons'; 
+import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 const {PureRenderMixin, Perf} = addons;
@@ -23,22 +23,21 @@ const FilteredTabWindow = React.createClass({
   },
 
   handleOpen: function() {
-    console.log("handleOpen", this, this.props);
-    actions.openWindow(this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
+    console.log('handleOpen', this, this.props);
+    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
   },
 
   handleClose: function(event) {
     // console.log("handleClose");
-    actions.closeWindow(this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler);
+    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
   },
 
   handleRevert: function(event) {
     var appComponent = this.props.appComponent;
-    appComponent.openRevertModal(this.props.filteredTabWindow);  
+    appComponent.openRevertModal(this.props.filteredTabWindow);
   },
 
-
-  /* expanded state follows window open/closed state unless it is 
+  /* expanded state follows window open/closed state unless it is
    * explicitly set interactively by the user
    */
   getExpandedState: function() {
@@ -49,22 +48,22 @@ const FilteredTabWindow = React.createClass({
     }
   },
 
-  renderTabItems: function(tabWindow,tabs) {
+  renderTabItems: function(tabWindow, tabs) {
     /*
      * We tried explicitly checking for expanded state and
      * returning null if not expanded, but (somewhat surprisingly) it
      * was no faster, even with dozens of hidden tabs
      */
     var items = [];
-    for (var i = 0; i < tabs.count(); i++ ) {
-      var id = "tabItem-" + i;
-      const isSelected = (i==this.props.selectedTabIndex);
+    for (var i = 0; i < tabs.count(); i++) {
+      var id = 'tabItem-' + i;
+      const isSelected = (i == this.props.selectedTabIndex);
       var tabItem = <TabItem winStore={this.props.winStore}
-                      storeUpdateHandler={this.props.storeUpdateHandler}  
-                      tabWindow={tabWindow} 
-                      tab={tabs.get(i)} 
-                      key={id} 
-                      tabIndex={i} 
+                      storeUpdateHandler={this.props.storeUpdateHandler}
+                      tabWindow={tabWindow}
+                      tab={tabs.get(i)}
+                      key={id}
+                      tabIndex={i}
                       isSelected={isSelected}
                       appComponent={this.props.appComponent}
                        />;
@@ -73,7 +72,7 @@ const FilteredTabWindow = React.createClass({
 
     var expanded = this.getExpandedState();
     var expandableContentStyle = expanded ? Styles.expandablePanelContentOpen : Styles.expandablePanelContentClosed;
-    var tabListStyle = Util.merge(Styles.tabList,expandableContentStyle);
+    var tabListStyle = Util.merge(Styles.tabList, expandableContentStyle);
     return (
       <div style={tabListStyle}  >
         {items}
@@ -84,7 +83,6 @@ const FilteredTabWindow = React.createClass({
     this.setState({expanded: expand});
   },
 
-
   componentWillReceiveProps: function(nextProps) {
     if (nextProps.isSelected && !this.props.isSelected) {
       // scroll div for this window into view:
@@ -92,11 +90,11 @@ const FilteredTabWindow = React.createClass({
     }
   },
 
-  render: function () {
+  render: function() {
     var filteredTabWindow = this.props.filteredTabWindow;
     var tabWindow = filteredTabWindow.tabWindow;
     var tabs;
-    if (this.props.searchStr.length==0) {
+    if (this.props.searchStr.length == 0) {
       tabs = tabWindow.tabItems;
     } else {
       tabs = filteredTabWindow.itemMatches.map((fti) => fti.tabItem);
@@ -108,26 +106,26 @@ const FilteredTabWindow = React.createClass({
     var expanded = this.getExpandedState();
     var tabItems = null;
     if (expanded) {
-      tabItems = this.renderTabItems(tabWindow,tabs);
+      tabItems = this.renderTabItems(tabWindow, tabs);
     } else {
       // render empty list of tab items to get -ve margin rollup layout right...
-      tabItems = this.renderTabItems(tabWindow,Immutable.Seq());
+      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
     }
 
-    var windowHeader = 
+    var windowHeader =
       <WindowHeader winStore={this.props.winStore}
-          storeUpdateHandler={this.props.storeUpdateHandler} 
-          tabWindow={tabWindow} 
-          expanded={expanded} 
-          onExpand={this.handleExpand} 
+          storeUpdateHandler={this.props.storeUpdateHandler}
+          tabWindow={tabWindow}
+          expanded={expanded}
+          onExpand={this.handleExpand}
           onOpen={this.handleOpen}
           onRevert={this.handleRevert}
           onClose={this.handleClose}
           appComponent={this.props.appComponent}
         />;
 
-    var selectedStyle=this.props.isSelected ? Styles.tabWindowSelected : null;
-    var windowStyles=Util.merge(Styles.tabWindow,Styles.expandablePanel,selectedStyle);
+    var selectedStyle = this.props.isSelected ? Styles.tabWindowSelected : null;
+    var windowStyles = Util.merge(Styles.tabWindow, Styles.expandablePanel, selectedStyle);
 
     return (
       <div ref="windowDiv" style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
@@ -135,7 +133,7 @@ const FilteredTabWindow = React.createClass({
         {tabItems}
       </div>
       );
-  }
+  },
 });
 
 export default FilteredTabWindow;

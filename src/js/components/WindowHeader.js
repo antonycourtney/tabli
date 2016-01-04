@@ -1,7 +1,7 @@
 'use strict';
 
 import * as React from 'react';
-import {addons} from 'react/addons'; 
+import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 import * as actions from '../actions';
@@ -12,19 +12,18 @@ import HeaderButton from './HeaderButton';
 import ExpanderButton from './ExpanderButton';
 
 const WindowHeader = React.createClass({
-  mixins:[Hoverable,PureRenderMixin],
-
+  mixins:[Hoverable, PureRenderMixin],
 
   handleUnmanageClick: function(event) {
-    console.log("unamange: ", this.props.tabWindow);
+    console.log('unamange: ', this.props.tabWindow);
     event.preventDefault();
     const archiveFolderId = this.props.winStore.archiveFolderId;
-    actions.unmanageWindow(archiveFolderId,this.props.tabWindow,this.props.storeUpdateHandler);
+    actions.unmanageWindow(archiveFolderId, this.props.tabWindow, this.props.storeUpdateHandler);
     event.stopPropagation();
   },
 
   handleManageClick: function(event) {
-    console.log("manage: ", this.props.tabWindow);
+    console.log('manage: ', this.props.tabWindow);
     event.preventDefault();
     var tabWindow = this.props.tabWindow;
     var appComponent = this.props.appComponent;
@@ -45,13 +44,13 @@ const WindowHeader = React.createClass({
 
     var windowCheckItem;
 
-    if( managed ) {
-      windowCheckItem =  <button style={Util.merge(Styles.headerButton,Styles.windowManagedButton)} 
+    if (managed) {
+      windowCheckItem =  <button style={Util.merge(Styles.headerButton, Styles.windowManagedButton)}
                             title="Stop managing this window" onClick={this.handleUnmanageClick} />;
     } else {
-      var checkStyle = Util.merge(Styles.headerButton,hoverStyle,Styles.headerCheckBox);
-      windowCheckItem = <input style={checkStyle} type="checkbox" 
-                          title="Save all tabs in this window" 
+      var checkStyle = Util.merge(Styles.headerButton, hoverStyle, Styles.headerCheckBox);
+      windowCheckItem = <input style={checkStyle} type="checkbox"
+                          title="Save all tabs in this window"
                           onClick={this.handleManageClick}
                           ref="managedCheckbox"
                           value={false}
@@ -59,38 +58,39 @@ const WindowHeader = React.createClass({
     }
 
     var openStyle = tabWindow.open ? Styles.open : Styles.closed;
-    var titleStyle = Util.merge(Styles.text,Styles.noWrap,Styles.windowTitle,openStyle);
-    var closeStyle = Util.merge(Styles.headerButton,Styles.closeButton);
+    var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.windowTitle, openStyle);
+    var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
 
-    // We use hovering in the window header (this.state.hovering) to determine 
+    // We use hovering in the window header (this.state.hovering) to determine
     // visibility of both the revert button and close button appearing after the window title.
 
-    var revertButton = <HeaderButton baseStyle={Util.merge(Styles.headerButton,Styles.revertButton)} 
-                          // visible={this.state.hovering && managed && tabWindow.open} 
+    var revertButton = <HeaderButton baseStyle={Util.merge(Styles.headerButton, Styles.revertButton)}
+
+                          // visible={this.state.hovering && managed && tabWindow.open}
                           visible={managed && tabWindow.open}
-                          title="Revert to bookmarked tabs (Close other tabs)" 
-                          onClick={this.props.onRevert} />
+                          title="Revert to bookmarked tabs (Close other tabs)"
+                          onClick={this.props.onRevert} />;
 
     var closeButton = <HeaderButton baseStyle={closeStyle}
-                          visible={this.state.hovering && tabWindow.open} 
-                          hoverStyle={Styles.closeButtonHover} title="Close Window" 
-                          onClick={this.props.onClose} />
+                          visible={this.state.hovering && tabWindow.open}
+                          hoverStyle={Styles.closeButtonHover} title="Close Window"
+                          onClick={this.props.onClose} />;
 
     // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
 
     return (
-      <div style={Util.merge(Styles.windowHeader,Styles.noWrap)}
-          onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
+      <div style={Util.merge(Styles.windowHeader, Styles.noWrap)}
+          onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}
           onClick={this.props.onOpen} >
         {windowCheckItem}
         <ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
         <span style={titleStyle}>{windowTitle}</span>
         {revertButton}
         <div style={Styles.spacer} />        
-        {closeButton}
+                                                                                                                                                                                                                                                                {closeButton}
       </div>
     );
-  }
+  },
 });
 
 export default WindowHeader;

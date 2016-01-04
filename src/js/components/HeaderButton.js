@@ -1,7 +1,7 @@
 'use strict';
 
 import * as React from 'react';
-import {addons} from 'react/addons'; 
+import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 const {PureRenderMixin, Perf} = addons;
@@ -12,7 +12,7 @@ const buttonSpacer = <div style={Styles.headerButton} />;
 
 // A button that will merge in hoverStyle when hovered over
 var HeaderButton = React.createClass({
-  mixins: [Hoverable,PureRenderMixin],
+  mixins: [Hoverable, PureRenderMixin],
   handleClick: function(event) {
     if (this.props.visible) {
       this.props.onClick(event);
@@ -28,13 +28,14 @@ var HeaderButton = React.createClass({
     if (!this.props.visible) {
       return buttonSpacer;
     }
+
     // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
     var hoverStyle = (this.state.hovering && this.props.hoverStyle) ? this.props.hoverStyle : null;
-    var buttonStyle = Util.merge(this.props.baseStyle,hoverStyle);
+    var buttonStyle = Util.merge(this.props.baseStyle, hoverStyle);
     return (<button style={buttonStyle} title={this.props.title} onClick={this.handleClick}
-              onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} 
+              onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}
             />);
-  }  
+  },
 });
 
 export default HeaderButton;

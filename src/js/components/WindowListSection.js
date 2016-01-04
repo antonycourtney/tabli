@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as Immutable from 'immutable';
-import {addons} from 'react/addons'; 
+import {addons} from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 const {PureRenderMixin, Perf} = addons;
@@ -28,7 +28,7 @@ const WindowListSection = React.createClass({
         </div>
       </div>
     );
-  }
+  },
 });
 
 export default WindowListSection;

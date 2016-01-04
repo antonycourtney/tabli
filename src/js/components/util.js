@@ -10,10 +10,11 @@ export function merge() {
     if (arguments[i]) {
       Object.assign(res, arguments[i]);
     } else {
-      if (typeof(arguments[i])==="undefined") {
-        throw new Error("m(): argument " + i + " undefined");
+      if (typeof (arguments[i]) === 'undefined') {
+        throw new Error('m(): argument ' + i + ' undefined');
       }
     }
   }
+
   return res;
 }

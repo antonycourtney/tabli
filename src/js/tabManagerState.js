@@ -14,26 +14,26 @@ export default class TabManagerState extends Immutable.Record({
   windowIdMap: Immutable.Map(),     // maps from chrome window id for open windows
   bookmarkIdMap: Immutable.Map(),   // maps from bookmark id for saved windows
   folderId: -1,
-  archiveFolderId: -1  
+  archiveFolderId: -1,
 }) {
   /**
-   * Update store to include the specified window, indexed by 
+   * Update store to include the specified window, indexed by
    * open window id or bookmark id
    *
    * Note that if an earlier snapshot of tabWindow is in the store, it will be
    * replaced
    */
   registerTabWindow(tabWindow) {
-    const nextWindowIdMap = 
-      (tabWindow.open) ?  this.windowIdMap.set(tabWindow.openWindowId,tabWindow) : this.windowIdMap;
+    const nextWindowIdMap =
+      (tabWindow.open) ? this.windowIdMap.set(tabWindow.openWindowId, tabWindow) : this.windowIdMap;
     const nextBookmarkIdMap =
-      (tabWindow.saved) ? this.bookmarkIdMap.set(tabWindow.savedFolderId,tabWindow) : this.bookmarkIdMap;
+      (tabWindow.saved) ? this.bookmarkIdMap.set(tabWindow.savedFolderId, tabWindow) : this.bookmarkIdMap;
 
-    return this.set('windowIdMap',nextWindowIdMap).set('bookmarkIdMap',nextBookmarkIdMap);
+    return this.set('windowIdMap', nextWindowIdMap).set('bookmarkIdMap', nextBookmarkIdMap);
   }
 
   registerTabWindows(tabWindows) {
-    return _.reduce(tabWindows, (acc,w) => acc.registerTabWindow(w), this);
+    return _.reduce(tabWindows, (acc, w) => acc.registerTabWindow(w), this);
   }
 
   handleTabWindowClosed(tabWindow) {
@@ -47,29 +47,28 @@ export default class TabManagerState extends Immutable.Record({
 
     const revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
 
-    return this.set('windowIdMap',closedWindowIdMap).registerTabWindow(revertedWindow);
+    return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(revertedWindow);
   }
 
-  handleTabClosed(tabWindow,tabId) {
-    var updWindow = TabWindow.closeTab(tabWindow,tabId);
+  handleTabClosed(tabWindow, tabId) {
+    var updWindow = TabWindow.closeTab(tabWindow, tabId);
     return this.registerTabWindow(updWindow);
   }
 
-  handleTabSaved(tabWindow,tabItem,tabNode) {
-    var updWindow = TabWindow.saveTab(tabWindow,tabItem,tabNode);
+  handleTabSaved(tabWindow, tabItem, tabNode) {
+    var updWindow = TabWindow.saveTab(tabWindow, tabItem, tabNode);
     return this.registerTabWindow(updWindow);
   }
 
-  handleTabUnsaved(tabWindow,tabItem) {
-    var updWindow = TabWindow.unsaveTab(tabWindow,tabItem);
+  handleTabUnsaved(tabWindow, tabItem) {
+    var updWindow = TabWindow.unsaveTab(tabWindow, tabItem);
     return this.registerTabWindow(updWindow);
   }
-
 
   /**
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */
-  attachChromeWindow(tabWindow,chromeWindow) {
+  attachChromeWindow(tabWindow, chromeWindow) {
     // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow);
 
     // Was this Chrome window id previously associated with some other tab window?
@@ -78,14 +77,12 @@ export default class TabManagerState extends Immutable.Record({
     // A store without oldTabWindow
     const rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this;
 
-    const attachedTabWindow = TabWindow.updateWindow(tabWindow,chromeWindow);
+    const attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
 
-    console.log("attachChromeWindow: attachedTabWindow: ", attachedTabWindow.toJS());
+    console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
 
     return rmStore.registerTabWindow(attachedTabWindow);
   }
-
-
 
   /**
    * Synchronize internal state of our store with snapshot
@@ -100,13 +97,13 @@ export default class TabManagerState extends Immutable.Record({
       console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow);
     }
     */
-    const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow,chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
+    const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 
     return this.registerTabWindow(tabWindow);
   }
 
   /**
-   * synchronize the currently open windows from chrome.windows.getAll with 
+   * synchronize the currently open windows from chrome.windows.getAll with
    * internal map of open windows
    */
   syncWindowList(chromeWindowList) {
@@ -114,22 +111,22 @@ export default class TabManagerState extends Immutable.Record({
 
     // Iterate through tab windows (our current list of open windows)
     // closing any not in chromeWindowList:
-    var chromeIds = _.pluck(chromeWindowList,'id');
+    var chromeIds = _.pluck(chromeWindowList, 'id');
     var chromeIdSet = new Set(chromeIds);
 
-    var closedWindows = _.filter(tabWindows,(tw) => !chromeIdSet.has(tw.openWindowId));
+    var closedWindows = _.filter(tabWindows, (tw) => !chromeIdSet.has(tw.openWindowId));
 
-    var closedWinStore = _.reduce(closedWindows,(acc,tw) => acc.handleTabWindowClosed(tw), this);
+    var closedWinStore = _.reduce(closedWindows, (acc, tw) => acc.handleTabWindowClosed(tw), this);
 
     // Now update all open windows:
-    return _.reduce(chromeWindowList, (acc,cw) => acc.syncChromeWindow(cw), closedWinStore);
-  }   
+    return _.reduce(chromeWindowList, (acc, cw) => acc.syncChromeWindow(cw), closedWinStore);
+  }
 
   setCurrentWindow(windowId) {
     const tabWindow = this.getTabWindowByChromeId(windowId);
 
     if (!tabWindow) {
-      console.log("setCurrentWindow: window id ", windowId, "not found");
+      console.log('setCurrentWindow: window id ', windowId, 'not found');
       return;
     }
 
@@ -148,16 +145,16 @@ export default class TabManagerState extends Immutable.Record({
 
     // disconnect from the previously associated bookmark folder and re-register
     const umWindow = TabWindow.removeSavedWindowState(tabWindow);
-    return rmStore.registerTabWindow(umWindow);   
+    return rmStore.registerTabWindow(umWindow);
   }
 
   /**
    * attach a bookmark folder to a specific chrome window
    */
-  attachBookmarkFolder(bookmarkFolder,chromeWindow) {
+  attachBookmarkFolder(bookmarkFolder, chromeWindow) {
     const folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
 
-    const mergedTabWindow = TabWindow.updateWindow(folderTabWindow,chromeWindow);
+    const mergedTabWindow = TabWindow.updateWindow(folderTabWindow, chromeWindow);
 
     // And re-register in store maps:
     return this.registerTabWindow(mergedTabWindow);
@@ -165,10 +162,10 @@ export default class TabManagerState extends Immutable.Record({
 
   /**
    * get the currently open tab windows
-   */ 
+   */
   getOpen() {
     const openWindows = this.windowIdMap.toIndexedSeq().toArray();
-    return openWindows;    
+    return openWindows;
   }
 
   getAll() {
@@ -183,14 +180,14 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   countOpenWindows() {
-    return this.windowIdMap.count()
-  }  
+    return this.windowIdMap.count();
+  }
 
   countSavedWindows() {
-    return this.bookmarkIdMap.count()
+    return this.bookmarkIdMap.count();
   }
 
   countOpenTabs() {
-    return this.windowIdMap.reduce((count,w) => count + w.openTabCount, 0)
+    return this.windowIdMap.reduce((count, w) => count + w.openTabCount, 0);
   }
 }

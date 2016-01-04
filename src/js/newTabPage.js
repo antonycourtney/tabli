@@ -3,15 +3,15 @@
 import * as React from 'react';
 
 import * as actions from './actions';
-import {logWrap} from './utils';
+import { logWrap } from './utils';
 
-import {addons} from 'react/addons'; 
-const {PureRenderMixin, Perf} = addons;
+import { addons } from 'react/addons';
+const { PureRenderMixin, Perf } = addons;
 import TabliPopup from './components/TabliPopup';
 
 /**
  * Main entry point to rendering the new tab page
- */ 
+ */
 function renderNewTab(currentWindowId) {
   var t_preRender = performance.now();
   var bgPage = chrome.extension.getBackgroundPage();
@@ -25,25 +25,26 @@ function renderNewTab(currentWindowId) {
   /* Note (!!): We use savedStore here to ensured that the store state exactly matches savedHTML; we'll simply ignore
    * any possible store updates that happened since last save
    */
-  // console.log("doRender: About to render using savedStore: ", savedStore.toJS()); 
+
+  // console.log("doRender: About to render using savedStore: ", savedStore.toJS());
   var appElement = <TabliPopup storeRef={storeRef} initialWinStore={savedStore} />;
-  var appComponent = React.render( appElement, parentNode ); 
+  var appComponent = React.render(appElement, parentNode);
   var t_postRender = performance.now();
-  console.log("full render complete. render time: (", t_postRender - t_preRender, " ms)");    
+  console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');
 
   // And sync our window state, which may update the UI...
-  actions.syncChromeWindows(logWrap( (uf) => {
+  actions.syncChromeWindows(logWrap((uf) => {
     // console.log("postLoadRender: window sync complete");
     const syncStore = uf(savedStore);
 
     // And set current focused window:
     const nextStore = syncStore.setCurrentWindow(currentWindowId);
     storeRef.setValue(nextStore);
-  
+
     // logHTML("Updated savedHTML", renderedString);
     var t_postSyncUpdate = performance.now();
-    console.log("syncChromeWindows and update complete: ", t_postSyncUpdate - t_preRender, " ms");
-    document.getElementById("searchBox").focus();
+    console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
+    document.getElementById('searchBox').focus();
   }));
 
 }
@@ -51,7 +52,7 @@ function renderNewTab(currentWindowId) {
 function getFocusedAndRender() {
   chrome.windows.getCurrent(null, (currentWindow) => {
     renderNewTab(currentWindow.id);
-  })
+  });
 }
 
 /*

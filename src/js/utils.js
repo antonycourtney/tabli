@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * Common utility routines
  */
 'use strict';
@@ -7,32 +7,37 @@
 // This function creates a new anchor element and uses location
 // properties (inherent) to get the desired URL data. Some String
 // operations are used (to normalize results across browsers).
-// From http://james.padolsey.com/javascript/parsing-urls-with-the-dom/ 
+// From http://james.padolsey.com/javascript/parsing-urls-with-the-dom/
 export function parseURL(url) {
-  var a =  document.createElement('a');
+  var a = document.createElement('a');
   a.href = url;
   return {
-      source: url,
-      protocol: a.protocol.replace(':',''),
-      host: a.hostname,
-      port: a.port,
-      query: a.search,
-      params: (function(){
-          var ret = {},
-              seg = a.search.replace(/^\?/,'').split('&'),
-              len = seg.length, i = 0, s;
-          for (;i<len;i++) {
-              if (!seg[i]) { continue; }
-              s = seg[i].split('=');
-              ret[s[0]] = s[1];
-          }
-          return ret;
-      })(),
-      file: (a.pathname.match(/\/([^\/?#]+)$/i) || [,''])[1],
-      hash: a.hash.replace('#',''),
-      path: a.pathname.replace(/^([^\/])/,'/$1'),
-      relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [,''])[1],
-      segments: a.pathname.replace(/^\//,'').split('/')
+    source: url,
+    protocol: a.protocol.replace(':', ''),
+    host: a.hostname,
+    port: a.port,
+    query: a.search,
+    params: (function () {
+      var ret = {};
+      var seg = a.search.replace(/^\?/, '').split('&');
+      var len = seg.length;
+      var i = 0;
+      var s;
+      for (; i < len; i++) {
+        if (!seg[i]) { continue; }
+
+        s = seg[i].split('=');
+        ret[s[0]] = s[1];
+      }
+
+      return ret;
+    })(),
+
+    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
+    hash: a.hash.replace('#', ''),
+    path: a.pathname.replace(/^([^\/])/, '/$1'),
+    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [, ''])[1],
+    segments: a.pathname.replace(/^\//, '').split('/'),
   };
 }
 
@@ -41,12 +46,12 @@ export function parseURL(url) {
  *
 
  */
-export function seqActions(actions,seed,onCompleted) {
+export function seqActions(actions, seed, onCompleted) {
   var index = 0;
 
   function invokeNext(v) {
     var action = actions[index];
-    action(v,(res) => {
+    action(v, (res) => {
       index = index + 1;
       if (index < actions.length) {
         invokeNext(res);
@@ -55,22 +60,25 @@ export function seqActions(actions,seed,onCompleted) {
       }
     });
   }
-  invokeNext(seed);  
+
+  invokeNext(seed);
 }
 
 // wrapper to log exceptions
-export function logWrap( f ) {
+export function logWrap(f) {
 
   function wf() {
     try {
-      var ret = f.apply( this, arguments );
-    } catch( e ) {
-      console.error( "logWrap: caught exception invoking function: " );
-      console.error( e.stack );
+      var ret = f.apply(this, arguments);
+    } catch (e) {
+      console.error('logWrap: caught exception invoking function: ');
+      console.error(e.stack);
       throw e;
     }
+
     return ret;
   }
+
   return wf;
 }
 
