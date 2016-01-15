@@ -8,6 +8,7 @@ import * as TabWindow from './tabWindow';
 import * as actions from './actions';
 import * as React from 'react';
 import ViewRef from './viewRef';
+import * as ReactDOMServer from 'react-dom/server';
 
 import TabliPopup from './components/TabliPopup';
 
@@ -146,7 +147,7 @@ function makeRenderListener(storeRef) {
      * the store state we wish to render and save.
      */
     const renderAppElement = <TabliPopup storeRef={null} initialWinStore={winStore} noListener />;
-    const renderedString = React.renderToString(renderAppElement);
+    const renderedString = ReactDOMServer.renderToString(renderAppElement);
 
     // console.log("renderAndSave: updated saved store and HTML");
     window.savedStore = winStore;

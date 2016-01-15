@@ -1,1 +1,461 @@
-webpackJsonp([3],[function(e,n,t){"use strict";function o(e){return e&&e.__esModule?e:{"default":e}}function r(e){if(e&&e.__esModule)return e;var n={};if(null!=e)for(var t in e)Object.prototype.hasOwnProperty.call(e,t)&&(n[t]=e[t]);return n["default"]=e,n}function a(e){var n=e.tabItems.map(function(e){return new v.TabItem(e)});e.tabItems=f.Seq(n);var t=new v.TabWindow(e);return t}function i(e){var n=e.allWindows,t=n.map(a),o=new b["default"],r=chrome.extension.getBackgroundPage(),i=r.renderTestSavedHTML,d=o.registerTabWindows(t);console.log("Created mockWinStore and registered test windows"),console.log("mock winStore: ",d.toJS());var u=performance.now(),s=document.getElementById("windowList-region");if(g&&g.start(),i){console.log("Got saved HTML, setting..."),s.innerHTML=i;var c=performance.now();console.log("time to set initial HTML: ",c-u)}var w=l.createElement(y["default"],{winStore:d,noListener:!0});l.render(w,s);var f=performance.now();g&&g.stop(),console.log("initial render complete. render time: (",f-u," ms)"),g&&(console.log("inclusive:"),g.printInclusive(),console.log("exclusive:"),g.printExclusive(),console.log("wasted:"),g.printWasted()),console.log("After rendering, parentNode: ",s);var p=l.renderToString(w);r.renderTestSavedHTML=p}function d(e){var n=new XMLHttpRequest;n.open("GET",m,!0),n.onload=function(){if(n.status>=200&&n.status<400){var t=JSON.parse(n.responseText);e(t)}else console.error("request failed, error: ",n.status,n)},n.send()}function u(){d(i)}function s(){window.onload=u}var c=t(173),l=r(c),w=t(4),f=r(w),p=t(5),v=r(p),h=t(1),b=o(h),k=t(165),y=o(k),g=c.addons.Perf,m="testData/winSnap.json";s()},function(e,n,t){"use strict";function o(e){if(e&&e.__esModule)return e;var n={};if(null!=e)for(var t in e)Object.prototype.hasOwnProperty.call(e,t)&&(n[t]=e[t]);return n["default"]=e,n}function r(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}function a(e,n){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!n||"object"!=typeof n&&"function"!=typeof n?e:n}function i(e,n){if("function"!=typeof n&&null!==n)throw new TypeError("Super expression must either be null or a function, not "+typeof n);e.prototype=Object.create(n&&n.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),n&&(Object.setPrototypeOf?Object.setPrototypeOf(e,n):e.__proto__=n)}var d=function(){function e(e,n){for(var t=0;t<n.length;t++){var o=n[t];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}return function(n,t,o){return t&&e(n.prototype,t),o&&e(n,o),n}}();Object.defineProperty(n,"__esModule",{value:!0});var u=t(2),s=o(u),c=t(4),l=o(c),w=t(5),f=o(w),p=function(e){function n(){return r(this,n),a(this,Object.getPrototypeOf(n).apply(this,arguments))}return i(n,e),d(n,[{key:"registerTabWindow",value:function(e){var n=e.open?this.windowIdMap.set(e.openWindowId,e):this.windowIdMap,t=e.saved?this.bookmarkIdMap.set(e.savedFolderId,e):this.bookmarkIdMap;return this.set("windowIdMap",n).set("bookmarkIdMap",t)}},{key:"registerTabWindows",value:function(e){return s.reduce(e,function(e,n){return e.registerTabWindow(n)},this)}},{key:"handleTabWindowClosed",value:function(e){var n=this.windowIdMap["delete"](e.openWindowId),t=f.removeOpenWindowState(e);return this.set("windowIdMap",n).registerTabWindow(t)}},{key:"handleTabClosed",value:function(e,n){var t=f.closeTab(e,n);return this.registerTabWindow(t)}},{key:"handleTabSaved",value:function(e,n,t){var o=f.saveTab(e,n,t);return this.registerTabWindow(o)}},{key:"handleTabUnsaved",value:function(e,n){var t=f.unsaveTab(e,n);return this.registerTabWindow(t)}},{key:"attachChromeWindow",value:function(e,n){var t=this.windowIdMap.get(n.id),o=t?this.handleTabWindowClosed(t):this,r=f.updateWindow(e,n);return console.log("attachChromeWindow: attachedTabWindow: ",r.toJS()),o.registerTabWindow(r)}},{key:"syncChromeWindow",value:function(e){var n=this.windowIdMap.get(e.id),t=n?f.updateWindow(n,e):f.makeChromeTabWindow(e);return this.registerTabWindow(t)}},{key:"syncWindowList",value:function(e){var n=this.getOpen(),t=s.pluck(e,"id"),o=new Set(t),r=s.filter(n,function(e){return!o.has(e.openWindowId)}),a=s.reduce(r,function(e,n){return e.handleTabWindowClosed(n)},this);return s.reduce(e,function(e,n){return e.syncChromeWindow(n)},a)}},{key:"setCurrentWindow",value:function(e){var n=this.getTabWindowByChromeId(e);if(!n)return console.log("setCurrentWindow: window id ",e,"not found"),this;var t=n.set("focused",!0);return this.registerTabWindow(t)}},{key:"removeBookmarkIdMapEntry",value:function(e){return this.set("bookmarkIdMap",this.bookmarkIdMap["delete"](e.savedFolderId))}},{key:"unmanageWindow",value:function(e){var n=this.removeBookmarkIdMapEntry(e),t=f.removeSavedWindowState(e);return n.registerTabWindow(t)}},{key:"attachBookmarkFolder",value:function(e,n){var t=f.makeFolderTabWindow(e),o=f.updateWindow(t,n);return this.registerTabWindow(o)}},{key:"getOpen",value:function(){var e=this.windowIdMap.toIndexedSeq().toArray();return e}},{key:"getAll",value:function(){var e=this.getOpen(),n=this.bookmarkIdMap.toIndexedSeq().filter(function(e){return!e.open}).toArray();return e.concat(n)}},{key:"getTabWindowByChromeId",value:function(e){return this.windowIdMap.get(e)}},{key:"countOpenWindows",value:function(){return this.windowIdMap.count()}},{key:"countSavedWindows",value:function(){return this.bookmarkIdMap.count()}},{key:"countOpenTabs",value:function(){return this.windowIdMap.reduce(function(e,n){return e+n.openTabCount},0)}}]),n}(l.Record({windowIdMap:l.Map(),bookmarkIdMap:l.Map(),folderId:-1,archiveFolderId:-1}));n["default"]=p}]);
+webpackJsonp([3],{
+
+/***/ 0:
+/*!******************************!*\
+  !*** ./src/js/renderTest.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 1);
+	
+	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
+	
+	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 208);
+	
+	var Perf = _interopRequireWildcard(_reactAddonsPerf);
+	
+	var _TabliPopup = __webpack_require__(/*! ./components/TabliPopup */ 170);
+	
+	var _TabliPopup2 = _interopRequireDefault(_TabliPopup);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	// make a TabWindow from its JSON
+	function makeTabWindow(jsWin) {
+	  var decItems = jsWin.tabItems.map(function (tiFields) {
+	    return new TabWindow.TabItem(tiFields);
+	  });
+	
+	  jsWin.tabItems = Immutable.Seq(decItems);
+	
+	  var decWin = new TabWindow.TabWindow(jsWin);
+	  return decWin;
+	}
+	
+	function renderPage(testData) {
+	  var allWindows = testData.allWindows;
+	
+	  var tabWindows = allWindows.map(makeTabWindow);
+	
+	  var emptyWinStore = new _tabManagerState2.default();
+	
+	  var bgPage = chrome.extension.getBackgroundPage();
+	
+	  var renderTestSavedHTML = bgPage.renderTestSavedHTML;
+	
+	  /*
+	    const savedNode = bgPage.savedNode;
+	    console.log("Saved node from bg page: ", savedNode);
+	  */
+	
+	  var mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
+	  console.log('Created mockWinStore and registered test windows');
+	  console.log('mock winStore: ', mockWinStore.toJS());
+	
+	  var t_preRender = performance.now();
+	  var parentNode = document.getElementById('windowList-region');
+	
+	  if (Perf) {
+	    Perf.start();
+	  }
+	
+	  /*
+	  if (savedNode) {
+	    var newNode = document.importNode(savedNode, true);
+	    if (parentNode.firstChild===null) {
+	      parentNode.appendChild(newNode);
+	    } else {
+	      parentNode.replaceChild(newNode,parentNode.firstChild);
+	    }
+	  }
+	  */
+	  if (renderTestSavedHTML) {
+	    console.log('Got saved HTML, setting...');
+	    parentNode.innerHTML = renderTestSavedHTML;
+	    var t_postSet = performance.now();
+	    console.log('time to set initial HTML: ', t_postSet - t_preRender);
+	  }
+	  /*
+	   * Use setTimeout so we have a chance to finish the initial render
+	   */
+	
+	  // pass noListener since we don't want to receive updates from the store.
+	  // There won't be any such updates (since we created the store) but the listener mechanism
+	  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
+	  // that connection.
+	  var appElement = React.createElement(_TabliPopup2.default, { winStore: mockWinStore, noListener: true });
+	  React.render(appElement, parentNode);
+	
+	  var t_postRender = performance.now();
+	  if (Perf) {
+	    Perf.stop();
+	  }
+	  console.log('initial render complete. render time: (', t_postRender - t_preRender, ' ms)');
+	  if (Perf) {
+	    console.log('inclusive:');
+	    Perf.printInclusive();
+	    console.log('exclusive:');
+	    Perf.printExclusive();
+	    console.log('wasted:');
+	    Perf.printWasted();
+	  }
+	
+	  console.log('After rendering, parentNode: ', parentNode);
+	
+	  var renderedString = React.renderToString(appElement);
+	
+	  // console.log("rendered string: ", renderedString);
+	  // bgPage.savedNode = parentNode.firstChild;
+	  bgPage.renderTestSavedHTML = renderedString;
+	}
+	
+	var testStateUrl = 'testData/winSnap.json';
+	
+	function loadTestData(callback) {
+	  var request = new XMLHttpRequest();
+	  request.open('GET', testStateUrl, true);
+	  request.onload = function () {
+	    if (request.status >= 200 && request.status < 400) {
+	      var data = JSON.parse(request.responseText);
+	      callback(data);
+	    } else {
+	      // We reached our target server, but it returned an error
+	      console.error('request failed, error: ', request.status, request);
+	    }
+	  };
+	
+	  request.send();
+	}
+	
+	/**
+	 * Main entry point to rendering the popup window
+	 */
+	function renderTest() {
+	  loadTestData(renderPage);
+	}
+	
+	/*
+	 * Perform our React rendering *after* the load event for the popup
+	 * (rather than the more traditional ondocumentready event)
+	 * because we observe that Chrome's http cache will not attempt to
+	 * re-validate cached resources accessed after the load event, and this
+	 * is essential for reasonable performance when loading favicons.
+	 *
+	 * See https://code.google.com/p/chromium/issues/detail?id=511699
+	 *
+	 */
+	function main() {
+	  window.onload = renderTest;
+	}
+	
+	main();
+
+/***/ },
+
+/***/ 1:
+/*!***********************************!*\
+  !*** ./src/js/tabManagerState.js ***!
+  \***********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _lodash = __webpack_require__(/*! lodash */ 2);
+	
+	var _ = _interopRequireWildcard(_lodash);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * application state for tab manager
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * and then retrieve the instance from the background window in the popup
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
+	var TabManagerState = function (_Immutable$Record) {
+	  _inherits(TabManagerState, _Immutable$Record);
+	
+	  function TabManagerState() {
+	    _classCallCheck(this, TabManagerState);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabManagerState).apply(this, arguments));
+	  }
+	
+	  _createClass(TabManagerState, [{
+	    key: 'registerTabWindow',
+	
+	    /**
+	     * Update store to include the specified window, indexed by
+	     * open window id or bookmark id
+	     *
+	     * Note that if an earlier snapshot of tabWindow is in the store, it will be
+	     * replaced
+	     */
+	    value: function registerTabWindow(tabWindow) {
+	      var nextWindowIdMap = tabWindow.open ? this.windowIdMap.set(tabWindow.openWindowId, tabWindow) : this.windowIdMap;
+	      var nextBookmarkIdMap = tabWindow.saved ? this.bookmarkIdMap.set(tabWindow.savedFolderId, tabWindow) : this.bookmarkIdMap;
+	
+	      return this.set('windowIdMap', nextWindowIdMap).set('bookmarkIdMap', nextBookmarkIdMap);
+	    }
+	  }, {
+	    key: 'registerTabWindows',
+	    value: function registerTabWindows(tabWindows) {
+	      return _.reduce(tabWindows, function (acc, w) {
+	        return acc.registerTabWindow(w);
+	      }, this);
+	    }
+	  }, {
+	    key: 'handleTabWindowClosed',
+	    value: function handleTabWindowClosed(tabWindow) {
+	      // console.log("handleTabWindowClosed: ", tabWindow.toJS());
+	      /*
+	       * We only remove window from map of open windows (windowIdMap) but then we re-register
+	       * reverted window to ensure that a reverted version of saved window stays in
+	       * bookmarkIdMap.
+	       */
+	      var closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
+	
+	      var revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
+	
+	      return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(revertedWindow);
+	    }
+	  }, {
+	    key: 'handleTabClosed',
+	    value: function handleTabClosed(tabWindow, tabId) {
+	      var updWindow = TabWindow.closeTab(tabWindow, tabId);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabSaved',
+	    value: function handleTabSaved(tabWindow, tabItem, tabNode) {
+	      var updWindow = TabWindow.saveTab(tabWindow, tabItem, tabNode);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabUnsaved',
+	    value: function handleTabUnsaved(tabWindow, tabItem) {
+	      var updWindow = TabWindow.unsaveTab(tabWindow, tabItem);
+	      return this.registerTabWindow(updWindow);
+	    }
+	
+	    /**
+	     * attach a Chrome window to a specific tab window (after opening a saved window)
+	     */
+	
+	  }, {
+	    key: 'attachChromeWindow',
+	    value: function attachChromeWindow(tabWindow, chromeWindow) {
+	      // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow);
+	
+	      // Was this Chrome window id previously associated with some other tab window?
+	      var oldTabWindow = this.windowIdMap.get(chromeWindow.id);
+	
+	      // A store without oldTabWindow
+	      var rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this;
+	
+	      var attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
+	
+	      console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
+	
+	      return rmStore.registerTabWindow(attachedTabWindow);
+	    }
+	
+	    /**
+	     * Synchronize internal state of our store with snapshot
+	     * of current Chrome window state
+	     *
+	     * @param chromeWindow window to synchronize
+	     */
+	
+	  }, {
+	    key: 'syncChromeWindow',
+	    value: function syncChromeWindow(chromeWindow) {
+	      var prevTabWindow = this.windowIdMap.get(chromeWindow.id);
+	      /*
+	      if (!prevTabWindow) {
+	        console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow);
+	      }
+	      */
+	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
+	
+	      return this.registerTabWindow(tabWindow);
+	    }
+	
+	    /**
+	     * synchronize the currently open windows from chrome.windows.getAll with
+	     * internal map of open windows
+	     */
+	
+	  }, {
+	    key: 'syncWindowList',
+	    value: function syncWindowList(chromeWindowList) {
+	      var tabWindows = this.getOpen();
+	
+	      // Iterate through tab windows (our current list of open windows)
+	      // closing any not in chromeWindowList:
+	      var chromeIds = _.pluck(chromeWindowList, 'id');
+	      var chromeIdSet = new Set(chromeIds);
+	
+	      var closedWindows = _.filter(tabWindows, function (tw) {
+	        return !chromeIdSet.has(tw.openWindowId);
+	      });
+	
+	      var closedWinStore = _.reduce(closedWindows, function (acc, tw) {
+	        return acc.handleTabWindowClosed(tw);
+	      }, this);
+	
+	      // Now update all open windows:
+	      return _.reduce(chromeWindowList, function (acc, cw) {
+	        return acc.syncChromeWindow(cw);
+	      }, closedWinStore);
+	    }
+	  }, {
+	    key: 'setCurrentWindow',
+	    value: function setCurrentWindow(windowId) {
+	      var tabWindow = this.getTabWindowByChromeId(windowId);
+	
+	      if (!tabWindow) {
+	        console.log('setCurrentWindow: window id ', windowId, 'not found');
+	        return this;
+	      }
+	
+	      // TODO: We really should find any other window with focus===true and clear it
+	      var updWindow = tabWindow.set('focused', true);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'removeBookmarkIdMapEntry',
+	    value: function removeBookmarkIdMapEntry(tabWindow) {
+	      return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));
+	    }
+	  }, {
+	    key: 'unmanageWindow',
+	    value: function unmanageWindow(tabWindow) {
+	      // Get a view of this store with tabWindow removed from bookmarkIdMap:
+	      var rmStore = this.removeBookmarkIdMapEntry(tabWindow);
+	
+	      // disconnect from the previously associated bookmark folder and re-register
+	      var umWindow = TabWindow.removeSavedWindowState(tabWindow);
+	      return rmStore.registerTabWindow(umWindow);
+	    }
+	
+	    /**
+	     * attach a bookmark folder to a specific chrome window
+	     */
+	
+	  }, {
+	    key: 'attachBookmarkFolder',
+	    value: function attachBookmarkFolder(bookmarkFolder, chromeWindow) {
+	      var folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
+	
+	      var mergedTabWindow = TabWindow.updateWindow(folderTabWindow, chromeWindow);
+	
+	      // And re-register in store maps:
+	      return this.registerTabWindow(mergedTabWindow);
+	    }
+	
+	    /**
+	     * get the currently open tab windows
+	     */
+	
+	  }, {
+	    key: 'getOpen',
+	    value: function getOpen() {
+	      var openWindows = this.windowIdMap.toIndexedSeq().toArray();
+	      return openWindows;
+	    }
+	  }, {
+	    key: 'getAll',
+	    value: function getAll() {
+	      var openWindows = this.getOpen();
+	      var closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter(function (w) {
+	        return !w.open;
+	      }).toArray();
+	      return openWindows.concat(closedSavedWindows);
+	    }
+	
+	    // returns a tabWindow or undefined
+	
+	  }, {
+	    key: 'getTabWindowByChromeId',
+	    value: function getTabWindowByChromeId(windowId) {
+	      return this.windowIdMap.get(windowId);
+	    }
+	  }, {
+	    key: 'countOpenWindows',
+	    value: function countOpenWindows() {
+	      return this.windowIdMap.count();
+	    }
+	  }, {
+	    key: 'countSavedWindows',
+	    value: function countSavedWindows() {
+	      return this.bookmarkIdMap.count();
+	    }
+	  }, {
+	    key: 'countOpenTabs',
+	    value: function countOpenTabs() {
+	      return this.windowIdMap.reduce(function (count, w) {
+	        return count + w.openTabCount;
+	      }, 0);
+	    }
+	  }]);
+	
+	  return TabManagerState;
+	}(Immutable.Record({
+	  windowIdMap: Immutable.Map(), // maps from chrome window id for open windows
+	  bookmarkIdMap: Immutable.Map(), // maps from bookmark id for saved windows
+	  folderId: -1,
+	  archiveFolderId: -1
+	}));
+	
+	exports.default = TabManagerState;
+
+/***/ },
+
+/***/ 208:
+/*!**************************************!*\
+  !*** ./~/react-addons-perf/index.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(/*! react/lib/ReactDefaultPerf */ 149);
+
+/***/ }
+
+});
+//# sourceMappingURL=renderTest.bundle.js.map

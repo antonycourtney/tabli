@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { addons } from 'react/addons';
 import Styles from './styles';
 import * as Util from './util';
 import * as actions from '../actions';
-const { PureRenderMixin } = addons;
 
+import * as PureRenderMixin from 'react-addons-pure-render-mixin';
 import Hoverable from './Hoverable';
 import HeaderButton from './HeaderButton';
 import ExpanderButton from './ExpanderButton';

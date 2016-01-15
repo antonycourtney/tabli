@@ -1,1 +1,115 @@
-webpackJsonp([2],[function(e,n,o){"use strict";function t(e){return e&&e.__esModule?e:{"default":e}}function r(e){if(e&&e.__esModule)return e;var n={};if(null!=e)for(var o in e)Object.prototype.hasOwnProperty.call(e,o)&&(n[o]=e[o]);return n["default"]=e,n}function i(e){function n(){var n=l.createElement(w["default"],{storeRef:r,initialWinStore:i}),t=(l.render(n,a),performance.now());console.log("full render complete. render time: (",t-o," ms)"),d.syncChromeWindows((0,f.logWrap)(function(n){var t=n(i),c=t.setCurrentWindow(e);r.setValue(c);var a=performance.now();console.log("syncChromeWindows and update complete: ",a-o," ms"),document.getElementById("searchBox").focus()}))}var o=performance.now(),t=chrome.extension.getBackgroundPage(),r=t.storeRef,i=t.savedStore,c=t.savedHTML,a=document.getElementById("windowList-region");if(c){a.innerHTML=c;var u=performance.now();console.log("time to set initial HTML: ",u-o)}setTimeout(n,0)}function c(){chrome.windows.getCurrent(null,function(e){i(e.id)})}function a(){window.onload=c}var u=o(8),l=r(u),s=o(6),d=r(s),f=o(7),m=o(165),w=t(m);a()}]);
+webpackJsonp([2],[
+/* 0 */
+/*!*************************!*\
+  !*** ./src/js/popup.js ***!
+  \*************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _actions = __webpack_require__(/*! ./actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _utils = __webpack_require__(/*! ./utils */ 7);
+	
+	var _TabliPopup = __webpack_require__(/*! ./components/TabliPopup */ 170);
+	
+	var _TabliPopup2 = _interopRequireDefault(_TabliPopup);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/**
+	 * Main entry point to rendering the popup window
+	 */
+	function renderPopup(currentWindowId) {
+	  var t_preRender = performance.now();
+	  var bgPage = chrome.extension.getBackgroundPage();
+	
+	  var storeRef = bgPage.storeRef;
+	  var savedStore = bgPage.savedStore;
+	  var savedHTML = bgPage.savedHTML;
+	
+	  var parentNode = document.getElementById('windowList-region');
+	
+	  /*
+	   * We do a quick immediate render using saved HTML and then use setTimeout()
+	   * to initate a more complete sync operation
+	   */
+	
+	  if (savedHTML) {
+	    parentNode.innerHTML = savedHTML;
+	    var t_postSet = performance.now();
+	    console.log('time to set initial HTML: ', t_postSet - t_preRender);
+	
+	    // logHTML("loaded HTML", savedHTML);
+	  }
+	
+	  /*
+	   * We make our initial call to create and render the React component tree on a zero timeout
+	   * to give this handler a chance to complete and allow Chrome to render the initial
+	   * HTML set from savedHTML
+	   */
+	
+	  function doRender() {
+	    /* First:let's render *before* sync'ing so that we match the pre-rendered HTML... */
+	    /* Note (!!): We use savedStore here to ensured that the store state exactly matches savedHTML; we'll simply ignore
+	     * any possible store updates that happened since last save
+	     */
+	
+	    // console.log("doRender: About to render using savedStore: ", savedStore.toJS());
+	    var appElement = React.createElement(_TabliPopup2.default, { storeRef: storeRef, initialWinStore: savedStore });
+	    var appComponent = React.render(appElement, parentNode); // eslint-disable-line no-unused-vars
+	    var t_postRender = performance.now();
+	    console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');
+	
+	    // And sync our window state, which may update the UI...
+	    actions.syncChromeWindows((0, _utils.logWrap)(function (uf) {
+	      // console.log("postLoadRender: window sync complete");
+	      var syncStore = uf(savedStore);
+	
+	      // And set current focused window:
+	      var nextStore = syncStore.setCurrentWindow(currentWindowId);
+	      storeRef.setValue(nextStore);
+	
+	      // logHTML("Updated savedHTML", renderedString);
+	      var t_postSyncUpdate = performance.now();
+	      console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
+	      document.getElementById('searchBox').focus();
+	    }));
+	  }
+	
+	  setTimeout(doRender, 0);
+	}
+	
+	function getFocusedAndRender() {
+	  chrome.windows.getCurrent(null, function (currentWindow) {
+	    renderPopup(currentWindow.id);
+	  });
+	}
+	
+	/*
+	 * Perform our React rendering *after* the load event for the popup
+	 * (rather than the more traditional ondocumentready event)
+	 * because we observe that Chrome's http cache will not attempt to
+	 * re-validate cached resources accessed after the load event, and this
+	 * is essential for reasonable performance when loading favicons.
+	 *
+	 * See https://code.google.com/p/chromium/issues/detail?id=511699
+	 *
+	 */
+	function main() {
+	  window.onload = getFocusedAndRender;
+	}
+	
+	main();
+
+/***/ }
+]);
+//# sourceMappingURL=popup.bundle.js.map

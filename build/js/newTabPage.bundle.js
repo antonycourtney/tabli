@@ -1,1 +1,91 @@
-webpackJsonp([1],[function(e,n,o){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}function t(e){if(e&&e.__esModule)return e;var n={};if(null!=e)for(var o in e)Object.prototype.hasOwnProperty.call(e,o)&&(n[o]=e[o]);return n["default"]=e,n}function c(e){var n=performance.now(),o=chrome.extension.getBackgroundPage(),r=o.storeRef,t=o.savedStore,c=document.getElementById("windowList-region"),u=l.createElement(w["default"],{storeRef:r,initialWinStore:t}),i=(l.render(u,c),performance.now());console.log("full render complete. render time: (",i-n," ms)"),s.syncChromeWindows((0,f.logWrap)(function(o){var c=o(t),u=c.setCurrentWindow(e);r.setValue(u);var i=performance.now();console.log("syncChromeWindows and update complete: ",i-n," ms"),document.getElementById("searchBox").focus()}))}function u(){chrome.windows.getCurrent(null,function(e){c(e.id)})}function i(){window.onload=u}var a=o(8),l=t(a),d=o(6),s=t(d),f=o(7),m=o(165),w=r(m);i()}]);
+webpackJsonp([1],[
+/* 0 */
+/*!******************************!*\
+  !*** ./src/js/newTabPage.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _actions = __webpack_require__(/*! ./actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _utils = __webpack_require__(/*! ./utils */ 7);
+	
+	var _TabliPopup = __webpack_require__(/*! ./components/TabliPopup */ 170);
+	
+	var _TabliPopup2 = _interopRequireDefault(_TabliPopup);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/**
+	 * Main entry point to rendering the new tab page
+	 */
+	function renderNewTab(currentWindowId) {
+	  var t_preRender = performance.now();
+	  var bgPage = chrome.extension.getBackgroundPage();
+	
+	  var storeRef = bgPage.storeRef;
+	  var savedStore = bgPage.savedStore;
+	
+	  var parentNode = document.getElementById('windowList-region');
+	
+	  /* First:let's render *before* sync'ing so that we match the pre-rendered HTML... */
+	  /* Note (!!): We use savedStore here to ensured that the store state exactly matches savedHTML; we'll simply ignore
+	   * any possible store updates that happened since last save
+	   */
+	
+	  // console.log("doRender: About to render using savedStore: ", savedStore.toJS());
+	  var appElement = React.createElement(_TabliPopup2.default, { storeRef: storeRef, initialWinStore: savedStore });
+	  var appComponent = React.render(appElement, parentNode); // eslint-disable-line no-unused-vars
+	  var t_postRender = performance.now();
+	  console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');
+	
+	  // And sync our window state, which may update the UI...
+	  actions.syncChromeWindows((0, _utils.logWrap)(function (uf) {
+	    // console.log("postLoadRender: window sync complete");
+	    var syncStore = uf(savedStore);
+	
+	    // And set current focused window:
+	    var nextStore = syncStore.setCurrentWindow(currentWindowId);
+	    storeRef.setValue(nextStore);
+	
+	    // logHTML("Updated savedHTML", renderedString);
+	    var t_postSyncUpdate = performance.now();
+	    console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
+	    document.getElementById('searchBox').focus();
+	  }));
+	}
+	
+	function getFocusedAndRender() {
+	  chrome.windows.getCurrent(null, function (currentWindow) {
+	    renderNewTab(currentWindow.id);
+	  });
+	}
+	
+	/*
+	 * Perform our React rendering *after* the load event for the popup
+	 * (rather than the more traditional ondocumentready event)
+	 * because we observe that Chrome's http cache will not attempt to
+	 * re-validate cached resources accessed after the load event, and this
+	 * is essential for reasonable performance when loading favicons.
+	 *
+	 * See https://code.google.com/p/chromium/issues/detail?id=511699
+	 *
+	 */
+	function main() {
+	  window.onload = getFocusedAndRender;
+	}
+	
+	main();
+
+/***/ }
+]);
+//# sourceMappingURL=newTabPage.bundle.js.map

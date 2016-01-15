@@ -1,9 +1,8 @@
-import * as React from 'react/addons';
+import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
-import { addons } from 'react/addons';
-const { Perf } = addons;
+import * as Perf from 'react-addons-perf';
 
 import TabliPopup from './components/TabliPopup';
 

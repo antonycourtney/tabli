@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { addons } from 'react/addons';
+import * as PureRenderMixin from 'react-addons-pure-render-mixin';
 import Styles from './styles';
 import * as Util from './util';
-const { PureRenderMixin } = addons;
 
 // expand / contract button for a window
 const ExpanderButton = React.createClass({
