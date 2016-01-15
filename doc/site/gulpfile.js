@@ -17,7 +17,21 @@ gulp.task('clean', function() {
   return gulp.src(['dist/*'], {read: false}).pipe(clean());
 });
 
-// Copy all bootstrap files from node_modules/bootstrap/dist:
+gulp.task('build_lightbox_css', function() {
+    gutil.log("copy css assets from ekko-lightbox to dist");
+
+    return gulp.src('../../node_modules/ekko-lightbox/dist/*.css')
+        .pipe(gulp.dest('dist/css'));
+});
+gulp.task('build_lightbox_js', function() {
+    gutil.log("copy assets from ekko-lightbox to dist");
+
+    return gulp.src('../../node_modules/ekko-lightbox/dist/*.js')
+        .pipe(gulp.dest('dist/js'));
+});
+
+gulp.task('build_lightbox', [ 'build_lightbox_css', 'build_lightbox_js'] ); 
+
 gulp.task('build_assets', function() {
     gutil.log("copy assets from mock to dist");
 
@@ -33,7 +47,7 @@ gulp.task('build_favicon', function() {
     .pipe(gulp.dest('dist/favicon'));
 });
 
-gulp.task('html-include', ['build_assets', 'build_favicon'], function() {
+gulp.task('html-include', ['build_assets', 'build_lightbox', 'build_favicon'], function() {
     return gulp.src('./src/*.html')
         .pipe(include())
         .pipe(gulp.dest('./dist/'));

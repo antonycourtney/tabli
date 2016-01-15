@@ -77,7 +77,7 @@ p{
 	line-height:26px;
 	margin-bottom:15px;
 }
-p span{
+.highlight {
 	color:#eb3979;
 }
 p strong{

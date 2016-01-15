@@ -10,6 +10,7 @@
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/ekko-lightbox.min.css" rel="stylesheet">
     <link href="css/fonts.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -80,9 +81,13 @@
                     <div class="vertical-center">
                         <div class="text-info">
                             <h4>A Simple Yet Powerful Tab Manager for Chrome</h4>
-                            <p><span>Manage everything at once with Tabli.
+                            <p><span class="highlight">Manage everything at once with Tabli.
 Simple. Effective. Efficient.</span></p>
                             <a href="https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi" class="btn btn-primary">GET TABLI</a>
+                            <br>
+                            <br>
+                            <p><a href="https://www.youtube.com/watch?v=yRxOr2-urzg" data-toggle="lightbox" data-width="1280" class="btn">
+                            <span class="glyphicon glyphicon-play-circle" aria-hidden="true"></span> Quick Tour (2 min)</a></p>
                         </div>
                     </div>
                 </div>
@@ -128,6 +133,37 @@ Simple. Effective. Efficient.</span></p>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/ekko-lightbox.min.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function ($) {
+            // delegate calls to data-toggle="lightbox"
+            $(document).delegate('*[data-toggle="lightbox"]:not([data-gallery="navigateTo"])', 'click', function(event) {
+                event.preventDefault();
+                return $(this).ekkoLightbox({
+                    onShown: function() {
+                        if (window.console) {
+                            return console.log('Checking our the events huh?');
+                        }
+                    },
+                    onNavigate: function(direction, itemIndex) {
+                        if (window.console) {
+                            return console.log('Navigating '+direction+'. Current item: '+itemIndex);
+                        }
+                  }
+                });
+            });
+
+            //Programatically call
+            $('#open-image').click(function (e) {
+                e.preventDefault();
+                $(this).ekkoLightbox();
+            });
+            $('#open-youtube').click(function (e) {
+                e.preventDefault();
+                $(this).ekkoLightbox();
+            });
+        });
+    </script>
     <div class="footer">
         <div class="container">
             <div class="centered-text">
