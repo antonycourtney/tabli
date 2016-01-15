@@ -10,9 +10,9 @@ import TabliPopup from './components/TabliPopup';
 function makeTabWindow(jsWin) {
   const decItems = jsWin.tabItems.map((tiFields) => new TabWindow.TabItem(tiFields));
 
-  jsWin.tabItems = Immutable.Seq(decItems);
+  const itemWin = Object.create(jsWin, { tabItems: Immutable.Seq(decItems) });
 
-  const decWin = new TabWindow.TabWindow(jsWin);
+  const decWin = new TabWindow.TabWindow(itemWin);
   return decWin;
 }
 

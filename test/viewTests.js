@@ -4,15 +4,14 @@ import * as fs from 'fs';
 import * as actions from '../src/js/actions';
 import './testHelper';
 import test from 'tape';
-import React from 'react/addons';
+import React from 'react';
+import * as ReactTestUtils from 'react-addons-test-utils'
 import ViewRef from '../src/js/viewRef';
 import TabManagerState from '../src/js/tabManagerState';
 import TabliPopup from '../src/js/components/TabliPopup';
 import SearchBar from '../src/js/components/SearchBar';
 import TabItem from '../src/js/components/TabItem';
 import * as sinon from 'sinon';
-
-const ReactTestUtils = React.addons.TestUtils;
 
 function getWindowSnap() {
   const content = fs.readFileSync('test/chromeWindowSnap.json');

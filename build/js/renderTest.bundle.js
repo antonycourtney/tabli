@@ -42,9 +42,9 @@ webpackJsonp([3],{
 	    return new TabWindow.TabItem(tiFields);
 	  });
 	
-	  jsWin.tabItems = Immutable.Seq(decItems);
+	  var itemWin = Object.create(jsWin, { tabItems: Immutable.Seq(decItems) });
 	
-	  var decWin = new TabWindow.TabWindow(jsWin);
+	  var decWin = new TabWindow.TabWindow(itemWin);
 	  return decWin;
 	}
 	

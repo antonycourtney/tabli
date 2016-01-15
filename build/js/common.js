@@ -18234,9 +18234,9 @@
 	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
 	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
 	          // set chromeWindow.focused to last focused state (tabWindow.focused)
-	          chromeWindow.focused = tabWindow.focused;
+	          var focusedChromeWindow = Object.create(chromeWindow, { focused: tabWindow.focused });
 	          cb(function (state) {
-	            return state.attachBookmarkFolder(fullFolderNode, chromeWindow);
+	            return state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow);
 	          });
 	        });
 	      });
