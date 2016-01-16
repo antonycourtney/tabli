@@ -14,7 +14,7 @@ const SaveModal = React.createClass({
 
   handleSubmit(e) {
     e.preventDefault();
-    const titleStr = this.refs.titleInput.getDOMNode().value;
+    const titleStr = this.refs.titleInput.value;
     console.log('handleSubmit: title: ', titleStr);
     this.props.onSubmit(titleStr);
   },
@@ -45,7 +45,7 @@ const SaveModal = React.createClass({
 
   componentDidMount() {
     console.log('SaveModal: did mount');
-    var titleElem = this.refs.titleInput.getDOMNode();
+    var titleElem = this.refs.titleInput;
     /* titleElem.val(this.props.initialTitle); */
     const titleLen = this.props.initialTitle.length;
     window.setTimeout(() => {

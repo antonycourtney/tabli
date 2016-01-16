@@ -218,7 +218,7 @@ export function manageWindow(tabliFolderId, tabWindow, title, cb) {
         chrome.windows.get(tabWindow.openWindowId, { populate: true }, (chromeWindow) => {
           // Hack:  Chrome may think focus has moved to the popup itself, so let's just
           // set chromeWindow.focused to last focused state (tabWindow.focused)
-          const focusedChromeWindow = Object.create(chromeWindow, { focused: tabWindow.focused });
+          const focusedChromeWindow = Object.assign({}, chromeWindow, { focused: tabWindow.focused });
           cb((state) => state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow));
         });
       });

@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 
 const SearchBar = React.createClass({
   handleChange() {
-    const searchStr = this.refs.searchInput.getDOMNode().value;
+    const searchStr = this.refs.searchInput.value;
     this.props.onSearchInput(searchStr);
   },
 

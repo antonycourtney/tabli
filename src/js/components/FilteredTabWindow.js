@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import * as Immutable from 'immutable';
 import Styles from './styles';
 import * as Util from './util';
@@ -22,7 +23,7 @@ const FilteredTabWindow = React.createClass({
   componentWillReceiveProps(nextProps) {
     if (nextProps.isSelected && !this.props.isSelected) {
       // scroll div for this window into view:
-      React.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
     }
   },
 

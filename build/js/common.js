@@ -18234,7 +18234,7 @@
 	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
 	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
 	          // set chromeWindow.focused to last focused state (tabWindow.focused)
-	          var focusedChromeWindow = Object.create(chromeWindow, { focused: tabWindow.focused });
+	          var focusedChromeWindow = Object.assign({}, chromeWindow, { focused: tabWindow.focused });
 	          cb(function (state) {
 	            return state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow);
 	          });
@@ -39492,7 +39492,7 @@
 	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
 	  componentDidMount: function componentDidMount() {
 	    console.log('revertModal: did mount');
-	    this.refs.okButton.getDOMNode().focus();
+	    this.refs.okButton.focus();
 	  }
 	});
 	
@@ -40243,7 +40243,7 @@
 	  },
 	  handleSubmit: function handleSubmit(e) {
 	    e.preventDefault();
-	    var titleStr = this.refs.titleInput.getDOMNode().value;
+	    var titleStr = this.refs.titleInput.value;
 	    console.log('handleSubmit: title: ', titleStr);
 	    this.props.onSubmit(titleStr);
 	  },
@@ -40290,7 +40290,7 @@
 	  },
 	  componentDidMount: function componentDidMount() {
 	    console.log('SaveModal: did mount');
-	    var titleElem = this.refs.titleInput.getDOMNode();
+	    var titleElem = this.refs.titleInput;
 	    /* titleElem.val(this.props.initialTitle); */
 	    var titleLen = this.props.initialTitle.length;
 	    window.setTimeout(function () {
@@ -40531,7 +40531,7 @@
 	var SearchBar = React.createClass({
 	  displayName: 'SearchBar',
 	  handleChange: function handleChange() {
-	    var searchStr = this.refs.searchInput.getDOMNode().value;
+	    var searchStr = this.refs.searchInput.value;
 	    this.props.onSearchInput(searchStr);
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
@@ -40708,6 +40708,10 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
+	var _reactDom = __webpack_require__(/*! react-dom */ 210);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
 	var _immutable = __webpack_require__(/*! immutable */ 4);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
@@ -40753,7 +40757,7 @@
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    if (nextProps.isSelected && !this.props.isSelected) {
 	      // scroll div for this window into view:
-	      React.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
 	    }
 	  },
 	  handleOpen: function handleOpen() {
@@ -41271,6 +41275,37 @@
 	});
 	
 	exports.default = WindowListSection;
+
+/***/ },
+/* 191 */,
+/* 192 */,
+/* 193 */,
+/* 194 */,
+/* 195 */,
+/* 196 */,
+/* 197 */,
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */,
+/* 202 */,
+/* 203 */,
+/* 204 */,
+/* 205 */,
+/* 206 */,
+/* 207 */,
+/* 208 */,
+/* 209 */,
+/* 210 */
+/*!******************************!*\
+  !*** ./~/react-dom/index.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 10);
+
 
 /***/ }
 /******/ ]);

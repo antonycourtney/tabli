@@ -11,6 +11,10 @@ webpackJsonp([2],[
 	
 	var React = _interopRequireWildcard(_react);
 	
+	var _reactDom = __webpack_require__(/*! react-dom */ 210);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
 	var _actions = __webpack_require__(/*! ./actions */ 6);
 	
 	var actions = _interopRequireWildcard(_actions);
@@ -65,7 +69,7 @@ webpackJsonp([2],[
 	
 	    // console.log("doRender: About to render using savedStore: ", savedStore.toJS());
 	    var appElement = React.createElement(_TabliPopup2.default, { storeRef: storeRef, initialWinStore: savedStore });
-	    var appComponent = React.render(appElement, parentNode); // eslint-disable-line no-unused-vars
+	    var appComponent = ReactDOM.render(appElement, parentNode); // eslint-disable-line no-unused-vars
 	    var t_postRender = performance.now();
 	    console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');
 	

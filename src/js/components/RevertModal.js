@@ -118,7 +118,7 @@ const RevertModal = React.createClass({
   /* HACK - get focus to the OK button, because tabIndex getting ignored. */
   componentDidMount() {
     console.log('revertModal: did mount');
-    this.refs.okButton.getDOMNode().focus();
+    this.refs.okButton.focus();
   },
 });
 

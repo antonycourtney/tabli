@@ -28,6 +28,14 @@ webpackJsonp([3],{
 	
 	var Perf = _interopRequireWildcard(_reactAddonsPerf);
 	
+	var _reactDom = __webpack_require__(/*! react-dom */ 210);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _server = __webpack_require__(/*! react-dom/server */ 209);
+	
+	var ReactDOMServer = _interopRequireWildcard(_server);
+	
 	var _TabliPopup = __webpack_require__(/*! ./components/TabliPopup */ 170);
 	
 	var _TabliPopup2 = _interopRequireDefault(_TabliPopup);
@@ -42,7 +50,7 @@ webpackJsonp([3],{
 	    return new TabWindow.TabItem(tiFields);
 	  });
 	
-	  var itemWin = Object.create(jsWin, { tabItems: Immutable.Seq(decItems) });
+	  var itemWin = Object.assign({}, jsWin, { tabItems: Immutable.Seq(decItems) });
 	
 	  var decWin = new TabWindow.TabWindow(itemWin);
 	  return decWin;
@@ -100,7 +108,7 @@ webpackJsonp([3],{
 	  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
 	  // that connection.
 	  var appElement = React.createElement(_TabliPopup2.default, { winStore: mockWinStore, noListener: true });
-	  React.render(appElement, parentNode);
+	  ReactDOM.render(appElement, parentNode);
 	
 	  var t_postRender = performance.now();
 	  if (Perf) {
@@ -118,7 +126,7 @@ webpackJsonp([3],{
 	
 	  console.log('After rendering, parentNode: ', parentNode);
 	
-	  var renderedString = React.renderToString(appElement);
+	  var renderedString = ReactDOMServer.renderToString(appElement);
 	
 	  // console.log("rendered string: ", renderedString);
 	  // bgPage.savedNode = parentNode.firstChild;
@@ -454,6 +462,19 @@ webpackJsonp([3],{
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__(/*! react/lib/ReactDefaultPerf */ 149);
+
+/***/ },
+
+/***/ 209:
+/*!*******************************!*\
+  !*** ./~/react-dom/server.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 155);
+
 
 /***/ }
 

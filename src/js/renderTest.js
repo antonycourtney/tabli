@@ -3,14 +3,15 @@ import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
 import * as Perf from 'react-addons-perf';
-
+import * as ReactDOM from 'react-dom';
+import * as ReactDOMServer from 'react-dom/server';
 import TabliPopup from './components/TabliPopup';
 
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin) {
   const decItems = jsWin.tabItems.map((tiFields) => new TabWindow.TabItem(tiFields));
 
-  const itemWin = Object.create(jsWin, { tabItems: Immutable.Seq(decItems) });
+  const itemWin = Object.assign({}, jsWin, { tabItems: Immutable.Seq(decItems) });
 
   const decWin = new TabWindow.TabWindow(itemWin);
   return decWin;
@@ -68,7 +69,7 @@ function renderPage(testData) {
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
   var appElement = <TabliPopup winStore={mockWinStore} noListener />;
-  React.render(appElement, parentNode);
+  ReactDOM.render(appElement, parentNode);
 
   var t_postRender = performance.now();
   if (Perf) {
@@ -86,7 +87,7 @@ function renderPage(testData) {
 
   console.log('After rendering, parentNode: ', parentNode);
 
-  var renderedString = React.renderToString(appElement);
+  var renderedString = ReactDOMServer.renderToString(appElement);
 
   // console.log("rendered string: ", renderedString);
   // bgPage.savedNode = parentNode.firstChild;
