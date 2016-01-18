@@ -1,0 +1,19 @@
+.HeaderButton__common___1j3lg {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    width: 16px;
+    height: 16px;
+    margin-left: 1px;
+    margin-right: 1px;  
+}
+.ExpanderButton__expanded___1o57i {
+  -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAFxJREFUeNpiYBgFFANGbIJs7Oz3gZQCmvADIDb89fPnB2RBJhwGF2ITQ9eMFwBdsR+I/0PxfpL9BtSkANX8HsTGpY4Zl8Tfv38/MLOwgMLoJNDpG0aTy2AGAAEGALA0GWcxqbYtAAAAAElFTkSuQmCC);
+  background-color: #606060;
+}
+.ExpanderButton__collapsed___293QT {
+  -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAERJREFUeNpiYBgFtAFs7Oz3gTiAEgP+Q/F+IFagxAAYbgBiAWxqmYgw7wOI+PXz5wdyXLCeZC+AnAoNRIfR5EQnABBgAGgIEt8MOudJAAAAAElFTkSuQmCC);
+  background-color: #606060;
+}
+/*# sourceMappingURL=style.css.map*/

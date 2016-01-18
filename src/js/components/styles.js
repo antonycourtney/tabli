@@ -72,15 +72,6 @@ const styles = {
   expandablePanelContentOpen: {
     marginTop: 0,
   },
-  windowExpand: {
-    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
-    backgroundColor: '#606060',
-  },
-  windowCollapse: {
-    WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
-    backgroundColor: '#606060',
-  },
-
   // Hmmm, we use this as a common base for both
   //
   headerButton: {
