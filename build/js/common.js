@@ -39538,20 +39538,22 @@
 	  tabWindowSelected: {
 	    boxShadow: '0px 0px 5px 2px #7472ff'
 	  },
-	  windowHeader: {
-	    backgroundColor: '#ebe9eb',
-	    borderBottom: '1px solid #bababa',
-	    height: Constants.WINDOW_HEADER_HEIGHT,
-	    maxHeight: Constants.WINDOW_HEADER_HEIGHT,
-	    paddingLeft: 3,
-	    paddingRight: 3,
-	
-	    // marginBottom: 3,
-	    display: 'inline-flex',
-	
-	    // justifyContent: 'space-between',
-	    alignItems: 'center'
-	  },
+	  /*
+	    windowHeader: {
+	      backgroundColor: '#ebe9eb',
+	      borderBottom: '1px solid #bababa',
+	      height: Constants.WINDOW_HEADER_HEIGHT,
+	      maxHeight: Constants.WINDOW_HEADER_HEIGHT,
+	      paddingLeft: 3,
+	      paddingRight: 3,
+	  
+	      // marginBottom: 3,
+	      display: 'inline-flex',
+	  
+	      // justifyContent: 'space-between',
+	      alignItems: 'center',
+	    },
+	  */
 	  tabItem: {
 	    height: 20,
 	    maxHeight: 20,
@@ -39667,15 +39669,7 @@
 	    height: 13,
 	    margin: '3px 3px 3px 3px'
 	  },
-	  windowManagedButton: {
-	    WebkitMaskImage: 'url("../images/Status-9.png")',
-	    backgroundColor: '#7472ff'
-	  },
-	  revertButton: {
-	    WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
-	    backgroundColor: '#7472ff',
-	    marginRight: '20px'
-	  },
+	
 	  helpButton: {
 	    color: '#7472ff'
 	  },
@@ -39705,10 +39699,6 @@
 	    fontWeight: 'bold',
 	    paddingLeft: 7,
 	    maxWidth: 243
-	  },
-	  headerCheckBox: {
-	    width: 13,
-	    height: 13
 	  },
 	  modalOverlay: {
 	    position: 'fixed',
@@ -40015,29 +40005,21 @@
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton.css */ 182);
 	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 176);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
+	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var buttonSpacer = React.createElement('div', { style: _styles2.default.headerButton });
+	var buttonSpacer = React.createElement('div', { className: _HeaderButton2.default.common });
 	
 	// A button that will merge in hoverStyle when hovered over
 	var HeaderButton = React.createClass({
 	  displayName: 'HeaderButton',
 	
-	  mixins: [_Hoverable2.default, PureRenderMixin],
+	  mixins: [PureRenderMixin],
 	  handleClick: function handleClick(event) {
 	    if (this.props.visible) {
 	      this.props.onClick(event);
@@ -40053,10 +40035,7 @@
 	      return buttonSpacer;
 	    }
 	
-	    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
-	    var hoverStyle = this.state.hovering && this.props.hoverStyle ? this.props.hoverStyle : null;
-	    var buttonStyle = Util.merge(this.props.baseStyle, hoverStyle);
-	    return React.createElement('button', { style: buttonStyle, title: this.props.title, onClick: this.handleClick,
+	    return React.createElement('button', { className: this.props.className, title: this.props.title, onClick: this.handleClick,
 	      onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut
 	    });
 	  }
@@ -40161,35 +40140,13 @@
 
 /***/ },
 /* 182 */
-/*!****************************************!*\
-  !*** ./src/js/components/Hoverable.js ***!
-  \****************************************/
+/*!********************************************!*\
+  !*** ./src/js/components/HeaderButton.css ***!
+  \********************************************/
 /***/ function(module, exports) {
 
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	/**
-	 * mixin for that maintains a "hovering" state
-	 * and provides callbacks for mouseOver/mouseOut
-	 * User of mixin must connect these callbacks to onMouseOver / onMouseOut
-	 * of appropriate component
-	 */
-	var Hoverable = {
-	  getInitialState: function getInitialState() {
-	    return { hovering: false };
-	  },
-	  handleMouseOver: function handleMouseOver() {
-	    this.setState({ hovering: true });
-	  },
-	  handleMouseOut: function handleMouseOut() {
-	    this.setState({ hovering: false });
-	  }
-	};
-	
-	exports.default = Hoverable;
+	// removed by extract-text-webpack-plugin
+	module.exports = {"common":"HeaderButton__common___1j3lg"};
 
 /***/ },
 /* 183 */
@@ -40612,7 +40569,7 @@
 	
 	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 196);
 	
 	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
 	
@@ -40720,15 +40677,15 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 189);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 189);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
 	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 195);
 	
 	var _TabItem2 = _interopRequireDefault(_TabItem);
 	
@@ -40873,6 +40830,38 @@
 
 /***/ },
 /* 189 */
+/*!****************************************!*\
+  !*** ./src/js/components/Hoverable.js ***!
+  \****************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	/**
+	 * mixin for that maintains a "hovering" state
+	 * and provides callbacks for mouseOver/mouseOut
+	 * User of mixin must connect these callbacks to onMouseOver / onMouseOut
+	 * of appropriate component
+	 */
+	var Hoverable = {
+	  getInitialState: function getInitialState() {
+	    return { hovering: false };
+	  },
+	  handleMouseOver: function handleMouseOver() {
+	    this.setState({ hovering: true });
+	  },
+	  handleMouseOut: function handleMouseOut() {
+	    this.setState({ hovering: false });
+	  }
+	};
+	
+	exports.default = Hoverable;
+
+/***/ },
+/* 190 */
 /*!*******************************************!*\
   !*** ./src/js/components/WindowHeader.js ***!
   \*******************************************/
@@ -40888,14 +40877,6 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 176);
-	
-	var Util = _interopRequireWildcard(_util);
-	
 	var _actions = __webpack_require__(/*! ../actions */ 6);
 	
 	var actions = _interopRequireWildcard(_actions);
@@ -40904,17 +40885,21 @@
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
-	
 	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 190);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 191);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
+	
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader.css */ 198);
+	
+	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
+	
+	var _CloseButton = __webpack_require__(/*! ./CloseButton.css */ 194);
+	
+	var _CloseButton2 = _interopRequireDefault(_CloseButton);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40923,7 +40908,7 @@
 	var WindowHeader = React.createClass({
 	  displayName: 'WindowHeader',
 	
-	  mixins: [_Hoverable2.default, PureRenderMixin],
+	  mixins: [PureRenderMixin],
 	
 	  handleUnmanageClick: function handleUnmanageClick(event) {
 	    console.log('unamange: ', this.props.tabWindow);
@@ -40947,17 +40932,16 @@
 	    var managed = tabWindow.saved;
 	    var windowTitle = tabWindow.title;
 	
-	    var hoverStyle = this.state.hovering ? _styles2.default.visible : _styles2.default.hidden;
+	    // var hoverStyle = this.state.hovering ? Styles.visible : Styles.hidden;
 	
 	    var windowCheckItem;
 	
 	    if (managed) {
-	      windowCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.windowManagedButton),
+	      windowCheckItem = React.createElement('button', { className: _WindowHeader2.default.windowManagedButton,
 	        title: 'Stop managing this window', onClick: this.handleUnmanageClick
 	      });
 	    } else {
-	      var checkStyle = Util.merge(_styles2.default.headerButton, hoverStyle, _styles2.default.headerCheckBox);
-	      windowCheckItem = React.createElement('input', { style: checkStyle, type: 'checkbox',
+	      windowCheckItem = React.createElement('input', { className: _WindowHeader2.default.headerCheckBox, type: 'checkbox',
 	        title: 'Save all tabs in this window',
 	        onClick: this.handleManageClick,
 	        ref: 'managedCheckbox',
@@ -40965,23 +40949,21 @@
 	      });
 	    }
 	
-	    var openStyle = tabWindow.open ? _styles2.default.open : _styles2.default.closed;
-	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.windowTitle, openStyle);
-	    var closeStyle = Util.merge(_styles2.default.headerButton, _styles2.default.closeButton);
+	    var openStyle = tabWindow.open ? _WindowHeader2.default.open : _WindowHeader2.default.closed;
+	    var titleStyle = _WindowHeader2.default.windowTitle + ' ' + openStyle;
 	
 	    // We use hovering in the window header (this.state.hovering) to determine
 	    // visibility of both the revert button and close button appearing after the window title.
 	
-	    var revertButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton)
-	      // visible={this.state.hovering && managed && tabWindow.open}
-	      , visible: managed && tabWindow.open,
+	    var revertButton = React.createElement(_HeaderButton2.default, { className: _WindowHeader2.default.revertButton,
+	      visible: managed && tabWindow.open,
 	      title: 'Revert to bookmarked tabs (Close other tabs)',
 	      onClick: this.props.onRevert
 	    });
 	
-	    var closeButton = React.createElement(_HeaderButton2.default, { baseStyle: closeStyle,
-	      visible: this.state.hovering && tabWindow.open,
-	      hoverStyle: _styles2.default.closeButtonHover, title: 'Close Window',
+	    var closeButton = React.createElement(_HeaderButton2.default, { className: _CloseButton2.default.close,
+	      visible: tabWindow.open,
+	      title: 'Close Window',
 	      onClick: this.props.onClose
 	    });
 	
@@ -40989,19 +40971,20 @@
 	
 	    return React.createElement(
 	      'div',
-	      { style: Util.merge(_styles2.default.windowHeader, _styles2.default.noWrap),
-	        onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut,
+	      { className: _WindowHeader2.default.titleBar,
+	        onMouseOver: this.handleMouseOver,
+	        onMouseOut: this.handleMouseOut,
 	        onClick: this.props.onOpen
 	      },
 	      windowCheckItem,
 	      React.createElement(_ExpanderButton2.default, { winStore: this.props.winStore, expanded: this.props.expanded, onClick: this.props.onExpand }),
 	      React.createElement(
 	        'span',
-	        { style: titleStyle },
+	        { className: titleStyle },
 	        windowTitle
 	      ),
 	      revertButton,
-	      React.createElement('div', { style: _styles2.default.spacer }),
+	      React.createElement('div', { className: _WindowHeader2.default.spacer }),
 	      closeButton
 	    );
 	  }
@@ -41010,7 +40993,7 @@
 	exports.default = WindowHeader;
 
 /***/ },
-/* 190 */
+/* 191 */
 /*!*********************************************!*\
   !*** ./src/js/components/ExpanderButton.js ***!
   \*********************************************/
@@ -41030,7 +41013,7 @@
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton.css */ 191);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton.css */ 192);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
 	
@@ -41057,7 +41040,7 @@
 	exports.default = ExpanderButton;
 
 /***/ },
-/* 191 */
+/* 192 */
 /*!**********************************************!*\
   !*** ./src/js/components/ExpanderButton.css ***!
   \**********************************************/
@@ -41067,7 +41050,18 @@
 	module.exports = {"expanded":"ExpanderButton__expanded___1o57i HeaderButton__common___1j3lg","collapsed":"ExpanderButton__collapsed___293QT HeaderButton__common___1j3lg"};
 
 /***/ },
-/* 192 */
+/* 193 */,
+/* 194 */
+/*!*******************************************!*\
+  !*** ./src/js/components/CloseButton.css ***!
+  \*******************************************/
+/***/ function(module, exports) {
+
+	// removed by extract-text-webpack-plugin
+	module.exports = {"close":"CloseButton__close___1lbLO HeaderButton__common___1j3lg"};
+
+/***/ },
+/* 195 */
 /*!**************************************!*\
   !*** ./src/js/components/TabItem.js ***!
   \**************************************/
@@ -41095,7 +41089,7 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 189);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
@@ -41230,7 +41224,7 @@
 	exports.default = TabItem;
 
 /***/ },
-/* 193 */
+/* 196 */
 /*!************************************************!*\
   !*** ./src/js/components/WindowListSection.js ***!
   \************************************************/
@@ -41284,6 +41278,17 @@
 	});
 	
 	exports.default = WindowListSection;
+
+/***/ },
+/* 197 */,
+/* 198 */
+/*!********************************************!*\
+  !*** ./src/js/components/WindowHeader.css ***!
+  \********************************************/
+/***/ function(module, exports) {
+
+	// removed by extract-text-webpack-plugin
+	module.exports = {"revertButton":"WindowHeader__revertButton___cg6FC HeaderButton__common___1j3lg","headerCheckBox":"WindowHeader__headerCheckBox___1o2Ez","windowManagedButton":"WindowHeader__windowManagedButton___l5PTC HeaderButton__common___1j3lg","open":"WindowHeader__open___2nFyK","closed":"WindowHeader__closed___2ocTQ","windowTitle":"WindowHeader__windowTitle___3YlbE Text__common___2KtDZ Text__noWrap___3Ksr3","titleBar":"WindowHeader__titleBar___wXpAu Text__noWrap___3Ksr3","spacer":"WindowHeader__spacer___3RoTW"};
 
 /***/ }
 /******/ ]);

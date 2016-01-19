@@ -1,15 +1,13 @@
 import * as React from 'react';
 import * as PureRenderMixin from 'react-addons-pure-render-mixin';
-import Styles from './styles';
-import * as Util from './util';
 
-import Hoverable from './Hoverable';
+import styles from './HeaderButton.css';
 
-const buttonSpacer = <div style={Styles.headerButton} />;
+const buttonSpacer = <div className={styles.common} />;
 
 // A button that will merge in hoverStyle when hovered over
 var HeaderButton = React.createClass({
-  mixins: [Hoverable, PureRenderMixin],
+  mixins: [PureRenderMixin],
   handleClick(event) {
     if (this.props.visible) {
       this.props.onClick(event);
@@ -26,11 +24,8 @@ var HeaderButton = React.createClass({
       return buttonSpacer;
     }
 
-    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
-    var hoverStyle = (this.state.hovering && this.props.hoverStyle) ? this.props.hoverStyle : null;
-    var buttonStyle = Util.merge(this.props.baseStyle, hoverStyle);
     return (
-      <button style={buttonStyle} title={this.props.title} onClick={this.handleClick}
+      <button className={this.props.className} title={this.props.title} onClick={this.handleClick}
         onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}
       />);
   },

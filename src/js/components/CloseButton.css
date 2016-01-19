@@ -1,0 +1,9 @@
+.close {
+  composes: common from "./HeaderButton.css";
+  -webkit-mask-image: url("../../images/interface-77.png");
+  background-color: #888888;
+}
+.close:hover {
+  -webkit-mask-image: url("../../images/interface-74.png");
+  background-color: #000000;
+}

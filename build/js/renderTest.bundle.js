@@ -24,7 +24,7 @@ webpackJsonp([3],{
 	
 	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
 	
-	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 194);
+	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 197);
 	
 	var Perf = _interopRequireWildcard(_reactAddonsPerf);
 	
@@ -468,7 +468,7 @@ webpackJsonp([3],{
 
 /***/ },
 
-/***/ 194:
+/***/ 197:
 /*!**************************************!*\
   !*** ./~/react-addons-perf/index.js ***!
   \**************************************/
