@@ -2,12 +2,8 @@
 
 var webpack = require('webpack');
 
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-
 var commonsPlugin =
   new webpack.optimize.CommonsChunkPlugin('common.js');
-
-var cssLoader = ExtractTextPlugin.extract('style-loader', 'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!postcss-loader');
 
 module.exports = {
     entry: {
@@ -20,12 +16,7 @@ module.exports = {
         path: "./build/js",
         filename: "[name].bundle.js"
     },
-    plugins: [commonsPlugin, new ExtractTextPlugin('../css/style.css', { allChunks: true }),],
-
-  postcss: [
-    require('autoprefixer'),
-  ],
-
+    plugins: [commonsPlugin],
     module: {
         loaders: [
             { test: /\.(js|jsx)$/, 
@@ -35,9 +26,7 @@ module.exports = {
                 presets:['es2015','react']
               }
             },
-            { test: /\.(json)$/, loader: "json-loader" },
-            { test: /\.css$/, loader: cssLoader },
-            { test: /\.png$/, loader: "url-loader?limit=100000" }
+            { test: /\.(json)$/, loader: "json-loader" }
         ]
     },
     resolve: {

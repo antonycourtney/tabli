@@ -38972,8 +38972,7 @@
 
 
 /***/ },
-/* 170 */,
-/* 171 */
+/* 170 */
 /*!*****************************************!*\
   !*** ./src/js/components/TabliPopup.js ***!
   \*****************************************/
@@ -38993,21 +38992,21 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _searchOps = __webpack_require__(/*! ../searchOps */ 172);
+	var _searchOps = __webpack_require__(/*! ../searchOps */ 171);
 	
 	var searchOps = _interopRequireWildcard(_searchOps);
 	
 	var _oneref = __webpack_require__(/*! oneref */ 166);
 	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 172);
 	
 	var _RevertModal2 = _interopRequireDefault(_RevertModal);
 	
-	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 183);
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 182);
 	
 	var _SaveModal2 = _interopRequireDefault(_SaveModal);
 	
-	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 184);
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 183);
 	
 	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
 	
@@ -39198,7 +39197,7 @@
 	exports.default = TabliPopup;
 
 /***/ },
-/* 172 */
+/* 171 */
 /*!*****************************!*\
   !*** ./src/js/searchOps.js ***!
   \*****************************/
@@ -39307,7 +39306,7 @@
 	}
 
 /***/ },
-/* 173 */
+/* 172 */
 /*!******************************************!*\
   !*** ./src/js/components/RevertModal.js ***!
   \******************************************/
@@ -39327,19 +39326,19 @@
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 175);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _Modal = __webpack_require__(/*! ./Modal */ 177);
+	var _Modal = __webpack_require__(/*! ./Modal */ 176);
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
@@ -39500,7 +39499,7 @@
 	exports.default = RevertModal;
 
 /***/ },
-/* 174 */
+/* 173 */
 /*!*************************************!*\
   !*** ./src/js/components/styles.js ***!
   \*************************************/
@@ -39512,7 +39511,7 @@
 	  value: true
 	});
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -39538,22 +39537,20 @@
 	  tabWindowSelected: {
 	    boxShadow: '0px 0px 5px 2px #7472ff'
 	  },
-	  /*
-	    windowHeader: {
-	      backgroundColor: '#ebe9eb',
-	      borderBottom: '1px solid #bababa',
-	      height: Constants.WINDOW_HEADER_HEIGHT,
-	      maxHeight: Constants.WINDOW_HEADER_HEIGHT,
-	      paddingLeft: 3,
-	      paddingRight: 3,
-	  
-	      // marginBottom: 3,
-	      display: 'inline-flex',
-	  
-	      // justifyContent: 'space-between',
-	      alignItems: 'center',
-	    },
-	  */
+	  windowHeader: {
+	    backgroundColor: '#ebe9eb',
+	    borderBottom: '1px solid #bababa',
+	    height: Constants.WINDOW_HEADER_HEIGHT,
+	    maxHeight: Constants.WINDOW_HEADER_HEIGHT,
+	    paddingLeft: 3,
+	    paddingRight: 3,
+	
+	    // marginBottom: 3,
+	    display: 'inline-flex',
+	
+	    // justifyContent: 'space-between',
+	    alignItems: 'center'
+	  },
 	  tabItem: {
 	    height: 20,
 	    maxHeight: 20,
@@ -39592,6 +39589,15 @@
 	  expandablePanelContentOpen: {
 	    marginTop: 0
 	  },
+	  windowExpand: {
+	    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
+	    backgroundColor: '#606060'
+	  },
+	  windowCollapse: {
+	    WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
+	    backgroundColor: '#606060'
+	  },
+	
 	  // Hmmm, we use this as a common base for both
 	  //
 	  headerButton: {
@@ -39669,7 +39675,15 @@
 	    height: 13,
 	    margin: '3px 3px 3px 3px'
 	  },
-	
+	  windowManagedButton: {
+	    WebkitMaskImage: 'url("../images/Status-9.png")',
+	    backgroundColor: '#7472ff'
+	  },
+	  revertButton: {
+	    WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
+	    backgroundColor: '#7472ff',
+	    marginRight: '20px'
+	  },
 	  helpButton: {
 	    color: '#7472ff'
 	  },
@@ -39699,6 +39713,10 @@
 	    fontWeight: 'bold',
 	    paddingLeft: 7,
 	    maxWidth: 243
+	  },
+	  headerCheckBox: {
+	    width: 13,
+	    height: 13
 	  },
 	  modalOverlay: {
 	    position: 'fixed',
@@ -39820,7 +39838,7 @@
 	exports.default = styles;
 
 /***/ },
-/* 175 */
+/* 174 */
 /*!****************************************!*\
   !*** ./src/js/components/constants.js ***!
   \****************************************/
@@ -39844,7 +39862,7 @@
 	var KEY_QUESTION = exports.KEY_QUESTION = 191;
 
 /***/ },
-/* 176 */
+/* 175 */
 /*!***********************************!*\
   !*** ./src/js/components/util.js ***!
   \***********************************/
@@ -39875,7 +39893,7 @@
 	}
 
 /***/ },
-/* 177 */
+/* 176 */
 /*!************************************!*\
   !*** ./src/js/components/Modal.js ***!
   \************************************/
@@ -39892,15 +39910,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 175);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 177);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -39985,7 +40003,7 @@
 	});
 
 /***/ },
-/* 178 */
+/* 177 */
 /*!*******************************************!*\
   !*** ./src/js/components/HeaderButton.js ***!
   \*******************************************/
@@ -40001,25 +40019,33 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 178);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton.css */ 182);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
-	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 175);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
+	
+	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var buttonSpacer = React.createElement('div', { className: _HeaderButton2.default.common });
+	var buttonSpacer = React.createElement('div', { style: _styles2.default.headerButton });
 	
 	// A button that will merge in hoverStyle when hovered over
 	var HeaderButton = React.createClass({
 	  displayName: 'HeaderButton',
 	
-	  mixins: [PureRenderMixin],
+	  mixins: [_Hoverable2.default, PureRenderMixin],
 	  handleClick: function handleClick(event) {
 	    if (this.props.visible) {
 	      this.props.onClick(event);
@@ -40035,7 +40061,10 @@
 	      return buttonSpacer;
 	    }
 	
-	    return React.createElement('button', { className: this.props.className, title: this.props.title, onClick: this.handleClick,
+	    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
+	    var hoverStyle = this.state.hovering && this.props.hoverStyle ? this.props.hoverStyle : null;
+	    var buttonStyle = Util.merge(this.props.baseStyle, hoverStyle);
+	    return React.createElement('button', { style: buttonStyle, title: this.props.title, onClick: this.handleClick,
 	      onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut
 	    });
 	  }
@@ -40044,16 +40073,16 @@
 	exports.default = HeaderButton;
 
 /***/ },
-/* 179 */
+/* 178 */
 /*!***************************************************!*\
   !*** ./~/react-addons-pure-render-mixin/index.js ***!
   \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 180);
+	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 179);
 
 /***/ },
-/* 180 */
+/* 179 */
 /*!**********************************************************!*\
   !*** ./~/react/lib/ReactComponentWithPureRenderMixin.js ***!
   \**********************************************************/
@@ -40072,7 +40101,7 @@
 	
 	'use strict';
 	
-	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 181);
+	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 180);
 	
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -40107,7 +40136,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 181 */
+/* 180 */
 /*!***************************************!*\
   !*** ./~/react/lib/shallowCompare.js ***!
   \***************************************/
@@ -40139,17 +40168,39 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 182 */
-/*!********************************************!*\
-  !*** ./src/js/components/HeaderButton.css ***!
-  \********************************************/
+/* 181 */
+/*!****************************************!*\
+  !*** ./src/js/components/Hoverable.js ***!
+  \****************************************/
 /***/ function(module, exports) {
 
-	// removed by extract-text-webpack-plugin
-	module.exports = {"common":"HeaderButton__common___1j3lg"};
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	/**
+	 * mixin for that maintains a "hovering" state
+	 * and provides callbacks for mouseOver/mouseOut
+	 * User of mixin must connect these callbacks to onMouseOver / onMouseOut
+	 * of appropriate component
+	 */
+	var Hoverable = {
+	  getInitialState: function getInitialState() {
+	    return { hovering: false };
+	  },
+	  handleMouseOver: function handleMouseOver() {
+	    this.setState({ hovering: true });
+	  },
+	  handleMouseOut: function handleMouseOut() {
+	    this.setState({ hovering: false });
+	  }
+	};
+	
+	exports.default = Hoverable;
 
 /***/ },
-/* 183 */
+/* 182 */
 /*!****************************************!*\
   !*** ./src/js/components/SaveModal.js ***!
   \****************************************/
@@ -40165,15 +40216,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _Modal = __webpack_require__(/*! ./Modal */ 177);
+	var _Modal = __webpack_require__(/*! ./Modal */ 176);
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
@@ -40252,7 +40303,7 @@
 	exports.default = SaveModal;
 
 /***/ },
-/* 184 */
+/* 183 */
 /*!**********************************************!*\
   !*** ./src/js/components/SelectablePopup.js ***!
   \**********************************************/
@@ -40268,11 +40319,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 175);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -40280,11 +40331,11 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 185);
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 184);
 	
 	var _SearchBar2 = _interopRequireDefault(_SearchBar);
 	
-	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 186);
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 185);
 	
 	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
 	
@@ -40441,7 +40492,7 @@
 	exports.default = SelectablePopup;
 
 /***/ },
-/* 185 */
+/* 184 */
 /*!****************************************!*\
   !*** ./src/js/components/SearchBar.js ***!
   \****************************************/
@@ -40457,11 +40508,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -40549,7 +40600,7 @@
 	exports.default = SearchBar;
 
 /***/ },
-/* 186 */
+/* 185 */
 /*!********************************************!*\
   !*** ./src/js/components/TabWindowList.js ***!
   \********************************************/
@@ -40565,11 +40616,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 187);
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 186);
 	
 	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 196);
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 190);
 	
 	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
 	
@@ -40641,7 +40692,7 @@
 	exports.default = TabWindowList;
 
 /***/ },
-/* 187 */
+/* 186 */
 /*!************************************************!*\
   !*** ./src/js/components/FilteredTabWindow.js ***!
   \************************************************/
@@ -40657,7 +40708,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	var _reactDom = __webpack_require__(/*! react-dom */ 210);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
@@ -40665,11 +40716,11 @@
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 175);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -40677,15 +40728,15 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 189);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 187);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
 	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 195);
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 189);
 	
 	var _TabItem2 = _interopRequireDefault(_TabItem);
 	
@@ -40817,51 +40868,7 @@
 	exports.default = FilteredTabWindow;
 
 /***/ },
-/* 188 */
-/*!******************************!*\
-  !*** ./~/react-dom/index.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 10);
-
-
-/***/ },
-/* 189 */
-/*!****************************************!*\
-  !*** ./src/js/components/Hoverable.js ***!
-  \****************************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	/**
-	 * mixin for that maintains a "hovering" state
-	 * and provides callbacks for mouseOver/mouseOut
-	 * User of mixin must connect these callbacks to onMouseOver / onMouseOut
-	 * of appropriate component
-	 */
-	var Hoverable = {
-	  getInitialState: function getInitialState() {
-	    return { hovering: false };
-	  },
-	  handleMouseOver: function handleMouseOver() {
-	    this.setState({ hovering: true });
-	  },
-	  handleMouseOut: function handleMouseOut() {
-	    this.setState({ hovering: false });
-	  }
-	};
-	
-	exports.default = Hoverable;
-
-/***/ },
-/* 190 */
+/* 187 */
 /*!*******************************************!*\
   !*** ./src/js/components/WindowHeader.js ***!
   \*******************************************/
@@ -40877,29 +40884,33 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
+	var _styles = __webpack_require__(/*! ./styles */ 173);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 175);
+	
+	var Util = _interopRequireWildcard(_util);
+	
 	var _actions = __webpack_require__(/*! ../actions */ 6);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 178);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
+	
+	var _Hoverable2 = _interopRequireDefault(_Hoverable);
+	
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 177);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 191);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 188);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
-	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader.css */ 198);
-	
-	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
-	
-	var _CloseButton = __webpack_require__(/*! ./CloseButton.css */ 194);
-	
-	var _CloseButton2 = _interopRequireDefault(_CloseButton);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40908,7 +40919,7 @@
 	var WindowHeader = React.createClass({
 	  displayName: 'WindowHeader',
 	
-	  mixins: [PureRenderMixin],
+	  mixins: [_Hoverable2.default, PureRenderMixin],
 	
 	  handleUnmanageClick: function handleUnmanageClick(event) {
 	    console.log('unamange: ', this.props.tabWindow);
@@ -40932,16 +40943,17 @@
 	    var managed = tabWindow.saved;
 	    var windowTitle = tabWindow.title;
 	
-	    // var hoverStyle = this.state.hovering ? Styles.visible : Styles.hidden;
+	    var hoverStyle = this.state.hovering ? _styles2.default.visible : _styles2.default.hidden;
 	
 	    var windowCheckItem;
 	
 	    if (managed) {
-	      windowCheckItem = React.createElement('button', { className: _WindowHeader2.default.windowManagedButton,
+	      windowCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.windowManagedButton),
 	        title: 'Stop managing this window', onClick: this.handleUnmanageClick
 	      });
 	    } else {
-	      windowCheckItem = React.createElement('input', { className: _WindowHeader2.default.headerCheckBox, type: 'checkbox',
+	      var checkStyle = Util.merge(_styles2.default.headerButton, hoverStyle, _styles2.default.headerCheckBox);
+	      windowCheckItem = React.createElement('input', { style: checkStyle, type: 'checkbox',
 	        title: 'Save all tabs in this window',
 	        onClick: this.handleManageClick,
 	        ref: 'managedCheckbox',
@@ -40949,21 +40961,23 @@
 	      });
 	    }
 	
-	    var openStyle = tabWindow.open ? _WindowHeader2.default.open : _WindowHeader2.default.closed;
-	    var titleStyle = _WindowHeader2.default.windowTitle + ' ' + openStyle;
+	    var openStyle = tabWindow.open ? _styles2.default.open : _styles2.default.closed;
+	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.windowTitle, openStyle);
+	    var closeStyle = Util.merge(_styles2.default.headerButton, _styles2.default.closeButton);
 	
 	    // We use hovering in the window header (this.state.hovering) to determine
 	    // visibility of both the revert button and close button appearing after the window title.
 	
-	    var revertButton = React.createElement(_HeaderButton2.default, { className: _WindowHeader2.default.revertButton,
-	      visible: managed && tabWindow.open,
+	    var revertButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton)
+	      // visible={this.state.hovering && managed && tabWindow.open}
+	      , visible: managed && tabWindow.open,
 	      title: 'Revert to bookmarked tabs (Close other tabs)',
 	      onClick: this.props.onRevert
 	    });
 	
-	    var closeButton = React.createElement(_HeaderButton2.default, { className: _CloseButton2.default.close,
-	      visible: tabWindow.open,
-	      title: 'Close Window',
+	    var closeButton = React.createElement(_HeaderButton2.default, { baseStyle: closeStyle,
+	      visible: this.state.hovering && tabWindow.open,
+	      hoverStyle: _styles2.default.closeButtonHover, title: 'Close Window',
 	      onClick: this.props.onClose
 	    });
 	
@@ -40971,20 +40985,19 @@
 	
 	    return React.createElement(
 	      'div',
-	      { className: _WindowHeader2.default.titleBar,
-	        onMouseOver: this.handleMouseOver,
-	        onMouseOut: this.handleMouseOut,
+	      { style: Util.merge(_styles2.default.windowHeader, _styles2.default.noWrap),
+	        onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut,
 	        onClick: this.props.onOpen
 	      },
 	      windowCheckItem,
 	      React.createElement(_ExpanderButton2.default, { winStore: this.props.winStore, expanded: this.props.expanded, onClick: this.props.onExpand }),
 	      React.createElement(
 	        'span',
-	        { className: titleStyle },
+	        { style: titleStyle },
 	        windowTitle
 	      ),
 	      revertButton,
-	      React.createElement('div', { className: _WindowHeader2.default.spacer }),
+	      React.createElement('div', { style: _styles2.default.spacer }),
 	      closeButton
 	    );
 	  }
@@ -40993,7 +41006,7 @@
 	exports.default = WindowHeader;
 
 /***/ },
-/* 191 */
+/* 188 */
 /*!*********************************************!*\
   !*** ./src/js/components/ExpanderButton.js ***!
   \*********************************************/
@@ -41009,13 +41022,17 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 178);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton.css */ 192);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
-	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 175);
+	
+	var Util = _interopRequireWildcard(_util);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -41032,36 +41049,16 @@
 	    event.stopPropagation();
 	  },
 	  render: function render() {
-	    var buttonStyle = this.props.expanded ? _ExpanderButton2.default.expanded : _ExpanderButton2.default.collapsed;
-	    return React.createElement('button', { className: buttonStyle, onClick: this.handleClicked });
+	    var expandStyle = this.props.expanded ? _styles2.default.windowCollapse : _styles2.default.windowExpand;
+	    var buttonStyle = Util.merge(_styles2.default.headerButton, expandStyle);
+	    return React.createElement('button', { style: buttonStyle, onClick: this.handleClicked });
 	  }
 	});
 	
 	exports.default = ExpanderButton;
 
 /***/ },
-/* 192 */
-/*!**********************************************!*\
-  !*** ./src/js/components/ExpanderButton.css ***!
-  \**********************************************/
-/***/ function(module, exports) {
-
-	// removed by extract-text-webpack-plugin
-	module.exports = {"expanded":"ExpanderButton__expanded___1o57i HeaderButton__common___1j3lg","collapsed":"ExpanderButton__collapsed___293QT HeaderButton__common___1j3lg"};
-
-/***/ },
-/* 193 */,
-/* 194 */
-/*!*******************************************!*\
-  !*** ./src/js/components/CloseButton.css ***!
-  \*******************************************/
-/***/ function(module, exports) {
-
-	// removed by extract-text-webpack-plugin
-	module.exports = {"close":"CloseButton__close___1lbLO HeaderButton__common___1j3lg"};
-
-/***/ },
-/* 195 */
+/* 189 */
 /*!**************************************!*\
   !*** ./src/js/components/TabItem.js ***!
   \**************************************/
@@ -41077,11 +41074,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 175);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -41089,11 +41086,11 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 189);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 177);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -41224,7 +41221,7 @@
 	exports.default = TabItem;
 
 /***/ },
-/* 196 */
+/* 190 */
 /*!************************************************!*\
   !*** ./src/js/components/WindowListSection.js ***!
   \************************************************/
@@ -41240,7 +41237,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -41280,15 +41277,35 @@
 	exports.default = WindowListSection;
 
 /***/ },
+/* 191 */,
+/* 192 */,
+/* 193 */,
+/* 194 */,
+/* 195 */,
+/* 196 */,
 /* 197 */,
-/* 198 */
-/*!********************************************!*\
-  !*** ./src/js/components/WindowHeader.css ***!
-  \********************************************/
-/***/ function(module, exports) {
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */,
+/* 202 */,
+/* 203 */,
+/* 204 */,
+/* 205 */,
+/* 206 */,
+/* 207 */,
+/* 208 */,
+/* 209 */,
+/* 210 */
+/*!******************************!*\
+  !*** ./~/react-dom/index.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
 
-	// removed by extract-text-webpack-plugin
-	module.exports = {"revertButton":"WindowHeader__revertButton___cg6FC HeaderButton__common___1j3lg","headerCheckBox":"WindowHeader__headerCheckBox___1o2Ez","windowManagedButton":"WindowHeader__windowManagedButton___l5PTC HeaderButton__common___1j3lg","open":"WindowHeader__open___2nFyK","closed":"WindowHeader__closed___2ocTQ","windowTitle":"WindowHeader__windowTitle___3YlbE Text__common___2KtDZ Text__noWrap___3Ksr3","titleBar":"WindowHeader__titleBar___wXpAu Text__noWrap___3Ksr3","spacer":"WindowHeader__spacer___3RoTW"};
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 10);
+
 
 /***/ }
 /******/ ]);

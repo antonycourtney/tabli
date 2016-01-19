@@ -20,7 +20,6 @@ const styles = {
   tabWindowSelected: {
     boxShadow: '0px 0px 5px 2px #7472ff',
   },
-/*
   windowHeader: {
     backgroundColor: '#ebe9eb',
     borderBottom: '1px solid #bababa',
@@ -35,7 +34,6 @@ const styles = {
     // justifyContent: 'space-between',
     alignItems: 'center',
   },
-*/
   tabItem: {
     height: 20,
     maxHeight: 20,
@@ -74,6 +72,15 @@ const styles = {
   expandablePanelContentOpen: {
     marginTop: 0,
   },
+  windowExpand: {
+    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
+    backgroundColor: '#606060',
+  },
+  windowCollapse: {
+    WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
+    backgroundColor: '#606060',
+  },
+
   // Hmmm, we use this as a common base for both
   //
   headerButton: {
@@ -152,7 +159,15 @@ const styles = {
     height: 13,
     margin: '3px 3px 3px 3px',
   },
-
+  windowManagedButton: {
+    WebkitMaskImage: 'url("../images/Status-9.png")',
+    backgroundColor: '#7472ff',
+  },
+  revertButton: {
+    WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
+    backgroundColor: '#7472ff',
+    marginRight: '20px',
+  },
   helpButton: {
     color: '#7472ff',
   },
@@ -182,6 +197,10 @@ const styles = {
     fontWeight: 'bold',
     paddingLeft: 7,
     maxWidth: 243,
+  },
+  headerCheckBox: {
+    width: 13,
+    height: 13,
   },
   modalOverlay: {
     position: 'fixed',

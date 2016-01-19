@@ -1,6 +1,0 @@
-.revert {
-  composes: common from "./HeaderButton.css";
-  -webkit-mask-image: url("../../images/chevron-double-mix-1-01.png");
-  background-color: #7472ff;
-  margin-right: 20px;
-}

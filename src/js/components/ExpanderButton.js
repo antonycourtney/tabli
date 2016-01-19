@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as PureRenderMixin from 'react-addons-pure-render-mixin';
-
-import styles from './ExpanderButton.css';
+import Styles from './styles';
+import * as Util from './util';
 
 // expand / contract button for a window
 const ExpanderButton = React.createClass({
@@ -13,9 +13,10 @@ const ExpanderButton = React.createClass({
   },
 
   render() {
-    var buttonStyle = this.props.expanded ? styles.expanded : styles.collapsed;
+    var expandStyle = this.props.expanded ? Styles.windowCollapse : Styles.windowExpand;
+    var buttonStyle = Util.merge(Styles.headerButton, expandStyle);
     return (
-      <button className={buttonStyle} onClick={this.handleClicked} />
+      <button style={buttonStyle} onClick={this.handleClicked} />
     );
   },
 });
