@@ -18,7 +18,8 @@
     "lodash": "^3.10.1",
     "object-assign": "^4.0.1",
     "oneref": "^0.1.3",
-    "react": "^0.14.6"
+    "react": "^0.14.6",
+    "react-dom": "^0.14.6"
   },
   "devDependencies": {
     "babel": "^6.3.26",
