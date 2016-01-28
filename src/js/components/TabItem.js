@@ -85,7 +85,7 @@ const TabItem = React.createClass({
       tabCheckItem = <div style={Styles.headerButton} />;
     }
 
-    var fiSrc = tab.favIconUrl ? tab.favIconUrl : '';
+    var fiSrc = 'chrome://favicon/size/16/' + tab.url;
 
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {
