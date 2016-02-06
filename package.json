@@ -25,6 +25,7 @@
     "babel-cli": "^6.4.0",
     "babel-eslint": "^5.0.0-beta6",
     "babel-loader": "^6.2.1",
+    "bootstrap": "^3.3.6",
     "difflet": "^1.0.1",
     "ekko-lightbox": "^4.0.1",
     "eslint": "^1.10.3",

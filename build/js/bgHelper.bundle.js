@@ -28,13 +28,13 @@ webpackJsonp([0],{
 	
 	var _viewRef2 = _interopRequireDefault(_viewRef);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 209);
+	var _server = __webpack_require__(/*! react-dom/server */ 170);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
-	var _TabliPopup = __webpack_require__(/*! ./components/TabliPopup */ 170);
+	var _Popup = __webpack_require__(/*! ./components/Popup */ 171);
 	
-	var _TabliPopup2 = _interopRequireDefault(_TabliPopup);
+	var _Popup2 = _interopRequireDefault(_Popup);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -183,7 +183,7 @@ webpackJsonp([0],{
 	     * React.renderToString() will remount the component, so really want a fresh element here with exactly
 	     * the store state we wish to render and save.
 	     */
-	    var renderAppElement = React.createElement(_TabliPopup2.default, { storeRef: null, initialWinStore: winStore, noListener: true });
+	    var renderAppElement = React.createElement(_Popup2.default, { storeRef: null, initialWinStore: winStore, noListener: true });
 	    var renderedString = ReactDOMServer.renderToString(renderAppElement);
 	
 	    // console.log("renderAndSave: updated saved store and HTML");
@@ -595,7 +595,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 209:
+/***/ 170:
 /*!*******************************!*\
   !*** ./~/react-dom/server.js ***!
   \*******************************/
@@ -605,6 +605,668 @@ webpackJsonp([0],{
 	
 	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 155);
 
+
+/***/ },
+
+/***/ 171:
+/*!************************************!*\
+  !*** ./src/js/components/Popup.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _searchOps = __webpack_require__(/*! ../searchOps */ 172);
+	
+	var searchOps = _interopRequireWildcard(_searchOps);
+	
+	var _oneref = __webpack_require__(/*! oneref */ 166);
+	
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	
+	var _RevertModal2 = _interopRequireDefault(_RevertModal);
+	
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 183);
+	
+	var _SaveModal2 = _interopRequireDefault(_SaveModal);
+	
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 184);
+	
+	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
+	
+	var _util = __webpack_require__(/*! ./util */ 176);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/**
+	 * send message to BGhelper
+	 */
+	function sendHelperMessage(msg) {
+	  var port = chrome.runtime.connect({ name: 'popup' });
+	  port.postMessage(msg);
+	  port.onMessage.addListener(function (response) {
+	    console.log('Got response message: ', response);
+	  });
+	}
+	
+	var Popup = React.createClass({
+	  displayName: 'Popup',
+	  storeAsState: function storeAsState(winStore) {
+	    var tabWindows = winStore.getAll();
+	
+	    var sortedWindows = tabWindows.sort(Util.windowCmp);
+	
+	    return {
+	      winStore: winStore,
+	      sortedWindows: sortedWindows
+	    };
+	  },
+	  getInitialState: function getInitialState() {
+	    var st = this.storeAsState(this.props.initialWinStore);
+	
+	    st.saveModalIsOpen = false;
+	    st.revertModalIsOpen = false;
+	    st.revertTabWindow = null;
+	    st.searchStr = '';
+	    st.searchRE = null;
+	    return st;
+	  },
+	  handleSearchInput: function handleSearchInput(rawSearchStr) {
+	    var searchStr = rawSearchStr.trim();
+	
+	    var searchRE = null;
+	    if (searchStr.length > 0) {
+	      searchRE = new RegExp(searchStr, 'i');
+	    }
+	
+	    console.log("search input: '" + searchStr + "'");
+	    this.setState({ searchStr: searchStr, searchRE: searchRE });
+	  },
+	  openSaveModal: function openSaveModal(tabWindow) {
+	    var initialTitle = tabWindow.title;
+	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
+	  },
+	  closeSaveModal: function closeSaveModal() {
+	    this.setState({ saveModalIsOpen: false });
+	  },
+	  openRevertModal: function openRevertModal(filteredTabWindow) {
+	    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
+	  },
+	  closeRevertModal: function closeRevertModal() {
+	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
+	  },
+	
+	  /* handler for save modal */
+	  doSave: function doSave(titleStr) {
+	    var storeRef = this.props.storeRef;
+	    var tabliFolderId = storeRef.getValue().folderId;
+	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
+	    this.closeSaveModal();
+	  },
+	  doRevert: function doRevert(tabWindow) {
+	    // eslint-disable-line no-unused-vars
+	    var updateHandler = (0, _oneref.refUpdater)(this.props.storeRef);
+	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
+	    this.closeRevertModal();
+	  },
+	
+	  /* render save modal (or not) based on this.state.saveModalIsOpen */
+	  renderSaveModal: function renderSaveModal() {
+	    var modal = null;
+	    if (this.state.saveModalIsOpen) {
+	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
+	        tabWindow: this.state.saveTabWindow,
+	        onClose: this.closeSaveModal,
+	        onSubmit: this.doSave,
+	        appComponent: this
+	      });
+	    }
+	
+	    return modal;
+	  },
+	
+	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
+	  renderRevertModal: function renderRevertModal() {
+	    var modal = null;
+	    if (this.state.revertModalIsOpen) {
+	      modal = React.createElement(_RevertModal2.default, {
+	        tabWindow: this.state.revertTabWindow,
+	        onClose: this.closeRevertModal,
+	        onSubmit: this.doRevert,
+	        appComponent: this
+	      });
+	    }
+	
+	    return modal;
+	  },
+	  render: function render() {
+	    var ret;
+	    try {
+	      var saveModal = this.renderSaveModal();
+	      var revertModal = this.renderRevertModal();
+	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
+	      ret = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(_SelectablePopup2.default, {
+	          onSearchInput: this.handleSearchInput,
+	          winStore: this.state.winStore,
+	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
+	          filteredWindows: filteredWindows,
+	          appComponent: this,
+	          searchStr: this.state.searchStr,
+	          searchRE: this.state.searchRE
+	        }),
+	        saveModal,
+	        revertModal
+	      );
+	    } catch (e) {
+	      console.error('App Component: caught exception during render: ');
+	      console.error(e.stack);
+	      throw e;
+	    }
+	
+	    return ret;
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var _this = this;
+	
+	    if (this.props.noListener) {
+	      return;
+	    }
+	
+	    var storeRef = this.props.storeRef;
+	    /*
+	     * This listener is essential for triggering a (recursive) re-render
+	     * in response to a state change.
+	     */
+	    var listenerId = storeRef.addViewListener(function () {
+	      console.log('TabliPopup: viewListener: updating store from storeRef');
+	      _this.setState(_this.storeAsState(storeRef.getValue()));
+	    });
+	
+	    // console.log("componentWillMount: added view listener: ", listenerId);
+	    sendHelperMessage({ listenerId: listenerId });
+	  }
+	});
+	
+	exports.default = Popup;
+
+/***/ },
+
+/***/ 184:
+/*!**********************************************!*\
+  !*** ./src/js/components/SelectablePopup.js ***!
+  \**********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 176);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 185);
+	
+	var _SearchBar2 = _interopRequireDefault(_SearchBar);
+	
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 186);
+	
+	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function matchingTabCount(searchStr, filteredTabWindow) {
+	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+	  return ret;
+	}
+	
+	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
+	  if (searchStr.length === 0) {
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabItem = tabWindow.tabItems.get(tabIndex);
+	    return tabItem;
+	  }
+	  var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
+	  return filteredItem.tabItem;
+	}
+	
+	/**
+	 * An element that manages the selection.
+	 *
+	 * We want this as a distinct element from its parent TabMan, because it does local state management
+	 * and validation that should happen with respect to the (already calculated) props containing
+	 * filtered windows that we receive from above
+	 */
+	var SelectablePopup = React.createClass({
+	  displayName: 'SelectablePopup',
+	  getInitialState: function getInitialState() {
+	    return {
+	      selectedWindowIndex: 0,
+	      selectedTabIndex: 0
+	    };
+	  },
+	  handlePrevSelection: function handlePrevSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	
+	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
+	    } else {
+	      // Already on first tab, try to back up to previous window:
+	      if (this.state.selectedWindowIndex > 0) {
+	        var prevWindowIndex = this.state.selectedWindowIndex - 1;
+	        var prevWindow = this.props.filteredWindows[prevWindowIndex];
+	        var prevTabCount = this.props.searchStr.length > 0 ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
+	
+	        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
+	      }
+	    }
+	  },
+	  handleNextSelection: function handleNextSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    // We'd prefer to use expanded state of window rather then open/closed state,
+	    // but that's hidden in the component...
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
+	    } else {
+	      // Already on last tab, try to advance to next window:
+	      if (this.state.selectedWindowIndex + 1 < this.props.filteredWindows.length) {
+	        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
+	      }
+	    }
+	  },
+	  handleSelectionEnter: function handleSelectionEnter() {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	
+	    // TODO: deal with this.state.selectedTabIndex==-1
+	
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
+	    console.log('opening: ', selectedTabItem.toJS());
+	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    var selectedWindowIndex = this.state.selectedWindowIndex;
+	    var nextFilteredWindows = nextProps.filteredWindows;
+	
+	    if (selectedWindowIndex >= nextFilteredWindows.length) {
+	      if (nextFilteredWindows.length === 0) {
+	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
+	        console.log('resetting indices');
+	      } else {
+	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
+	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
+	      }
+	    } else {
+	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
+	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
+	      this.setState({ selectedTabIndex: nextTabIndex });
+	    }
+	  },
+	  render: function render() {
+	    var winStore = this.props.winStore;
+	    var openTabCount = winStore.countOpenTabs();
+	    var openWinCount = winStore.countOpenWindows();
+	    var savedCount = winStore.countSavedWindows();
+	
+	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
+	    var summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupHeader },
+	        React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
+	          onSearchUp: this.handlePrevSelection,
+	          onSearchDown: this.handleNextSelection,
+	          onSearchEnter: this.handleSelectionEnter
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupBody },
+	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          filteredWindows: this.props.filteredWindows,
+	          appComponent: this.props.appComponent,
+	          searchStr: this.props.searchStr,
+	          searchRE: this.props.searchRE,
+	          selectedWindowIndex: this.state.selectedWindowIndex,
+	          selectedTabIndex: this.state.selectedTabIndex
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupFooter },
+	        React.createElement(
+	          'span',
+	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
+	          summarySentence
+	        )
+	      )
+	    );
+	  }
+	});
+	
+	exports.default = SelectablePopup;
+
+/***/ },
+
+/***/ 186:
+/*!********************************************!*\
+  !*** ./src/js/components/TabWindowList.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 187);
+	
+	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
+	
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 192);
+	
+	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var TabWindowList = React.createClass({
+	  displayName: 'TabWindowList',
+	  render: function render() {
+	    var focusedWindowElem = [];
+	    var openWindows = [];
+	    var savedWindows = [];
+	
+	    var filteredWindows = this.props.filteredWindows;
+	    for (var i = 0; i < filteredWindows.length; i++) {
+	      var filteredTabWindow = filteredWindows[i];
+	      var tabWindow = filteredTabWindow.tabWindow;
+	      var id = 'tabWindow' + i;
+	      var isOpen = tabWindow.open;
+	      var isFocused = tabWindow.focused;
+	      var isSelected = i === this.props.selectedWindowIndex;
+	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
+	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        filteredTabWindow: filteredTabWindow, key: id,
+	        searchStr: this.props.searchStr,
+	        searchRE: this.props.searchRE,
+	        isSelected: isSelected,
+	        selectedTabIndex: selectedTabIndex,
+	        appComponent: this.props.appComponent
+	      });
+	      if (isFocused) {
+	        focusedWindowElem = windowElem;
+	      } else if (isOpen) {
+	        openWindows.push(windowElem);
+	      } else {
+	        savedWindows.push(windowElem);
+	      }
+	    }
+	
+	    var savedSection = null;
+	    if (savedWindows.length > 0) {
+	      savedSection = React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Saved Closed Windows' },
+	        savedWindows
+	      );
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Current Window' },
+	        focusedWindowElem
+	      ),
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Other Open Windows' },
+	        openWindows
+	      ),
+	      savedSection
+	    );
+	  }
+	});
+	
+	exports.default = TabWindowList;
+
+/***/ },
+
+/***/ 187:
+/*!************************************************!*\
+  !*** ./src/js/components/FilteredTabWindow.js ***!
+  \************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 176);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	
+	var _Hoverable2 = _interopRequireDefault(_Hoverable);
+	
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 189);
+	
+	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
+	
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 191);
+	
+	var _TabItem2 = _interopRequireDefault(_TabItem);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var FilteredTabWindow = React.createClass({
+	  displayName: 'FilteredTabWindow',
+	
+	  mixins: [_Hoverable2.default],
+	
+	  getInitialState: function getInitialState() {
+	    // Note:  We initialize this with null rather than false so that it will follow
+	    // open / closed state of window
+	    return { expanded: null };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    if (nextProps.isSelected && !this.props.isSelected) {
+	      // scroll div for this window into view:
+	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+	    }
+	  },
+	  handleOpen: function handleOpen() {
+	    console.log('handleOpen', this, this.props);
+	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleClose: function handleClose(event) {
+	    // eslint-disable-line no-unused-vars
+	    // console.log("handleClose");
+	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleRevert: function handleRevert(event) {
+	    // eslint-disable-line no-unused-vars
+	    var appComponent = this.props.appComponent;
+	    appComponent.openRevertModal(this.props.filteredTabWindow);
+	  },
+	
+	  /* expanded state follows window open/closed state unless it is
+	   * explicitly set interactively by the user
+	   */
+	  getExpandedState: function getExpandedState() {
+	    if (this.state.expanded === null) {
+	      return this.props.filteredTabWindow.tabWindow.open;
+	    }
+	    return this.state.expanded;
+	  },
+	  renderTabItems: function renderTabItems(tabWindow, tabs) {
+	    /*
+	     * We tried explicitly checking for expanded state and
+	     * returning null if not expanded, but (somewhat surprisingly) it
+	     * was no faster, even with dozens of hidden tabs
+	     */
+	    var items = [];
+	    for (var i = 0; i < tabs.count(); i++) {
+	      var id = 'tabItem-' + i;
+	      var isSelected = i === this.props.selectedTabIndex;
+	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        tabWindow: tabWindow,
+	        tab: tabs.get(i),
+	        key: id,
+	        tabIndex: i,
+	        isSelected: isSelected,
+	        appComponent: this.props.appComponent
+	      });
+	      items.push(tabItem);
+	    }
+	
+	    var expanded = this.getExpandedState();
+	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
+	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle);
+	    return React.createElement(
+	      'div',
+	      { style: tabListStyle },
+	      items
+	    );
+	  },
+	  handleExpand: function handleExpand(expand) {
+	    this.setState({ expanded: expand });
+	  },
+	  render: function render() {
+	    var filteredTabWindow = this.props.filteredTabWindow;
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabs;
+	    if (this.props.searchStr.length === 0) {
+	      tabs = tabWindow.tabItems;
+	    } else {
+	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
+	        return fti.tabItem;
+	      });
+	    }
+	
+	    /*
+	     * optimization:  Let's only render tabItems if expanded
+	     */
+	    var expanded = this.getExpandedState();
+	    var tabItems = null;
+	    if (expanded) {
+	      tabItems = this.renderTabItems(tabWindow, tabs);
+	    } else {
+	      // render empty list of tab items to get -ve margin rollup layout right...
+	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
+	    }
+	
+	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
+	      storeUpdateHandler: this.props.storeUpdateHandler,
+	      tabWindow: tabWindow,
+	      expanded: expanded,
+	      onExpand: this.handleExpand,
+	      onOpen: this.handleOpen,
+	      onRevert: this.handleRevert,
+	      onClose: this.handleClose,
+	      appComponent: this.props.appComponent
+	    });
+	
+	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
+	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle);
+	
+	    return React.createElement(
+	      'div',
+	      { ref: 'windowDiv', style: windowStyles, onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut },
+	      windowHeader,
+	      tabItems
+	    );
+	  }
+	});
+	
+	exports.default = FilteredTabWindow;
 
 /***/ }
 

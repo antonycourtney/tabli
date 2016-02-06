@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as actions from './actions';
 import { logWrap } from './utils';
-import TabliPopup from './components/TabliPopup';
+import Popup from './components/Popup';
 
 /**
  * Main entry point to rendering the popup window
@@ -43,7 +43,7 @@ function renderPopup(currentWindowId) {
      */
 
     // console.log("doRender: About to render using savedStore: ", savedStore.toJS());
-    var appElement = <TabliPopup storeRef={storeRef} initialWinStore={savedStore} />;
+    var appElement = <Popup storeRef={storeRef} initialWinStore={savedStore} />;
     var appComponent = ReactDOM.render(appElement, parentNode);  // eslint-disable-line no-unused-vars
     var t_postRender = performance.now();
     console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');

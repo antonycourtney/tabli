@@ -3,13 +3,10 @@
 }
 body {  background: white;
       font-family: sans-serif;
-      width: 350px;
       /* max-width: 400px; */
       /* overflow-x: hidden; */
       font-size:12px;
       cursor: default;
-      overflow: hidden;
-      margin: 0px;
    }
 h1, h2, h3 {font-family: sans-serif;}
 h1 { font-size: 16px; }

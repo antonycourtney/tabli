@@ -15,3 +15,31 @@ export function merge() {
 
   return res;
 }
+
+/*
+ * sort criteria for window list:
+ *   open windows first, then alpha by title
+ */
+export function windowCmp(tabWindowA, tabWindowB) {
+  // focused window very first:
+  const fA = tabWindowA.focused;
+  const fB = tabWindowB.focused;
+  if (fA !== fB) {
+    if (fA) {
+      return -1;
+    }
+    return 1;
+  }
+
+  // open windows first:
+  if (tabWindowA.open !== tabWindowB.open) {
+    if (tabWindowA.open) {
+      return -1;
+    }
+    return 1;
+  }
+
+  var tA = tabWindowA.title;
+  var tB = tabWindowB.title;
+  return tA.localeCompare(tB);
+}

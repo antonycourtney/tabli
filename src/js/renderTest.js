@@ -5,7 +5,7 @@ import TabManagerState from './tabManagerState';
 import * as Perf from 'react-addons-perf';
 import * as ReactDOM from 'react-dom';
 import * as ReactDOMServer from 'react-dom/server';
-import TabliPopup from './components/TabliPopup';
+import Popup from './components/Popup';
 
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin) {
@@ -68,7 +68,7 @@ function renderPage(testData) {
   // There won't be any such updates (since we created the store) but the listener mechanism
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
-  var appElement = <TabliPopup winStore={mockWinStore} noListener />;
+  var appElement = <Popup winStore={mockWinStore} noListener />;
   ReactDOM.render(appElement, parentNode);
 
   var t_postRender = performance.now();

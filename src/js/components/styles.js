@@ -6,7 +6,6 @@ const styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
-
   // This is the container for a single tabWindow, consisting of its
   // header and tabs:
   tabWindow: {
@@ -16,6 +15,13 @@ const styles = {
     maxWidth: 345,
     display: 'flex',
     flexDirection: 'column',
+  },
+  tabWindowTile: {
+    width: 270,
+    maxWidth: 270,
+    height: 180,
+    maxHeight: 180,
+    margin: 10
   },
   tabWindowSelected: {
     boxShadow: '0px 0px 5px 2px #7472ff',
@@ -148,6 +154,8 @@ const styles = {
     backgroundColor: '#505050',
   },
   emptyFavIcon: {
+    width: 18,
+    marginRight: 3,
     WebkitMaskImage: 'url("../images/Files-26.png")',
     backgroundColor: '#969696',
   },
@@ -181,6 +189,9 @@ const styles = {
   },
   tabList: {
     marginLeft: 0,
+  },
+  tileTabContainer: {
+    overflow: 'auto'
   },
   spanClosed: {
     color: '#979ca0',
@@ -317,6 +328,11 @@ const styles = {
     display: 'flex',
     justifyContent: 'flex-end',
   },
+  tabTileContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap'
+  }
 };
 
 export default styles;

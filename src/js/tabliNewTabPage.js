@@ -2,12 +2,12 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as actions from './actions';
 import { logWrap } from './utils';
-import TabliPopup from './components/TabliPopup';
+import NewTabPage from './components/NewTabPage';
 
 /**
  * Main entry point to rendering the new tab page
  */
-function renderNewTab(currentWindowId) {
+function renderNewTabPage(currentWindowId) {
   var t_preRender = performance.now();
   var bgPage = chrome.extension.getBackgroundPage();
 
@@ -22,7 +22,7 @@ function renderNewTab(currentWindowId) {
    */
 
   // console.log("doRender: About to render using savedStore: ", savedStore.toJS());
-  var appElement = <TabliPopup storeRef={storeRef} initialWinStore={savedStore} />;
+  var appElement = <NewTabPage storeRef={storeRef} initialWinStore={savedStore} />;
   var appComponent = ReactDOM.render(appElement, parentNode);  // eslint-disable-line no-unused-vars
   var t_postRender = performance.now();
   console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');
@@ -45,7 +45,7 @@ function renderNewTab(currentWindowId) {
 
 function getFocusedAndRender() {
   chrome.windows.getCurrent(null, (currentWindow) => {
-    renderNewTab(currentWindow.id);
+    renderNewTabPage(currentWindow.id);
   });
 }
 

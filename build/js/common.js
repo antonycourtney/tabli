@@ -76,7 +76,7 @@
 /******/ 			script.charset = 'utf-8';
 /******/ 			script.async = true;
 /******/
-/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"bgHelper","1":"newTabPage","2":"popup","3":"renderTest"}[chunkId]||chunkId) + ".bundle.js";
+/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"bgHelper","1":"renderTest","2":"tabliNewTabPage","3":"tabliPopup"}[chunkId]||chunkId) + ".bundle.js";
 /******/ 			head.appendChild(script);
 /******/ 		}
 /******/ 	};
@@ -38972,232 +38972,9 @@
 
 
 /***/ },
-/* 170 */
-/*!*****************************************!*\
-  !*** ./src/js/components/TabliPopup.js ***!
-  \*****************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 8);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _actions = __webpack_require__(/*! ../actions */ 6);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _searchOps = __webpack_require__(/*! ../searchOps */ 171);
-	
-	var searchOps = _interopRequireWildcard(_searchOps);
-	
-	var _oneref = __webpack_require__(/*! oneref */ 166);
-	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 172);
-	
-	var _RevertModal2 = _interopRequireDefault(_RevertModal);
-	
-	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 182);
-	
-	var _SaveModal2 = _interopRequireDefault(_SaveModal);
-	
-	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 183);
-	
-	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	/*
-	 * sort criteria for window list:
-	 *   open windows first, then alpha by title
-	 */
-	function windowCmpFn(tabWindowA, tabWindowB) {
-	  // focused window very first:
-	  var fA = tabWindowA.focused;
-	  var fB = tabWindowB.focused;
-	  if (fA !== fB) {
-	    if (fA) {
-	      return -1;
-	    }
-	    return 1;
-	  }
-	
-	  // open windows first:
-	  if (tabWindowA.open !== tabWindowB.open) {
-	    if (tabWindowA.open) {
-	      return -1;
-	    }
-	    return 1;
-	  }
-	
-	  var tA = tabWindowA.title;
-	  var tB = tabWindowB.title;
-	  return tA.localeCompare(tB);
-	}
-	
-	/**
-	 * send message to BGhelper
-	 */
-	function sendHelperMessage(msg) {
-	  var port = chrome.runtime.connect({ name: 'popup' });
-	  port.postMessage(msg);
-	  port.onMessage.addListener(function (response) {
-	    console.log('Got response message: ', response);
-	  });
-	}
-	
-	var TabliPopup = React.createClass({
-	  displayName: 'TabliPopup',
-	  storeAsState: function storeAsState(winStore) {
-	    var tabWindows = winStore.getAll();
-	
-	    var sortedWindows = tabWindows.sort(windowCmpFn);
-	
-	    return {
-	      winStore: winStore,
-	      sortedWindows: sortedWindows
-	    };
-	  },
-	  getInitialState: function getInitialState() {
-	    var st = this.storeAsState(this.props.initialWinStore);
-	
-	    st.saveModalIsOpen = false;
-	    st.revertModalIsOpen = false;
-	    st.revertTabWindow = null;
-	    st.searchStr = '';
-	    st.searchRE = null;
-	    return st;
-	  },
-	  handleSearchInput: function handleSearchInput(rawSearchStr) {
-	    var searchStr = rawSearchStr.trim();
-	
-	    var searchRE = null;
-	    if (searchStr.length > 0) {
-	      searchRE = new RegExp(searchStr, 'i');
-	    }
-	
-	    console.log("search input: '" + searchStr + "'");
-	    this.setState({ searchStr: searchStr, searchRE: searchRE });
-	  },
-	  openSaveModal: function openSaveModal(tabWindow) {
-	    var initialTitle = tabWindow.title;
-	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
-	  },
-	  closeSaveModal: function closeSaveModal() {
-	    this.setState({ saveModalIsOpen: false });
-	  },
-	  openRevertModal: function openRevertModal(filteredTabWindow) {
-	    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
-	  },
-	  closeRevertModal: function closeRevertModal() {
-	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
-	  },
-	
-	  /* handler for save modal */
-	  doSave: function doSave(titleStr) {
-	    var storeRef = this.props.storeRef;
-	    var tabliFolderId = storeRef.getValue().folderId;
-	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
-	    this.closeSaveModal();
-	  },
-	  doRevert: function doRevert(tabWindow) {
-	    // eslint-disable-line no-unused-vars
-	    var updateHandler = (0, _oneref.refUpdater)(this.props.storeRef);
-	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
-	    this.closeRevertModal();
-	  },
-	
-	  /* render save modal (or not) based on this.state.saveModalIsOpen */
-	  renderSaveModal: function renderSaveModal() {
-	    var modal = null;
-	    if (this.state.saveModalIsOpen) {
-	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
-	        tabWindow: this.state.saveTabWindow,
-	        onClose: this.closeSaveModal,
-	        onSubmit: this.doSave,
-	        appComponent: this
-	      });
-	    }
-	
-	    return modal;
-	  },
-	
-	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
-	  renderRevertModal: function renderRevertModal() {
-	    var modal = null;
-	    if (this.state.revertModalIsOpen) {
-	      modal = React.createElement(_RevertModal2.default, {
-	        tabWindow: this.state.revertTabWindow,
-	        onClose: this.closeRevertModal,
-	        onSubmit: this.doRevert,
-	        appComponent: this
-	      });
-	    }
-	
-	    return modal;
-	  },
-	  render: function render() {
-	    var ret;
-	    try {
-	      var saveModal = this.renderSaveModal();
-	      var revertModal = this.renderRevertModal();
-	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
-	      ret = React.createElement(
-	        'div',
-	        null,
-	        React.createElement(_SelectablePopup2.default, {
-	          onSearchInput: this.handleSearchInput,
-	          winStore: this.state.winStore,
-	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
-	          filteredWindows: filteredWindows,
-	          appComponent: this,
-	          searchStr: this.state.searchStr,
-	          searchRE: this.state.searchRE
-	        }),
-	        saveModal,
-	        revertModal
-	      );
-	    } catch (e) {
-	      console.error('App Component: caught exception during render: ');
-	      console.error(e.stack);
-	      throw e;
-	    }
-	
-	    return ret;
-	  },
-	  componentWillMount: function componentWillMount() {
-	    var _this = this;
-	
-	    if (this.props.noListener) {
-	      return;
-	    }
-	
-	    var storeRef = this.props.storeRef;
-	    /*
-	     * This listener is essential for triggering a (recursive) re-render
-	     * in response to a state change.
-	     */
-	    var listenerId = storeRef.addViewListener(function () {
-	      console.log('TabliPopup: viewListener: updating store from storeRef');
-	      _this.setState(_this.storeAsState(storeRef.getValue()));
-	    });
-	
-	    // console.log("componentWillMount: added view listener: ", listenerId);
-	    sendHelperMessage({ listenerId: listenerId });
-	  }
-	});
-	
-	exports.default = TabliPopup;
-
-/***/ },
-/* 171 */
+/* 170 */,
+/* 171 */,
+/* 172 */
 /*!*****************************!*\
   !*** ./src/js/searchOps.js ***!
   \*****************************/
@@ -39306,7 +39083,7 @@
 	}
 
 /***/ },
-/* 172 */
+/* 173 */
 /*!******************************************!*\
   !*** ./src/js/components/RevertModal.js ***!
   \******************************************/
@@ -39326,19 +39103,19 @@
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 175);
+	var _util = __webpack_require__(/*! ./util */ 176);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 174);
+	var _constants = __webpack_require__(/*! ./constants */ 175);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _Modal = __webpack_require__(/*! ./Modal */ 176);
+	var _Modal = __webpack_require__(/*! ./Modal */ 177);
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
@@ -39499,7 +39276,7 @@
 	exports.default = RevertModal;
 
 /***/ },
-/* 173 */
+/* 174 */
 /*!*************************************!*\
   !*** ./src/js/components/styles.js ***!
   \*************************************/
@@ -39511,7 +39288,7 @@
 	  value: true
 	});
 	
-	var _constants = __webpack_require__(/*! ./constants */ 174);
+	var _constants = __webpack_require__(/*! ./constants */ 175);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -39523,7 +39300,6 @@
 	    textOverflow: 'ellipsis',
 	    whiteSpace: 'nowrap'
 	  },
-	
 	  // This is the container for a single tabWindow, consisting of its
 	  // header and tabs:
 	  tabWindow: {
@@ -39533,6 +39309,13 @@
 	    maxWidth: 345,
 	    display: 'flex',
 	    flexDirection: 'column'
+	  },
+	  tabWindowTile: {
+	    width: 270,
+	    maxWidth: 270,
+	    height: 180,
+	    maxHeight: 180,
+	    margin: 10
 	  },
 	  tabWindowSelected: {
 	    boxShadow: '0px 0px 5px 2px #7472ff'
@@ -39664,6 +39447,8 @@
 	    backgroundColor: '#505050'
 	  },
 	  emptyFavIcon: {
+	    width: 18,
+	    marginRight: 3,
 	    WebkitMaskImage: 'url("../images/Files-26.png")',
 	    backgroundColor: '#969696'
 	  },
@@ -39697,6 +39482,9 @@
 	  },
 	  tabList: {
 	    marginLeft: 0
+	  },
+	  tileTabContainer: {
+	    overflow: 'auto'
 	  },
 	  spanClosed: {
 	    color: '#979ca0'
@@ -39832,13 +39620,18 @@
 	  alignRight: {
 	    display: 'flex',
 	    justifyContent: 'flex-end'
+	  },
+	  tabTileContainer: {
+	    display: 'flex',
+	    flexDirection: 'row',
+	    flexWrap: 'wrap'
 	  }
 	};
 	
 	exports.default = styles;
 
 /***/ },
-/* 174 */
+/* 175 */
 /*!****************************************!*\
   !*** ./src/js/components/constants.js ***!
   \****************************************/
@@ -39862,7 +39655,7 @@
 	var KEY_QUESTION = exports.KEY_QUESTION = 191;
 
 /***/ },
-/* 175 */
+/* 176 */
 /*!***********************************!*\
   !*** ./src/js/components/util.js ***!
   \***********************************/
@@ -39874,6 +39667,7 @@
 	  value: true
 	});
 	exports.merge = merge;
+	exports.windowCmp = windowCmp;
 	/**
 	 * Object merge operator from the original css-in-js presentation
 	 */
@@ -39891,9 +39685,37 @@
 	
 	  return res;
 	}
+	
+	/*
+	 * sort criteria for window list:
+	 *   open windows first, then alpha by title
+	 */
+	function windowCmp(tabWindowA, tabWindowB) {
+	  // focused window very first:
+	  var fA = tabWindowA.focused;
+	  var fB = tabWindowB.focused;
+	  if (fA !== fB) {
+	    if (fA) {
+	      return -1;
+	    }
+	    return 1;
+	  }
+	
+	  // open windows first:
+	  if (tabWindowA.open !== tabWindowB.open) {
+	    if (tabWindowA.open) {
+	      return -1;
+	    }
+	    return 1;
+	  }
+	
+	  var tA = tabWindowA.title;
+	  var tB = tabWindowB.title;
+	  return tA.localeCompare(tB);
+	}
 
 /***/ },
-/* 176 */
+/* 177 */
 /*!************************************!*\
   !*** ./src/js/components/Modal.js ***!
   \************************************/
@@ -39910,15 +39732,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 175);
+	var _util = __webpack_require__(/*! ./util */ 176);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 177);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -40003,7 +39825,7 @@
 	});
 
 /***/ },
-/* 177 */
+/* 178 */
 /*!*******************************************!*\
   !*** ./src/js/components/HeaderButton.js ***!
   \*******************************************/
@@ -40019,19 +39841,19 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 178);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 175);
+	var _util = __webpack_require__(/*! ./util */ 176);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
@@ -40073,16 +39895,16 @@
 	exports.default = HeaderButton;
 
 /***/ },
-/* 178 */
+/* 179 */
 /*!***************************************************!*\
   !*** ./~/react-addons-pure-render-mixin/index.js ***!
   \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 179);
+	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 180);
 
 /***/ },
-/* 179 */
+/* 180 */
 /*!**********************************************************!*\
   !*** ./~/react/lib/ReactComponentWithPureRenderMixin.js ***!
   \**********************************************************/
@@ -40101,7 +39923,7 @@
 	
 	'use strict';
 	
-	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 180);
+	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 181);
 	
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -40136,7 +39958,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 180 */
+/* 181 */
 /*!***************************************!*\
   !*** ./~/react/lib/shallowCompare.js ***!
   \***************************************/
@@ -40168,7 +39990,7 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 181 */
+/* 182 */
 /*!****************************************!*\
   !*** ./src/js/components/Hoverable.js ***!
   \****************************************/
@@ -40200,7 +40022,7 @@
 	exports.default = Hoverable;
 
 /***/ },
-/* 182 */
+/* 183 */
 /*!****************************************!*\
   !*** ./src/js/components/SaveModal.js ***!
   \****************************************/
@@ -40216,15 +40038,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 174);
+	var _constants = __webpack_require__(/*! ./constants */ 175);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _Modal = __webpack_require__(/*! ./Modal */ 176);
+	var _Modal = __webpack_require__(/*! ./Modal */ 177);
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
@@ -40303,196 +40125,8 @@
 	exports.default = SaveModal;
 
 /***/ },
-/* 183 */
-/*!**********************************************!*\
-  !*** ./src/js/components/SelectablePopup.js ***!
-  \**********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 8);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 175);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _actions = __webpack_require__(/*! ../actions */ 6);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 184);
-	
-	var _SearchBar2 = _interopRequireDefault(_SearchBar);
-	
-	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 185);
-	
-	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	function matchingTabCount(searchStr, filteredTabWindow) {
-	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
-	  return ret;
-	}
-	
-	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
-	  if (searchStr.length === 0) {
-	    var tabWindow = filteredTabWindow.tabWindow;
-	    var tabItem = tabWindow.tabItems.get(tabIndex);
-	    return tabItem;
-	  }
-	  var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
-	  return filteredItem.tabItem;
-	}
-	
-	/**
-	 * An element that manages the selection.
-	 *
-	 * We want this as a distinct element from its parent TabMan, because it does local state management
-	 * and validation that should happen with respect to the (already calculated) props containing
-	 * filtered windows that we receive from above
-	 */
-	var SelectablePopup = React.createClass({
-	  displayName: 'SelectablePopup',
-	  getInitialState: function getInitialState() {
-	    return {
-	      selectedWindowIndex: 0,
-	      selectedTabIndex: 0
-	    };
-	  },
-	  handlePrevSelection: function handlePrevSelection(byPage) {
-	    if (this.props.filteredWindows.length === 0) {
-	      return;
-	    }
-	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
-	
-	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
-	
-	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
-	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
-	    } else {
-	      // Already on first tab, try to back up to previous window:
-	      if (this.state.selectedWindowIndex > 0) {
-	        var prevWindowIndex = this.state.selectedWindowIndex - 1;
-	        var prevWindow = this.props.filteredWindows[prevWindowIndex];
-	        var prevTabCount = this.props.searchStr.length > 0 ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
-	
-	        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
-	      }
-	    }
-	  },
-	  handleNextSelection: function handleNextSelection(byPage) {
-	    if (this.props.filteredWindows.length === 0) {
-	      return;
-	    }
-	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
-	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
-	
-	    // We'd prefer to use expanded state of window rather then open/closed state,
-	    // but that's hidden in the component...
-	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount && !byPage) {
-	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
-	    } else {
-	      // Already on last tab, try to advance to next window:
-	      if (this.state.selectedWindowIndex + 1 < this.props.filteredWindows.length) {
-	        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
-	      }
-	    }
-	  },
-	  handleSelectionEnter: function handleSelectionEnter() {
-	    if (this.props.filteredWindows.length === 0) {
-	      return;
-	    }
-	
-	    // TODO: deal with this.state.selectedTabIndex==-1
-	
-	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
-	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
-	    console.log('opening: ', selectedTabItem.toJS());
-	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    var selectedWindowIndex = this.state.selectedWindowIndex;
-	    var nextFilteredWindows = nextProps.filteredWindows;
-	
-	    if (selectedWindowIndex >= nextFilteredWindows.length) {
-	      if (nextFilteredWindows.length === 0) {
-	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
-	        console.log('resetting indices');
-	      } else {
-	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
-	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
-	      }
-	    } else {
-	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
-	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
-	      this.setState({ selectedTabIndex: nextTabIndex });
-	    }
-	  },
-	  render: function render() {
-	    var winStore = this.props.winStore;
-	    var openTabCount = winStore.countOpenTabs();
-	    var openWinCount = winStore.countOpenWindows();
-	    var savedCount = winStore.countSavedWindows();
-	
-	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
-	    var summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
-	
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.popupHeader },
-	        React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
-	          onSearchUp: this.handlePrevSelection,
-	          onSearchDown: this.handleNextSelection,
-	          onSearchEnter: this.handleSelectionEnter
-	        })
-	      ),
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.popupBody },
-	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
-	          storeUpdateHandler: this.props.storeUpdateHandler,
-	          filteredWindows: this.props.filteredWindows,
-	          appComponent: this.props.appComponent,
-	          searchStr: this.props.searchStr,
-	          searchRE: this.props.searchRE,
-	          selectedWindowIndex: this.state.selectedWindowIndex,
-	          selectedTabIndex: this.state.selectedTabIndex
-	        })
-	      ),
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.popupFooter },
-	        React.createElement(
-	          'span',
-	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
-	          summarySentence
-	        )
-	      )
-	    );
-	  }
-	});
-	
-	exports.default = SelectablePopup;
-
-/***/ },
-/* 184 */
+/* 184 */,
+/* 185 */
 /*!****************************************!*\
   !*** ./src/js/components/SearchBar.js ***!
   \****************************************/
@@ -40508,11 +40142,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 174);
+	var _constants = __webpack_require__(/*! ./constants */ 175);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -40600,275 +40234,21 @@
 	exports.default = SearchBar;
 
 /***/ },
-/* 185 */
-/*!********************************************!*\
-  !*** ./src/js/components/TabWindowList.js ***!
-  \********************************************/
+/* 186 */,
+/* 187 */,
+/* 188 */
+/*!******************************!*\
+  !*** ./~/react-dom/index.js ***!
+  \******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 8);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 186);
-	
-	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
-	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 190);
-	
-	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	var TabWindowList = React.createClass({
-	  displayName: 'TabWindowList',
-	  render: function render() {
-	    var focusedWindowElem = [];
-	    var openWindows = [];
-	    var savedWindows = [];
-	
-	    var filteredWindows = this.props.filteredWindows;
-	    for (var i = 0; i < filteredWindows.length; i++) {
-	      var filteredTabWindow = filteredWindows[i];
-	      var tabWindow = filteredTabWindow.tabWindow;
-	      var id = 'tabWindow' + i;
-	      var isOpen = tabWindow.open;
-	      var isFocused = tabWindow.focused;
-	      var isSelected = i === this.props.selectedWindowIndex;
-	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
-	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
-	        storeUpdateHandler: this.props.storeUpdateHandler,
-	        filteredTabWindow: filteredTabWindow, key: id,
-	        searchStr: this.props.searchStr,
-	        searchRE: this.props.searchRE,
-	        isSelected: isSelected,
-	        selectedTabIndex: selectedTabIndex,
-	        appComponent: this.props.appComponent
-	      });
-	      if (isFocused) {
-	        focusedWindowElem = windowElem;
-	      } else if (isOpen) {
-	        openWindows.push(windowElem);
-	      } else {
-	        savedWindows.push(windowElem);
-	      }
-	    }
-	
-	    var savedSection = null;
-	    if (savedWindows.length > 0) {
-	      savedSection = React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Saved Closed Windows' },
-	        savedWindows
-	      );
-	    }
-	
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Current Window' },
-	        focusedWindowElem
-	      ),
-	      React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Other Open Windows' },
-	        openWindows
-	      ),
-	      savedSection
-	    );
-	  }
-	});
-	
-	exports.default = TabWindowList;
+	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 10);
+
 
 /***/ },
-/* 186 */
-/*!************************************************!*\
-  !*** ./src/js/components/FilteredTabWindow.js ***!
-  \************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 8);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _reactDom = __webpack_require__(/*! react-dom */ 210);
-	
-	var ReactDOM = _interopRequireWildcard(_reactDom);
-	
-	var _immutable = __webpack_require__(/*! immutable */ 4);
-	
-	var Immutable = _interopRequireWildcard(_immutable);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 175);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _actions = __webpack_require__(/*! ../actions */ 6);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
-	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 187);
-	
-	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
-	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 189);
-	
-	var _TabItem2 = _interopRequireDefault(_TabItem);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	var FilteredTabWindow = React.createClass({
-	  displayName: 'FilteredTabWindow',
-	
-	  mixins: [_Hoverable2.default],
-	
-	  getInitialState: function getInitialState() {
-	    // Note:  We initialize this with null rather than false so that it will follow
-	    // open / closed state of window
-	    return { expanded: null };
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    if (nextProps.isSelected && !this.props.isSelected) {
-	      // scroll div for this window into view:
-	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
-	    }
-	  },
-	  handleOpen: function handleOpen() {
-	    console.log('handleOpen', this, this.props);
-	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
-	  },
-	  handleClose: function handleClose(event) {
-	    // eslint-disable-line no-unused-vars
-	    // console.log("handleClose");
-	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
-	  },
-	  handleRevert: function handleRevert(event) {
-	    // eslint-disable-line no-unused-vars
-	    var appComponent = this.props.appComponent;
-	    appComponent.openRevertModal(this.props.filteredTabWindow);
-	  },
-	
-	  /* expanded state follows window open/closed state unless it is
-	   * explicitly set interactively by the user
-	   */
-	  getExpandedState: function getExpandedState() {
-	    if (this.state.expanded === null) {
-	      return this.props.filteredTabWindow.tabWindow.open;
-	    }
-	    return this.state.expanded;
-	  },
-	  renderTabItems: function renderTabItems(tabWindow, tabs) {
-	    /*
-	     * We tried explicitly checking for expanded state and
-	     * returning null if not expanded, but (somewhat surprisingly) it
-	     * was no faster, even with dozens of hidden tabs
-	     */
-	    var items = [];
-	    for (var i = 0; i < tabs.count(); i++) {
-	      var id = 'tabItem-' + i;
-	      var isSelected = i === this.props.selectedTabIndex;
-	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
-	        storeUpdateHandler: this.props.storeUpdateHandler,
-	        tabWindow: tabWindow,
-	        tab: tabs.get(i),
-	        key: id,
-	        tabIndex: i,
-	        isSelected: isSelected,
-	        appComponent: this.props.appComponent
-	      });
-	      items.push(tabItem);
-	    }
-	
-	    var expanded = this.getExpandedState();
-	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
-	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle);
-	    return React.createElement(
-	      'div',
-	      { style: tabListStyle },
-	      items
-	    );
-	  },
-	  handleExpand: function handleExpand(expand) {
-	    this.setState({ expanded: expand });
-	  },
-	  render: function render() {
-	    var filteredTabWindow = this.props.filteredTabWindow;
-	    var tabWindow = filteredTabWindow.tabWindow;
-	    var tabs;
-	    if (this.props.searchStr.length === 0) {
-	      tabs = tabWindow.tabItems;
-	    } else {
-	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
-	        return fti.tabItem;
-	      });
-	    }
-	
-	    /*
-	     * optimization:  Let's only render tabItems if expanded
-	     */
-	    var expanded = this.getExpandedState();
-	    var tabItems = null;
-	    if (expanded) {
-	      tabItems = this.renderTabItems(tabWindow, tabs);
-	    } else {
-	      // render empty list of tab items to get -ve margin rollup layout right...
-	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
-	    }
-	
-	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
-	      storeUpdateHandler: this.props.storeUpdateHandler,
-	      tabWindow: tabWindow,
-	      expanded: expanded,
-	      onExpand: this.handleExpand,
-	      onOpen: this.handleOpen,
-	      onRevert: this.handleRevert,
-	      onClose: this.handleClose,
-	      appComponent: this.props.appComponent
-	    });
-	
-	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
-	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle);
-	
-	    return React.createElement(
-	      'div',
-	      { ref: 'windowDiv', style: windowStyles, onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut },
-	      windowHeader,
-	      tabItems
-	    );
-	  }
-	});
-	
-	exports.default = FilteredTabWindow;
-
-/***/ },
-/* 187 */
+/* 189 */
 /*!*******************************************!*\
   !*** ./src/js/components/WindowHeader.js ***!
   \*******************************************/
@@ -40884,11 +40264,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 175);
+	var _util = __webpack_require__(/*! ./util */ 176);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -40896,19 +40276,19 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 178);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 177);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 188);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 190);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
 	
@@ -41006,7 +40386,7 @@
 	exports.default = WindowHeader;
 
 /***/ },
-/* 188 */
+/* 190 */
 /*!*********************************************!*\
   !*** ./src/js/components/ExpanderButton.js ***!
   \*********************************************/
@@ -41022,15 +40402,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 178);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 175);
+	var _util = __webpack_require__(/*! ./util */ 176);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -41043,6 +40423,7 @@
 	  displayName: 'ExpanderButton',
 	
 	  mixins: [PureRenderMixin],
+	
 	  handleClicked: function handleClicked(event) {
 	    var nextState = !this.props.expanded;
 	    this.props.onClick(nextState);
@@ -41058,7 +40439,7 @@
 	exports.default = ExpanderButton;
 
 /***/ },
-/* 189 */
+/* 191 */
 /*!**************************************!*\
   !*** ./src/js/components/TabItem.js ***!
   \**************************************/
@@ -41074,11 +40455,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 175);
+	var _util = __webpack_require__(/*! ./util */ 176);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -41086,11 +40467,11 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 181);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 177);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -41221,7 +40602,7 @@
 	exports.default = TabItem;
 
 /***/ },
-/* 190 */
+/* 192 */
 /*!************************************************!*\
   !*** ./src/js/components/WindowListSection.js ***!
   \************************************************/
@@ -41237,7 +40618,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -41275,37 +40656,6 @@
 	});
 	
 	exports.default = WindowListSection;
-
-/***/ },
-/* 191 */,
-/* 192 */,
-/* 193 */,
-/* 194 */,
-/* 195 */,
-/* 196 */,
-/* 197 */,
-/* 198 */,
-/* 199 */,
-/* 200 */,
-/* 201 */,
-/* 202 */,
-/* 203 */,
-/* 204 */,
-/* 205 */,
-/* 206 */,
-/* 207 */,
-/* 208 */,
-/* 209 */,
-/* 210 */
-/*!******************************!*\
-  !*** ./~/react-dom/index.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 10);
-
 
 /***/ }
 /******/ ]);

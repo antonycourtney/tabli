@@ -5,35 +5,8 @@ import { refUpdater } from 'oneref';
 
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
-import SelectablePopup from './SelectablePopup';
-
-/*
- * sort criteria for window list:
- *   open windows first, then alpha by title
- */
-function windowCmpFn(tabWindowA, tabWindowB) {
-  // focused window very first:
-  const fA = tabWindowA.focused;
-  const fB = tabWindowB.focused;
-  if (fA !== fB) {
-    if (fA) {
-      return -1;
-    }
-    return 1;
-  }
-
-  // open windows first:
-  if (tabWindowA.open !== tabWindowB.open) {
-    if (tabWindowA.open) {
-      return -1;
-    }
-    return 1;
-  }
-
-  var tA = tabWindowA.title;
-  var tB = tabWindowB.title;
-  return tA.localeCompare(tB);
-}
+import SelectableTabPage from './SelectableTabPage';
+import * as Util from './util';
 
 /**
  * send message to BGhelper
@@ -46,11 +19,11 @@ function sendHelperMessage(msg) {
   });
 }
 
-const TabliPopup = React.createClass({
+const NewTabPage = React.createClass({
   storeAsState(winStore) {
     var tabWindows = winStore.getAll();
 
-    var sortedWindows = tabWindows.sort(windowCmpFn);
+    var sortedWindows = tabWindows.sort(Util.windowCmp);
 
     return {
       winStore,
@@ -152,7 +125,7 @@ const TabliPopup = React.createClass({
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
       ret = (
         <div>
-          <SelectablePopup
+          <SelectableTabPage
             onSearchInput={this.handleSearchInput}
             winStore={this.state.winStore}
             storeUpdateHandler={refUpdater(this.props.storeRef)}
@@ -195,4 +168,4 @@ const TabliPopup = React.createClass({
 });
 
 
-export default TabliPopup;
+export default NewTabPage;

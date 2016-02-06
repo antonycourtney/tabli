@@ -8,8 +8,8 @@ var commonsPlugin =
 module.exports = {
     entry: {
       renderTest: "./src/js/renderTest.js",
-      popup: "./src/js/popup.js",
-      newTabPage: "./src/js/newTabPage.js",
+      tabliPopup: "./src/js/tabliPopup.js",
+      tabliNewTabPage: "./src/js/tabliNewTabPage.js",
       bgHelper: "./src/js/bgHelper.js"
     },
     output: {
