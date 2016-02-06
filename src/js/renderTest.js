@@ -68,7 +68,8 @@ function renderPage(testData) {
   // There won't be any such updates (since we created the store) but the listener mechanism
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
-  var appElement = <Popup winStore={mockWinStore} noListener />;
+
+  const appElement = <Popup storeRef={null} initialWinStore={mockWinStore} noListener />;
   ReactDOM.render(appElement, parentNode);
 
   var t_postRender = performance.now();

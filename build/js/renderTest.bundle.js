@@ -107,7 +107,8 @@ webpackJsonp([1],{
 	  // There won't be any such updates (since we created the store) but the listener mechanism
 	  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
 	  // that connection.
-	  var appElement = React.createElement(_Popup2.default, { winStore: mockWinStore, noListener: true });
+	
+	  var appElement = React.createElement(_Popup2.default, { storeRef: null, initialWinStore: mockWinStore, noListener: true });
 	  ReactDOM.render(appElement, parentNode);
 	
 	  var t_postRender = performance.now();
