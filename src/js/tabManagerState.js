@@ -109,7 +109,7 @@ export default class TabManagerState extends Immutable.Record({
 
     // Iterate through tab windows (our current list of open windows)
     // closing any not in chromeWindowList:
-    var chromeIds = _.pluck(chromeWindowList, 'id');
+    var chromeIds = _.map(chromeWindowList, 'id');
     var chromeIdSet = new Set(chromeIds);
 
     var closedWindows = _.filter(tabWindows, (tw) => !chromeIdSet.has(tw.openWindowId));
