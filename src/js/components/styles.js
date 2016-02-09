@@ -177,7 +177,7 @@ const styles = {
     marginRight: '20px',
   },
   helpButton: {
-    color: '#7472ff',
+    color: '#7472ff'
   },
   closeButton: {
     WebkitMaskImage: 'url("../images/interface-77.png")',
@@ -274,9 +274,10 @@ const styles = {
     marginBottom: 5,
   },
   popupHeader: {
-    width: '100%',
+    width: 350,
+    maxWidth: 350,
     height: Constants.POPUP_HEADER_HEIGHT,
-    position: 'fixed',
+    position: 'absolute', // let's try instead of fixed to see if it becomes rel to container
     top: 0,
     background: '#ffffff',
     zIndex: 1,
@@ -286,23 +287,35 @@ const styles = {
     paddingTop: 4,
     paddingBottom: 4,
   },
+  popupContainer: {
+    // We use absolute positioning at (0,0) so that header/footer will be relative to this
+    position: 'absolute',
+    top: 0,
+    left: 0,  
+    width: 352,
+    maxWidth: 352,
+    maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
+    /* adding this border is useful for debugging styling issues:
+    /* border: '1px solid #bababa' */
+  },
   headerContainer: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 5,
-    marginBottom: 5,
+    marginBottom: 5
   },
   popupBody: {
     marginTop: Constants.POPUP_HEADER_HEIGHT,
     marginBottom: Constants.POPUP_FOOTER_HEIGHT,
-    maxHeight: 550,
+    maxHeight: Constants.POPUP_BODY_HEIGHT,
     overflow: 'auto',
   },
   popupFooter: {
-    width: '100%',
+    width: 350,
+    maxWidth: 350,
     height: Constants.POPUP_FOOTER_HEIGHT,
-    position: 'fixed',
+    position: 'absolute',
     bottom: 0,
     background: '#ffffff',
     zIndex: 1,
@@ -318,7 +331,7 @@ const styles = {
     marginTop: 5,
   },
   searchInput: {
-    width: '100%',
+    width: 285,
     maxWidth: 285,
   },
   summarySpan: {
@@ -332,6 +345,14 @@ const styles = {
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap'
+  },
+  renderTestContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 200,
+    width: 400,
+    height: 700,
+    border: '1px solid #ff0000'
   }
 };
 

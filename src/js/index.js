@@ -5,7 +5,7 @@
  * Experimental to try and get Tabli working in Brave web browser
  */
 
-import TabWindow from './tabWindow';
+import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
 import Popup from './components/Popup';
 

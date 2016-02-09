@@ -6,6 +6,7 @@ import * as ReactDOM from 'react-dom';
 import * as ReactDOMServer from 'react-dom/server';
 import TabManagerState from './tabManagerState';
 import Popup from './components/Popup';
+import Styles from './components/styles';
 
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin) {
@@ -69,7 +70,9 @@ function renderPage(testData) {
   // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
   // that connection.
 
-  const appElement = <Popup storeRef={null} initialWinStore={mockWinStore} noListener />;
+  const appElement = <div style={Styles.renderTestContainer}>
+    <Popup storeRef={null} initialWinStore={mockWinStore} noListener />
+  </div>;
   ReactDOM.render(appElement, parentNode);
 
   var t_postRender = performance.now();

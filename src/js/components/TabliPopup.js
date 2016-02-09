@@ -3,7 +3,6 @@ import * as actions from '../actions';
 import * as searchOps from '../searchOps';
 import { refUpdater } from 'oneref';
 
-import Styles from './styles';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import SelectablePopup from './SelectablePopup';
@@ -20,7 +19,7 @@ function sendHelperMessage(msg) {
   });
 }
 
-const Popup = React.createClass({
+const TabliPopup = React.createClass({
   storeAsState(winStore) {
     var tabWindows = winStore.getAll();
 
@@ -125,7 +124,7 @@ const Popup = React.createClass({
       const revertModal = this.renderRevertModal();
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
       ret = (
-        <div style={Styles.popupContainer}>
+        <div>
           <SelectablePopup
             onSearchInput={this.handleSearchInput}
             winStore={this.state.winStore}
@@ -169,4 +168,4 @@ const Popup = React.createClass({
 });
 
 
-export default Popup;
+export default TabliPopup;

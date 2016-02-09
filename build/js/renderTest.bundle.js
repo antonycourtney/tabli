@@ -1,1 +1,1157 @@
-webpackJsonp([1],{0:function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}function o(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}function a(e){var t=e.tabItems.map(function(e){return new v.TabItem(e)}),n=Object.assign({},e,{tabItems:h.Seq(t)}),r=new v.TabWindow(n);return r}function s(e){var t=e.allWindows,n=t.map(a),r=new M["default"],o=chrome.extension.getBackgroundPage(),s=o.renderTestSavedHTML,i=r.registerTabWindows(n);console.log("Created mockWinStore and registered test windows"),console.log("mock winStore: ",i.toJS());var d=performance.now(),l=document.getElementById("windowList-region");if(w&&w.start(),s){console.log("Got saved HTML, setting..."),l.innerHTML=s;var u=performance.now();console.log("time to set initial HTML: ",u-d)}var p=c.createElement(y["default"],{storeRef:null,initialWinStore:i,noListener:!0});I.render(p,l);var h=performance.now();w&&w.stop(),console.log("initial render complete. render time: (",h-d," ms)"),w&&(console.log("inclusive:"),w.printInclusive(),console.log("exclusive:"),w.printExclusive(),console.log("wasted:"),w.printWasted()),console.log("After rendering, parentNode: ",l);var f=W.renderToString(p);o.renderTestSavedHTML=f}function i(e){var t=new XMLHttpRequest;t.open("GET",x,!0),t.onload=function(){if(t.status>=200&&t.status<400){var n=JSON.parse(t.responseText);e(n)}else console.error("request failed, error: ",t.status,t)},t.send()}function d(){i(s)}function l(){window.onload=d}var u=n(8),c=o(u),p=n(4),h=o(p),f=n(5),v=o(f),m=n(188),w=o(m),b=n(183),I=o(b),g=n(165),W=o(g),S=n(1),M=r(S),T=n(166),y=r(T),x="testData/winSnap.json";l()},1:function(e,t,n){"use strict";function r(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function a(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!=typeof t&&"function"!=typeof t?e:t}function s(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+typeof t);e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();Object.defineProperty(t,"__esModule",{value:!0});var d=n(2),l=r(d),u=n(4),c=r(u),p=n(5),h=r(p),f=function(e){function t(){return o(this,t),a(this,Object.getPrototypeOf(t).apply(this,arguments))}return s(t,e),i(t,[{key:"registerTabWindow",value:function(e){var t=e.open?this.windowIdMap.set(e.openWindowId,e):this.windowIdMap,n=e.saved?this.bookmarkIdMap.set(e.savedFolderId,e):this.bookmarkIdMap;return this.set("windowIdMap",t).set("bookmarkIdMap",n)}},{key:"registerTabWindows",value:function(e){return l.reduce(e,function(e,t){return e.registerTabWindow(t)},this)}},{key:"handleTabWindowClosed",value:function(e){var t=this.windowIdMap["delete"](e.openWindowId),n=h.removeOpenWindowState(e);return this.set("windowIdMap",t).registerTabWindow(n)}},{key:"handleTabClosed",value:function(e,t){var n=h.closeTab(e,t);return this.registerTabWindow(n)}},{key:"handleTabSaved",value:function(e,t,n){var r=h.saveTab(e,t,n);return this.registerTabWindow(r)}},{key:"handleTabUnsaved",value:function(e,t){var n=h.unsaveTab(e,t);return this.registerTabWindow(n)}},{key:"attachChromeWindow",value:function(e,t){var n=this.windowIdMap.get(t.id),r=n?this.handleTabWindowClosed(n):this,o=h.updateWindow(e,t);return console.log("attachChromeWindow: attachedTabWindow: ",o.toJS()),r.registerTabWindow(o)}},{key:"syncChromeWindow",value:function(e){var t=this.windowIdMap.get(e.id),n=t?h.updateWindow(t,e):h.makeChromeTabWindow(e);return this.registerTabWindow(n)}},{key:"syncWindowList",value:function(e){var t=this.getOpen(),n=l.map(e,"id"),r=new Set(n),o=l.filter(t,function(e){return!r.has(e.openWindowId)}),a=l.reduce(o,function(e,t){return e.handleTabWindowClosed(t)},this);return l.reduce(e,function(e,t){return e.syncChromeWindow(t)},a)}},{key:"setCurrentWindow",value:function(e){var t=this.getTabWindowByChromeId(e);if(!t)return console.log("setCurrentWindow: window id ",e,"not found"),this;var n=t.set("focused",!0);return this.registerTabWindow(n)}},{key:"removeBookmarkIdMapEntry",value:function(e){return this.set("bookmarkIdMap",this.bookmarkIdMap["delete"](e.savedFolderId))}},{key:"unmanageWindow",value:function(e){var t=this.removeBookmarkIdMapEntry(e),n=h.removeSavedWindowState(e);return t.registerTabWindow(n)}},{key:"attachBookmarkFolder",value:function(e,t){var n=h.makeFolderTabWindow(e),r=h.updateWindow(n,t);return this.registerTabWindow(r)}},{key:"getOpen",value:function(){var e=this.windowIdMap.toIndexedSeq().toArray();return e}},{key:"getAll",value:function(){var e=this.getOpen(),t=this.bookmarkIdMap.toIndexedSeq().filter(function(e){return!e.open}).toArray();return e.concat(t)}},{key:"getTabWindowByChromeId",value:function(e){return this.windowIdMap.get(e)}},{key:"countOpenWindows",value:function(){return this.windowIdMap.count()}},{key:"countSavedWindows",value:function(){return this.bookmarkIdMap.count()}},{key:"countOpenTabs",value:function(){return this.windowIdMap.reduce(function(e,t){return e+t.openTabCount},0)}}]),t}(c.Record({windowIdMap:c.Map(),bookmarkIdMap:c.Map(),folderId:-1,archiveFolderId:-1}));t["default"]=f},165:function(e,t,n){"use strict";e.exports=n(150)},166:function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}function o(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}function a(e){var t=chrome.runtime.connect({name:"popup"});t.postMessage(e),t.onMessage.addListener(function(e){console.log("Got response message: ",e)})}Object.defineProperty(t,"__esModule",{value:!0});var s=n(8),i=o(s),d=n(6),l=o(d),u=n(167),c=o(u),p=n(161),h=n(168),f=r(h),v=n(178),m=r(v),w=n(179),b=r(w),I=n(171),g=o(I),W=i.createClass({displayName:"Popup",storeAsState:function(e){var t=e.getAll(),n=t.sort(g.windowCmp);return{winStore:e,sortedWindows:n}},getInitialState:function(){var e=this.storeAsState(this.props.initialWinStore);return e.saveModalIsOpen=!1,e.revertModalIsOpen=!1,e.revertTabWindow=null,e.searchStr="",e.searchRE=null,e},handleSearchInput:function(e){var t=e.trim(),n=null;t.length>0&&(n=new RegExp(t,"i")),console.log("search input: '"+t+"'"),this.setState({searchStr:t,searchRE:n})},openSaveModal:function(e){var t=e.title;this.setState({saveModalIsOpen:!0,saveInitialTitle:t,saveTabWindow:e})},closeSaveModal:function(){this.setState({saveModalIsOpen:!1})},openRevertModal:function(e){this.setState({revertModalIsOpen:!0,revertTabWindow:e.tabWindow})},closeRevertModal:function(){this.setState({revertModalIsOpen:!1,revertTabWindow:null})},doSave:function(e){var t=this.props.storeRef,n=t.getValue().folderId;l.manageWindow(n,this.state.saveTabWindow,e,(0,p.refUpdater)(t)),this.closeSaveModal()},doRevert:function(e){var t=(0,p.refUpdater)(this.props.storeRef);l.revertWindow(this.state.revertTabWindow,t),this.closeRevertModal()},renderSaveModal:function(){var e=null;return this.state.saveModalIsOpen&&(e=i.createElement(m["default"],{initialTitle:this.state.saveInitialTitle,tabWindow:this.state.saveTabWindow,onClose:this.closeSaveModal,onSubmit:this.doSave,appComponent:this})),e},renderRevertModal:function(){var e=null;return this.state.revertModalIsOpen&&(e=i.createElement(f["default"],{tabWindow:this.state.revertTabWindow,onClose:this.closeRevertModal,onSubmit:this.doRevert,appComponent:this})),e},render:function(){var e;try{var t=this.renderSaveModal(),n=this.renderRevertModal(),r=c.filterTabWindows(this.state.sortedWindows,this.state.searchRE);e=i.createElement("div",null,i.createElement(b["default"],{onSearchInput:this.handleSearchInput,winStore:this.state.winStore,storeUpdateHandler:(0,p.refUpdater)(this.props.storeRef),filteredWindows:r,appComponent:this,searchStr:this.state.searchStr,searchRE:this.state.searchRE}),t,n)}catch(o){throw console.error("App Component: caught exception during render: "),console.error(o.stack),o}return e},componentWillMount:function(){var e=this;if(!this.props.noListener){var t=this.props.storeRef,n=t.addViewListener(function(){console.log("TabliPopup: viewListener: updating store from storeRef"),e.setState(e.storeAsState(t.getValue()))});a({listenerId:n})}}});t["default"]=W},179:function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}function o(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}function a(e,t){var n=e.length>0?t.itemMatches.count():t.tabWindow.tabItems.count();return n}function s(e,t,n){if(0===t.length){var r=e.tabWindow,o=r.tabItems.get(n);return o}var a=e.itemMatches.get(n);return a.tabItem}Object.defineProperty(t,"__esModule",{value:!0});var i=n(8),d=o(i),l=n(169),u=r(l),c=n(171),p=o(c),h=n(6),f=o(h),v=n(180),m=r(v),w=n(181),b=r(w),I=d.createClass({displayName:"SelectablePopup",getInitialState:function(){return{selectedWindowIndex:0,selectedTabIndex:0}},handlePrevSelection:function(e){if(0!==this.props.filteredWindows.length){var t=this.props.filteredWindows[this.state.selectedWindowIndex];if(t.tabWindow.open&&this.state.selectedTabIndex>0&&!e)this.setState({selectedTabIndex:this.state.selectedTabIndex-1});else if(this.state.selectedWindowIndex>0){var n=this.state.selectedWindowIndex-1,r=this.props.filteredWindows[n],o=this.props.searchStr.length>0?r.itemMatches.count():r.tabWindow.tabItems.count();this.setState({selectedWindowIndex:n,selectedTabIndex:o-1})}}},handleNextSelection:function(e){if(0!==this.props.filteredWindows.length){var t=this.props.filteredWindows[this.state.selectedWindowIndex],n=this.props.searchStr.length>0?t.itemMatches.count():t.tabWindow.tabItems.count();t.tabWindow.open&&this.state.selectedTabIndex+1<n&&!e?this.setState({selectedTabIndex:this.state.selectedTabIndex+1}):this.state.selectedWindowIndex+1<this.props.filteredWindows.length&&this.setState({selectedWindowIndex:this.state.selectedWindowIndex+1,selectedTabIndex:0})}},handleSelectionEnter:function(){if(0!==this.props.filteredWindows.length){var e=this.props.filteredWindows[this.state.selectedWindowIndex],t=s(e,this.props.searchStr,this.state.selectedTabIndex);console.log("opening: ",t.toJS()),f.activateTab(e.tabWindow,t,this.state.selectedTabIndex,this.props.storeUpdateHandler)}},componentWillReceiveProps:function(e){var t=this.state.selectedWindowIndex,n=e.filteredWindows;if(t>=n.length)if(0===n.length)this.setState({selectedWindowIndex:0,selectedTabIndex:-1}),console.log("resetting indices");else{var r=n[n.length-1];this.setState({selectedWindowIndex:n.length-1,selectedTabIndex:a(this.props.searchStr,r)-1})}else{var o=n[t],s=Math.min(this.state.selectedTabIndex,a(this.props.searchStr,o)-1);this.setState({selectedTabIndex:s})}},render:function(){var e=this.props.winStore,t=e.countOpenTabs(),n=e.countOpenWindows(),r=e.countSavedWindows(),o="Tabs: "+t+" Open. Windows: "+n+" Open, "+r+" Saved.";return d.createElement("div",null,d.createElement("div",{style:u["default"].popupHeader},d.createElement(m["default"],{onSearchInput:this.props.onSearchInput,onSearchUp:this.handlePrevSelection,onSearchDown:this.handleNextSelection,onSearchEnter:this.handleSelectionEnter})),d.createElement("div",{style:u["default"].popupBody},d.createElement(b["default"],{winStore:this.props.winStore,storeUpdateHandler:this.props.storeUpdateHandler,filteredWindows:this.props.filteredWindows,appComponent:this.props.appComponent,searchStr:this.props.searchStr,searchRE:this.props.searchRE,selectedWindowIndex:this.state.selectedWindowIndex,selectedTabIndex:this.state.selectedTabIndex})),d.createElement("div",{style:u["default"].popupFooter},d.createElement("span",{style:p.merge(u["default"].closed,u["default"].summarySpan)},o)))}});t["default"]=I},181:function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}function o(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}Object.defineProperty(t,"__esModule",{value:!0});var a=n(8),s=o(a),i=n(182),d=r(i),l=n(187),u=r(l),c=s.createClass({displayName:"TabWindowList",render:function(){for(var e=[],t=[],n=[],r=this.props.filteredWindows,o=0;o<r.length;o++){var a=r[o],i=a.tabWindow,l="tabWindow"+o,c=i.open,p=i.focused,h=o===this.props.selectedWindowIndex,f=h?this.props.selectedTabIndex:-1,v=s.createElement(d["default"],{winStore:this.props.winStore,storeUpdateHandler:this.props.storeUpdateHandler,filteredTabWindow:a,key:l,searchStr:this.props.searchStr,searchRE:this.props.searchRE,isSelected:h,selectedTabIndex:f,appComponent:this.props.appComponent});p?e=v:c?t.push(v):n.push(v)}var m=null;return n.length>0&&(m=s.createElement(u["default"],{title:"Saved Closed Windows"},n)),s.createElement("div",null,s.createElement(u["default"],{title:"Current Window"},e),s.createElement(u["default"],{title:"Other Open Windows"},t),m)}});t["default"]=c},182:function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}function o(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}Object.defineProperty(t,"__esModule",{value:!0});var a=n(8),s=o(a),i=n(183),d=o(i),l=n(4),u=o(l),c=n(169),p=r(c),h=n(171),f=o(h),v=n(6),m=o(v),w=n(177),b=r(w),I=n(184),g=r(I),W=n(186),S=r(W),M=s.createClass({displayName:"FilteredTabWindow",mixins:[b["default"]],getInitialState:function(){return{expanded:null}},componentWillReceiveProps:function(e){e.isSelected&&!this.props.isSelected&&d.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded()},handleOpen:function(){console.log("handleOpen",this,this.props),m.openWindow(this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler)},handleClose:function(e){m.closeWindow(this.props.filteredTabWindow.tabWindow,this.props.storeUpdateHandler)},handleRevert:function(e){var t=this.props.appComponent;t.openRevertModal(this.props.filteredTabWindow)},getExpandedState:function(){return null===this.state.expanded?this.props.filteredTabWindow.tabWindow.open:this.state.expanded},renderTabItems:function(e,t){for(var n=[],r=0;r<t.count();r++){var o="tabItem-"+r,a=r===this.props.selectedTabIndex,i=s.createElement(S["default"],{winStore:this.props.winStore,storeUpdateHandler:this.props.storeUpdateHandler,tabWindow:e,tab:t.get(r),key:o,tabIndex:r,isSelected:a,appComponent:this.props.appComponent});n.push(i)}var d=this.getExpandedState(),l=d?p["default"].expandablePanelContentOpen:p["default"].expandablePanelContentClosed,u=f.merge(p["default"].tabList,l);return s.createElement("div",{style:u},n)},handleExpand:function(e){this.setState({expanded:e})},render:function(){var e,t=this.props.filteredTabWindow,n=t.tabWindow;e=0===this.props.searchStr.length?n.tabItems:t.itemMatches.map(function(e){return e.tabItem});var r=this.getExpandedState(),o=null;o=r?this.renderTabItems(n,e):this.renderTabItems(n,u.Seq());var a=s.createElement(g["default"],{winStore:this.props.winStore,storeUpdateHandler:this.props.storeUpdateHandler,tabWindow:n,expanded:r,onExpand:this.handleExpand,onOpen:this.handleOpen,onRevert:this.handleRevert,onClose:this.handleClose,appComponent:this.props.appComponent}),i=this.props.isSelected?p["default"].tabWindowSelected:null,d=f.merge(p["default"].tabWindow,p["default"].expandablePanel,i);return s.createElement("div",{ref:"windowDiv",style:d,onMouseOver:this.handleMouseOver,onMouseOut:this.handleMouseOut},a,o)}});t["default"]=M},188:function(e,t,n){e.exports=n(189)},189:function(e,t,n){"use strict";function r(e){return Math.floor(100*e)/100}function o(e,t,n){e[t]=(e[t]||0)+n}var a=n(29),s=n(190),i=n(34),d=n(24),l=n(191),u={_allMeasurements:[],_mountStack:[0],_injected:!1,start:function(){u._injected||d.injection.injectMeasure(u.measure),u._allMeasurements.length=0,d.enableMeasure=!0},stop:function(){d.enableMeasure=!1},getLastMeasurements:function(){return u._allMeasurements},printExclusive:function(e){e=e||u._allMeasurements;var t=s.getExclusiveSummary(e);console.table(t.map(function(e){return{"Component class name":e.componentName,"Total inclusive time (ms)":r(e.inclusive),"Exclusive mount time (ms)":r(e.exclusive),"Exclusive render time (ms)":r(e.render),"Mount time per instance (ms)":r(e.exclusive/e.count),"Render time per instance (ms)":r(e.render/e.count),Instances:e.count}}))},printInclusive:function(e){e=e||u._allMeasurements;var t=s.getInclusiveSummary(e);console.table(t.map(function(e){return{"Owner > component":e.componentName,"Inclusive time (ms)":r(e.time),Instances:e.count}})),console.log("Total time:",s.getTotalTime(e).toFixed(2)+" ms")},getMeasurementsSummaryMap:function(e){var t=s.getInclusiveSummary(e,!0);return t.map(function(e){return{"Owner > component":e.componentName,"Wasted time (ms)":e.time,Instances:e.count}})},printWasted:function(e){e=e||u._allMeasurements,console.table(u.getMeasurementsSummaryMap(e)),console.log("Total time:",s.getTotalTime(e).toFixed(2)+" ms")},printDOM:function(e){e=e||u._allMeasurements;var t=s.getDOMSummary(e);console.table(t.map(function(e){var t={};return t[a.ID_ATTRIBUTE_NAME]=e.id,t.type=e.type,t.args=JSON.stringify(e.args),t})),console.log("Total time:",s.getTotalTime(e).toFixed(2)+" ms")},_recordWrite:function(e,t,n,r){var o=u._allMeasurements[u._allMeasurements.length-1].writes;o[e]=o[e]||[],o[e].push({type:t,time:n,args:r})},measure:function(e,t,n){return function(){for(var r=arguments.length,a=Array(r),s=0;r>s;s++)a[s]=arguments[s];var d,c,p;if("_renderNewRootComponent"===t||"flushBatchedUpdates"===t)return u._allMeasurements.push({exclusive:{},inclusive:{},render:{},counts:{},writes:{},displayNames:{},totalTime:0,created:{}}),p=l(),c=n.apply(this,a),u._allMeasurements[u._allMeasurements.length-1].totalTime=l()-p,c;if("_mountImageIntoNode"===t||"ReactBrowserEventEmitter"===e||"ReactDOMIDOperations"===e||"CSSPropertyOperations"===e||"DOMChildrenOperations"===e||"DOMPropertyOperations"===e){if(p=l(),c=n.apply(this,a),d=l()-p,"_mountImageIntoNode"===t){var h=i.getID(a[1]);u._recordWrite(h,t,d,a[0])}else if("dangerouslyProcessChildrenUpdates"===t)a[0].forEach(function(e){var t={};null!==e.fromIndex&&(t.fromIndex=e.fromIndex),null!==e.toIndex&&(t.toIndex=e.toIndex),null!==e.textContent&&(t.textContent=e.textContent),null!==e.markupIndex&&(t.markup=a[1][e.markupIndex]),u._recordWrite(e.parentID,e.type,d,t)});else{var f=a[0];"object"==typeof f&&(f=i.getID(a[0])),u._recordWrite(f,t,d,Array.prototype.slice.call(a,1))}return c}if("ReactCompositeComponent"!==e||"mountComponent"!==t&&"updateComponent"!==t&&"_renderValidatedComponent"!==t)return n.apply(this,a);if(this._currentElement.type===i.TopLevelWrapper)return n.apply(this,a);var v="mountComponent"===t?a[0]:this._rootNodeID,m="_renderValidatedComponent"===t,w="mountComponent"===t,b=u._mountStack,I=u._allMeasurements[u._allMeasurements.length-1];if(m?o(I.counts,v,1):w&&(I.created[v]=!0,b.push(0)),p=l(),c=n.apply(this,a),d=l()-p,m)o(I.render,v,d);else if(w){var g=b.pop();b[b.length-1]+=d,o(I.exclusive,v,d-g),o(I.inclusive,v,d)}else o(I.inclusive,v,d);return I.displayNames[v]={current:this.getName(),owner:this._currentElement._owner?this._currentElement._owner.getName():"<root>"},c}}};e.exports=u},190:function(e,t,n){"use strict";function r(e){for(var t=0,n=0;n<e.length;n++){var r=e[n];t+=r.totalTime}return t}function o(e){var t=[];return e.forEach(function(e){Object.keys(e.writes).forEach(function(n){e.writes[n].forEach(function(e){t.push({id:n,type:u[e.type]||e.type,args:e.args})})})}),t}function a(e){for(var t,n={},r=0;r<e.length;r++){var o=e[r],a=d({},o.exclusive,o.inclusive);for(var s in a)t=o.displayNames[s].current,n[t]=n[t]||{componentName:t,inclusive:0,exclusive:0,render:0,count:0},o.render[s]&&(n[t].render+=o.render[s]),o.exclusive[s]&&(n[t].exclusive+=o.exclusive[s]),o.inclusive[s]&&(n[t].inclusive+=o.inclusive[s]),o.counts[s]&&(n[t].count+=o.counts[s])}var i=[];for(t in n)n[t].exclusive>=l&&i.push(n[t]);return i.sort(function(e,t){return t.exclusive-e.exclusive}),i}function s(e,t){for(var n,r={},o=0;o<e.length;o++){var a,s=e[o],u=d({},s.exclusive,s.inclusive);t&&(a=i(s));for(var c in u)if(!t||a[c]){var p=s.displayNames[c];n=p.owner+" > "+p.current,r[n]=r[n]||{componentName:n,time:0,count:0},s.inclusive[c]&&(r[n].time+=s.inclusive[c]),s.counts[c]&&(r[n].count+=s.counts[c])}}var h=[];for(n in r)r[n].time>=l&&h.push(r[n]);return h.sort(function(e,t){return t.time-e.time}),h}function i(e){var t={},n=Object.keys(e.writes),r=d({},e.exclusive,e.inclusive);for(var o in r){for(var a=!1,s=0;s<n.length;s++)if(0===n[s].indexOf(o)){a=!0;break}e.created[o]&&(a=!0),!a&&e.counts[o]>0&&(t[o]=!0)}return t}var d=n(45),l=1.2,u={_mountImageIntoNode:"set innerHTML",INSERT_MARKUP:"set innerHTML",MOVE_EXISTING:"move",REMOVE_NODE:"remove",SET_MARKUP:"set innerHTML",TEXT_CONTENT:"set textContent",setValueForProperty:"update attribute",setValueForAttribute:"update attribute",deleteValueForProperty:"remove attribute",setValueForStyles:"update styles",replaceNodeWithMarkup:"replace",updateTextContent:"set textContent"},c={getExclusiveSummary:a,getInclusiveSummary:s,getDOMSummary:o,getTotalTime:r};e.exports=c},191:function(e,t,n){"use strict";var r,o=n(192);r=o.now?function(){return o.now()}:function(){return Date.now()},e.exports=r},192:function(e,t,n){"use strict";var r,o=n(15);o.canUseDOM&&(r=window.performance||window.msPerformance||window.webkitPerformance),e.exports=r||{}}});
+webpackJsonp([1],{
+
+/***/ 0:
+/*!******************************!*\
+  !*** ./src/js/renderTest.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 193);
+	
+	var Perf = _interopRequireWildcard(_reactAddonsPerf);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _server = __webpack_require__(/*! react-dom/server */ 170);
+	
+	var ReactDOMServer = _interopRequireWildcard(_server);
+	
+	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 1);
+	
+	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
+	
+	var _Popup = __webpack_require__(/*! ./components/Popup */ 171);
+	
+	var _Popup2 = _interopRequireDefault(_Popup);
+	
+	var _styles = __webpack_require__(/*! ./components/styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	// make a TabWindow from its JSON
+	function makeTabWindow(jsWin) {
+	  var decItems = jsWin.tabItems.map(function (tiFields) {
+	    return new TabWindow.TabItem(tiFields);
+	  });
+	
+	  var itemWin = Object.assign({}, jsWin, { tabItems: Immutable.Seq(decItems) });
+	
+	  var decWin = new TabWindow.TabWindow(itemWin);
+	  return decWin;
+	}
+	
+	function renderPage(testData) {
+	  var allWindows = testData.allWindows;
+	
+	  var tabWindows = allWindows.map(makeTabWindow);
+	
+	  var emptyWinStore = new _tabManagerState2.default();
+	
+	  var bgPage = chrome.extension.getBackgroundPage();
+	
+	  var renderTestSavedHTML = bgPage.renderTestSavedHTML;
+	
+	  /*
+	    const savedNode = bgPage.savedNode;
+	    console.log("Saved node from bg page: ", savedNode);
+	  */
+	
+	  var mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
+	  console.log('Created mockWinStore and registered test windows');
+	  console.log('mock winStore: ', mockWinStore.toJS());
+	
+	  var t_preRender = performance.now();
+	  var parentNode = document.getElementById('windowList-region');
+	
+	  if (Perf) {
+	    Perf.start();
+	  }
+	
+	  /*
+	  if (savedNode) {
+	    var newNode = document.importNode(savedNode, true);
+	    if (parentNode.firstChild===null) {
+	      parentNode.appendChild(newNode);
+	    } else {
+	      parentNode.replaceChild(newNode,parentNode.firstChild);
+	    }
+	  }
+	  */
+	  if (renderTestSavedHTML) {
+	    console.log('Got saved HTML, setting...');
+	    parentNode.innerHTML = renderTestSavedHTML;
+	    var t_postSet = performance.now();
+	    console.log('time to set initial HTML: ', t_postSet - t_preRender);
+	  }
+	  /*
+	   * Use setTimeout so we have a chance to finish the initial render
+	   */
+	
+	  // pass noListener since we don't want to receive updates from the store.
+	  // There won't be any such updates (since we created the store) but the listener mechanism
+	  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
+	  // that connection.
+	
+	  var appElement = React.createElement(
+	    'div',
+	    { style: _styles2.default.renderTestContainer },
+	    React.createElement(_Popup2.default, { storeRef: null, initialWinStore: mockWinStore, noListener: true })
+	  );
+	  ReactDOM.render(appElement, parentNode);
+	
+	  var t_postRender = performance.now();
+	  if (Perf) {
+	    Perf.stop();
+	  }
+	  console.log('initial render complete. render time: (', t_postRender - t_preRender, ' ms)');
+	  if (Perf) {
+	    console.log('inclusive:');
+	    Perf.printInclusive();
+	    console.log('exclusive:');
+	    Perf.printExclusive();
+	    console.log('wasted:');
+	    Perf.printWasted();
+	  }
+	
+	  console.log('After rendering, parentNode: ', parentNode);
+	
+	  var renderedString = ReactDOMServer.renderToString(appElement);
+	
+	  // console.log("rendered string: ", renderedString);
+	  // bgPage.savedNode = parentNode.firstChild;
+	  bgPage.renderTestSavedHTML = renderedString;
+	}
+	
+	var testStateUrl = 'testData/winSnap.json';
+	
+	function loadTestData(callback) {
+	  var request = new XMLHttpRequest();
+	  request.open('GET', testStateUrl, true);
+	  request.onload = function () {
+	    if (request.status >= 200 && request.status < 400) {
+	      var data = JSON.parse(request.responseText);
+	      callback(data);
+	    } else {
+	      // We reached our target server, but it returned an error
+	      console.error('request failed, error: ', request.status, request);
+	    }
+	  };
+	
+	  request.send();
+	}
+	
+	/**
+	 * Main entry point to rendering the popup window
+	 */
+	function renderTest() {
+	  loadTestData(renderPage);
+	}
+	
+	/*
+	 * Perform our React rendering *after* the load event for the popup
+	 * (rather than the more traditional ondocumentready event)
+	 * because we observe that Chrome's http cache will not attempt to
+	 * re-validate cached resources accessed after the load event, and this
+	 * is essential for reasonable performance when loading favicons.
+	 *
+	 * See https://code.google.com/p/chromium/issues/detail?id=511699
+	 *
+	 */
+	function main() {
+	  window.onload = renderTest;
+	}
+	
+	main();
+
+/***/ },
+
+/***/ 1:
+/*!***********************************!*\
+  !*** ./src/js/tabManagerState.js ***!
+  \***********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _lodash = __webpack_require__(/*! lodash */ 2);
+	
+	var _ = _interopRequireWildcard(_lodash);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * application state for tab manager
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * and then retrieve the instance from the background window in the popup
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
+	var TabManagerState = function (_Immutable$Record) {
+	  _inherits(TabManagerState, _Immutable$Record);
+	
+	  function TabManagerState() {
+	    _classCallCheck(this, TabManagerState);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabManagerState).apply(this, arguments));
+	  }
+	
+	  _createClass(TabManagerState, [{
+	    key: 'registerTabWindow',
+	
+	    /**
+	     * Update store to include the specified window, indexed by
+	     * open window id or bookmark id
+	     *
+	     * Note that if an earlier snapshot of tabWindow is in the store, it will be
+	     * replaced
+	     */
+	    value: function registerTabWindow(tabWindow) {
+	      var nextWindowIdMap = tabWindow.open ? this.windowIdMap.set(tabWindow.openWindowId, tabWindow) : this.windowIdMap;
+	      var nextBookmarkIdMap = tabWindow.saved ? this.bookmarkIdMap.set(tabWindow.savedFolderId, tabWindow) : this.bookmarkIdMap;
+	
+	      return this.set('windowIdMap', nextWindowIdMap).set('bookmarkIdMap', nextBookmarkIdMap);
+	    }
+	  }, {
+	    key: 'registerTabWindows',
+	    value: function registerTabWindows(tabWindows) {
+	      return _.reduce(tabWindows, function (acc, w) {
+	        return acc.registerTabWindow(w);
+	      }, this);
+	    }
+	  }, {
+	    key: 'handleTabWindowClosed',
+	    value: function handleTabWindowClosed(tabWindow) {
+	      // console.log("handleTabWindowClosed: ", tabWindow.toJS());
+	      /*
+	       * We only remove window from map of open windows (windowIdMap) but then we re-register
+	       * reverted window to ensure that a reverted version of saved window stays in
+	       * bookmarkIdMap.
+	       */
+	      var closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
+	
+	      var revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
+	
+	      return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(revertedWindow);
+	    }
+	  }, {
+	    key: 'handleTabClosed',
+	    value: function handleTabClosed(tabWindow, tabId) {
+	      var updWindow = TabWindow.closeTab(tabWindow, tabId);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabSaved',
+	    value: function handleTabSaved(tabWindow, tabItem, tabNode) {
+	      var updWindow = TabWindow.saveTab(tabWindow, tabItem, tabNode);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabUnsaved',
+	    value: function handleTabUnsaved(tabWindow, tabItem) {
+	      var updWindow = TabWindow.unsaveTab(tabWindow, tabItem);
+	      return this.registerTabWindow(updWindow);
+	    }
+	
+	    /**
+	     * attach a Chrome window to a specific tab window (after opening a saved window)
+	     */
+	
+	  }, {
+	    key: 'attachChromeWindow',
+	    value: function attachChromeWindow(tabWindow, chromeWindow) {
+	      // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow);
+	
+	      // Was this Chrome window id previously associated with some other tab window?
+	      var oldTabWindow = this.windowIdMap.get(chromeWindow.id);
+	
+	      // A store without oldTabWindow
+	      var rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this;
+	
+	      var attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
+	
+	      console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
+	
+	      return rmStore.registerTabWindow(attachedTabWindow);
+	    }
+	
+	    /**
+	     * Synchronize internal state of our store with snapshot
+	     * of current Chrome window state
+	     *
+	     * @param chromeWindow window to synchronize
+	     */
+	
+	  }, {
+	    key: 'syncChromeWindow',
+	    value: function syncChromeWindow(chromeWindow) {
+	      var prevTabWindow = this.windowIdMap.get(chromeWindow.id);
+	      /*
+	      if (!prevTabWindow) {
+	        console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow);
+	      }
+	      */
+	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
+	
+	      return this.registerTabWindow(tabWindow);
+	    }
+	
+	    /**
+	     * synchronize the currently open windows from chrome.windows.getAll with
+	     * internal map of open windows
+	     */
+	
+	  }, {
+	    key: 'syncWindowList',
+	    value: function syncWindowList(chromeWindowList) {
+	      var tabWindows = this.getOpen();
+	
+	      // Iterate through tab windows (our current list of open windows)
+	      // closing any not in chromeWindowList:
+	      var chromeIds = _.map(chromeWindowList, 'id');
+	      var chromeIdSet = new Set(chromeIds);
+	
+	      var closedWindows = _.filter(tabWindows, function (tw) {
+	        return !chromeIdSet.has(tw.openWindowId);
+	      });
+	
+	      var closedWinStore = _.reduce(closedWindows, function (acc, tw) {
+	        return acc.handleTabWindowClosed(tw);
+	      }, this);
+	
+	      // Now update all open windows:
+	      return _.reduce(chromeWindowList, function (acc, cw) {
+	        return acc.syncChromeWindow(cw);
+	      }, closedWinStore);
+	    }
+	  }, {
+	    key: 'setCurrentWindow',
+	    value: function setCurrentWindow(windowId) {
+	      var tabWindow = this.getTabWindowByChromeId(windowId);
+	
+	      if (!tabWindow) {
+	        console.log('setCurrentWindow: window id ', windowId, 'not found');
+	        return this;
+	      }
+	
+	      // TODO: We really should find any other window with focus===true and clear it
+	      var updWindow = tabWindow.set('focused', true);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'removeBookmarkIdMapEntry',
+	    value: function removeBookmarkIdMapEntry(tabWindow) {
+	      return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));
+	    }
+	  }, {
+	    key: 'unmanageWindow',
+	    value: function unmanageWindow(tabWindow) {
+	      // Get a view of this store with tabWindow removed from bookmarkIdMap:
+	      var rmStore = this.removeBookmarkIdMapEntry(tabWindow);
+	
+	      // disconnect from the previously associated bookmark folder and re-register
+	      var umWindow = TabWindow.removeSavedWindowState(tabWindow);
+	      return rmStore.registerTabWindow(umWindow);
+	    }
+	
+	    /**
+	     * attach a bookmark folder to a specific chrome window
+	     */
+	
+	  }, {
+	    key: 'attachBookmarkFolder',
+	    value: function attachBookmarkFolder(bookmarkFolder, chromeWindow) {
+	      var folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
+	
+	      var mergedTabWindow = TabWindow.updateWindow(folderTabWindow, chromeWindow);
+	
+	      // And re-register in store maps:
+	      return this.registerTabWindow(mergedTabWindow);
+	    }
+	
+	    /**
+	     * get the currently open tab windows
+	     */
+	
+	  }, {
+	    key: 'getOpen',
+	    value: function getOpen() {
+	      var openWindows = this.windowIdMap.toIndexedSeq().toArray();
+	      return openWindows;
+	    }
+	  }, {
+	    key: 'getAll',
+	    value: function getAll() {
+	      var openWindows = this.getOpen();
+	      var closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter(function (w) {
+	        return !w.open;
+	      }).toArray();
+	      return openWindows.concat(closedSavedWindows);
+	    }
+	
+	    // returns a tabWindow or undefined
+	
+	  }, {
+	    key: 'getTabWindowByChromeId',
+	    value: function getTabWindowByChromeId(windowId) {
+	      return this.windowIdMap.get(windowId);
+	    }
+	  }, {
+	    key: 'countOpenWindows',
+	    value: function countOpenWindows() {
+	      return this.windowIdMap.count();
+	    }
+	  }, {
+	    key: 'countSavedWindows',
+	    value: function countSavedWindows() {
+	      return this.bookmarkIdMap.count();
+	    }
+	  }, {
+	    key: 'countOpenTabs',
+	    value: function countOpenTabs() {
+	      return this.windowIdMap.reduce(function (count, w) {
+	        return count + w.openTabCount;
+	      }, 0);
+	    }
+	  }]);
+	
+	  return TabManagerState;
+	}(Immutable.Record({
+	  windowIdMap: Immutable.Map(), // maps from chrome window id for open windows
+	  bookmarkIdMap: Immutable.Map(), // maps from bookmark id for saved windows
+	  folderId: -1,
+	  archiveFolderId: -1
+	}));
+	
+	exports.default = TabManagerState;
+
+/***/ },
+
+/***/ 170:
+/*!*******************************!*\
+  !*** ./~/react-dom/server.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 155);
+
+
+/***/ },
+
+/***/ 171:
+/*!************************************!*\
+  !*** ./src/js/components/Popup.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _searchOps = __webpack_require__(/*! ../searchOps */ 172);
+	
+	var searchOps = _interopRequireWildcard(_searchOps);
+	
+	var _oneref = __webpack_require__(/*! oneref */ 166);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	
+	var _RevertModal2 = _interopRequireDefault(_RevertModal);
+	
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 183);
+	
+	var _SaveModal2 = _interopRequireDefault(_SaveModal);
+	
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 184);
+	
+	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
+	
+	var _util = __webpack_require__(/*! ./util */ 176);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/**
+	 * send message to BGhelper
+	 */
+	function sendHelperMessage(msg) {
+	  var port = chrome.runtime.connect({ name: 'popup' });
+	  port.postMessage(msg);
+	  port.onMessage.addListener(function (response) {
+	    console.log('Got response message: ', response);
+	  });
+	}
+	
+	var Popup = React.createClass({
+	  displayName: 'Popup',
+	  storeAsState: function storeAsState(winStore) {
+	    var tabWindows = winStore.getAll();
+	
+	    var sortedWindows = tabWindows.sort(Util.windowCmp);
+	
+	    return {
+	      winStore: winStore,
+	      sortedWindows: sortedWindows
+	    };
+	  },
+	  getInitialState: function getInitialState() {
+	    var st = this.storeAsState(this.props.initialWinStore);
+	
+	    st.saveModalIsOpen = false;
+	    st.revertModalIsOpen = false;
+	    st.revertTabWindow = null;
+	    st.searchStr = '';
+	    st.searchRE = null;
+	    return st;
+	  },
+	  handleSearchInput: function handleSearchInput(rawSearchStr) {
+	    var searchStr = rawSearchStr.trim();
+	
+	    var searchRE = null;
+	    if (searchStr.length > 0) {
+	      searchRE = new RegExp(searchStr, 'i');
+	    }
+	
+	    console.log("search input: '" + searchStr + "'");
+	    this.setState({ searchStr: searchStr, searchRE: searchRE });
+	  },
+	  openSaveModal: function openSaveModal(tabWindow) {
+	    var initialTitle = tabWindow.title;
+	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
+	  },
+	  closeSaveModal: function closeSaveModal() {
+	    this.setState({ saveModalIsOpen: false });
+	  },
+	  openRevertModal: function openRevertModal(filteredTabWindow) {
+	    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
+	  },
+	  closeRevertModal: function closeRevertModal() {
+	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
+	  },
+	
+	  /* handler for save modal */
+	  doSave: function doSave(titleStr) {
+	    var storeRef = this.props.storeRef;
+	    var tabliFolderId = storeRef.getValue().folderId;
+	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
+	    this.closeSaveModal();
+	  },
+	  doRevert: function doRevert(tabWindow) {
+	    // eslint-disable-line no-unused-vars
+	    var updateHandler = (0, _oneref.refUpdater)(this.props.storeRef);
+	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
+	    this.closeRevertModal();
+	  },
+	
+	  /* render save modal (or not) based on this.state.saveModalIsOpen */
+	  renderSaveModal: function renderSaveModal() {
+	    var modal = null;
+	    if (this.state.saveModalIsOpen) {
+	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
+	        tabWindow: this.state.saveTabWindow,
+	        onClose: this.closeSaveModal,
+	        onSubmit: this.doSave,
+	        appComponent: this
+	      });
+	    }
+	
+	    return modal;
+	  },
+	
+	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
+	  renderRevertModal: function renderRevertModal() {
+	    var modal = null;
+	    if (this.state.revertModalIsOpen) {
+	      modal = React.createElement(_RevertModal2.default, {
+	        tabWindow: this.state.revertTabWindow,
+	        onClose: this.closeRevertModal,
+	        onSubmit: this.doRevert,
+	        appComponent: this
+	      });
+	    }
+	
+	    return modal;
+	  },
+	  render: function render() {
+	    var ret;
+	    try {
+	      var saveModal = this.renderSaveModal();
+	      var revertModal = this.renderRevertModal();
+	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
+	      ret = React.createElement(
+	        'div',
+	        { style: _styles2.default.popupContainer },
+	        React.createElement(_SelectablePopup2.default, {
+	          onSearchInput: this.handleSearchInput,
+	          winStore: this.state.winStore,
+	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
+	          filteredWindows: filteredWindows,
+	          appComponent: this,
+	          searchStr: this.state.searchStr,
+	          searchRE: this.state.searchRE
+	        }),
+	        saveModal,
+	        revertModal
+	      );
+	    } catch (e) {
+	      console.error('App Component: caught exception during render: ');
+	      console.error(e.stack);
+	      throw e;
+	    }
+	
+	    return ret;
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var _this = this;
+	
+	    if (this.props.noListener) {
+	      return;
+	    }
+	
+	    var storeRef = this.props.storeRef;
+	    /*
+	     * This listener is essential for triggering a (recursive) re-render
+	     * in response to a state change.
+	     */
+	    var listenerId = storeRef.addViewListener(function () {
+	      console.log('TabliPopup: viewListener: updating store from storeRef');
+	      _this.setState(_this.storeAsState(storeRef.getValue()));
+	    });
+	
+	    // console.log("componentWillMount: added view listener: ", listenerId);
+	    sendHelperMessage({ listenerId: listenerId });
+	  }
+	});
+	
+	exports.default = Popup;
+
+/***/ },
+
+/***/ 184:
+/*!**********************************************!*\
+  !*** ./src/js/components/SelectablePopup.js ***!
+  \**********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 176);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 185);
+	
+	var _SearchBar2 = _interopRequireDefault(_SearchBar);
+	
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 186);
+	
+	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function matchingTabCount(searchStr, filteredTabWindow) {
+	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+	  return ret;
+	}
+	
+	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
+	  if (searchStr.length === 0) {
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabItem = tabWindow.tabItems.get(tabIndex);
+	    return tabItem;
+	  }
+	  var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
+	  return filteredItem.tabItem;
+	}
+	
+	/**
+	 * An element that manages the selection.
+	 *
+	 * We want this as a distinct element from its parent TabMan, because it does local state management
+	 * and validation that should happen with respect to the (already calculated) props containing
+	 * filtered windows that we receive from above
+	 */
+	var SelectablePopup = React.createClass({
+	  displayName: 'SelectablePopup',
+	  getInitialState: function getInitialState() {
+	    return {
+	      selectedWindowIndex: 0,
+	      selectedTabIndex: 0
+	    };
+	  },
+	  handlePrevSelection: function handlePrevSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	
+	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
+	    } else {
+	      // Already on first tab, try to back up to previous window:
+	      if (this.state.selectedWindowIndex > 0) {
+	        var prevWindowIndex = this.state.selectedWindowIndex - 1;
+	        var prevWindow = this.props.filteredWindows[prevWindowIndex];
+	        var prevTabCount = this.props.searchStr.length > 0 ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
+	
+	        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
+	      }
+	    }
+	  },
+	  handleNextSelection: function handleNextSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    // We'd prefer to use expanded state of window rather then open/closed state,
+	    // but that's hidden in the component...
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
+	    } else {
+	      // Already on last tab, try to advance to next window:
+	      if (this.state.selectedWindowIndex + 1 < this.props.filteredWindows.length) {
+	        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
+	      }
+	    }
+	  },
+	  handleSelectionEnter: function handleSelectionEnter() {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	
+	    // TODO: deal with this.state.selectedTabIndex==-1
+	
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
+	    console.log('opening: ', selectedTabItem.toJS());
+	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    var selectedWindowIndex = this.state.selectedWindowIndex;
+	    var nextFilteredWindows = nextProps.filteredWindows;
+	
+	    if (selectedWindowIndex >= nextFilteredWindows.length) {
+	      if (nextFilteredWindows.length === 0) {
+	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
+	        console.log('resetting indices');
+	      } else {
+	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
+	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
+	      }
+	    } else {
+	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
+	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
+	      this.setState({ selectedTabIndex: nextTabIndex });
+	    }
+	  },
+	  render: function render() {
+	    var winStore = this.props.winStore;
+	    var openTabCount = winStore.countOpenTabs();
+	    var openWinCount = winStore.countOpenWindows();
+	    var savedCount = winStore.countSavedWindows();
+	
+	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
+	    var summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupHeader },
+	        React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
+	          onSearchUp: this.handlePrevSelection,
+	          onSearchDown: this.handleNextSelection,
+	          onSearchEnter: this.handleSelectionEnter
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupBody },
+	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          filteredWindows: this.props.filteredWindows,
+	          appComponent: this.props.appComponent,
+	          searchStr: this.props.searchStr,
+	          searchRE: this.props.searchRE,
+	          selectedWindowIndex: this.state.selectedWindowIndex,
+	          selectedTabIndex: this.state.selectedTabIndex
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupFooter },
+	        React.createElement(
+	          'span',
+	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
+	          summarySentence
+	        )
+	      )
+	    );
+	  }
+	});
+	
+	exports.default = SelectablePopup;
+
+/***/ },
+
+/***/ 186:
+/*!********************************************!*\
+  !*** ./src/js/components/TabWindowList.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 187);
+	
+	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
+	
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 192);
+	
+	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var TabWindowList = React.createClass({
+	  displayName: 'TabWindowList',
+	  render: function render() {
+	    var focusedWindowElem = [];
+	    var openWindows = [];
+	    var savedWindows = [];
+	
+	    var filteredWindows = this.props.filteredWindows;
+	    for (var i = 0; i < filteredWindows.length; i++) {
+	      var filteredTabWindow = filteredWindows[i];
+	      var tabWindow = filteredTabWindow.tabWindow;
+	      var id = 'tabWindow' + i;
+	      var isOpen = tabWindow.open;
+	      var isFocused = tabWindow.focused;
+	      var isSelected = i === this.props.selectedWindowIndex;
+	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
+	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        filteredTabWindow: filteredTabWindow, key: id,
+	        searchStr: this.props.searchStr,
+	        searchRE: this.props.searchRE,
+	        isSelected: isSelected,
+	        selectedTabIndex: selectedTabIndex,
+	        appComponent: this.props.appComponent
+	      });
+	      if (isFocused) {
+	        focusedWindowElem = windowElem;
+	      } else if (isOpen) {
+	        openWindows.push(windowElem);
+	      } else {
+	        savedWindows.push(windowElem);
+	      }
+	    }
+	
+	    var savedSection = null;
+	    if (savedWindows.length > 0) {
+	      savedSection = React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Saved Closed Windows' },
+	        savedWindows
+	      );
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Current Window' },
+	        focusedWindowElem
+	      ),
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Other Open Windows' },
+	        openWindows
+	      ),
+	      savedSection
+	    );
+	  }
+	});
+	
+	exports.default = TabWindowList;
+
+/***/ },
+
+/***/ 187:
+/*!************************************************!*\
+  !*** ./src/js/components/FilteredTabWindow.js ***!
+  \************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 176);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 6);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	
+	var _Hoverable2 = _interopRequireDefault(_Hoverable);
+	
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 189);
+	
+	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
+	
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 191);
+	
+	var _TabItem2 = _interopRequireDefault(_TabItem);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var FilteredTabWindow = React.createClass({
+	  displayName: 'FilteredTabWindow',
+	
+	  mixins: [_Hoverable2.default],
+	
+	  getInitialState: function getInitialState() {
+	    // Note:  We initialize this with null rather than false so that it will follow
+	    // open / closed state of window
+	    return { expanded: null };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    if (nextProps.isSelected && !this.props.isSelected) {
+	      // scroll div for this window into view:
+	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+	    }
+	  },
+	  handleOpen: function handleOpen() {
+	    console.log('handleOpen', this, this.props);
+	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleClose: function handleClose(event) {
+	    // eslint-disable-line no-unused-vars
+	    // console.log("handleClose");
+	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleRevert: function handleRevert(event) {
+	    // eslint-disable-line no-unused-vars
+	    var appComponent = this.props.appComponent;
+	    appComponent.openRevertModal(this.props.filteredTabWindow);
+	  },
+	
+	  /* expanded state follows window open/closed state unless it is
+	   * explicitly set interactively by the user
+	   */
+	  getExpandedState: function getExpandedState() {
+	    if (this.state.expanded === null) {
+	      return this.props.filteredTabWindow.tabWindow.open;
+	    }
+	    return this.state.expanded;
+	  },
+	  renderTabItems: function renderTabItems(tabWindow, tabs) {
+	    /*
+	     * We tried explicitly checking for expanded state and
+	     * returning null if not expanded, but (somewhat surprisingly) it
+	     * was no faster, even with dozens of hidden tabs
+	     */
+	    var items = [];
+	    for (var i = 0; i < tabs.count(); i++) {
+	      var id = 'tabItem-' + i;
+	      var isSelected = i === this.props.selectedTabIndex;
+	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        tabWindow: tabWindow,
+	        tab: tabs.get(i),
+	        key: id,
+	        tabIndex: i,
+	        isSelected: isSelected,
+	        appComponent: this.props.appComponent
+	      });
+	      items.push(tabItem);
+	    }
+	
+	    var expanded = this.getExpandedState();
+	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
+	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle);
+	    return React.createElement(
+	      'div',
+	      { style: tabListStyle },
+	      items
+	    );
+	  },
+	  handleExpand: function handleExpand(expand) {
+	    this.setState({ expanded: expand });
+	  },
+	  render: function render() {
+	    var filteredTabWindow = this.props.filteredTabWindow;
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabs;
+	    if (this.props.searchStr.length === 0) {
+	      tabs = tabWindow.tabItems;
+	    } else {
+	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
+	        return fti.tabItem;
+	      });
+	    }
+	
+	    /*
+	     * optimization:  Let's only render tabItems if expanded
+	     */
+	    var expanded = this.getExpandedState();
+	    var tabItems = null;
+	    if (expanded) {
+	      tabItems = this.renderTabItems(tabWindow, tabs);
+	    } else {
+	      // render empty list of tab items to get -ve margin rollup layout right...
+	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
+	    }
+	
+	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
+	      storeUpdateHandler: this.props.storeUpdateHandler,
+	      tabWindow: tabWindow,
+	      expanded: expanded,
+	      onExpand: this.handleExpand,
+	      onOpen: this.handleOpen,
+	      onRevert: this.handleRevert,
+	      onClose: this.handleClose,
+	      appComponent: this.props.appComponent
+	    });
+	
+	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
+	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle);
+	
+	    return React.createElement(
+	      'div',
+	      { ref: 'windowDiv', style: windowStyles, onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut },
+	      windowHeader,
+	      tabItems
+	    );
+	  }
+	});
+	
+	exports.default = FilteredTabWindow;
+
+/***/ },
+
+/***/ 193:
+/*!**************************************!*\
+  !*** ./~/react-addons-perf/index.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(/*! react/lib/ReactDefaultPerf */ 149);
+
+/***/ }
+
+});
+//# sourceMappingURL=renderTest.bundle.js.map

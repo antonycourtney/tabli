@@ -63,10 +63,9 @@ const SearchBar = React.createClass({
 
   render() {
     const helpButton = (
-      <i className="fa fa-question-circle fa-lg" style={Styles.helpButton}
+      <span className="fa fa-question-circle fa-lg" style={Styles.helpButton}
         title="Open Tabli Usage Manual" onClick={this.handleHelpClick}
-      >
-      </i>);
+      ></span>);
     return (
       <div style={Styles.headerContainer}>
         <input style={Styles.searchInput} type="text" ref="searchInput" id="searchBox" placeholder="Search..."
