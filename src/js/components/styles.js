@@ -1,4 +1,7 @@
 import * as Constants from './constants';
+import * as BC from './browserConstants';
+
+const mkUrl = relPath => 'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")'
 
 const styles = {
   noWrap: {
@@ -79,11 +82,11 @@ const styles = {
     marginTop: 0,
   },
   windowExpand: {
-    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
+    WebkitMaskImage: mkUrl('images/triangle-small-4-01.png'),
     backgroundColor: '#606060',
   },
   windowCollapse: {
-    WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
+    WebkitMaskImage: mkUrl('images/triangle-small-1-01.png'),
     backgroundColor: '#606060',
   },
 
@@ -146,17 +149,17 @@ const styles = {
     color: '#979ca0',
   },
   tabManagedButton: {
-    WebkitMaskImage: 'url("../images/status-9.png")',
+    WebkitMaskImage: mkUrl('images/status-9.png'),
     backgroundColor: '#7472ff',
   },
   audibleIcon: {
-    WebkitMaskImage: 'url("../images/Multimedia-64.png")',
+    WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
     backgroundColor: '#505050',
   },
   emptyFavIcon: {
     width: 18,
     marginRight: 3,
-    WebkitMaskImage: 'url("../images/Files-26.png")',
+    WebkitMaskImage: mkUrl('images/Files-26.png'),
     backgroundColor: '#969696',
   },
   /* checkboxes seems to obey width and height, but ignore padding
@@ -168,11 +171,11 @@ const styles = {
     margin: '3px 3px 3px 3px',
   },
   windowManagedButton: {
-    WebkitMaskImage: 'url("../images/Status-9.png")',
+    WebkitMaskImage: mkUrl('images/Status-9.png'),
     backgroundColor: '#7472ff',
   },
   revertButton: {
-    WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
+    WebkitMaskImage: mkUrl('images/chevron-double-mix-1-01.png'),
     backgroundColor: '#7472ff',
     marginRight: '20px',
   },
@@ -180,11 +183,11 @@ const styles = {
     color: '#7472ff'
   },
   closeButton: {
-    WebkitMaskImage: 'url("../images/interface-77.png")',
+    WebkitMaskImage: mkUrl('images/interface-77.png'),
     backgroundColor: '#888888',
   },
   closeButtonHover: {
-    WebkitMaskImage: 'url("../images/interface-74.png")',
+    WebkitMaskImage: mkUrl('images/interface-74.png'),
     backgroundColor: '#000000',
   },
   tabList: {

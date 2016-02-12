@@ -230,11 +230,11 @@ webpackJsonp([0],{
 
 	'use strict';
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _lodash = __webpack_require__(/*! lodash */ 2);
 	
@@ -260,6 +260,7 @@ webpackJsonp([0],{
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * and then retrieve the instance from the background window in the popup
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
 	
 	var TabManagerState = function (_Immutable$Record) {
 	  _inherits(TabManagerState, _Immutable$Record);
@@ -509,11 +510,11 @@ webpackJsonp([0],{
 
 	'use strict';
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _oneref = __webpack_require__(/*! oneref */ 166);
 	
@@ -559,6 +560,7 @@ webpackJsonp([0],{
 	   * numeric id's (rather than object references) that we can encode in a Chrome JSON
 	   * message
 	   */
+	
 	
 	  _createClass(ViewRef, [{
 	    key: 'addViewListener',
@@ -634,23 +636,23 @@ webpackJsonp([0],{
 	
 	var _oneref = __webpack_require__(/*! oneref */ 166);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 176);
 	
 	var _RevertModal2 = _interopRequireDefault(_RevertModal);
 	
-	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 183);
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 184);
 	
 	var _SaveModal2 = _interopRequireDefault(_SaveModal);
 	
-	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 184);
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 185);
 	
 	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -716,6 +718,7 @@ webpackJsonp([0],{
 	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
 	  },
 	
+	
 	  /* handler for save modal */
 	  doSave: function doSave(titleStr) {
 	    var storeRef = this.props.storeRef;
@@ -729,6 +732,7 @@ webpackJsonp([0],{
 	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
 	    this.closeRevertModal();
 	  },
+	
 	
 	  /* render save modal (or not) based on this.state.saveModalIsOpen */
 	  renderSaveModal: function renderSaveModal() {
@@ -744,6 +748,7 @@ webpackJsonp([0],{
 	
 	    return modal;
 	  },
+	
 	
 	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
 	  renderRevertModal: function renderRevertModal() {
@@ -814,7 +819,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 184:
+/***/ 185:
 /*!**********************************************!*\
   !*** ./src/js/components/SelectablePopup.js ***!
   \**********************************************/
@@ -830,11 +835,11 @@ webpackJsonp([0],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -842,11 +847,11 @@ webpackJsonp([0],{
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 185);
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 186);
 	
 	var _SearchBar2 = _interopRequireDefault(_SearchBar);
 	
-	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 186);
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 187);
 	
 	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
 	
@@ -1004,7 +1009,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 186:
+/***/ 187:
 /*!********************************************!*\
   !*** ./src/js/components/TabWindowList.js ***!
   \********************************************/
@@ -1020,11 +1025,11 @@ webpackJsonp([0],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 187);
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 188);
 	
 	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 192);
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
 	
 	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
 	
@@ -1097,7 +1102,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 187:
+/***/ 188:
 /*!************************************************!*\
   !*** ./src/js/components/FilteredTabWindow.js ***!
   \************************************************/
@@ -1113,7 +1118,7 @@ webpackJsonp([0],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	var _reactDom = __webpack_require__(/*! react-dom */ 189);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
@@ -1121,11 +1126,11 @@ webpackJsonp([0],{
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -1133,15 +1138,15 @@ webpackJsonp([0],{
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 189);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
 	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 191);
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
 	
 	var _TabItem2 = _interopRequireDefault(_TabItem);
 	
@@ -1179,6 +1184,7 @@ webpackJsonp([0],{
 	    var appComponent = this.props.appComponent;
 	    appComponent.openRevertModal(this.props.filteredTabWindow);
 	  },
+	
 	
 	  /* expanded state follows window open/closed state unless it is
 	   * explicitly set interactively by the user

@@ -12,7 +12,7 @@ webpackJsonp([3],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	var _reactDom = __webpack_require__(/*! react-dom */ 189);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
@@ -143,23 +143,23 @@ webpackJsonp([3],{
 	
 	var _oneref = __webpack_require__(/*! oneref */ 166);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 176);
 	
 	var _RevertModal2 = _interopRequireDefault(_RevertModal);
 	
-	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 183);
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 184);
 	
 	var _SaveModal2 = _interopRequireDefault(_SaveModal);
 	
-	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 184);
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 185);
 	
 	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -225,6 +225,7 @@ webpackJsonp([3],{
 	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
 	  },
 	
+	
 	  /* handler for save modal */
 	  doSave: function doSave(titleStr) {
 	    var storeRef = this.props.storeRef;
@@ -238,6 +239,7 @@ webpackJsonp([3],{
 	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
 	    this.closeRevertModal();
 	  },
+	
 	
 	  /* render save modal (or not) based on this.state.saveModalIsOpen */
 	  renderSaveModal: function renderSaveModal() {
@@ -253,6 +255,7 @@ webpackJsonp([3],{
 	
 	    return modal;
 	  },
+	
 	
 	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
 	  renderRevertModal: function renderRevertModal() {
@@ -323,7 +326,7 @@ webpackJsonp([3],{
 
 /***/ },
 
-/***/ 184:
+/***/ 185:
 /*!**********************************************!*\
   !*** ./src/js/components/SelectablePopup.js ***!
   \**********************************************/
@@ -339,11 +342,11 @@ webpackJsonp([3],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -351,11 +354,11 @@ webpackJsonp([3],{
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 185);
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 186);
 	
 	var _SearchBar2 = _interopRequireDefault(_SearchBar);
 	
-	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 186);
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 187);
 	
 	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
 	
@@ -513,7 +516,7 @@ webpackJsonp([3],{
 
 /***/ },
 
-/***/ 186:
+/***/ 187:
 /*!********************************************!*\
   !*** ./src/js/components/TabWindowList.js ***!
   \********************************************/
@@ -529,11 +532,11 @@ webpackJsonp([3],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 187);
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 188);
 	
 	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 192);
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
 	
 	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
 	
@@ -606,7 +609,7 @@ webpackJsonp([3],{
 
 /***/ },
 
-/***/ 187:
+/***/ 188:
 /*!************************************************!*\
   !*** ./src/js/components/FilteredTabWindow.js ***!
   \************************************************/
@@ -622,7 +625,7 @@ webpackJsonp([3],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 188);
+	var _reactDom = __webpack_require__(/*! react-dom */ 189);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
@@ -630,11 +633,11 @@ webpackJsonp([3],{
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -642,15 +645,15 @@ webpackJsonp([3],{
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 189);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
 	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 191);
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
 	
 	var _TabItem2 = _interopRequireDefault(_TabItem);
 	
@@ -688,6 +691,7 @@ webpackJsonp([3],{
 	    var appComponent = this.props.appComponent;
 	    appComponent.openRevertModal(this.props.filteredTabWindow);
 	  },
+	
 	
 	  /* expanded state follows window open/closed state unless it is
 	   * explicitly set interactively by the user

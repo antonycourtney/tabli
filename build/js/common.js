@@ -102,7 +102,7 @@
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/**
 	 * @license
-	 * lodash 4.2.1 (Custom Build) <https://lodash.com/>
+	 * lodash 4.3.0 (Custom Build) <https://lodash.com/>
 	 * Build: `lodash -d -o ./foo/lodash.js`
 	 * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
 	 * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
@@ -115,7 +115,7 @@
 	  var undefined;
 	
 	  /** Used as the semantic version number. */
-	  var VERSION = '4.2.1';
+	  var VERSION = '4.3.0';
 	
 	  /** Used to compose bitmasks for wrapper metadata. */
 	  var BIND_FLAG = 1,
@@ -184,7 +184,8 @@
 	      setTag = '[object Set]',
 	      stringTag = '[object String]',
 	      symbolTag = '[object Symbol]',
-	      weakMapTag = '[object WeakMap]';
+	      weakMapTag = '[object WeakMap]',
+	      weakSetTag = '[object WeakSet]';
 	
 	  var arrayBufferTag = '[object ArrayBuffer]',
 	      float32Tag = '[object Float32Array]',
@@ -333,8 +334,8 @@
 	
 	  /** Used to assign default `context` object properties. */
 	  var contextProps = [
-	    'Array', 'Date', 'Error', 'Float32Array', 'Float64Array', 'Function',
-	    'Int8Array', 'Int16Array', 'Int32Array', 'Map', 'Math', 'Object',
+	    'Array', 'Buffer', 'Date', 'Error', 'Float32Array', 'Float64Array',
+	    'Function', 'Int8Array', 'Int16Array', 'Int32Array', 'Map', 'Math', 'Object',
 	    'Reflect', 'RegExp', 'Set', 'String', 'Symbol', 'TypeError', 'Uint8Array',
 	    'Uint8ClampedArray', 'Uint16Array', 'Uint32Array', 'WeakMap', '_',
 	    'clearTimeout', 'isFinite', 'parseInt', 'setTimeout'
@@ -1408,7 +1409,8 @@
 	    );
 	
 	    /** Built-in value references. */
-	    var Reflect = context.Reflect,
+	    var Buffer = moduleExports ? context.Buffer : undefined,
+	        Reflect = context.Reflect,
 	        Symbol = context.Symbol,
 	        Uint8Array = context.Uint8Array,
 	        clearTimeout = context.clearTimeout,
@@ -1441,9 +1443,10 @@
 	    /** Used to store function metadata. */
 	    var metaMap = WeakMap && new WeakMap;
 	
-	    /** Used to detect maps and sets. */
+	    /** Used to detect maps, sets, and weakmaps. */
 	    var mapCtorString = Map ? funcToString.call(Map) : '',
-	        setCtorString = Set ? funcToString.call(Set) : '';
+	        setCtorString = Set ? funcToString.call(Set) : '',
+	        weakMapCtorString = WeakMap ? funcToString.call(WeakMap) : '';
 	
 	    /** Used to convert symbols to primitives and strings. */
 	    var symbolProto = Symbol ? Symbol.prototype : undefined,
@@ -2353,6 +2356,9 @@
 	        var tag = getTag(value),
 	            isFunc = tag == funcTag || tag == genTag;
 	
+	        if (isBuffer(value)) {
+	          return cloneBuffer(value, isDeep);
+	        }
 	        if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
 	          if (isHostObject(value)) {
 	            return object ? value : {};
@@ -2438,7 +2444,7 @@
 	     * @private
 	     * @param {Function} func The function to delay.
 	     * @param {number} wait The number of milliseconds to delay invocation.
-	     * @param {Object} args The arguments provide to `func`.
+	     * @param {Object} args The arguments to provide to `func`.
 	     * @returns {number} Returns the timer id.
 	     */
 	    function baseDelay(func, wait, args) {
@@ -2683,7 +2689,7 @@
 	
 	    /**
 	     * The base implementation of `_.functions` which creates an array of
-	     * `object` function property names filtered from those provided.
+	     * `object` function property names filtered from `props`.
 	     *
 	     * @private
 	     * @param {Object} object The object to inspect.
@@ -3810,18 +3816,37 @@
 	    }
 	
 	    /**
-	     * Creates a clone of `buffer`.
+	     * Creates a clone of  `buffer`.
 	     *
 	     * @private
-	     * @param {ArrayBuffer} buffer The array buffer to clone.
+	     * @param {Buffer} buffer The buffer to clone.
+	     * @param {boolean} [isDeep] Specify a deep clone.
+	     * @returns {Buffer} Returns the cloned buffer.
+	     */
+	    function cloneBuffer(buffer, isDeep) {
+	      if (isDeep) {
+	        return buffer.slice();
+	      }
+	      var Ctor = buffer.constructor,
+	          result = new Ctor(buffer.length);
+	
+	      buffer.copy(result);
+	      return result;
+	    }
+	
+	    /**
+	     * Creates a clone of `arrayBuffer`.
+	     *
+	     * @private
+	     * @param {ArrayBuffer} arrayBuffer The array buffer to clone.
 	     * @returns {ArrayBuffer} Returns the cloned array buffer.
 	     */
-	    function cloneBuffer(buffer) {
-	      var Ctor = buffer.constructor,
-	          result = new Ctor(buffer.byteLength),
+	    function cloneArrayBuffer(arrayBuffer) {
+	      var Ctor = arrayBuffer.constructor,
+	          result = new Ctor(arrayBuffer.byteLength),
 	          view = new Uint8Array(result);
 	
-	      view.set(new Uint8Array(buffer));
+	      view.set(new Uint8Array(arrayBuffer));
 	      return result;
 	    }
 	
@@ -3887,7 +3912,7 @@
 	      var buffer = typedArray.buffer,
 	          Ctor = typedArray.constructor;
 	
-	      return new Ctor(isDeep ? cloneBuffer(buffer) : buffer, typedArray.byteOffset, typedArray.length);
+	      return new Ctor(isDeep ? cloneArrayBuffer(buffer) : buffer, typedArray.byteOffset, typedArray.length);
 	    }
 	
 	    /**
@@ -4955,19 +4980,20 @@
 	      return objectToString.call(value);
 	    }
 	
-	    // Fallback for IE 11 providing `toStringTag` values for maps and sets.
-	    if ((Map && getTag(new Map) != mapTag) || (Set && getTag(new Set) != setTag)) {
+	    // Fallback for IE 11 providing `toStringTag` values for maps, sets, and weakmaps.
+	    if ((Map && getTag(new Map) != mapTag) ||
+	        (Set && getTag(new Set) != setTag) ||
+	        (WeakMap && getTag(new WeakMap) != weakMapTag)) {
 	      getTag = function(value) {
 	        var result = objectToString.call(value),
 	            Ctor = result == objectTag ? value.constructor : null,
 	            ctorString = typeof Ctor == 'function' ? funcToString.call(Ctor) : '';
 	
 	        if (ctorString) {
-	          if (ctorString == mapCtorString) {
-	            return mapTag;
-	          }
-	          if (ctorString == setCtorString) {
-	            return setTag;
+	          switch (ctorString) {
+	            case mapCtorString: return mapTag;
+	            case setCtorString: return setTag;
+	            case weakMapCtorString: return weakMapTag;
 	          }
 	        }
 	        return result;
@@ -5081,7 +5107,7 @@
 	      var Ctor = object.constructor;
 	      switch (tag) {
 	        case arrayBufferTag:
-	          return cloneBuffer(object);
+	          return cloneArrayBuffer(object);
 	
 	        case boolTag:
 	        case dateTag:
@@ -5128,7 +5154,7 @@
 	    }
 	
 	    /**
-	     * Checks if the provided arguments are from an iteratee call.
+	     * Checks if the given arguments are from an iteratee call.
 	     *
 	     * @private
 	     * @param {*} value The potential iteratee value argument.
@@ -5536,7 +5562,7 @@
 	
 	    /**
 	     * Creates an array of unique `array` values not included in the other
-	     * provided arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+	     * given arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
 	     * for equality comparisons.
 	     *
 	     * @static
@@ -6016,8 +6042,8 @@
 	    }
 	
 	    /**
-	     * Creates an array of unique values that are included in all of the provided
-	     * arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+	     * Creates an array of unique values that are included in all given arrays
+	     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
 	     * for equality comparisons.
 	     *
 	     * @static
@@ -6182,7 +6208,7 @@
 	    }
 	
 	    /**
-	     * Removes all provided values from `array` using
+	     * Removes all given values from `array` using
 	     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
 	     * for equality comparisons.
 	     *
@@ -6739,8 +6765,8 @@
 	    }
 	
 	    /**
-	     * Creates an array of unique values, in order, from all of the provided arrays
-	     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+	     * Creates an array of unique values, in order, from all given arrays using
+	     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
 	     * for equality comparisons.
 	     *
 	     * @static
@@ -6951,7 +6977,7 @@
 	    }
 	
 	    /**
-	     * Creates an array excluding all provided values using
+	     * Creates an array excluding all given values using
 	     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
 	     * for equality comparisons.
 	     *
@@ -6974,7 +7000,7 @@
 	
 	    /**
 	     * Creates an array of unique values that is the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
-	     * of the provided arrays.
+	     * of the given arrays.
 	     *
 	     * @static
 	     * @memberOf _
@@ -8000,7 +8026,7 @@
 	     * Reduces `collection` to a value which is the accumulated result of running
 	     * each element in `collection` through `iteratee`, where each successive
 	     * invocation is supplied the return value of the previous. If `accumulator`
-	     * is not provided the first element of `collection` is used as the initial
+	     * is not given the first element of `collection` is used as the initial
 	     * value. The iteratee is invoked with four arguments:
 	     * (accumulator, value, index|key, collection).
 	     *
@@ -8729,7 +8755,7 @@
 	        if (maxWait === false) {
 	          var leadingCall = leading && !timeoutId;
 	        } else {
-	          if (!maxTimeoutId && !leading) {
+	          if (!lastCalled && !maxTimeoutId && !leading) {
 	            lastCalled = stamp;
 	          }
 	          var remaining = maxWait - (stamp - lastCalled),
@@ -9529,6 +9555,27 @@
 	    var isArray = Array.isArray;
 	
 	    /**
+	     * Checks if `value` is classified as an `ArrayBuffer` object.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @type Function
+	     * @category Lang
+	     * @param {*} value The value to check.
+	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	     * @example
+	     *
+	     * _.isArrayBuffer(new ArrayBuffer(2));
+	     * // => true
+	     *
+	     * _.isArrayBuffer(new Array(2));
+	     * // => false
+	     */
+	    function isArrayBuffer(value) {
+	      return isObjectLike(value) && objectToString.call(value) == arrayBufferTag;
+	    }
+	
+	    /**
 	     * Checks if `value` is array-like. A value is considered array-like if it's
 	     * not a function and has a `value.length` that's an integer greater than or
 	     * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
@@ -9606,6 +9653,26 @@
 	      return value === true || value === false ||
 	        (isObjectLike(value) && objectToString.call(value) == boolTag);
 	    }
+	
+	    /**
+	     * Checks if `value` is a buffer.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Lang
+	     * @param {*} value The value to check.
+	     * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+	     * @example
+	     *
+	     * _.isBuffer(new Buffer(2));
+	     * // => true
+	     *
+	     * _.isBuffer(new Uint8Array(2));
+	     * // => false
+	     */
+	    var isBuffer = !Buffer ? constant(false) : function(value) {
+	      return value instanceof Buffer;
+	    };
 	
 	    /**
 	     * Checks if `value` is classified as a `Date` object.
@@ -9941,6 +10008,26 @@
 	    }
 	
 	    /**
+	     * Checks if `value` is classified as a `Map` object.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Lang
+	     * @param {*} value The value to check.
+	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	     * @example
+	     *
+	     * _.isMap(new Map);
+	     * // => true
+	     *
+	     * _.isMap(new WeakMap);
+	     * // => false
+	     */
+	    function isMap(value) {
+	      return isObjectLike(value) && getTag(value) == mapTag;
+	    }
+	
+	    /**
 	     * Performs a deep comparison between `object` and `source` to determine if
 	     * `object` contains equivalent property values.
 	     *
@@ -10226,6 +10313,26 @@
 	    }
 	
 	    /**
+	     * Checks if `value` is classified as a `Set` object.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Lang
+	     * @param {*} value The value to check.
+	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	     * @example
+	     *
+	     * _.isSet(new Set);
+	     * // => true
+	     *
+	     * _.isSet(new WeakSet);
+	     * // => false
+	     */
+	    function isSet(value) {
+	      return isObjectLike(value) && getTag(value) == setTag;
+	    }
+	
+	    /**
 	     * Checks if `value` is classified as a `String` primitive or object.
 	     *
 	     * @static
@@ -10305,6 +10412,46 @@
 	     */
 	    function isUndefined(value) {
 	      return value === undefined;
+	    }
+	
+	    /**
+	     * Checks if `value` is classified as a `WeakMap` object.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Lang
+	     * @param {*} value The value to check.
+	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	     * @example
+	     *
+	     * _.isWeakMap(new WeakMap);
+	     * // => true
+	     *
+	     * _.isWeakMap(new Map);
+	     * // => false
+	     */
+	    function isWeakMap(value) {
+	      return isObjectLike(value) && getTag(value) == weakMapTag;
+	    }
+	
+	    /**
+	     * Checks if `value` is classified as a `WeakSet` object.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Lang
+	     * @param {*} value The value to check.
+	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+	     * @example
+	     *
+	     * _.isWeakSet(new WeakSet);
+	     * // => true
+	     *
+	     * _.isWeakSet(new Set);
+	     * // => false
+	     */
+	    function isWeakSet(value) {
+	      return isObjectLike(value) && objectToString.call(value) == weakSetTag;
 	    }
 	
 	    /**
@@ -10741,7 +10888,7 @@
 	
 	    /**
 	     * Creates an object that inherits from the `prototype` object. If a `properties`
-	     * object is provided its own enumerable properties are assigned to the created object.
+	     * object is given its own enumerable properties are assigned to the created object.
 	     *
 	     * @static
 	     * @memberOf _
@@ -12507,7 +12654,7 @@
 	     * in "interpolate" delimiters, HTML-escape interpolated data properties in
 	     * "escape" delimiters, and execute JavaScript in "evaluate" delimiters. Data
 	     * properties may be accessed as free variables in the template. If a setting
-	     * object is provided it takes precedence over `_.templateSettings` values.
+	     * object is given it takes precedence over `_.templateSettings` values.
 	     *
 	     * **Note:** In the development build `_.template` utilizes
 	     * [sourceURLs](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl)
@@ -13185,9 +13332,9 @@
 	    }
 	
 	    /**
-	     * Creates a function that returns the result of invoking the provided
-	     * functions with the `this` binding of the created function, where each
-	     * successive invocation is supplied the return value of the previous.
+	     * Creates a function that returns the result of invoking the given functions
+	     * with the `this` binding of the created function, where each successive
+	     * invocation is supplied the return value of the previous.
 	     *
 	     * @static
 	     * @memberOf _
@@ -13208,7 +13355,7 @@
 	
 	    /**
 	     * This method is like `_.flow` except that it creates a function that
-	     * invokes the provided functions from right to left.
+	     * invokes the given functions from right to left.
 	     *
 	     * @static
 	     * @memberOf _
@@ -13228,7 +13375,7 @@
 	    var flowRight = createFlow(true);
 	
 	    /**
-	     * This method returns the first argument provided to it.
+	     * This method returns the first argument given to it.
 	     *
 	     * @static
 	     * @memberOf _
@@ -13780,7 +13927,7 @@
 	    }
 	
 	    /**
-	     * Generates a unique ID. If `prefix` is provided the ID is appended to it.
+	     * Generates a unique ID. If `prefix` is given the ID is appended to it.
 	     *
 	     * @static
 	     * @memberOf _
@@ -13818,6 +13965,9 @@
 	     */
 	    function add(augend, addend) {
 	      var result;
+	      if (augend === undefined && addend === undefined) {
+	        return 0;
+	      }
 	      if (augend !== undefined) {
 	        result = augend;
 	      }
@@ -14028,6 +14178,9 @@
 	     */
 	    function subtract(minuend, subtrahend) {
 	      var result;
+	      if (minuend === undefined && subtrahend === undefined) {
+	        return 0;
+	      }
 	      if (minuend !== undefined) {
 	        result = minuend;
 	      }
@@ -14314,9 +14467,11 @@
 	    lodash.invoke = invoke;
 	    lodash.isArguments = isArguments;
 	    lodash.isArray = isArray;
+	    lodash.isArrayBuffer = isArrayBuffer;
 	    lodash.isArrayLike = isArrayLike;
 	    lodash.isArrayLikeObject = isArrayLikeObject;
 	    lodash.isBoolean = isBoolean;
+	    lodash.isBuffer = isBuffer;
 	    lodash.isDate = isDate;
 	    lodash.isElement = isElement;
 	    lodash.isEmpty = isEmpty;
@@ -14327,6 +14482,7 @@
 	    lodash.isFunction = isFunction;
 	    lodash.isInteger = isInteger;
 	    lodash.isLength = isLength;
+	    lodash.isMap = isMap;
 	    lodash.isMatch = isMatch;
 	    lodash.isMatchWith = isMatchWith;
 	    lodash.isNaN = isNaN;
@@ -14339,10 +14495,13 @@
 	    lodash.isPlainObject = isPlainObject;
 	    lodash.isRegExp = isRegExp;
 	    lodash.isSafeInteger = isSafeInteger;
+	    lodash.isSet = isSet;
 	    lodash.isString = isString;
 	    lodash.isSymbol = isSymbol;
 	    lodash.isTypedArray = isTypedArray;
 	    lodash.isUndefined = isUndefined;
+	    lodash.isWeakMap = isWeakMap;
+	    lodash.isWeakSet = isWeakSet;
 	    lodash.join = join;
 	    lodash.kebabCase = kebabCase;
 	    lodash.last = last;
@@ -19693,14 +19852,15 @@
 
 	'use strict';
 	
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.TabWindow = exports.TabItem = undefined;
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	exports.removeOpenWindowState = removeOpenWindowState;
 	exports.removeSavedWindowState = removeSavedWindowState;
 	exports.makeFolderTabWindow = makeFolderTabWindow;
@@ -19727,6 +19887,7 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Representation of tabbed windows using Immutable.js
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
 	
 	/**
 	 * An item in a tabbed window.
@@ -19783,6 +19944,7 @@
 	 *
 	 * Returned TabItem is closed (not associated with an open tab)
 	 */
+	
 	
 	function makeBookmarkedTabItem(bm) {
 	  var urlStr = bm.url;
@@ -19928,6 +20090,7 @@
 	/**
 	 * reset a window to its base saved state (after window is closed)
 	 */
+	
 	
 	function removeOpenWindowState(tabWindow) {
 	  var savedItems = tabWindow.tabItems.filter(function (ti) {
@@ -20109,6 +20272,7 @@
 	  var index = _tabWindow$tabItems$f2[0];
 	  var tabItem = _tabWindow$tabItems$f2[1];
 	
+	
 	  var updItems;
 	
 	  if (tabItem.saved) {
@@ -20139,6 +20303,7 @@
 	
 	  var index = _tabWindow$tabItems$f4[0];
 	
+	
 	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
 	
 	  var updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
@@ -20162,6 +20327,7 @@
 	  var _tabWindow$tabItems$f6 = _slicedToArray(_tabWindow$tabItems$f5, 1);
 	
 	  var index = _tabWindow$tabItems$f6[0];
+	
 	
 	  var updTabItem = resetOpenItem(tabItem);
 	
@@ -41311,199 +41477,6 @@
 
 /***/ },
 /* 173 */
-/*!******************************************!*\
-  !*** ./src/js/components/RevertModal.js ***!
-  \******************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 8);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _immutable = __webpack_require__(/*! immutable */ 4);
-	
-	var Immutable = _interopRequireWildcard(_immutable);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 176);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
-	
-	var Constants = _interopRequireWildcard(_constants);
-	
-	var _Modal = __webpack_require__(/*! ./Modal */ 177);
-	
-	var Modal = _interopRequireWildcard(_Modal);
-	
-	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 5);
-	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	/*
-	 * Modal dialog for reverting a bookmarked window
-	 */
-	var RevertModal = React.createClass({
-	  displayName: 'RevertModal',
-	  handleKeyDown: function handleKeyDown(e) {
-	    if (e.keyCode === Constants.KEY_ESC) {
-	      // ESC key
-	      e.preventDefault();
-	      this.props.onClose(e);
-	    } else if (e.keyCode === Constants.KEY_ENTER) {
-	      this.handleSubmit(e);
-	    }
-	  },
-	  handleSubmit: function handleSubmit(e) {
-	    e.preventDefault();
-	    this.props.onSubmit(this.props.tabWindow);
-	  },
-	  renderItem: function renderItem(tabItem) {
-	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
-	
-	    // Skip the chrome FAVICONs; they just throw when accessed.
-	    if (fiSrc.indexOf('chrome://theme/') === 0) {
-	      fiSrc = '';
-	    }
-	
-	    var tabFavIcon = React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc });
-	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
-	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
-	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
-	    return React.createElement(
-	      'div',
-	      { style: _styles2.default.noWrap },
-	      tabFavIcon,
-	      React.createElement(
-	        'span',
-	        { style: tabTitleStyles },
-	        tabItem.title
-	      ),
-	      React.createElement('div', { style: _styles2.default.spacer })
-	    );
-	  },
-	  renderTabItems: function renderTabItems(tabItems) {
-	    var itemElems = tabItems.map(this.renderItem);
-	    return React.createElement(
-	      'div',
-	      { style: _styles2.default.tabList },
-	      itemElems
-	    );
-	  },
-	  render: function render() {
-	    var tabWindow = this.props.tabWindow;
-	    var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
-	    var savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map(function (ti) {
-	      return ti.url;
-	    }));
-	
-	    var itemsToClose = tabWindow.tabItems.filter(function (ti) {
-	      return !savedUrlsSet.has(ti.url);
-	    });
-	    var closeItemsElem = this.renderTabItems(itemsToClose);
-	
-	    var itemsToReload = tabWindow.tabItems.filter(function (ti) {
-	      return savedUrlsSet.has(ti.url);
-	    });
-	    var reloadItemsElem = this.renderTabItems(itemsToReload);
-	
-	    var closeSection = null;
-	    if (itemsToClose.count() > 0) {
-	      closeSection = React.createElement(
-	        'div',
-	        null,
-	        React.createElement(
-	          'p',
-	          null,
-	          'The following tabs will be closed:'
-	        ),
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.simpleTabContainer },
-	          closeItemsElem
-	        ),
-	        React.createElement('br', null)
-	      );
-	    }
-	
-	    return React.createElement(
-	      Modal.Dialog,
-	      { title: 'Revert Saved Window?', onClose: this.props.onClose },
-	      React.createElement(
-	        Modal.Body,
-	        null,
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.dialogInfoContents },
-	          closeSection,
-	          React.createElement(
-	            'p',
-	            null,
-	            'The following tabs will be reloaded:'
-	          ),
-	          React.createElement(
-	            'div',
-	            { style: _styles2.default.simpleTabContainer },
-	            reloadItemsElem
-	          ),
-	          React.createElement('br', null),
-	          React.createElement(
-	            'p',
-	            null,
-	            'This action can not be undone.'
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { style: Util.merge(_styles2.default.alignRight) },
-	          React.createElement(
-	            'div',
-	            { style: Util.merge(_styles2.default.dialogButton, _styles2.default.primaryButton),
-	              onClick: this.handleSubmit,
-	              ref: 'okButton',
-	              tabIndex: 0,
-	              onKeyDown: this.handleKeyDown
-	            },
-	            'OK'
-	          ),
-	          React.createElement(
-	            'div',
-	            { style: _styles2.default.dialogButton,
-	              onClick: this.props.onClose,
-	              tabIndex: 0
-	            },
-	            'Cancel'
-	          )
-	        )
-	      )
-	    );
-	  },
-	
-	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
-	  componentDidMount: function componentDidMount() {
-	    console.log('revertModal: did mount');
-	    this.refs.okButton.focus();
-	  }
-	});
-	
-	exports.default = RevertModal;
-
-/***/ },
-/* 174 */
 /*!*************************************!*\
   !*** ./src/js/components/styles.js ***!
   \*************************************/
@@ -41515,11 +41488,19 @@
 	  value: true
 	});
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
+	var _browserConstants = __webpack_require__(/*! ./browserConstants */ 175);
+	
+	var BC = _interopRequireWildcard(_browserConstants);
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var mkUrl = function mkUrl(relPath) {
+	  return 'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")';
+	};
 	
 	var styles = {
 	  noWrap: {
@@ -41600,11 +41581,11 @@
 	    marginTop: 0
 	  },
 	  windowExpand: {
-	    WebkitMaskImage: 'url("../images/triangle-small-4-01.png")',
+	    WebkitMaskImage: mkUrl('images/triangle-small-4-01.png'),
 	    backgroundColor: '#606060'
 	  },
 	  windowCollapse: {
-	    WebkitMaskImage: 'url("../images/triangle-small-1-01.png")',
+	    WebkitMaskImage: mkUrl('images/triangle-small-1-01.png'),
 	    backgroundColor: '#606060'
 	  },
 	
@@ -41666,17 +41647,17 @@
 	    color: '#979ca0'
 	  },
 	  tabManagedButton: {
-	    WebkitMaskImage: 'url("../images/status-9.png")',
+	    WebkitMaskImage: mkUrl('images/status-9.png'),
 	    backgroundColor: '#7472ff'
 	  },
 	  audibleIcon: {
-	    WebkitMaskImage: 'url("../images/Multimedia-64.png")',
+	    WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
 	    backgroundColor: '#505050'
 	  },
 	  emptyFavIcon: {
 	    width: 18,
 	    marginRight: 3,
-	    WebkitMaskImage: 'url("../images/Files-26.png")',
+	    WebkitMaskImage: mkUrl('images/Files-26.png'),
 	    backgroundColor: '#969696'
 	  },
 	  /* checkboxes seems to obey width and height, but ignore padding
@@ -41688,11 +41669,11 @@
 	    margin: '3px 3px 3px 3px'
 	  },
 	  windowManagedButton: {
-	    WebkitMaskImage: 'url("../images/Status-9.png")',
+	    WebkitMaskImage: mkUrl('images/Status-9.png'),
 	    backgroundColor: '#7472ff'
 	  },
 	  revertButton: {
-	    WebkitMaskImage: 'url("../images/chevron-double-mix-1-01.png")',
+	    WebkitMaskImage: mkUrl('images/chevron-double-mix-1-01.png'),
 	    backgroundColor: '#7472ff',
 	    marginRight: '20px'
 	  },
@@ -41700,11 +41681,11 @@
 	    color: '#7472ff'
 	  },
 	  closeButton: {
-	    WebkitMaskImage: 'url("../images/interface-77.png")',
+	    WebkitMaskImage: mkUrl('images/interface-77.png'),
 	    backgroundColor: '#888888'
 	  },
 	  closeButtonHover: {
-	    WebkitMaskImage: 'url("../images/interface-74.png")',
+	    WebkitMaskImage: mkUrl('images/interface-74.png'),
 	    backgroundColor: '#000000'
 	  },
 	  tabList: {
@@ -41879,7 +41860,7 @@
 	exports.default = styles;
 
 /***/ },
-/* 175 */
+/* 174 */
 /*!****************************************!*\
   !*** ./src/js/components/constants.js ***!
   \****************************************/
@@ -41904,7 +41885,236 @@
 	var KEY_QUESTION = exports.KEY_QUESTION = 191;
 
 /***/ },
+/* 175 */
+/*!***********************************************!*\
+  !*** ./src/js/components/browserConstants.js ***!
+  \***********************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var chromeConstants = { BROWSER_NAME: 'chrome', BROWSER_PATH_PREFIX: '../' };
+	var braveConstants = { BROWSER_NAME: 'brave', BROWSER_PATH_PREFIX: '../node_modules/tabli/build/' };
+	
+	/**
+	 * do browser detection and assign constants to exported bindings.
+	 *
+	 * Should only happen once.
+	 */
+	function initBrowser() {
+	  if (window.chrome) {
+	    Object.assign(module.exports, chromeConstants);
+	  } else {
+	    Object.assign(module.exports, braveConstants);
+	  }
+	}
+	
+	// Note that this assignment needs to appear BEFORE the initialized
+	// check and initBrowser call that follows
+	module.exports = { BROWSER_NAME: undefined, BROWSER_PATH_PREFIX: undefined };
+	
+	var initialized = false;
+	if (!initialized) {
+	  initBrowser();
+	  initialized = true;
+	}
+
+/***/ },
 /* 176 */
+/*!******************************************!*\
+  !*** ./src/js/components/RevertModal.js ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 8);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 4);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 173);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _constants = __webpack_require__(/*! ./constants */ 174);
+	
+	var Constants = _interopRequireWildcard(_constants);
+	
+	var _Modal = __webpack_require__(/*! ./Modal */ 178);
+	
+	var Modal = _interopRequireWildcard(_Modal);
+	
+	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 5);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/*
+	 * Modal dialog for reverting a bookmarked window
+	 */
+	var RevertModal = React.createClass({
+	  displayName: 'RevertModal',
+	  handleKeyDown: function handleKeyDown(e) {
+	    if (e.keyCode === Constants.KEY_ESC) {
+	      // ESC key
+	      e.preventDefault();
+	      this.props.onClose(e);
+	    } else if (e.keyCode === Constants.KEY_ENTER) {
+	      this.handleSubmit(e);
+	    }
+	  },
+	  handleSubmit: function handleSubmit(e) {
+	    e.preventDefault();
+	    this.props.onSubmit(this.props.tabWindow);
+	  },
+	  renderItem: function renderItem(tabItem) {
+	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
+	
+	    // Skip the chrome FAVICONs; they just throw when accessed.
+	    if (fiSrc.indexOf('chrome://theme/') === 0) {
+	      fiSrc = '';
+	    }
+	
+	    var tabFavIcon = React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc });
+	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
+	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
+	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
+	    return React.createElement(
+	      'div',
+	      { style: _styles2.default.noWrap },
+	      tabFavIcon,
+	      React.createElement(
+	        'span',
+	        { style: tabTitleStyles },
+	        tabItem.title
+	      ),
+	      React.createElement('div', { style: _styles2.default.spacer })
+	    );
+	  },
+	  renderTabItems: function renderTabItems(tabItems) {
+	    var itemElems = tabItems.map(this.renderItem);
+	    return React.createElement(
+	      'div',
+	      { style: _styles2.default.tabList },
+	      itemElems
+	    );
+	  },
+	  render: function render() {
+	    var tabWindow = this.props.tabWindow;
+	    var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
+	    var savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map(function (ti) {
+	      return ti.url;
+	    }));
+	
+	    var itemsToClose = tabWindow.tabItems.filter(function (ti) {
+	      return !savedUrlsSet.has(ti.url);
+	    });
+	    var closeItemsElem = this.renderTabItems(itemsToClose);
+	
+	    var itemsToReload = tabWindow.tabItems.filter(function (ti) {
+	      return savedUrlsSet.has(ti.url);
+	    });
+	    var reloadItemsElem = this.renderTabItems(itemsToReload);
+	
+	    var closeSection = null;
+	    if (itemsToClose.count() > 0) {
+	      closeSection = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'p',
+	          null,
+	          'The following tabs will be closed:'
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.simpleTabContainer },
+	          closeItemsElem
+	        ),
+	        React.createElement('br', null)
+	      );
+	    }
+	
+	    return React.createElement(
+	      Modal.Dialog,
+	      { title: 'Revert Saved Window?', onClose: this.props.onClose },
+	      React.createElement(
+	        Modal.Body,
+	        null,
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.dialogInfoContents },
+	          closeSection,
+	          React.createElement(
+	            'p',
+	            null,
+	            'The following tabs will be reloaded:'
+	          ),
+	          React.createElement(
+	            'div',
+	            { style: _styles2.default.simpleTabContainer },
+	            reloadItemsElem
+	          ),
+	          React.createElement('br', null),
+	          React.createElement(
+	            'p',
+	            null,
+	            'This action can not be undone.'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: Util.merge(_styles2.default.alignRight) },
+	          React.createElement(
+	            'div',
+	            { style: Util.merge(_styles2.default.dialogButton, _styles2.default.primaryButton),
+	              onClick: this.handleSubmit,
+	              ref: 'okButton',
+	              tabIndex: 0,
+	              onKeyDown: this.handleKeyDown
+	            },
+	            'OK'
+	          ),
+	          React.createElement(
+	            'div',
+	            { style: _styles2.default.dialogButton,
+	              onClick: this.props.onClose,
+	              tabIndex: 0
+	            },
+	            'Cancel'
+	          )
+	        )
+	      )
+	    );
+	  },
+	
+	
+	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
+	  componentDidMount: function componentDidMount() {
+	    console.log('revertModal: did mount');
+	    this.refs.okButton.focus();
+	  }
+	});
+	
+	exports.default = RevertModal;
+
+/***/ },
+/* 177 */
 /*!***********************************!*\
   !*** ./src/js/components/util.js ***!
   \***********************************/
@@ -41964,7 +42174,7 @@
 	}
 
 /***/ },
-/* 177 */
+/* 178 */
 /*!************************************!*\
   !*** ./src/js/components/Modal.js ***!
   \************************************/
@@ -41981,15 +42191,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -42074,7 +42284,7 @@
 	});
 
 /***/ },
-/* 178 */
+/* 179 */
 /*!*******************************************!*\
   !*** ./src/js/components/HeaderButton.js ***!
   \*******************************************/
@@ -42090,19 +42300,19 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 180);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
@@ -42144,16 +42354,16 @@
 	exports.default = HeaderButton;
 
 /***/ },
-/* 179 */
+/* 180 */
 /*!***************************************************!*\
   !*** ./~/react-addons-pure-render-mixin/index.js ***!
   \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 180);
+	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 181);
 
 /***/ },
-/* 180 */
+/* 181 */
 /*!**********************************************************!*\
   !*** ./~/react/lib/ReactComponentWithPureRenderMixin.js ***!
   \**********************************************************/
@@ -42172,7 +42382,7 @@
 	
 	'use strict';
 	
-	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 181);
+	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 182);
 	
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -42207,7 +42417,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 181 */
+/* 182 */
 /*!***************************************!*\
   !*** ./~/react/lib/shallowCompare.js ***!
   \***************************************/
@@ -42239,7 +42449,7 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 182 */
+/* 183 */
 /*!****************************************!*\
   !*** ./src/js/components/Hoverable.js ***!
   \****************************************/
@@ -42271,7 +42481,7 @@
 	exports.default = Hoverable;
 
 /***/ },
-/* 183 */
+/* 184 */
 /*!****************************************!*\
   !*** ./src/js/components/SaveModal.js ***!
   \****************************************/
@@ -42287,15 +42497,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _Modal = __webpack_require__(/*! ./Modal */ 177);
+	var _Modal = __webpack_require__(/*! ./Modal */ 178);
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
@@ -42374,8 +42584,8 @@
 	exports.default = SaveModal;
 
 /***/ },
-/* 184 */,
-/* 185 */
+/* 185 */,
+/* 186 */
 /*!****************************************!*\
   !*** ./src/js/components/SearchBar.js ***!
   \****************************************/
@@ -42391,11 +42601,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -42483,9 +42693,9 @@
 	exports.default = SearchBar;
 
 /***/ },
-/* 186 */,
 /* 187 */,
-/* 188 */
+/* 188 */,
+/* 189 */
 /*!******************************!*\
   !*** ./~/react-dom/index.js ***!
   \******************************/
@@ -42497,7 +42707,7 @@
 
 
 /***/ },
-/* 189 */
+/* 190 */
 /*!*******************************************!*\
   !*** ./src/js/components/WindowHeader.js ***!
   \*******************************************/
@@ -42513,11 +42723,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -42525,19 +42735,19 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 180);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 190);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 191);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
 	
@@ -42635,7 +42845,7 @@
 	exports.default = WindowHeader;
 
 /***/ },
-/* 190 */
+/* 191 */
 /*!*********************************************!*\
   !*** ./src/js/components/ExpanderButton.js ***!
   \*********************************************/
@@ -42651,15 +42861,15 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 179);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 180);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -42688,7 +42898,7 @@
 	exports.default = ExpanderButton;
 
 /***/ },
-/* 191 */
+/* 192 */
 /*!**************************************!*\
   !*** ./src/js/components/TabItem.js ***!
   \**************************************/
@@ -42704,11 +42914,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 176);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -42716,11 +42926,11 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 182);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 178);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -42851,7 +43061,7 @@
 	exports.default = TabItem;
 
 /***/ },
-/* 192 */
+/* 193 */
 /*!************************************************!*\
   !*** ./src/js/components/WindowListSection.js ***!
   \************************************************/
@@ -42867,7 +43077,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
