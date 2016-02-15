@@ -8,39 +8,39 @@ webpackJsonp([1],{
 
 	'use strict';
 	
-	var _react = __webpack_require__(/*! react */ 8);
+	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _immutable = __webpack_require__(/*! immutable */ 4);
+	var _immutable = __webpack_require__(/*! immutable */ 5);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
-	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 194);
+	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 195);
 	
 	var Perf = _interopRequireWildcard(_reactAddonsPerf);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 189);
+	var _reactDom = __webpack_require__(/*! react-dom */ 190);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 170);
+	var _server = __webpack_require__(/*! react-dom/server */ 171);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
-	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 1);
+	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 2);
 	
 	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
 	
-	var _Popup = __webpack_require__(/*! ./components/Popup */ 171);
+	var _Popup = __webpack_require__(/*! ./components/Popup */ 172);
 	
 	var _Popup2 = _interopRequireDefault(_Popup);
 	
-	var _styles = __webpack_require__(/*! ./components/styles */ 173);
+	var _styles = __webpack_require__(/*! ./components/styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -185,7 +185,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 1:
+/***/ 2:
 /*!***********************************!*\
   !*** ./src/js/tabManagerState.js ***!
   \***********************************/
@@ -199,15 +199,15 @@ webpackJsonp([1],{
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _lodash = __webpack_require__(/*! lodash */ 2);
+	var _lodash = __webpack_require__(/*! lodash */ 3);
 	
 	var _ = _interopRequireWildcard(_lodash);
 	
-	var _immutable = __webpack_require__(/*! immutable */ 4);
+	var _immutable = __webpack_require__(/*! immutable */ 5);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 5);
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
@@ -465,7 +465,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 170:
+/***/ 171:
 /*!*******************************!*\
   !*** ./~/react-dom/server.js ***!
   \*******************************/
@@ -473,12 +473,12 @@ webpackJsonp([1],{
 
 	'use strict';
 	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 155);
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 156);
 
 
 /***/ },
 
-/***/ 171:
+/***/ 172:
 /*!************************************!*\
   !*** ./src/js/components/Popup.js ***!
   \************************************/
@@ -490,37 +490,37 @@ webpackJsonp([1],{
 	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 8);
+	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 6);
+	var _actions = __webpack_require__(/*! ../actions */ 7);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _searchOps = __webpack_require__(/*! ../searchOps */ 172);
+	var _searchOps = __webpack_require__(/*! ../searchOps */ 173);
 	
 	var searchOps = _interopRequireWildcard(_searchOps);
 	
-	var _oneref = __webpack_require__(/*! oneref */ 166);
+	var _oneref = __webpack_require__(/*! oneref */ 167);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 176);
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 177);
 	
 	var _RevertModal2 = _interopRequireDefault(_RevertModal);
 	
-	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 184);
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 185);
 	
 	var _SaveModal2 = _interopRequireDefault(_SaveModal);
 	
-	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 185);
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 186);
 	
 	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
 	
-	var _util = __webpack_require__(/*! ./util */ 177);
+	var _util = __webpack_require__(/*! ./util */ 178);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -687,7 +687,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 185:
+/***/ 186:
 /*!**********************************************!*\
   !*** ./src/js/components/SelectablePopup.js ***!
   \**********************************************/
@@ -699,27 +699,27 @@ webpackJsonp([1],{
 	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 8);
+	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 177);
+	var _util = __webpack_require__(/*! ./util */ 178);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 6);
+	var _actions = __webpack_require__(/*! ../actions */ 7);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 186);
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 187);
 	
 	var _SearchBar2 = _interopRequireDefault(_SearchBar);
 	
-	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 187);
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 188);
 	
 	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
 	
@@ -877,7 +877,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 187:
+/***/ 188:
 /*!********************************************!*\
   !*** ./src/js/components/TabWindowList.js ***!
   \********************************************/
@@ -889,15 +889,15 @@ webpackJsonp([1],{
 	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 8);
+	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 188);
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 189);
 	
 	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 194);
 	
 	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
 	
@@ -970,7 +970,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 188:
+/***/ 189:
 /*!************************************************!*\
   !*** ./src/js/components/FilteredTabWindow.js ***!
   \************************************************/
@@ -982,39 +982,39 @@ webpackJsonp([1],{
 	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 8);
+	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 189);
+	var _reactDom = __webpack_require__(/*! react-dom */ 190);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
-	var _immutable = __webpack_require__(/*! immutable */ 4);
+	var _immutable = __webpack_require__(/*! immutable */ 5);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 177);
+	var _util = __webpack_require__(/*! ./util */ 178);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 6);
+	var _actions = __webpack_require__(/*! ../actions */ 7);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 184);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 191);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
 	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 193);
 	
 	var _TabItem2 = _interopRequireDefault(_TabItem);
 	
@@ -1148,13 +1148,13 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 194:
+/***/ 195:
 /*!**************************************!*\
   !*** ./~/react-addons-perf/index.js ***!
   \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(/*! react/lib/ReactDefaultPerf */ 149);
+	module.exports = __webpack_require__(/*! react/lib/ReactDefaultPerf */ 150);
 
 /***/ }
 

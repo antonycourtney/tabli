@@ -3,6 +3,7 @@
  * Gathering bookmark and window state and places in local storage so that
  * popup rendering will be as fast as possible
  */
+import chromeBrowser from './chromeBrowser';
 import TabManagerState from './tabManagerState';
 import * as TabWindow from './tabWindow';
 import * as actions from './actions';

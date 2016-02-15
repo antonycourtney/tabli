@@ -137,10 +137,15 @@ export function activateTab(tabWindow, tab, tabIndex, cb) {
     if (tab.open) {
       // Tab is already open, just make it active:
       // console.log("making tab active");
+/*
       chrome.tabs.update(tab.openTabId, { active: true }, () => {
         // console.log("making tab's window active");
         chrome.windows.update(tabWindow.openWindowId, { focused: true });
       });
+*/
+      tabliBrowser.activateTab(tab.openTabId, () => {
+        tabliBrowser.setFocusedWindow(tabWindow.openWindowId)
+      })
     } else {
       // restore this bookmarked tab:
       var createOpts = {

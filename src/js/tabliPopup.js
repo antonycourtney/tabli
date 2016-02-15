@@ -1,3 +1,4 @@
+import chromeBrowser from './chromeBrowser';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as actions from './actions';
