@@ -179,6 +179,15 @@ const styles = {
     backgroundColor: '#7472ff',
     marginRight: '20px',
   },
+  popoutButton: {
+    backgroundImage: mkUrl('images/popout.png'),
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center center',
+    marginRight: 15
+  },
+  popoutButtonHover: {
+    backgroundColor: '#dadada'
+  },
   helpButton: {
     color: '#7472ff'
   },
@@ -334,8 +343,8 @@ const styles = {
     marginTop: 5,
   },
   searchInput: {
-    width: 285,
-    maxWidth: 285,
+    width: 265,
+    maxWidth: 265,
   },
   summarySpan: {
     marginRight: 5,

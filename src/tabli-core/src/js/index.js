@@ -7,6 +7,10 @@
 
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
+import NewTabPage from './components/NewTabPage';
 import Popup from './components/Popup';
+import Styles from './components/styles';
+import * as actions from './actions';
+import ViewRef from './viewRef';
 
-module.exports = { TabWindow, TabManagerState, components: { Popup } };
+module.exports = { actions, components: { Popup, Styles }, TabWindow, TabManagerState, ViewRef };

@@ -1,6 +1,6 @@
 # Tabli - A Chrome Tab Manager
 
-Tabli is my attempt to improve window and tab management in Chrome.
+Tabli is a simple, powerful tab manager for Google Chrome.
 
 ![Screenshot of Tabli Popup](screenshots/tabli-screenshot.png "Tabli screenshot")
 

@@ -1,9 +1,12 @@
 import chromeBrowser from './chromeBrowser';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import * as actions from './actions';
 import { logWrap } from './utils';
-import Popup from './components/Popup';
+
+import * as Tabli from '../tabli-core/src/js/index';
+
+const Popup = Tabli.components.Popup;
+const actions = Tabli.actions;
 
 /**
  * Main entry point to rendering the popup window

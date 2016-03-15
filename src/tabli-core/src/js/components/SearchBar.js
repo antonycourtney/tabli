@@ -4,6 +4,8 @@ import Styles from './styles';
 import * as Constants from './constants';
 import * as actions from '../actions';
 import * as _ from 'lodash';
+import * as Util from './util';
+import HeaderButton from './HeaderButton';
 
 const SearchBar = React.createClass({
   handleChange() {
@@ -61,13 +63,27 @@ const SearchBar = React.createClass({
     actions.showHelp();
   },
 
+  handlePopoutClick(e) {
+    console.log('Popout button clicked!');
+    e.preventDefault();
+  },
+
   render() {
+    const popoutButton = (
+      <HeaderButton baseStyle={Util.merge(Styles.headerButton, Styles.popoutButton)}
+        visible={true}
+        hoverStyle={Styles.popoutButtonHover}
+        title="Tabli Popout Window"
+        onClick={this.handlePopoutClick}
+      />);
+
     const helpButton = (
       <span className="fa fa-question-circle fa-lg" style={Styles.helpButton}
         title="Open Tabli Usage Manual" onClick={this.handleHelpClick}
       ></span>);
     return (
       <div style={Styles.headerContainer}>
+        {popoutButton}
         <input style={Styles.searchInput} type="text" ref="searchInput" id="searchBox" placeholder="Search..."
           onChange={this.handleChange} onKeyDown={this.handleKeyDown}
           title="Search Page Titles and URLs"

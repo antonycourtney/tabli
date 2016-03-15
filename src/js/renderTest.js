@@ -1,12 +1,15 @@
 import * as React from 'react';
 import * as Immutable from 'immutable';
-import * as TabWindow from './tabWindow';
 import * as Perf from 'react-addons-perf';
 import * as ReactDOM from 'react-dom';
 import * as ReactDOMServer from 'react-dom/server';
-import TabManagerState from './tabManagerState';
-import Popup from './components/Popup';
-import Styles from './components/styles';
+
+import * as Tabli from '../tabli-core/src/js/index';
+
+const TabManagerState = Tabli.TabManagerState;
+const TabWindow = Tabli.TabWindow;
+const Popup = Tabli.components.Popup;
+const Styles = Tabli.components.Styles;
 
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin) {

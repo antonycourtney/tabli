@@ -1,6 +1,6 @@
 
 const chromeConstants = { BROWSER_NAME: 'chrome', BROWSER_PATH_PREFIX: '../' }
-const braveConstants = { BROWSER_NAME: 'brave', BROWSER_PATH_PREFIX: '../node_modules/tabli/build/' }
+const braveConstants = { BROWSER_NAME: 'brave', BROWSER_PATH_PREFIX: '../node_modules/tabli-core/' }
 
 /**
  * do browser detection and assign constants to exported bindings.

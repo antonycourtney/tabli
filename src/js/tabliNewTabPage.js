@@ -1,8 +1,11 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import * as actions from './actions';
 import { logWrap } from './utils';
-import NewTabPage from './components/NewTabPage';
+
+import * as Tabli from '../tabli-core/src/js/index';
+
+const actions = Tabli.actions;
+const NewTabPage = Tabli.components.NewTabPage;
 
 /**
  * Main entry point to rendering the new tab page

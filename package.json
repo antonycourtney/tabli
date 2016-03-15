@@ -1,6 +1,6 @@
 {
   "name": "tabli",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/antonycourtney/tabli.git"
@@ -22,7 +22,7 @@
     "react": "^0.14.7",
     "react-addons-perf": "^0.14.7",
     "react-addons-pure-render-mixin": "^0.14.7",
-    "react-dom": "^0.14.7"    
+    "react-dom": "^0.14.7"
   },
   "devDependencies": {
     "babel": "^6.3.26",
@@ -50,10 +50,8 @@
     "tape": "^4.4.0",
     "webpack": "^1.12.13"
   },
-  "main": "lib/js/index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
-    "build-lib": "rm -rf lib/* && babel src --optional runtime --stage 0 --presets=es2015,react --out-dir lib"
+    "test": "babel-node --presets es2015,react ./test/runAllTests.js | tap-spec"
   }
 }

@@ -72,7 +72,7 @@ gulp.task('build_html', ['build_css'], function() {
 gulp.task('build_images', function() {
     gutil.log("copy images to build");
 
-    return gulp.src('src/images/*')
+    return gulp.src(['src/tabli-core/images/*','src/tabli-core/src/assets/*.png'])
         .pipe(gulp.dest('build/images'));
 });
 

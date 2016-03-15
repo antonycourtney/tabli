@@ -4,14 +4,17 @@
  * popup rendering will be as fast as possible
  */
 import chromeBrowser from './chromeBrowser';
-import TabManagerState from './tabManagerState';
-import * as TabWindow from './tabWindow';
-import * as actions from './actions';
-import * as React from 'react';
-import ViewRef from './viewRef';
-import * as ReactDOMServer from 'react-dom/server';
+import * as Tabli from '../tabli-core/src/js/index';
 
-import Popup from './components/Popup';
+const TabManagerState = Tabli.TabManagerState;
+const TabWindow = Tabli.TabWindow;
+const Popup = Tabli.components.Popup;
+const actions = Tabli.actions;
+const ViewRef = Tabli.ViewRef;
+
+import * as React from 'react';
+
+import * as ReactDOMServer from 'react-dom/server';
 
 const tabmanFolderTitle = 'Tabli Saved Windows';
 const archiveFolderTitle = '_Archive';
@@ -178,6 +181,13 @@ function main() {
       window.storeRef.on('change', renderListener);
 
       setupConnectionListener(window.storeRef);
+
+      chrome.windows.create({ url: "popup.html", 
+        type: "detached_panel",
+        left: 0, top: 0, 
+        width: 350,
+        height: 600 
+      });
     });
   });
 }

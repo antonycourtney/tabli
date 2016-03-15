@@ -94,8 +94,554 @@
 /******/ ([
 /* 0 */,
 /* 1 */,
-/* 2 */,
+/* 2 */
+/*!****************************************!*\
+  !*** ./src/tabli-core/src/js/index.js ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	/*
+	 * top-level module with exports for using Tabli as a library.
+	 *
+	 * Experimental to try and get Tabli working in Brave web browser
+	 */
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 7);
+	
+	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
+	
+	var _NewTabPage = __webpack_require__(/*! ./components/NewTabPage */ 8);
+	
+	var _NewTabPage2 = _interopRequireDefault(_NewTabPage);
+	
+	var _Popup = __webpack_require__(/*! ./components/Popup */ 194);
+	
+	var _Popup2 = _interopRequireDefault(_Popup);
+	
+	var _styles = __webpack_require__(/*! ./components/styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _actions = __webpack_require__(/*! ./actions */ 166);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _viewRef = __webpack_require__(/*! ./viewRef */ 198);
+	
+	var _viewRef2 = _interopRequireDefault(_viewRef);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	module.exports = { actions: actions, components: { Popup: _Popup2.default, Styles: _styles2.default }, TabWindow: TabWindow, TabManagerState: _tabManagerState2.default, ViewRef: _viewRef2.default };
+
+/***/ },
 /* 3 */
+/*!********************************************!*\
+  !*** ./src/tabli-core/src/js/tabWindow.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.TabWindow = exports.TabItem = undefined;
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	exports.removeOpenWindowState = removeOpenWindowState;
+	exports.removeSavedWindowState = removeSavedWindowState;
+	exports.makeFolderTabWindow = makeFolderTabWindow;
+	exports.makeChromeTabWindow = makeChromeTabWindow;
+	exports.updateWindow = updateWindow;
+	exports.closeTab = closeTab;
+	exports.saveTab = saveTab;
+	exports.unsaveTab = unsaveTab;
+	
+	var _lodash = __webpack_require__(/*! lodash */ 4);
+	
+	var _ = _interopRequireWildcard(_lodash);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 6);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Representation of tabbed windows using Immutable.js
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
+	
+	/**
+	 * An item in a tabbed window.
+	 *
+	 * May be associated with an open tab, a bookmark, or both
+	 */
+	
+	var TabItem = exports.TabItem = function (_Immutable$Record) {
+	  _inherits(TabItem, _Immutable$Record);
+	
+	  function TabItem() {
+	    _classCallCheck(this, TabItem);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabItem).apply(this, arguments));
+	  }
+	
+	  _createClass(TabItem, [{
+	    key: 'title',
+	    get: function get() {
+	      if (this.open) {
+	        return this.tabTitle;
+	      }
+	
+	      return this.savedTitle;
+	    }
+	  }]);
+	
+	  return TabItem;
+	}(Immutable.Record({
+	  url: '',
+	  audible: false,
+	
+	  /* Saved state fields
+	  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
+	
+	  // We should perhaps break these out into their own Record type
+	  saved: false,
+	  savedBookmarkId: '',
+	  savedBookmarkIndex: 0, // position in bookmark folder
+	  savedTitle: '',
+	
+	  // Note: Must be kept in sync with resetSavedItem
+	  // Again: Suggests we should possibly break these out into their own record type
+	  open: false, // Note: Saved tabs may be closed even when containing window is open
+	  openTabId: -1,
+	  active: false,
+	  openTabIndex: 0, // index of open tab in its window
+	  favIconUrl: '',
+	  tabTitle: ''
+	}));
+	
+	/**
+	 * Initialize a TabItem from a bookmark
+	 *
+	 * Returned TabItem is closed (not associated with an open tab)
+	 */
+	
+	
+	function makeBookmarkedTabItem(bm) {
+	  var urlStr = bm.url;
+	  if (!urlStr) {
+	    console.error('makeBookmarkedTabItem: Malformed bookmark: missing URL!: ', bm);
+	    urlStr = ''; // better than null or undefined!
+	  }
+	
+	  if (bm.title === undefined) {
+	    console.warn('makeBookmarkedTabItem: Bookmark title undefined (ignoring...): ', bm);
+	  }
+	
+	  var tabItem = new TabItem({
+	    url: urlStr,
+	
+	    saved: true,
+	    savedTitle: _.get(bm, 'title', urlStr),
+	
+	    savedBookmarkId: bm.id,
+	    savedBookmarkIndex: bm.index
+	  });
+	
+	  return tabItem;
+	}
+	
+	/**
+	 * Initialize a TabItem from an open Chrome tab
+	 */
+	function makeOpenTabItem(tab) {
+	  var urlStr = tab.url;
+	  if (!urlStr) {
+	    console.error('malformed tab -- no URL: ', tab);
+	    urlStr = '';
+	  }
+	  /*
+	    if (!tab.title) {
+	      console.warn("tab missing title (ignoring...): ", tab);
+	    }
+	  */
+	  var tabItem = new TabItem({
+	    url: urlStr,
+	    audible: tab.audible,
+	    favIconUrl: tab.favIconUrl,
+	    open: true,
+	    tabTitle: _.get(tab, 'title', urlStr),
+	    openTabId: tab.id,
+	    active: tab.active,
+	    openTabIndex: tab.index
+	  });
+	  return tabItem;
+	}
+	
+	/**
+	 * Returns the base saved state of a tab item (no open tab info)
+	 */
+	function resetSavedItem(ti) {
+	  return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
+	}
+	
+	/**
+	 * Return the base state of an open tab (no saved tab info)
+	 */
+	function resetOpenItem(ti) {
+	  return ti.remove('saved').remove('savedBookmarkId').remove('savedBookmarkIndex').remove('savedTitle');
+	}
+	
+	/**
+	 * A TabWindow
+	 *
+	 * Tab windows have a title and a set of tab items.
+	 *
+	 * A TabWindow has 3 possible states:
+	 *   (open,!saved)   - An open Chrome window that has not had its tabs saved
+	 *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
+	 *   (!open,saved)   - A previously saved window that is not currently open
+	 */
+	
+	var TabWindow = exports.TabWindow = function (_Immutable$Record2) {
+	  _inherits(TabWindow, _Immutable$Record2);
+	
+	  function TabWindow() {
+	    _classCallCheck(this, TabWindow);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabWindow).apply(this, arguments));
+	  }
+	
+	  _createClass(TabWindow, [{
+	    key: 'computeTitle',
+	    value: function computeTitle() {
+	      if (this.saved) {
+	        return this.savedTitle;
+	      }
+	
+	      var activeTab = this.tabItems.find(function (t) {
+	        return t.active;
+	      });
+	
+	      if (!activeTab) {
+	        // shouldn't happen!
+	        console.warn('TabWindow.get title(): No active tab found: ', this.toJS());
+	
+	        var openTabItem = this.tabItems.find(function (t) {
+	          return t.open;
+	        });
+	        if (!openTabItem) {
+	          return '';
+	        }
+	        return openTabItem.title;
+	      }
+	
+	      return activeTab.title;
+	    }
+	  }, {
+	    key: 'title',
+	    get: function get() {
+	      if (this._title === undefined) {
+	        this._title = this.computeTitle();
+	      }
+	
+	      return this._title;
+	    }
+	  }, {
+	    key: 'openTabCount',
+	    get: function get() {
+	      return this.tabItems.count(function (ti) {
+	        return ti.open;
+	      });
+	    }
+	  }]);
+	
+	  return TabWindow;
+	}(Immutable.Record({
+	  saved: false,
+	  savedTitle: '',
+	  savedFolderId: -1,
+	
+	  open: false,
+	  openWindowId: -1,
+	  focused: false,
+	
+	  tabItems: Immutable.Seq() }));
+	
+	/**
+	 * reset a window to its base saved state (after window is closed)
+	 */
+	
+	
+	function removeOpenWindowState(tabWindow) {
+	  var savedItems = tabWindow.tabItems.filter(function (ti) {
+	    return ti.saved;
+	  });
+	  var resetSavedItems = savedItems.map(resetSavedItem);
+	
+	  return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems', resetSavedItems);
+	}
+	
+	/*
+	 * remove any saved state, keeping only open tab and window state
+	 *
+	 * Used when unsave'ing a saved window
+	 */
+	function removeSavedWindowState(tabWindow) {
+	  return tabWindow.remove('saved').remove('savedFolderId').remove('savedTitle');
+	}
+	
+	/**
+	 * Initialize an unopened TabWindow from a bookmarks folder
+	 */
+	function makeFolderTabWindow(bookmarkFolder) {
+	  var itemChildren = bookmarkFolder.children.filter(function (node) {
+	    return 'url' in node;
+	  });
+	  var tabItems = Immutable.Seq(itemChildren.map(makeBookmarkedTabItem));
+	  var fallbackTitle = '';
+	  if (bookmarkFolder.title === undefined) {
+	    console.error('makeFolderTabWindow: malformed bookmarkFolder -- missing title: ', bookmarkFolder);
+	    if (tabItems.count() > 0) {
+	      fallbackTitle = tabItems.get(0).title;
+	    }
+	  }
+	
+	  var tabWindow = new TabWindow({
+	    saved: true,
+	    savedTitle: _.get(bookmarkFolder, 'title', fallbackTitle),
+	    savedFolderId: bookmarkFolder.id,
+	    tabItems: tabItems
+	  });
+	
+	  return tabWindow;
+	}
+	
+	/**
+	 * Initialize a TabWindow from an open Chrome window
+	 */
+	function makeChromeTabWindow(chromeWindow) {
+	  var tabItems = chromeWindow.tabs.map(makeOpenTabItem);
+	  var tabWindow = new TabWindow({
+	    open: true,
+	    openWindowId: chromeWindow.id,
+	    focused: chromeWindow.focused,
+	    tabItems: Immutable.Seq(tabItems)
+	  });
+	
+	  return tabWindow;
+	}
+	
+	/**
+	 * Gather open tab items and a set of non-open saved tabItems from the given
+	 * open tabs and tab items based on URL matching, without regard to
+	 * tab ordering.  Auxiliary helper function for mergeOpenTabs.
+	 */
+	function getOpenTabInfo(tabItems, openTabs) {
+	  var chromeOpenTabItems = Immutable.Seq(openTabs.map(makeOpenTabItem));
+	
+	  // console.log("getOpenTabInfo: openTabs: ", openTabs);
+	  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
+	  var openUrlMap = Immutable.Map(chromeOpenTabItems.groupBy(function (ti) {
+	    return ti.url;
+	  }));
+	
+	  // console.log("getOpenTabInfo: openUrlMap: ", openUrlMap.toJS());
+	
+	  // Now we need to do two things:
+	  // 1. augment chromeOpenTabItems with bookmark Ids / saved state (if it exists)
+	  // 2. figure out which savedTabItems are not in openTabs
+	  var savedItems = tabItems.filter(function (ti) {
+	    return ti.saved;
+	  });
+	
+	  // Restore the saved items to their base state (no open tab info), since we
+	  // only want to pick up open tab info from what was passed in in openTabs
+	  var baseSavedItems = savedItems.map(resetSavedItem);
+	
+	  // The entries in savedUrlMap *should* be singletons, but we'll use groupBy to
+	  // get a type-compatible Seq so that we can merge with openUrlMap using
+	  // mergeWith:
+	  var savedUrlMap = Immutable.Map(baseSavedItems.groupBy(function (ti) {
+	    return ti.url;
+	  }));
+	
+	  // console.log("getOpenTabInfo: savedUrlMap : " + savedUrlMap.toJS());
+	
+	  function mergeTabItems(openItems, mergeSavedItems) {
+	    var savedItem = mergeSavedItems.get(0);
+	    return openItems.map(function (openItem) {
+	      return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex).set('savedTitle', savedItem.savedTitle);
+	    });
+	  }
+	
+	  var mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
+	
+	  // console.log("mergedMap: ", mergedMap.toJS());
+	
+	  // console.log("getOpenTabInfo: mergedMap :" + JSON.stringify(mergedMap,null,4));
+	
+	  // partition mergedMap into open and closed tabItems:
+	  var partitionedMap = mergedMap.toIndexedSeq().flatten(true).groupBy(function (ti) {
+	    return ti.open;
+	  });
+	
+	  // console.log("partitionedMap: ", partitionedMap.toJS());
+	
+	  return partitionedMap;
+	}
+	
+	/**
+	 * Merge currently open tabs from an open Chrome window with tabItem state of a saved
+	 * tabWindow
+	 *
+	 * @param {Seq<TabItem>} tabItems -- previous TabItem state
+	 * @param {[Tab]} openTabs -- currently open tabs from Chrome window
+	 *
+	 * @returns {Seq<TabItem>} TabItems reflecting current window state
+	 */
+	function mergeOpenTabs(tabItems, openTabs) {
+	  var tabInfo = getOpenTabInfo(tabItems, openTabs);
+	
+	  /* TODO: Use algorithm from OLDtabWindow.js to determine tab order.
+	   * For now, let's just concat open and closed tabs, in their sorted order.
+	   */
+	  var openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy(function (ti) {
+	    return ti.openTabIndex;
+	  });
+	  var closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy(function (ti) {
+	    return ti.savedBookmarkIndex;
+	  });
+	
+	  var mergedTabItems = openTabItems.concat(closedTabItems);
+	
+	  return mergedTabItems;
+	}
+	
+	/**
+	 * update a TabWindow from a current snapshot of the Chrome Window
+	 *
+	 * @param {TabWindow} tabWindow - TabWindow to be updated
+	 * @param {ChromeWindow} chromeWindow - current snapshot of Chrome window state
+	 *
+	 * @return {TabWindow} Updated TabWindow
+	 */
+	function updateWindow(tabWindow, chromeWindow) {
+	  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
+	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
+	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
+	  return updWindow;
+	}
+	
+	/**
+	 * handle a tab that's been closed
+	 *
+	 * @param {TabWindow} tabWindow - tab window with tab that's been closed
+	 * @param {Number} tabId -- Chrome id of closed tab
+	 *
+	 * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
+	 */
+	function closeTab(tabWindow, tabId) {
+	  // console.log("closeTab: ", tabWindow, tabId);
+	
+	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.open && ti.openTabId === tabId;
+	  });
+	
+	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 2);
+	
+	  var index = _tabWindow$tabItems$f2[0];
+	  var tabItem = _tabWindow$tabItems$f2[1];
+	
+	
+	  var updItems;
+	
+	  if (tabItem.saved) {
+	    var updTabItem = resetSavedItem(tabItem);
+	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	  } else {
+	    updItems = tabWindow.tabItems.splice(index, 1);
+	  }
+	
+	  return tabWindow.set('tabItems', updItems);
+	}
+	
+	/**
+	 * Update a tab's saved state
+	 *
+	 * @param {TabWindow} tabWindow - tab window with tab that's been closed
+	 * @param {TabItem} tabItem -- open tab that has been saved
+	 * @param {BookmarkTreeNode} tabNode -- bookmark node for saved bookmark
+	 *
+	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
+	 */
+	function saveTab(tabWindow, tabItem, tabNode) {
+	  var _tabWindow$tabItems$f3 = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.open && ti.openTabId === tabItem.openTabId;
+	  });
+	
+	  var _tabWindow$tabItems$f4 = _slicedToArray(_tabWindow$tabItems$f3, 1);
+	
+	  var index = _tabWindow$tabItems$f4[0];
+	
+	
+	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
+	
+	  var updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	
+	  return tabWindow.set('tabItems', updItems);
+	}
+	
+	/**
+	 * Update a tab's saved state when tab has been 'unsaved' (i.e. bookmark removed)
+	 *
+	 * @param {TabWindow} tabWindow - tab window with tab that's been unsaved
+	 * @param {TabItem} tabItem -- open tab that has been saved
+	 *
+	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
+	 */
+	function unsaveTab(tabWindow, tabItem) {
+	  var _tabWindow$tabItems$f5 = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId;
+	  });
+	
+	  var _tabWindow$tabItems$f6 = _slicedToArray(_tabWindow$tabItems$f5, 1);
+	
+	  var index = _tabWindow$tabItems$f6[0];
+	
+	
+	  var updTabItem = resetOpenItem(tabItem);
+	
+	  var updItems;
+	  if (updTabItem.open) {
+	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	  } else {
+	    // It's neither open nor saved, so just get rid of it...
+	    updItems = tabWindow.tabItems.splice(index, 1);
+	  }
+	
+	  return tabWindow.set('tabItems', updItems);
+	}
+
+/***/ },
+/* 4 */
 /*!****************************!*\
   !*** ./~/lodash/lodash.js ***!
   \****************************/
@@ -103,7 +649,7 @@
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/**
 	 * @license
-	 * lodash 4.3.0 (Custom Build) <https://lodash.com/>
+	 * lodash 4.5.1 (Custom Build) <https://lodash.com/>
 	 * Build: `lodash -d -o ./foo/lodash.js`
 	 * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
 	 * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
@@ -116,7 +662,7 @@
 	  var undefined;
 	
 	  /** Used as the semantic version number. */
-	  var VERSION = '4.3.0';
+	  var VERSION = '4.5.1';
 	
 	  /** Used to compose bitmasks for wrapper metadata. */
 	  var BIND_FLAG = 1,
@@ -438,10 +984,19 @@
 	      freeParseInt = parseInt;
 	
 	  /** Detect free variable `exports`. */
-	  var freeExports = (objectTypes[typeof exports] && exports && !exports.nodeType) ? exports : null;
+	  var freeExports = (objectTypes[typeof exports] && exports && !exports.nodeType)
+	    ? exports
+	    : undefined;
 	
 	  /** Detect free variable `module`. */
-	  var freeModule = (objectTypes[typeof module] && module && !module.nodeType) ? module : null;
+	  var freeModule = (objectTypes[typeof module] && module && !module.nodeType)
+	    ? module
+	    : undefined;
+	
+	  /** Detect the popular CommonJS extension `module.exports`. */
+	  var moduleExports = (freeModule && freeModule.exports === freeExports)
+	    ? freeExports
+	    : undefined;
 	
 	  /** Detect free variable `global` from Node.js. */
 	  var freeGlobal = checkGlobal(freeExports && freeModule && typeof global == 'object' && global);
@@ -452,9 +1007,6 @@
 	  /** Detect free variable `window`. */
 	  var freeWindow = checkGlobal(objectTypes[typeof window] && window);
 	
-	  /** Detect the popular CommonJS extension `module.exports`. */
-	  var moduleExports = (freeModule && freeModule.exports === freeExports) ? freeExports : null;
-	
 	  /** Detect `this` as the global object. */
 	  var thisGlobal = checkGlobal(objectTypes[typeof this] && this);
 	
@@ -464,7 +1016,9 @@
 	   * The `this` value is used if it's the global object to avoid Greasemonkey's
 	   * restricted `window` object, otherwise the `window` object is used.
 	   */
-	  var root = freeGlobal || ((freeWindow !== (thisGlobal && thisGlobal.window)) && freeWindow) || freeSelf || thisGlobal || Function('return this')();
+	  var root = freeGlobal ||
+	    ((freeWindow !== (thisGlobal && thisGlobal.window)) && freeWindow) ||
+	      freeSelf || thisGlobal || Function('return this')();
 	
 	  /*--------------------------------------------------------------------------*/
 	
@@ -1129,6 +1683,26 @@
 	  }
 	
 	  /**
+	   * Gets the number of `placeholder` occurrences in `array`.
+	   *
+	   * @private
+	   * @param {Array} array The array to inspect.
+	   * @param {*} placeholder The placeholder to search for.
+	   * @returns {number} Returns the placeholder count.
+	   */
+	  function countHolders(array, placeholder) {
+	    var length = array.length,
+	        result = 0;
+	
+	    while (length--) {
+	      if (array[length] === placeholder) {
+	        result++;
+	      }
+	    }
+	    return result;
+	  }
+	
+	  /**
 	   * Used by `_.deburr` to convert latin-1 supplementary letters to basic latin letters.
 	   *
 	   * @private
@@ -1266,7 +1840,8 @@
 	        result = [];
 	
 	    while (++index < length) {
-	      if (array[index] === placeholder) {
+	      var value = array[index];
+	      if (value === placeholder || value === PLACEHOLDER) {
 	        array[index] = PLACEHOLDER;
 	        result[++resIndex] = index;
 	      }
@@ -1419,6 +1994,7 @@
 	        getPrototypeOf = Object.getPrototypeOf,
 	        getOwnPropertySymbols = Object.getOwnPropertySymbols,
 	        iteratorSymbol = typeof (iteratorSymbol = Symbol && Symbol.iterator) == 'symbol' ? iteratorSymbol : undefined,
+	        objectCreate = Object.create,
 	        propertyIsEnumerable = objectProto.propertyIsEnumerable,
 	        setTimeout = context.setTimeout,
 	        splice = arrayProto.splice;
@@ -1498,51 +2074,52 @@
 	     * `tail`, `take`, `takeRight`, `takeRightWhile`, `takeWhile`, and `toArray`
 	     *
 	     * The chainable wrapper methods are:
-	     * `after`, `ary`, `assign`, `assignIn`, `assignInWith`, `assignWith`,
-	     * `at`, `before`, `bind`, `bindAll`, `bindKey`, `chain`, `chunk`, `commit`,
-	     * `compact`, `concat`, `conforms`, `constant`, `countBy`, `create`, `curry`,
-	     * `debounce`, `defaults`, `defaultsDeep`, `defer`, `delay`, `difference`,
+	     * `after`, `ary`, `assign`, `assignIn`, `assignInWith`, `assignWith`, `at`,
+	     * `before`, `bind`, `bindAll`, `bindKey`, `castArray`, `chain`, `chunk`,
+	     * `commit`, `compact`, `concat`, `conforms`, `constant`, `countBy`, `create`,
+	     * `curry`, `debounce`, `defaults`, `defaultsDeep`, `defer`, `delay`, `difference`,
 	     * `differenceBy`, `differenceWith`, `drop`, `dropRight`, `dropRightWhile`,
-	     * `dropWhile`, `fill`, `filter`, `flatten`, `flattenDeep`, `flip`, `flow`,
-	     * `flowRight`, `fromPairs`, `functions`, `functionsIn`, `groupBy`, `initial`,
-	     * `intersection`, `intersectionBy`, `intersectionWith`, `invert`, `invertBy`,
-	     * `invokeMap`, `iteratee`, `keyBy`, `keys`, `keysIn`, `map`, `mapKeys`,
-	     * `mapValues`, `matches`, `matchesProperty`, `memoize`, `merge`, `mergeWith`,
-	     * `method`, `methodOf`, `mixin`, `negate`, `nthArg`, `omit`, `omitBy`, `once`,
-	     * `orderBy`, `over`, `overArgs`, `overEvery`, `overSome`, `partial`,
-	     * `partialRight`, `partition`, `pick`, `pickBy`, `plant`, `property`,
-	     * `propertyOf`, `pull`, `pullAll`, `pullAllBy`, `pullAt`, `push`, `range`,
-	     * `rangeRight`, `rearg`, `reject`, `remove`, `rest`, `reverse`, `sampleSize`,
-	     * `set`, `setWith`, `shuffle`, `slice`, `sort`, `sortBy`, `splice`, `spread`,
-	     * `tail`, `take`, `takeRight`, `takeRightWhile`, `takeWhile`, `tap`, `throttle`,
-	     * `thru`, `toArray`, `toPairs`, `toPairsIn`, `toPath`, `toPlainObject`,
-	     * `transform`, `unary`, `union`, `unionBy`, `unionWith`, `uniq`, `uniqBy`,
-	     * `uniqWith`, `unset`, `unshift`, `unzip`, `unzipWith`, `values`, `valuesIn`,
-	     * `without`, `wrap`, `xor`, `xorBy`, `xorWith`, `zip`, `zipObject`,
-	     * `zipObjectDeep`, and `zipWith`
+	     * `dropWhile`, `fill`, `filter`, `flatten`, `flattenDeep`, `flattenDepth`,
+	     * `flip`, `flow`, `flowRight`, `fromPairs`, `functions`, `functionsIn`,
+	     * `groupBy`, `initial`, `intersection`, `intersectionBy`, `intersectionWith`,
+	     * `invert`, `invertBy`, `invokeMap`, `iteratee`, `keyBy`, `keys`, `keysIn`,
+	     * `map`, `mapKeys`, `mapValues`, `matches`, `matchesProperty`, `memoize`,
+	     * `merge`, `mergeWith`, `method`, `methodOf`, `mixin`, `negate`, `nthArg`,
+	     * `omit`, `omitBy`, `once`, `orderBy`, `over`, `overArgs`, `overEvery`,
+	     * `overSome`, `partial`, `partialRight`, `partition`, `pick`, `pickBy`, `plant`,
+	     * `property`, `propertyOf`, `pull`, `pullAll`, `pullAllBy`, `pullAt`, `push`,
+	     * `range`, `rangeRight`, `rearg`, `reject`, `remove`, `rest`, `reverse`,
+	     * `sampleSize`, `set`, `setWith`, `shuffle`, `slice`, `sort`, `sortBy`,
+	     * `splice`, `spread`, `tail`, `take`, `takeRight`, `takeRightWhile`,
+	     * `takeWhile`, `tap`, `throttle`, `thru`, `toArray`, `toPairs`, `toPairsIn`,
+	     * `toPath`, `toPlainObject`, `transform`, `unary`, `union`, `unionBy`,
+	     * `unionWith`, `uniq`, `uniqBy`, `uniqWith`, `unset`, `unshift`, `unzip`,
+	     * `unzipWith`, `values`, `valuesIn`, `without`, `wrap`, `xor`, `xorBy`,
+	     * `xorWith`, `zip`, `zipObject`, `zipObjectDeep`, and `zipWith`
 	     *
 	     * The wrapper methods that are **not** chainable by default are:
 	     * `add`, `attempt`, `camelCase`, `capitalize`, `ceil`, `clamp`, `clone`,
 	     * `cloneDeep`, `cloneDeepWith`, `cloneWith`, `deburr`, `endsWith`, `eq`,
-	     * `escape`, `escapeRegExp`, `every`, `find`, `findIndex`, `findKey`,
-	     * `findLast`, `findLastIndex`, `findLastKey`, `floor`, `forEach`, `forEachRight`,
-	     * `forIn`, `forInRight`, `forOwn`, `forOwnRight`, `get`, `gt`, `gte`, `has`,
-	     * `hasIn`, `head`, `identity`, `includes`, `indexOf`, `inRange`, `invoke`,
-	     * `isArguments`, `isArray`, `isArrayLike`, `isArrayLikeObject`, `isBoolean`,
-	     * `isDate`, `isElement`, `isEmpty`, `isEqual`, `isEqualWith`, `isError`,
-	     * `isFinite`, `isFunction`, `isInteger`, `isLength`, `isMatch`, `isMatchWith`,
-	     * `isNaN`, `isNative`, `isNil`, `isNull`, `isNumber`, `isObject`, `isObjectLike`,
-	     * `isPlainObject`, `isRegExp`, `isSafeInteger`, `isString`, `isUndefined`,
-	     * `isTypedArray`, `join`, `kebabCase`, `last`, `lastIndexOf`, `lowerCase`,
-	     * `lowerFirst`, `lt`, `lte`, `max`, `maxBy`, `mean`, `min`, `minBy`,
-	     * `noConflict`, `noop`, `now`, `pad`, `padEnd`, `padStart`, `parseInt`,
-	     * `pop`, `random`, `reduce`, `reduceRight`, `repeat`, `result`, `round`,
-	     * `runInContext`, `sample`, `shift`, `size`, `snakeCase`, `some`, `sortedIndex`,
-	     * `sortedIndexBy`, `sortedLastIndex`, `sortedLastIndexBy`, `startCase`,
-	     * `startsWith`, `subtract`, `sum`, `sumBy`, `template`, `times`, `toLower`,
-	     * `toInteger`, `toLength`, `toNumber`, `toSafeInteger`, `toString`, `toUpper`,
-	     * `trim`, `trimEnd`, `trimStart`, `truncate`, `unescape`, `uniqueId`,
-	     * `upperCase`, `upperFirst`, `value`, and `words`
+	     * `escape`, `escapeRegExp`, `every`, `find`, `findIndex`, `findKey`, `findLast`,
+	     * `findLastIndex`, `findLastKey`, `floor`, `forEach`, `forEachRight`, `forIn`,
+	     * `forInRight`, `forOwn`, `forOwnRight`, `get`, `gt`, `gte`, `has`, `hasIn`,
+	     * `head`, `identity`, `includes`, `indexOf`, `inRange`, `invoke`, `isArguments`,
+	     * `isArray`, `isArrayBuffer`, `isArrayLike`, `isArrayLikeObject`, `isBoolean`,
+	     * `isBuffer`, `isDate`, `isElement`, `isEmpty`, `isEqual`, `isEqualWith`,
+	     * `isError`, `isFinite`, `isFunction`, `isInteger`, `isLength`, `isMap`,
+	     * `isMatch`, `isMatchWith`, `isNaN`, `isNative`, `isNil`, `isNull`, `isNumber`,
+	     * `isObject`, `isObjectLike`, `isPlainObject`, `isRegExp`, `isSafeInteger`,
+	     * `isSet`, `isString`, `isUndefined`, `isTypedArray`, `isWeakMap`, `isWeakSet`,
+	     * `join`, `kebabCase`, `last`, `lastIndexOf`, `lowerCase`, `lowerFirst`,
+	     * `lt`, `lte`, `max`, `maxBy`, `mean`, `min`, `minBy`, `noConflict`, `noop`,
+	     * `now`, `pad`, `padEnd`, `padStart`, `parseInt`, `pop`, `random`, `reduce`,
+	     * `reduceRight`, `repeat`, `result`, `round`, `runInContext`, `sample`,
+	     * `shift`, `size`, `snakeCase`, `some`, `sortedIndex`, `sortedIndexBy`,
+	     * `sortedLastIndex`, `sortedLastIndexBy`, `startCase`, `startsWith`, `subtract`,
+	     * `sum`, `sumBy`, `template`, `times`, `toLower`, `toInteger`, `toLength`,
+	     * `toNumber`, `toSafeInteger`, `toString`, `toUpper`, `trim`, `trimEnd`,
+	     * `trimStart`, `truncate`, `unescape`, `uniqueId`, `upperCase`, `upperFirst`,
+	     * `value`, and `words`
 	     *
 	     * @name _
 	     * @constructor
@@ -1613,7 +2190,7 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type Object
+	     * @type {Object}
 	     */
 	    lodash.templateSettings = {
 	
@@ -1621,7 +2198,7 @@
 	       * Used to detect `data` property values to be HTML-escaped.
 	       *
 	       * @memberOf _.templateSettings
-	       * @type RegExp
+	       * @type {RegExp}
 	       */
 	      'escape': reEscape,
 	
@@ -1629,7 +2206,7 @@
 	       * Used to detect code to be evaluated.
 	       *
 	       * @memberOf _.templateSettings
-	       * @type RegExp
+	       * @type {RegExp}
 	       */
 	      'evaluate': reEvaluate,
 	
@@ -1637,7 +2214,7 @@
 	       * Used to detect `data` property values to inject.
 	       *
 	       * @memberOf _.templateSettings
-	       * @type RegExp
+	       * @type {RegExp}
 	       */
 	      'interpolate': reInterpolate,
 	
@@ -1645,7 +2222,7 @@
 	       * Used to reference the data object in the template text.
 	       *
 	       * @memberOf _.templateSettings
-	       * @type string
+	       * @type {string}
 	       */
 	      'variable': '',
 	
@@ -1653,7 +2230,7 @@
 	       * Used to import variables into the compiled template.
 	       *
 	       * @memberOf _.templateSettings
-	       * @type Object
+	       * @type {Object}
 	       */
 	      'imports': {
 	
@@ -1661,7 +2238,7 @@
 	         * A reference to the `lodash` function.
 	         *
 	         * @memberOf _.templateSettings.imports
-	         * @type Function
+	         * @type {Function}
 	         */
 	        '_': lodash
 	      }
@@ -1673,6 +2250,7 @@
 	     * Creates a lazy wrapper object which wraps `value` to enable lazy evaluation.
 	     *
 	     * @private
+	     * @constructor
 	     * @param {*} value The value to wrap.
 	     */
 	    function LazyWrapper(value) {
@@ -1748,7 +2326,8 @@
 	          resIndex = 0,
 	          takeCount = nativeMin(length, this.__takeCount__);
 	
-	      if (!isArr || arrLength < LARGE_ARRAY_SIZE || (arrLength == length && takeCount == length)) {
+	      if (!isArr || arrLength < LARGE_ARRAY_SIZE ||
+	          (arrLength == length && takeCount == length)) {
 	        return baseWrapperValue(array, this.__actions__);
 	      }
 	      var result = [];
@@ -1787,6 +2366,7 @@
 	     * Creates an hash object.
 	     *
 	     * @private
+	     * @constructor
 	     * @returns {Object} Returns the new hash object.
 	     */
 	    function Hash() {}
@@ -1849,6 +2429,7 @@
 	     * Creates a map cache object to store key-value pairs.
 	     *
 	     * @private
+	     * @constructor
 	     * @param {Array} [values] The values to cache.
 	     */
 	    function MapCache(values) {
@@ -1870,7 +2451,11 @@
 	     * @memberOf MapCache
 	     */
 	    function mapClear() {
-	      this.__data__ = { 'hash': new Hash, 'map': Map ? new Map : [], 'string': new Hash };
+	      this.__data__ = {
+	        'hash': new Hash,
+	        'map': Map ? new Map : [],
+	        'string': new Hash
+	      };
 	    }
 	
 	    /**
@@ -1953,6 +2538,7 @@
 	     * Creates a set cache object to store unique values.
 	     *
 	     * @private
+	     * @constructor
 	     * @param {Array} [values] The values to cache.
 	     */
 	    function SetCache(values) {
@@ -2011,6 +2597,7 @@
 	     * Creates a stack cache object to store key-value pairs.
 	     *
 	     * @private
+	     * @constructor
 	     * @param {Array} [values] The values to cache.
 	     */
 	    function Stack(values) {
@@ -2244,8 +2831,7 @@
 	     */
 	    function assignValue(object, key, value) {
 	      var objValue = object[key];
-	      if ((!eq(objValue, value) ||
-	            (eq(objValue, objectProto[key]) && !hasOwnProperty.call(object, key))) ||
+	      if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) ||
 	          (value === undefined && !(key in object))) {
 	        object[key] = value;
 	      }
@@ -2300,6 +2886,39 @@
 	        result[index] = isNil ? undefined : get(object, paths[index]);
 	      }
 	      return result;
+	    }
+	
+	    /**
+	     * Casts `value` to an empty array if it's not an array like object.
+	     *
+	     * @private
+	     * @param {*} value The value to inspect.
+	     * @returns {Array} Returns the array-like object.
+	     */
+	    function baseCastArrayLikeObject(value) {
+	      return isArrayLikeObject(value) ? value : [];
+	    }
+	
+	    /**
+	     * Casts `value` to `identity` if it's not a function.
+	     *
+	     * @private
+	     * @param {*} value The value to inspect.
+	     * @returns {Array} Returns the array-like object.
+	     */
+	    function baseCastFunction(value) {
+	      return typeof value == 'function' ? value : identity;
+	    }
+	
+	    /**
+	     * Casts `value` to a path array if it's not one.
+	     *
+	     * @private
+	     * @param {*} value The value to inspect.
+	     * @returns {Array} Returns the cast property path array.
+	     */
+	    function baseCastPath(value) {
+	      return isArray(value) ? value : stringToPath(value);
 	    }
 	
 	    /**
@@ -2369,9 +2988,10 @@
 	            return copySymbols(value, baseAssign(result, value));
 	          }
 	        } else {
-	          return cloneableTags[tag]
-	            ? initCloneByTag(value, tag, isDeep)
-	            : (object ? value : {});
+	          if (!cloneableTags[tag]) {
+	            return object ? value : {};
+	          }
+	          result = initCloneByTag(value, tag, isDeep);
 	        }
 	      }
 	      // Check for circular references and return its corresponding clone.
@@ -2426,17 +3046,9 @@
 	     * @param {Object} prototype The object to inherit from.
 	     * @returns {Object} Returns the new object.
 	     */
-	    var baseCreate = (function() {
-	      function object() {}
-	      return function(prototype) {
-	        if (isObject(prototype)) {
-	          object.prototype = prototype;
-	          var result = new object;
-	          object.prototype = undefined;
-	        }
-	        return result || {};
-	      };
-	    }());
+	    function baseCreate(proto) {
+	      return isObject(proto) ? objectCreate(proto) : {};
+	    }
 	
 	    /**
 	     * The base implementation of `_.delay` and `_.defer` which accepts an array
@@ -2598,12 +3210,12 @@
 	     *
 	     * @private
 	     * @param {Array} array The array to flatten.
-	     * @param {boolean} [isDeep] Specify a deep flatten.
+	     * @param {number} depth The maximum recursion depth.
 	     * @param {boolean} [isStrict] Restrict flattening to arrays-like objects.
 	     * @param {Array} [result=[]] The initial result value.
 	     * @returns {Array} Returns the new flattened array.
 	     */
-	    function baseFlatten(array, isDeep, isStrict, result) {
+	    function baseFlatten(array, depth, isStrict, result) {
 	      result || (result = []);
 	
 	      var index = -1,
@@ -2611,11 +3223,11 @@
 	
 	      while (++index < length) {
 	        var value = array[index];
-	        if (isArrayLikeObject(value) &&
+	        if (depth > 0 && isArrayLikeObject(value) &&
 	            (isStrict || isArray(value) || isArguments(value))) {
-	          if (isDeep) {
+	          if (depth > 1) {
 	            // Recursively flatten arrays (susceptible to call stack limits).
-	            baseFlatten(value, isDeep, isStrict, result);
+	            baseFlatten(value, depth - 1, isStrict, result);
 	          } else {
 	            arrayPush(result, value);
 	          }
@@ -2712,7 +3324,7 @@
 	     * @returns {*} Returns the resolved value.
 	     */
 	    function baseGet(object, path) {
-	      path = isKey(path, object) ? [path + ''] : baseToPath(path);
+	      path = isKey(path, object) ? [path + ''] : baseCastPath(path);
 	
 	      var index = 0,
 	          length = path.length;
@@ -2801,11 +3413,17 @@
 	        var value = array[index],
 	            computed = iteratee ? iteratee(value) : value;
 	
-	        if (!(seen ? cacheHas(seen, computed) : includes(result, computed, comparator))) {
+	        if (!(seen
+	              ? cacheHas(seen, computed)
+	              : includes(result, computed, comparator)
+	            )) {
 	          var othIndex = othLength;
 	          while (--othIndex) {
 	            var cache = caches[othIndex];
-	            if (!(cache ? cacheHas(cache, computed) : includes(arrays[othIndex], computed, comparator))) {
+	            if (!(cache
+	                  ? cacheHas(cache, computed)
+	                  : includes(arrays[othIndex], computed, comparator))
+	                ) {
 	              continue outer;
 	            }
 	          }
@@ -2848,7 +3466,7 @@
 	     */
 	    function baseInvoke(object, path, args) {
 	      if (!isKey(path, object)) {
-	        path = baseToPath(path);
+	        path = baseCastPath(path);
 	        object = parent(object, path);
 	        path = last(path);
 	      }
@@ -3021,7 +3639,6 @@
 	     * property of prototypes or treat sparse arrays as dense.
 	     *
 	     * @private
-	     * @type Function
 	     * @param {Object} object The object to query.
 	     * @returns {Array} Returns the array of property names.
 	     */
@@ -3129,7 +3746,10 @@
 	      if (object === source) {
 	        return;
 	      }
-	      var props = (isArray(source) || isTypedArray(source)) ? undefined : keysIn(source);
+	      var props = (isArray(source) || isTypedArray(source))
+	        ? undefined
+	        : keysIn(source);
+	
 	      arrayEach(props || source, function(srcValue, key) {
 	        if (props) {
 	          key = srcValue;
@@ -3140,7 +3760,10 @@
 	          baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
 	        }
 	        else {
-	          var newValue = customizer ? customizer(object[key], srcValue, (key + ''), object, source, stack) : undefined;
+	          var newValue = customizer
+	            ? customizer(object[key], srcValue, (key + ''), object, source, stack)
+	            : undefined;
+	
 	          if (newValue === undefined) {
 	            newValue = srcValue;
 	          }
@@ -3172,21 +3795,24 @@
 	        assignMergeValue(object, key, stacked);
 	        return;
 	      }
-	      var newValue = customizer ? customizer(objValue, srcValue, (key + ''), object, source, stack) : undefined,
-	          isCommon = newValue === undefined;
+	      var newValue = customizer
+	        ? customizer(objValue, srcValue, (key + ''), object, source, stack)
+	        : undefined;
+	
+	      var isCommon = newValue === undefined;
 	
 	      if (isCommon) {
 	        newValue = srcValue;
 	        if (isArray(srcValue) || isTypedArray(srcValue)) {
 	          if (isArray(objValue)) {
-	            newValue = srcIndex ? copyArray(objValue) : objValue;
+	            newValue = objValue;
 	          }
 	          else if (isArrayLikeObject(objValue)) {
 	            newValue = copyArray(objValue);
 	          }
 	          else {
 	            isCommon = false;
-	            newValue = baseClone(srcValue);
+	            newValue = baseClone(srcValue, true);
 	          }
 	        }
 	        else if (isPlainObject(srcValue) || isArguments(srcValue)) {
@@ -3195,10 +3821,10 @@
 	          }
 	          else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
 	            isCommon = false;
-	            newValue = baseClone(srcValue);
+	            newValue = baseClone(srcValue, true);
 	          }
 	          else {
-	            newValue = srcIndex ? baseClone(objValue) : objValue;
+	            newValue = objValue;
 	          }
 	        }
 	        else {
@@ -3372,7 +3998,7 @@
 	            splice.call(array, index, 1);
 	          }
 	          else if (!isKey(index, array)) {
-	            var path = baseToPath(index),
+	            var path = baseCastPath(index),
 	                object = parent(array, path);
 	
 	            if (object != null) {
@@ -3434,7 +4060,7 @@
 	     * @returns {Object} Returns `object`.
 	     */
 	    function baseSet(object, path, value, customizer) {
-	      path = isKey(path, object) ? [path + ''] : baseToPath(path);
+	      path = isKey(path, object) ? [path + ''] : baseCastPath(path);
 	
 	      var index = -1,
 	          length = path.length,
@@ -3449,7 +4075,9 @@
 	            var objValue = nested[key];
 	            newValue = customizer ? customizer(objValue, key, nested) : undefined;
 	            if (newValue === undefined) {
-	              newValue = objValue == null ? (isIndex(path[index + 1]) ? [] : {}) : objValue;
+	              newValue = objValue == null
+	                ? (isIndex(path[index + 1]) ? [] : {})
+	                : objValue;
 	            }
 	          }
 	          assignValue(nested, key, newValue);
@@ -3641,18 +4269,6 @@
 	    }
 	
 	    /**
-	     * The base implementation of `_.toPath` which only converts `value` to a
-	     * path if it's not one.
-	     *
-	     * @private
-	     * @param {*} value The value to process.
-	     * @returns {Array} Returns the property path array.
-	     */
-	    function baseToPath(value) {
-	      return isArray(value) ? value : stringToPath(value);
-	    }
-	
-	    /**
 	     * The base implementation of `_.uniqBy` without support for iteratee shorthands.
 	     *
 	     * @private
@@ -3721,7 +4337,7 @@
 	     * @returns {boolean} Returns `true` if the property is deleted, else `false`.
 	     */
 	    function baseUnset(object, path) {
-	      path = isKey(path, object) ? [path + ''] : baseToPath(path);
+	      path = isKey(path, object) ? [path + ''] : baseCastPath(path);
 	      object = parent(object, path);
 	      var key = last(path);
 	      return (object != null && has(object, key)) ? delete object[key] : true;
@@ -3910,10 +4526,11 @@
 	     * @returns {Object} Returns the cloned typed array.
 	     */
 	    function cloneTypedArray(typedArray, isDeep) {
-	      var buffer = typedArray.buffer,
+	      var arrayBuffer = typedArray.buffer,
+	          buffer = isDeep ? cloneArrayBuffer(arrayBuffer) : arrayBuffer,
 	          Ctor = typedArray.constructor;
 	
-	      return new Ctor(isDeep ? cloneArrayBuffer(buffer) : buffer, typedArray.byteOffset, typedArray.length);
+	      return new Ctor(buffer, typedArray.byteOffset, typedArray.length);
 	    }
 	
 	    /**
@@ -3924,23 +4541,28 @@
 	     * @param {Array|Object} args The provided arguments.
 	     * @param {Array} partials The arguments to prepend to those provided.
 	     * @param {Array} holders The `partials` placeholder indexes.
+	     * @params {boolean} [isCurried] Specify composing for a curried function.
 	     * @returns {Array} Returns the new array of composed arguments.
 	     */
-	    function composeArgs(args, partials, holders) {
-	      var holdersLength = holders.length,
-	          argsIndex = -1,
-	          argsLength = nativeMax(args.length - holdersLength, 0),
+	    function composeArgs(args, partials, holders, isCurried) {
+	      var argsIndex = -1,
+	          argsLength = args.length,
+	          holdersLength = holders.length,
 	          leftIndex = -1,
 	          leftLength = partials.length,
-	          result = Array(leftLength + argsLength);
+	          rangeLength = nativeMax(argsLength - holdersLength, 0),
+	          result = Array(leftLength + rangeLength),
+	          isUncurried = !isCurried;
 	
 	      while (++leftIndex < leftLength) {
 	        result[leftIndex] = partials[leftIndex];
 	      }
 	      while (++argsIndex < holdersLength) {
-	        result[holders[argsIndex]] = args[argsIndex];
+	        if (isUncurried || argsIndex < argsLength) {
+	          result[holders[argsIndex]] = args[argsIndex];
+	        }
 	      }
-	      while (argsLength--) {
+	      while (rangeLength--) {
 	        result[leftIndex++] = args[argsIndex++];
 	      }
 	      return result;
@@ -3954,18 +4576,21 @@
 	     * @param {Array|Object} args The provided arguments.
 	     * @param {Array} partials The arguments to append to those provided.
 	     * @param {Array} holders The `partials` placeholder indexes.
+	     * @params {boolean} [isCurried] Specify composing for a curried function.
 	     * @returns {Array} Returns the new array of composed arguments.
 	     */
-	    function composeArgsRight(args, partials, holders) {
-	      var holdersIndex = -1,
+	    function composeArgsRight(args, partials, holders, isCurried) {
+	      var argsIndex = -1,
+	          argsLength = args.length,
+	          holdersIndex = -1,
 	          holdersLength = holders.length,
-	          argsIndex = -1,
-	          argsLength = nativeMax(args.length - holdersLength, 0),
 	          rightIndex = -1,
 	          rightLength = partials.length,
-	          result = Array(argsLength + rightLength);
+	          rangeLength = nativeMax(argsLength - holdersLength, 0),
+	          result = Array(rangeLength + rightLength),
+	          isUncurried = !isCurried;
 	
-	      while (++argsIndex < argsLength) {
+	      while (++argsIndex < rangeLength) {
 	        result[argsIndex] = args[argsIndex];
 	      }
 	      var offset = argsIndex;
@@ -3973,7 +4598,9 @@
 	        result[offset + rightIndex] = partials[rightIndex];
 	      }
 	      while (++holdersIndex < holdersLength) {
-	        result[offset + holders[holdersIndex]] = args[argsIndex++];
+	        if (isUncurried || argsIndex < argsLength) {
+	          result[offset + holders[holdersIndex]] = args[argsIndex++];
+	        }
 	      }
 	      return result;
 	    }
@@ -4028,8 +4655,11 @@
 	          length = props.length;
 	
 	      while (++index < length) {
-	        var key = props[index],
-	            newValue = customizer ? customizer(object[key], source[key], key, object, source) : source[key];
+	        var key = props[index];
+	
+	        var newValue = customizer
+	          ? customizer(object[key], source[key], key, object, source)
+	          : source[key];
 	
 	        assignValue(object, key, newValue);
 	      }
@@ -4079,7 +4709,10 @@
 	            customizer = length > 1 ? sources[length - 1] : undefined,
 	            guard = length > 2 ? sources[2] : undefined;
 	
-	        customizer = typeof customizer == 'function' ? (length--, customizer) : undefined;
+	        customizer = typeof customizer == 'function'
+	          ? (length--, customizer)
+	          : undefined;
+	
 	        if (guard && isIterateeCall(sources[0], sources[1], guard)) {
 	          customizer = length < 3 ? undefined : customizer;
 	          length = 1;
@@ -4180,8 +4813,11 @@
 	      return function(string) {
 	        string = toString(string);
 	
-	        var strSymbols = reHasComplexSymbol.test(string) ? stringToArray(string) : undefined,
-	            chr = strSymbols ? strSymbols[0] : string.charAt(0),
+	        var strSymbols = reHasComplexSymbol.test(string)
+	          ? stringToArray(string)
+	          : undefined;
+	
+	        var chr = strSymbols ? strSymbols[0] : string.charAt(0),
 	            trailing = strSymbols ? strSymbols.slice(1).join('') : string.slice(1);
 	
 	        return chr[methodName]() + trailing;
@@ -4248,10 +4884,9 @@
 	
 	      function wrapper() {
 	        var length = arguments.length,
-	            index = length,
 	            args = Array(length),
-	            fn = (this && this !== root && this instanceof wrapper) ? Ctor : func,
-	            placeholder = lodash.placeholder || wrapper.placeholder;
+	            index = length,
+	            placeholder = getPlaceholder(wrapper);
 	
 	        while (index--) {
 	          args[index] = arguments[index];
@@ -4261,9 +4896,13 @@
 	          : replaceHolders(args, placeholder);
 	
 	        length -= holders.length;
-	        return length < arity
-	          ? createRecurryWrapper(func, bitmask, createHybridWrapper, placeholder, undefined, args, holders, undefined, undefined, arity - length)
-	          : apply(fn, this, args);
+	        if (length < arity) {
+	          return createRecurryWrapper(
+	            func, bitmask, createHybridWrapper, wrapper.placeholder, undefined,
+	            args, holders, undefined, undefined, arity - length);
+	        }
+	        var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
+	        return apply(fn, this, args);
 	      }
 	      return wrapper;
 	    }
@@ -4277,7 +4916,7 @@
 	     */
 	    function createFlow(fromRight) {
 	      return rest(function(funcs) {
-	        funcs = baseFlatten(funcs);
+	        funcs = baseFlatten(funcs, 1);
 	
 	        var length = funcs.length,
 	            index = length,
@@ -4302,7 +4941,10 @@
 	          var funcName = getFuncName(func),
 	              data = funcName == 'wrapper' ? getData(func) : undefined;
 	
-	          if (data && isLaziable(data[0]) && data[1] == (ARY_FLAG | CURRY_FLAG | PARTIAL_FLAG | REARG_FLAG) && !data[4].length && data[9] == 1) {
+	          if (data && isLaziable(data[0]) &&
+	                data[1] == (ARY_FLAG | CURRY_FLAG | PARTIAL_FLAG | REARG_FLAG) &&
+	                !data[4].length && data[9] == 1
+	              ) {
 	            wrapper = wrapper[getFuncName(data[0])].apply(wrapper, data[3]);
 	          } else {
 	            wrapper = (func.length == 1 && isLaziable(func)) ? wrapper[funcName]() : wrapper.thru(func);
@@ -4312,7 +4954,8 @@
 	          var args = arguments,
 	              value = args[0];
 	
-	          if (wrapper && args.length == 1 && isArray(value) && value.length >= LARGE_ARRAY_SIZE) {
+	          if (wrapper && args.length == 1 &&
+	              isArray(value) && value.length >= LARGE_ARRAY_SIZE) {
 	            return wrapper.plant(value).value();
 	          }
 	          var index = 0,
@@ -4347,8 +4990,7 @@
 	      var isAry = bitmask & ARY_FLAG,
 	          isBind = bitmask & BIND_FLAG,
 	          isBindKey = bitmask & BIND_KEY_FLAG,
-	          isCurry = bitmask & CURRY_FLAG,
-	          isCurryRight = bitmask & CURRY_RIGHT_FLAG,
+	          isCurried = bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG),
 	          isFlip = bitmask & FLIP_FLAG,
 	          Ctor = isBindKey ? undefined : createCtorWrapper(func);
 	
@@ -4360,30 +5002,34 @@
 	        while (index--) {
 	          args[index] = arguments[index];
 	        }
+	        if (isCurried) {
+	          var placeholder = getPlaceholder(wrapper),
+	              holdersCount = countHolders(args, placeholder);
+	        }
 	        if (partials) {
-	          args = composeArgs(args, partials, holders);
+	          args = composeArgs(args, partials, holders, isCurried);
 	        }
 	        if (partialsRight) {
-	          args = composeArgsRight(args, partialsRight, holdersRight);
+	          args = composeArgsRight(args, partialsRight, holdersRight, isCurried);
 	        }
-	        if (isCurry || isCurryRight) {
-	          var placeholder = lodash.placeholder || wrapper.placeholder,
-	              argsHolders = replaceHolders(args, placeholder);
-	
-	          length -= argsHolders.length;
-	          if (length < arity) {
-	            return createRecurryWrapper(func, bitmask, createHybridWrapper, placeholder, thisArg, args, argsHolders, argPos, ary, arity - length);
-	          }
+	        length -= holdersCount;
+	        if (isCurried && length < arity) {
+	          var newHolders = replaceHolders(args, placeholder);
+	          return createRecurryWrapper(
+	            func, bitmask, createHybridWrapper, wrapper.placeholder, thisArg,
+	            args, newHolders, argPos, ary, arity - length
+	          );
 	        }
 	        var thisBinding = isBind ? thisArg : this,
 	            fn = isBindKey ? thisBinding[func] : func;
 	
+	        length = args.length;
 	        if (argPos) {
 	          args = reorder(args, argPos);
-	        } else if (isFlip && args.length > 1) {
+	        } else if (isFlip && length > 1) {
 	          args.reverse();
 	        }
-	        if (isAry && ary < args.length) {
+	        if (isAry && ary < length) {
 	          args.length = ary;
 	        }
 	        if (this && this !== root && this instanceof wrapper) {
@@ -4417,7 +5063,7 @@
 	     */
 	    function createOver(arrayFunc) {
 	      return rest(function(iteratees) {
-	        iteratees = arrayMap(baseFlatten(iteratees), getIteratee());
+	        iteratees = arrayMap(baseFlatten(iteratees, 1), getIteratee());
 	        return rest(function(args) {
 	          var thisArg = this;
 	          return arrayFunc(iteratees, function(iteratee) {
@@ -4521,7 +5167,7 @@
 	     * @param {Function} func The function to wrap.
 	     * @param {number} bitmask The bitmask of wrapper flags. See `createWrapper` for more details.
 	     * @param {Function} wrapFunc The function to create the `func` wrapper.
-	     * @param {*} placeholder The placeholder to replace.
+	     * @param {*} placeholder The placeholder value.
 	     * @param {*} [thisArg] The `this` binding of `func`.
 	     * @param {Array} [partials] The arguments to prepend to those provided to the new function.
 	     * @param {Array} [holders] The `partials` placeholder indexes.
@@ -4533,7 +5179,7 @@
 	    function createRecurryWrapper(func, bitmask, wrapFunc, placeholder, thisArg, partials, holders, argPos, ary, arity) {
 	      var isCurry = bitmask & CURRY_FLAG,
 	          newArgPos = argPos ? copyArray(argPos) : undefined,
-	          newsHolders = isCurry ? holders : undefined,
+	          newHolders = isCurry ? holders : undefined,
 	          newHoldersRight = isCurry ? undefined : holders,
 	          newPartials = isCurry ? partials : undefined,
 	          newPartialsRight = isCurry ? undefined : partials;
@@ -4544,9 +5190,12 @@
 	      if (!(bitmask & CURRY_BOUND_FLAG)) {
 	        bitmask &= ~(BIND_FLAG | BIND_KEY_FLAG);
 	      }
-	      var newData = [func, bitmask, thisArg, newPartials, newsHolders, newPartialsRight, newHoldersRight, newArgPos, ary, arity],
-	          result = wrapFunc.apply(undefined, newData);
+	      var newData = [
+	        func, bitmask, thisArg, newPartials, newHolders, newPartialsRight,
+	        newHoldersRight, newArgPos, ary, arity
+	      ];
 	
+	      var result = wrapFunc.apply(undefined, newData);
 	      if (isLaziable(func)) {
 	        setData(result, newData);
 	      }
@@ -4635,8 +5284,12 @@
 	
 	        partials = holders = undefined;
 	      }
-	      var data = isBindKey ? undefined : getData(func),
-	          newData = [func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity];
+	      var data = isBindKey ? undefined : getData(func);
+	
+	      var newData = [
+	        func, bitmask, thisArg, partials, holders, partialsRight, holdersRight,
+	        argPos, ary, arity
+	      ];
 	
 	      if (data) {
 	        mergeData(newData, data);
@@ -4960,6 +5613,18 @@
 	    }
 	
 	    /**
+	     * Gets the argument placeholder value for `func`.
+	     *
+	     * @private
+	     * @param {Function} func The function to inspect.
+	     * @returns {*} Returns the placeholder value.
+	     */
+	    function getPlaceholder(func) {
+	      var object = hasOwnProperty.call(lodash, 'placeholder') ? lodash : func;
+	      return object.placeholder;
+	    }
+	
+	    /**
 	     * Creates an array of the own symbol properties of `object`.
 	     *
 	     * @private
@@ -5044,7 +5709,7 @@
 	      }
 	      var result = hasFunc(object, path);
 	      if (!result && !isKey(path)) {
-	        path = baseToPath(path);
+	        path = baseCastPath(path);
 	        object = parent(object, path);
 	        if (object != null) {
 	          path = last(path);
@@ -5085,11 +5750,9 @@
 	     * @returns {Object} Returns the initialized clone.
 	     */
 	    function initCloneObject(object) {
-	      if (isPrototype(object)) {
-	        return {};
-	      }
-	      var Ctor = object.constructor;
-	      return baseCreate(isFunction(Ctor) ? Ctor.prototype : undefined);
+	      return (isFunction(object.constructor) && !isPrototype(object))
+	        ? baseCreate(getPrototypeOf(object))
+	        : {};
 	    }
 	
 	    /**
@@ -5203,7 +5866,7 @@
 	    function isKeyable(value) {
 	      var type = typeof value;
 	      return type == 'number' || type == 'boolean' ||
-	        (type == 'string' && value !== '__proto__') || value == null;
+	        (type == 'string' && value != '__proto__') || value == null;
 	    }
 	
 	    /**
@@ -5236,7 +5899,7 @@
 	     */
 	    function isPrototype(value) {
 	      var Ctor = value && value.constructor,
-	          proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
+	          proto = (isFunction(Ctor) && Ctor.prototype) || objectProto;
 	
 	      return value === proto;
 	    }
@@ -5275,9 +5938,9 @@
 	          isCommon = newBitmask < (BIND_FLAG | BIND_KEY_FLAG | ARY_FLAG);
 	
 	      var isCombo =
-	        (srcBitmask == ARY_FLAG && (bitmask == CURRY_FLAG)) ||
-	        (srcBitmask == ARY_FLAG && (bitmask == REARG_FLAG) && (data[7].length <= source[8])) ||
-	        (srcBitmask == (ARY_FLAG | REARG_FLAG) && (source[7].length <= source[8]) && (bitmask == CURRY_FLAG));
+	        ((srcBitmask == ARY_FLAG) && (bitmask == CURRY_FLAG)) ||
+	        ((srcBitmask == ARY_FLAG) && (bitmask == REARG_FLAG) && (data[7].length <= source[8])) ||
+	        ((srcBitmask == (ARY_FLAG | REARG_FLAG)) && (source[7].length <= source[8]) && (bitmask == CURRY_FLAG));
 	
 	      // Exit early if metadata can't be merged.
 	      if (!(isCommon || isCombo)) {
@@ -5287,7 +5950,7 @@
 	      if (srcBitmask & BIND_FLAG) {
 	        data[2] = source[2];
 	        // Set when currying a bound function.
-	        newBitmask |= (bitmask & BIND_FLAG) ? 0 : CURRY_BOUND_FLAG;
+	        newBitmask |= bitmask & BIND_FLAG ? 0 : CURRY_BOUND_FLAG;
 	      }
 	      // Compose partial arguments.
 	      var value = source[3];
@@ -5426,28 +6089,6 @@
 	    }
 	
 	    /**
-	     * Converts `value` to an array-like object if it's not one.
-	     *
-	     * @private
-	     * @param {*} value The value to process.
-	     * @returns {Array} Returns the array-like object.
-	     */
-	    function toArrayLikeObject(value) {
-	      return isArrayLikeObject(value) ? value : [];
-	    }
-	
-	    /**
-	     * Converts `value` to a function if it's not one.
-	     *
-	     * @private
-	     * @param {*} value The value to process.
-	     * @returns {Function} Returns the function.
-	     */
-	    function toFunction(value) {
-	      return typeof value == 'function' ? value : identity;
-	    }
-	
-	    /**
 	     * Creates a clone of `wrapper`.
 	     *
 	     * @private
@@ -5557,7 +6198,7 @@
 	      if (!isArray(array)) {
 	        array = array == null ? [] : [Object(array)];
 	      }
-	      values = baseFlatten(values);
+	      values = baseFlatten(values, 1);
 	      return arrayConcat(array, values);
 	    });
 	
@@ -5579,7 +6220,7 @@
 	     */
 	    var difference = rest(function(array, values) {
 	      return isArrayLikeObject(array)
-	        ? baseDifference(array, baseFlatten(values, false, true))
+	        ? baseDifference(array, baseFlatten(values, 1, true))
 	        : [];
 	    });
 	
@@ -5610,7 +6251,7 @@
 	        iteratee = undefined;
 	      }
 	      return isArrayLikeObject(array)
-	        ? baseDifference(array, baseFlatten(values, false, true), getIteratee(iteratee))
+	        ? baseDifference(array, baseFlatten(values, 1, true), getIteratee(iteratee))
 	        : [];
 	    });
 	
@@ -5639,7 +6280,7 @@
 	        comparator = undefined;
 	      }
 	      return isArrayLikeObject(array)
-	        ? baseDifference(array, baseFlatten(values, false, true), undefined, comparator)
+	        ? baseDifference(array, baseFlatten(values, 1, true), undefined, comparator)
 	        : [];
 	    });
 	
@@ -5909,7 +6550,7 @@
 	    }
 	
 	    /**
-	     * Flattens `array` a single level.
+	     * Flattens `array` a single level deep.
 	     *
 	     * @static
 	     * @memberOf _
@@ -5918,30 +6559,58 @@
 	     * @returns {Array} Returns the new flattened array.
 	     * @example
 	     *
-	     * _.flatten([1, [2, 3, [4]]]);
-	     * // => [1, 2, 3, [4]]
+	     * _.flatten([1, [2, [3, [4]], 5]]);
+	     * // => [1, 2, [3, [4]], 5]
 	     */
 	    function flatten(array) {
 	      var length = array ? array.length : 0;
-	      return length ? baseFlatten(array) : [];
+	      return length ? baseFlatten(array, 1) : [];
 	    }
 	
 	    /**
-	     * This method is like `_.flatten` except that it recursively flattens `array`.
+	     * Recursively flattens `array`.
 	     *
 	     * @static
 	     * @memberOf _
 	     * @category Array
-	     * @param {Array} array The array to recursively flatten.
+	     * @param {Array} array The array to flatten.
 	     * @returns {Array} Returns the new flattened array.
 	     * @example
 	     *
-	     * _.flattenDeep([1, [2, 3, [4]]]);
-	     * // => [1, 2, 3, 4]
+	     * _.flattenDeep([1, [2, [3, [4]], 5]]);
+	     * // => [1, 2, 3, 4, 5]
 	     */
 	    function flattenDeep(array) {
 	      var length = array ? array.length : 0;
-	      return length ? baseFlatten(array, true) : [];
+	      return length ? baseFlatten(array, INFINITY) : [];
+	    }
+	
+	    /**
+	     * Recursively flatten `array` up to `depth` times.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Array
+	     * @param {Array} array The array to flatten.
+	     * @param {number} [depth=1] The maximum recursion depth.
+	     * @returns {Array} Returns the new flattened array.
+	     * @example
+	     *
+	     * var array = [1, [2, [3, [4]], 5]];
+	     *
+	     * _.flattenDepth(array, 1);
+	     * // => [1, 2, [3, [4]], 5]
+	     *
+	     * _.flattenDepth(array, 2);
+	     * // => [1, 2, 3, [4], 5]
+	     */
+	    function flattenDepth(array, depth) {
+	      var length = array ? array.length : 0;
+	      if (!length) {
+	        return [];
+	      }
+	      depth = depth === undefined ? 1 : toInteger(depth);
+	      return baseFlatten(array, depth);
 	    }
 	
 	    /**
@@ -6058,7 +6727,7 @@
 	     * // => [2]
 	     */
 	    var intersection = rest(function(arrays) {
-	      var mapped = arrayMap(arrays, toArrayLikeObject);
+	      var mapped = arrayMap(arrays, baseCastArrayLikeObject);
 	      return (mapped.length && mapped[0] === arrays[0])
 	        ? baseIntersection(mapped)
 	        : [];
@@ -6086,7 +6755,7 @@
 	     */
 	    var intersectionBy = rest(function(arrays) {
 	      var iteratee = last(arrays),
-	          mapped = arrayMap(arrays, toArrayLikeObject);
+	          mapped = arrayMap(arrays, baseCastArrayLikeObject);
 	
 	      if (iteratee === last(mapped)) {
 	        iteratee = undefined;
@@ -6119,7 +6788,7 @@
 	     */
 	    var intersectionWith = rest(function(arrays) {
 	      var comparator = last(arrays),
-	          mapped = arrayMap(arrays, toArrayLikeObject);
+	          mapped = arrayMap(arrays, baseCastArrayLikeObject);
 	
 	      if (comparator === last(mapped)) {
 	        comparator = undefined;
@@ -6213,7 +6882,8 @@
 	     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
 	     * for equality comparisons.
 	     *
-	     * **Note:** Unlike `_.without`, this method mutates `array`.
+	     * **Note:** Unlike `_.without`, this method mutates `array`. Use `_.remove`
+	     * to remove elements from an array by predicate.
 	     *
 	     * @static
 	     * @memberOf _
@@ -6309,7 +6979,7 @@
 	     * // => [10, 20]
 	     */
 	    var pullAt = rest(function(array, indexes) {
-	      indexes = arrayMap(baseFlatten(indexes), String);
+	      indexes = arrayMap(baseFlatten(indexes, 1), String);
 	
 	      var result = baseAt(array, indexes);
 	      basePullAt(array, indexes.sort(compareAscending));
@@ -6318,10 +6988,11 @@
 	
 	    /**
 	     * Removes all elements from `array` that `predicate` returns truthy for
-	     * and returns an array of the removed elements. The predicate is invoked with
-	     * three arguments: (value, index, array).
+	     * and returns an array of the removed elements. The predicate is invoked
+	     * with three arguments: (value, index, array).
 	     *
-	     * **Note:** Unlike `_.filter`, this method mutates `array`.
+	     * **Note:** Unlike `_.filter`, this method mutates `array`. Use `_.pull`
+	     * to pull elements from an array by value.
 	     *
 	     * @static
 	     * @memberOf _
@@ -6781,7 +7452,7 @@
 	     * // => [2, 1, 4]
 	     */
 	    var union = rest(function(arrays) {
-	      return baseUniq(baseFlatten(arrays, false, true));
+	      return baseUniq(baseFlatten(arrays, 1, true));
 	    });
 	
 	    /**
@@ -6809,7 +7480,7 @@
 	      if (isArrayLikeObject(iteratee)) {
 	        iteratee = undefined;
 	      }
-	      return baseUniq(baseFlatten(arrays, false, true), getIteratee(iteratee));
+	      return baseUniq(baseFlatten(arrays, 1, true), getIteratee(iteratee));
 	    });
 	
 	    /**
@@ -6836,7 +7507,7 @@
 	      if (isArrayLikeObject(comparator)) {
 	        comparator = undefined;
 	      }
-	      return baseUniq(baseFlatten(arrays, false, true), undefined, comparator);
+	      return baseUniq(baseFlatten(arrays, 1, true), undefined, comparator);
 	    });
 	
 	    /**
@@ -7260,17 +7931,22 @@
 	     * // => ['a', 'c']
 	     */
 	    var wrapperAt = rest(function(paths) {
-	      paths = baseFlatten(paths);
+	      paths = baseFlatten(paths, 1);
 	      var length = paths.length,
 	          start = length ? paths[0] : 0,
 	          value = this.__wrapped__,
 	          interceptor = function(object) { return baseAt(object, paths); };
 	
-	      if (length > 1 || this.__actions__.length || !(value instanceof LazyWrapper) || !isIndex(start)) {
+	      if (length > 1 || this.__actions__.length ||
+	          !(value instanceof LazyWrapper) || !isIndex(start)) {
 	        return this.thru(interceptor);
 	      }
 	      value = value.slice(start, +start + (length ? 1 : 0));
-	      value.__actions__.push({ 'func': thru, 'args': [interceptor], 'thisArg': undefined });
+	      value.__actions__.push({
+	        'func': thru,
+	        'args': [interceptor],
+	        'thisArg': undefined
+	      });
 	      return new LodashWrapper(value, this.__chain__).thru(function(array) {
 	        if (length && !array.length) {
 	          array.push(undefined);
@@ -7481,7 +8157,11 @@
 	          wrapped = new LazyWrapper(this);
 	        }
 	        wrapped = wrapped.reverse();
-	        wrapped.__actions__.push({ 'func': thru, 'args': [reverse], 'thisArg': undefined });
+	        wrapped.__actions__.push({
+	          'func': thru,
+	          'args': [reverse],
+	          'thisArg': undefined
+	        });
 	        return new LodashWrapper(wrapped, this.__chain__);
 	      }
 	      return this.thru(reverse);
@@ -7700,7 +8380,7 @@
 	     * // => [1, 1, 2, 2]
 	     */
 	    function flatMap(collection, iteratee) {
-	      return baseFlatten(map(collection, iteratee));
+	      return baseFlatten(map(collection, iteratee), 1);
 	    }
 	
 	    /**
@@ -7734,7 +8414,7 @@
 	    function forEach(collection, iteratee) {
 	      return (typeof iteratee == 'function' && isArray(collection))
 	        ? arrayEach(collection, iteratee)
-	        : baseEach(collection, toFunction(iteratee));
+	        : baseEach(collection, baseCastFunction(iteratee));
 	    }
 	
 	    /**
@@ -7758,7 +8438,7 @@
 	    function forEachRight(collection, iteratee) {
 	      return (typeof iteratee == 'function' && isArray(collection))
 	        ? arrayEachRight(collection, iteratee)
-	        : baseEachRight(collection, toFunction(iteratee));
+	        : baseEachRight(collection, baseCastFunction(iteratee));
 	    }
 	
 	    /**
@@ -8322,7 +9002,7 @@
 	      } else if (length > 2 && isIterateeCall(iteratees[0], iteratees[1], iteratees[2])) {
 	        iteratees.length = 1;
 	      }
-	      return baseOrderBy(collection, baseFlatten(iteratees), []);
+	      return baseOrderBy(collection, baseFlatten(iteratees, 1), []);
 	    });
 	
 	    /*------------------------------------------------------------------------*/
@@ -8333,7 +9013,7 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type Function
+	     * @type {Function}
 	     * @category Date
 	     * @returns {number} Returns the timestamp.
 	     * @example
@@ -8475,9 +9155,7 @@
 	    var bind = rest(function(func, thisArg, partials) {
 	      var bitmask = BIND_FLAG;
 	      if (partials.length) {
-	        var placeholder = lodash.placeholder || bind.placeholder,
-	            holders = replaceHolders(partials, placeholder);
-	
+	        var holders = replaceHolders(partials, getPlaceholder(bind));
 	        bitmask |= PARTIAL_FLAG;
 	      }
 	      return createWrapper(func, bitmask, thisArg, partials, holders);
@@ -8530,9 +9208,7 @@
 	    var bindKey = rest(function(object, key, partials) {
 	      var bitmask = BIND_FLAG | BIND_KEY_FLAG;
 	      if (partials.length) {
-	        var placeholder = lodash.placeholder || bindKey.placeholder,
-	            holders = replaceHolders(partials, placeholder);
-	
+	        var holders = replaceHolders(partials, getPlaceholder(bindKey));
 	        bitmask |= PARTIAL_FLAG;
 	      }
 	      return createWrapper(key, bitmask, object, partials, holders);
@@ -8581,7 +9257,7 @@
 	    function curry(func, arity, guard) {
 	      arity = guard ? undefined : arity;
 	      var result = createWrapper(func, CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
-	      result.placeholder = lodash.placeholder || curry.placeholder;
+	      result.placeholder = curry.placeholder;
 	      return result;
 	    }
 	
@@ -8625,7 +9301,7 @@
 	    function curryRight(func, arity, guard) {
 	      arity = guard ? undefined : arity;
 	      var result = createWrapper(func, CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
-	      result.placeholder = lodash.placeholder || curryRight.placeholder;
+	      result.placeholder = curryRight.placeholder;
 	      return result;
 	    }
 	
@@ -8759,8 +9435,10 @@
 	          if (!lastCalled && !maxTimeoutId && !leading) {
 	            lastCalled = stamp;
 	          }
-	          var remaining = maxWait - (stamp - lastCalled),
-	              isCalled = remaining <= 0 || remaining > maxWait;
+	          var remaining = maxWait - (stamp - lastCalled);
+	
+	          var isCalled = (remaining <= 0 || remaining > maxWait) &&
+	            (leading || maxTimeoutId);
 	
 	          if (isCalled) {
 	            if (maxTimeoutId) {
@@ -9000,7 +9678,7 @@
 	     * // => [100, 10]
 	     */
 	    var overArgs = rest(function(func, transforms) {
-	      transforms = arrayMap(baseFlatten(transforms), getIteratee());
+	      transforms = arrayMap(baseFlatten(transforms, 1), getIteratee());
 	
 	      var funcsLength = transforms.length;
 	      return rest(function(args) {
@@ -9047,9 +9725,7 @@
 	     * // => 'hi fred'
 	     */
 	    var partial = rest(function(func, partials) {
-	      var placeholder = lodash.placeholder || partial.placeholder,
-	          holders = replaceHolders(partials, placeholder);
-	
+	      var holders = replaceHolders(partials, getPlaceholder(partial));
 	      return createWrapper(func, PARTIAL_FLAG, undefined, partials, holders);
 	    });
 	
@@ -9085,9 +9761,7 @@
 	     * // => 'hello fred'
 	     */
 	    var partialRight = rest(function(func, partials) {
-	      var placeholder = lodash.placeholder || partialRight.placeholder,
-	          holders = replaceHolders(partials, placeholder);
-	
+	      var holders = replaceHolders(partials, getPlaceholder(partialRight));
 	      return createWrapper(func, PARTIAL_RIGHT_FLAG, undefined, partials, holders);
 	    });
 	
@@ -9114,7 +9788,7 @@
 	     * // => ['a', 'b', 'c']
 	     */
 	    var rearg = rest(function(func, indexes) {
-	      return createWrapper(func, REARG_FLAG, undefined, undefined, undefined, baseFlatten(indexes));
+	      return createWrapper(func, REARG_FLAG, undefined, undefined, undefined, baseFlatten(indexes, 1));
 	    });
 	
 	    /**
@@ -9266,7 +9940,11 @@
 	        leading = 'leading' in options ? !!options.leading : leading;
 	        trailing = 'trailing' in options ? !!options.trailing : trailing;
 	      }
-	      return debounce(func, wait, { 'leading': leading, 'maxWait': wait, 'trailing': trailing });
+	      return debounce(func, wait, {
+	        'leading': leading,
+	        'maxWait': wait,
+	        'trailing': trailing
+	      });
 	    }
 	
 	    /**
@@ -9297,7 +9975,7 @@
 	     * @memberOf _
 	     * @category Function
 	     * @param {*} value The value to wrap.
-	     * @param {Function} wrapper The wrapper function.
+	     * @param {Function} [wrapper=identity] The wrapper function.
 	     * @returns {Function} Returns the new function.
 	     * @example
 	     *
@@ -9314,6 +9992,46 @@
 	    }
 	
 	    /*------------------------------------------------------------------------*/
+	
+	    /**
+	     * Casts `value` as an array if it's not one.
+	     *
+	     * @static
+	     * @memberOf _
+	     * @category Lang
+	     * @param {*} value The value to inspect.
+	     * @returns {Array} Returns the cast array.
+	     * @example
+	     *
+	     * _.castArray(1);
+	     * // => [1]
+	     *
+	     * _.castArray({ 'a': 1 });
+	     * // => [{ 'a': 1 }]
+	     *
+	     * _.castArray('abc');
+	     * // => ['abc']
+	     *
+	     * _.castArray(null);
+	     * // => [null]
+	     *
+	     * _.castArray(undefined);
+	     * // => [undefined]
+	     *
+	     * _.castArray();
+	     * // => []
+	     *
+	     * var array = [1, 2, 3];
+	     * console.log(_.castArray(array) === array);
+	     * // => true
+	     */
+	    function castArray() {
+	      if (!arguments.length) {
+	        return [];
+	      }
+	      var value = arguments[0];
+	      return isArray(value) ? value : [value];
+	    }
 	
 	    /**
 	     * Creates a shallow clone of `value`.
@@ -9535,7 +10253,7 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type Function
+	     * @type {Function}
 	     * @category Lang
 	     * @param {*} value The value to check.
 	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
@@ -9560,7 +10278,6 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type Function
 	     * @category Lang
 	     * @param {*} value The value to check.
 	     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
@@ -9583,7 +10300,6 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type Function
 	     * @category Lang
 	     * @param {*} value The value to check.
 	     * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
@@ -9612,7 +10328,6 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type Function
 	     * @category Lang
 	     * @param {*} value The value to check.
 	     * @returns {boolean} Returns `true` if `value` is an array-like object, else `false`.
@@ -9744,7 +10459,8 @@
 	     */
 	    function isEmpty(value) {
 	      if (isArrayLike(value) &&
-	          (isArray(value) || isString(value) || isFunction(value.splice) || isArguments(value))) {
+	          (isArray(value) || isString(value) ||
+	            isFunction(value.splice) || isArguments(value))) {
 	        return !value.length;
 	      }
 	      for (var key in value) {
@@ -9787,10 +10503,10 @@
 	    }
 	
 	    /**
-	     * This method is like `_.isEqual` except that it accepts `customizer` which is
-	     * invoked to compare values. If `customizer` returns `undefined` comparisons are
-	     * handled by the method instead. The `customizer` is invoked with up to six arguments:
-	     * (objValue, othValue [, index|key, object, other, stack]).
+	     * This method is like `_.isEqual` except that it accepts `customizer` which
+	     * is invoked to compare values. If `customizer` returns `undefined` comparisons
+	     * are handled by the method instead. The `customizer` is invoked with up to
+	     * six arguments: (objValue, othValue [, index|key, object, other, stack]).
 	     *
 	     * @static
 	     * @memberOf _
@@ -9841,8 +10557,11 @@
 	     * // => false
 	     */
 	    function isError(value) {
-	      return isObjectLike(value) &&
-	        typeof value.message == 'string' && objectToString.call(value) == errorTag;
+	      if (!isObjectLike(value)) {
+	        return false;
+	      }
+	      return (objectToString.call(value) == errorTag) ||
+	        (typeof value.message == 'string' && typeof value.name == 'string');
 	    }
 	
 	    /**
@@ -9950,7 +10669,8 @@
 	     * // => false
 	     */
 	    function isLength(value) {
-	      return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	      return typeof value == 'number' &&
+	        value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
 	    }
 	
 	    /**
@@ -10029,8 +10749,9 @@
 	    }
 	
 	    /**
-	     * Performs a deep comparison between `object` and `source` to determine if
-	     * `object` contains equivalent property values.
+	     * Performs a partial deep comparison between `object` and `source` to
+	     * determine if `object` contains equivalent property values. This method is
+	     * equivalent to a `_.matches` function when `source` is partially applied.
 	     *
 	     * **Note:** This method supports comparing the same values as `_.isEqual`.
 	     *
@@ -10249,13 +10970,11 @@
 	     * // => true
 	     */
 	    function isPlainObject(value) {
-	      if (!isObjectLike(value) || objectToString.call(value) != objectTag || isHostObject(value)) {
+	      if (!isObjectLike(value) ||
+	          objectToString.call(value) != objectTag || isHostObject(value)) {
 	        return false;
 	      }
-	      var proto = objectProto;
-	      if (typeof value.constructor == 'function') {
-	        proto = getPrototypeOf(value);
-	      }
+	      var proto = getPrototypeOf(value);
 	      if (proto === null) {
 	        return true;
 	      }
@@ -10392,7 +11111,8 @@
 	     * // => false
 	     */
 	    function isTypedArray(value) {
-	      return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objectToString.call(value)];
+	      return isObjectLike(value) &&
+	        isLength(value.length) && !!typedArrayTags[objectToString.call(value)];
 	    }
 	
 	    /**
@@ -10884,7 +11604,7 @@
 	     * // => ['a', 'c']
 	     */
 	    var at = rest(function(object, paths) {
-	      return baseAt(object, baseFlatten(paths));
+	      return baseAt(object, baseFlatten(paths, 1));
 	    });
 	
 	    /**
@@ -11072,7 +11792,9 @@
 	     * // => logs 'a', 'b', then 'c' (iteration order is not guaranteed)
 	     */
 	    function forIn(object, iteratee) {
-	      return object == null ? object : baseFor(object, toFunction(iteratee), keysIn);
+	      return object == null
+	        ? object
+	        : baseFor(object, baseCastFunction(iteratee), keysIn);
 	    }
 	
 	    /**
@@ -11100,7 +11822,9 @@
 	     * // => logs 'c', 'b', then 'a' assuming `_.forIn` logs 'a', 'b', then 'c'
 	     */
 	    function forInRight(object, iteratee) {
-	      return object == null ? object : baseForRight(object, toFunction(iteratee), keysIn);
+	      return object == null
+	        ? object
+	        : baseForRight(object, baseCastFunction(iteratee), keysIn);
 	    }
 	
 	    /**
@@ -11130,7 +11854,7 @@
 	     * // => logs 'a' then 'b' (iteration order is not guaranteed)
 	     */
 	    function forOwn(object, iteratee) {
-	      return object && baseForOwn(object, toFunction(iteratee));
+	      return object && baseForOwn(object, baseCastFunction(iteratee));
 	    }
 	
 	    /**
@@ -11158,7 +11882,7 @@
 	     * // => logs 'b' then 'a' assuming `_.forOwn` logs 'a' then 'b'
 	     */
 	    function forOwnRight(object, iteratee) {
-	      return object && baseForOwnRight(object, toFunction(iteratee));
+	      return object && baseForOwnRight(object, baseCastFunction(iteratee));
 	    }
 	
 	    /**
@@ -11464,7 +12188,8 @@
 	    /**
 	     * The opposite of `_.mapValues`; this method creates an object with the
 	     * same values as `object` and keys generated by running each own enumerable
-	     * property of `object` through `iteratee`.
+	     * property of `object` through `iteratee`. The iteratee is invoked with
+	     * three arguments: (value, key, object).
 	     *
 	     * @static
 	     * @memberOf _
@@ -11492,7 +12217,7 @@
 	    /**
 	     * Creates an object with the same keys as `object` and values generated by
 	     * running each own enumerable property of `object` through `iteratee`. The
-	     * iteratee function is invoked with three arguments: (value, key, object).
+	     * iteratee is invoked with three arguments: (value, key, object).
 	     *
 	     * @static
 	     * @memberOf _
@@ -11525,12 +12250,12 @@
 	    }
 	
 	    /**
-	     * Recursively merges own and inherited enumerable properties of source
-	     * objects into the destination object, skipping source properties that resolve
-	     * to `undefined`. Array and plain object properties are merged recursively.
-	     * Other objects and value types are overridden by assignment. Source objects
-	     * are applied from left to right. Subsequent sources overwrite property
-	     * assignments of previous sources.
+	     * Recursively merges own and inherited enumerable properties of source objects
+	     * into the destination object. Source properties that resolve to `undefined`
+	     * are skipped if a destination value exists. Array and plain object properties
+	     * are merged recursively. Other objects and value types are overridden by
+	     * assignment. Source objects are applied from left to right. Subsequent
+	     * sources overwrite property assignments of previous sources.
 	     *
 	     * **Note:** This method mutates `object`.
 	     *
@@ -11607,7 +12332,7 @@
 	     * @category Object
 	     * @param {Object} object The source object.
 	     * @param {...(string|string[])} [props] The property names to omit, specified
-	     *  individually or in arrays..
+	     *  individually or in arrays.
 	     * @returns {Object} Returns the new object.
 	     * @example
 	     *
@@ -11620,14 +12345,15 @@
 	      if (object == null) {
 	        return {};
 	      }
-	      props = arrayMap(baseFlatten(props), String);
+	      props = arrayMap(baseFlatten(props, 1), String);
 	      return basePick(object, baseDifference(keysIn(object), props));
 	    });
 	
 	    /**
-	     * The opposite of `_.pickBy`; this method creates an object composed of the
-	     * own and inherited enumerable properties of `object` that `predicate`
-	     * doesn't return truthy for.
+	     * The opposite of `_.pickBy`; this method creates an object composed of
+	     * the own and inherited enumerable properties of `object` that `predicate`
+	     * doesn't return truthy for. The predicate is invoked with two arguments:
+	     * (value, key).
 	     *
 	     * @static
 	     * @memberOf _
@@ -11643,7 +12369,7 @@
 	     * // => { 'b': '2' }
 	     */
 	    function omitBy(object, predicate) {
-	      predicate = getIteratee(predicate, 2);
+	      predicate = getIteratee(predicate);
 	      return basePickBy(object, function(value, key) {
 	        return !predicate(value, key);
 	      });
@@ -11667,7 +12393,7 @@
 	     * // => { 'a': 1, 'c': 3 }
 	     */
 	    var pick = rest(function(object, props) {
-	      return object == null ? {} : basePick(object, baseFlatten(props));
+	      return object == null ? {} : basePick(object, baseFlatten(props, 1));
 	    });
 	
 	    /**
@@ -11688,7 +12414,7 @@
 	     * // => { 'a': 1, 'c': 3 }
 	     */
 	    function pickBy(object, predicate) {
-	      return object == null ? {} : basePickBy(object, getIteratee(predicate, 2));
+	      return object == null ? {} : basePickBy(object, getIteratee(predicate));
 	    }
 	
 	    /**
@@ -11721,7 +12447,7 @@
 	     */
 	    function result(object, path, defaultValue) {
 	      if (!isKey(path, object)) {
-	        path = baseToPath(path);
+	        path = baseCastPath(path);
 	        var result = get(object, path);
 	        object = parent(object, path);
 	      } else {
@@ -11791,7 +12517,8 @@
 	    }
 	
 	    /**
-	     * Creates an array of own enumerable key-value pairs for `object`.
+	     * Creates an array of own enumerable key-value pairs for `object` which
+	     * can be consumed by `_.fromPairs`.
 	     *
 	     * @static
 	     * @memberOf _
@@ -11815,7 +12542,8 @@
 	    }
 	
 	    /**
-	     * Creates an array of own and inherited enumerable key-value pairs for `object`.
+	     * Creates an array of own and inherited enumerable key-value pairs for
+	     * `object` which can be consumed by `_.fromPairs`.
 	     *
 	     * @static
 	     * @memberOf _
@@ -11876,7 +12604,7 @@
 	          if (isArr) {
 	            accumulator = isArray(object) ? new Ctor : [];
 	          } else {
-	            accumulator = baseCreate(isFunction(Ctor) ? Ctor.prototype : undefined);
+	            accumulator = isFunction(Ctor) ? baseCreate(getPrototypeOf(object)) : {};
 	          }
 	        } else {
 	          accumulator = {};
@@ -11970,7 +12698,7 @@
 	     * // => [1, 2, 3] (iteration order is not guaranteed)
 	     */
 	    function valuesIn(object) {
-	      return object == null ? baseValues(object, keysIn(object)) : [];
+	      return object == null ? [] : baseValues(object, keysIn(object));
 	    }
 	
 	    /*------------------------------------------------------------------------*/
@@ -12468,7 +13196,7 @@
 	     * @memberOf _
 	     * @category String
 	     * @param {string} string The string to convert.
-	     * @param {number} [radix] The radix to interpret `value` by.
+	     * @param {number} [radix=10] The radix to interpret `value` by.
 	     * @param- {Object} [guard] Enables use as an iteratee for functions like `_.map`.
 	     * @returns {number} Returns the converted integer.
 	     * @example
@@ -12840,7 +13568,8 @@
 	        'return __p\n}';
 	
 	      var result = attempt(function() {
-	        return Function(importsKeys, sourceURL + 'return ' + source).apply(undefined, importsValues);
+	        return Function(importsKeys, sourceURL + 'return ' + source)
+	          .apply(undefined, importsValues);
 	      });
 	
 	      // Provide the compiled function's source by its `toString` method or
@@ -12934,7 +13663,9 @@
 	      var strSymbols = stringToArray(string),
 	          chrSymbols = stringToArray(chars);
 	
-	      return strSymbols.slice(charsStartIndex(strSymbols, chrSymbols), charsEndIndex(strSymbols, chrSymbols) + 1).join('');
+	      return strSymbols
+	        .slice(charsStartIndex(strSymbols, chrSymbols), charsEndIndex(strSymbols, chrSymbols) + 1)
+	        .join('');
 	    }
 	
 	    /**
@@ -12968,7 +13699,9 @@
 	        return string;
 	      }
 	      var strSymbols = stringToArray(string);
-	      return strSymbols.slice(0, charsEndIndex(strSymbols, stringToArray(chars)) + 1).join('');
+	      return strSymbols
+	        .slice(0, charsEndIndex(strSymbols, stringToArray(chars)) + 1)
+	        .join('');
 	    }
 	
 	    /**
@@ -13002,7 +13735,9 @@
 	        return string;
 	      }
 	      var strSymbols = stringToArray(string);
-	      return strSymbols.slice(charsStartIndex(strSymbols, stringToArray(chars))).join('');
+	      return strSymbols
+	        .slice(charsStartIndex(strSymbols, stringToArray(chars)))
+	        .join('');
 	    }
 	
 	    /**
@@ -13014,7 +13749,7 @@
 	     * @memberOf _
 	     * @category String
 	     * @param {string} [string=''] The string to truncate.
-	     * @param {Object} [options] The options object.
+	     * @param {Object} [options=({})] The options object.
 	     * @param {number} [options.length=30] The maximum string length.
 	     * @param {string} [options.omission='...'] The string to indicate text is omitted.
 	     * @param {RegExp|string} [options.separator] The separator pattern to truncate to.
@@ -13199,7 +13934,7 @@
 	      try {
 	        return apply(func, undefined, args);
 	      } catch (e) {
-	        return isObject(e) ? e : new Error(e);
+	        return isError(e) ? e : new Error(e);
 	      }
 	    });
 	
@@ -13230,7 +13965,7 @@
 	     * // => logs 'clicked docs' when clicked
 	     */
 	    var bindAll = rest(function(object, methodNames) {
-	      arrayEach(baseFlatten(methodNames), function(key) {
+	      arrayEach(baseFlatten(methodNames, 1), function(key) {
 	        object[key] = bind(object[key], object);
 	      });
 	      return object;
@@ -13398,7 +14133,8 @@
 	     * Creates a function that invokes `func` with the arguments of the created
 	     * function. If `func` is a property name the created callback returns the
 	     * property value for a given element. If `func` is an object the created
-	     * callback returns `true` for elements that contain the equivalent object properties, otherwise it returns `false`.
+	     * callback returns `true` for elements that contain the equivalent object
+	     * properties, otherwise it returns `false`.
 	     *
 	     * @static
 	     * @memberOf _
@@ -13428,9 +14164,10 @@
 	    }
 	
 	    /**
-	     * Creates a function that performs a deep partial comparison between a given
+	     * Creates a function that performs a partial deep comparison between a given
 	     * object and `source`, returning `true` if the given object has equivalent
-	     * property values, else `false`.
+	     * property values, else `false`. The created function is equivalent to
+	     * `_.isMatch` with a `source` partially applied.
 	     *
 	     * **Note:** This method supports comparing the same values as `_.isEqual`.
 	     *
@@ -13454,7 +14191,7 @@
 	    }
 	
 	    /**
-	     * Creates a function that performs a deep partial comparison between the
+	     * Creates a function that performs a partial deep comparison between the
 	     * value at `path` of a given object to `srcValue`, returning `true` if the
 	     * object value is equivalent, else `false`.
 	     *
@@ -13863,8 +14600,8 @@
 	    var rangeRight = createRange(true);
 	
 	    /**
-	     * Invokes the iteratee function `n` times, returning an array of the results
-	     * of each invocation. The iteratee is invoked with one argument; (index).
+	     * Invokes the iteratee `n` times, returning an array of the results of
+	     * each invocation. The iteratee is invoked with one argument; (index).
 	     *
 	     * @static
 	     * @memberOf _
@@ -13888,7 +14625,7 @@
 	      var index = MAX_ARRAY_LENGTH,
 	          length = nativeMin(n, MAX_ARRAY_LENGTH);
 	
-	      iteratee = toFunction(iteratee);
+	      iteratee = baseCastFunction(iteratee);
 	      n -= MAX_ARRAY_LENGTH;
 	
 	      var result = baseTimes(length, iteratee);
@@ -13933,7 +14670,7 @@
 	     * @static
 	     * @memberOf _
 	     * @category Util
-	     * @param {string} [prefix] The value to prefix the ID with.
+	     * @param {string} [prefix=''] The value to prefix the ID with.
 	     * @returns {string} Returns the unique ID.
 	     * @example
 	     *
@@ -14284,6 +15021,7 @@
 	    lodash.bind = bind;
 	    lodash.bindAll = bindAll;
 	    lodash.bindKey = bindKey;
+	    lodash.castArray = castArray;
 	    lodash.chain = chain;
 	    lodash.chunk = chunk;
 	    lodash.compact = compact;
@@ -14312,6 +15050,7 @@
 	    lodash.flatMap = flatMap;
 	    lodash.flatten = flatten;
 	    lodash.flattenDeep = flattenDeep;
+	    lodash.flattenDepth = flattenDepth;
 	    lodash.flip = flip;
 	    lodash.flow = flow;
 	    lodash.flowRight = flowRight;
@@ -14586,7 +15325,7 @@
 	     *
 	     * @static
 	     * @memberOf _
-	     * @type string
+	     * @type {string}
 	     */
 	    lodash.VERSION = VERSION;
 	
@@ -14608,7 +15347,10 @@
 	        if (filtered) {
 	          result.__takeCount__ = nativeMin(n, result.__takeCount__);
 	        } else {
-	          result.__views__.push({ 'size': nativeMin(n, MAX_ARRAY_LENGTH), 'type': methodName + (result.__dir__ < 0 ? 'Right' : '') });
+	          result.__views__.push({
+	            'size': nativeMin(n, MAX_ARRAY_LENGTH),
+	            'type': methodName + (result.__dir__ < 0 ? 'Right' : '')
+	          });
 	        }
 	        return result;
 	      };
@@ -14625,7 +15367,10 @@
 	
 	      LazyWrapper.prototype[methodName] = function(iteratee) {
 	        var result = this.clone();
-	        result.__iteratees__.push({ 'iteratee': getIteratee(iteratee, 3), 'type': type });
+	        result.__iteratees__.push({
+	          'iteratee': getIteratee(iteratee, 3),
+	          'type': type
+	        });
 	        result.__filtered__ = result.__filtered__ || isFilter;
 	        return result;
 	      };
@@ -14777,7 +15522,10 @@
 	      }
 	    });
 	
-	    realNames[createHybridWrapper(undefined, BIND_KEY_FLAG).name] = [{ 'name': 'wrapper', 'func': undefined }];
+	    realNames[createHybridWrapper(undefined, BIND_KEY_FLAG).name] = [{
+	      'name': 'wrapper',
+	      'func': undefined
+	    }];
 	
 	    // Add functions to the lazy wrapper.
 	    LazyWrapper.prototype.clone = lazyClone;
@@ -14833,10 +15581,10 @@
 	  }
 	}.call(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/module.js */ 4)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/module.js */ 5)(module), (function() { return this; }())))
 
 /***/ },
-/* 4 */
+/* 5 */
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/
@@ -14855,7 +15603,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /*!***************************************!*\
   !*** ./~/immutable/dist/immutable.js ***!
   \***************************************/
@@ -19845,10 +20593,10 @@
 	}));
 
 /***/ },
-/* 6 */
-/*!*****************************!*\
-  !*** ./src/js/tabWindow.js ***!
-  \*****************************/
+/* 7 */
+/*!**************************************************!*\
+  !*** ./src/tabli-core/src/js/tabManagerState.js ***!
+  \**************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -19856,28 +20604,20 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.TabWindow = exports.TabItem = undefined;
-	
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	exports.removeOpenWindowState = removeOpenWindowState;
-	exports.removeSavedWindowState = removeSavedWindowState;
-	exports.makeFolderTabWindow = makeFolderTabWindow;
-	exports.makeChromeTabWindow = makeChromeTabWindow;
-	exports.updateWindow = updateWindow;
-	exports.closeTab = closeTab;
-	exports.saveTab = saveTab;
-	exports.unsaveTab = unsaveTab;
-	
-	var _lodash = __webpack_require__(/*! lodash */ 3);
+	var _lodash = __webpack_require__(/*! lodash */ 4);
 	
 	var _ = _interopRequireWildcard(_lodash);
 	
-	var _immutable = __webpack_require__(/*! immutable */ 5);
+	var _immutable = __webpack_require__(/*! immutable */ 6);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -19886,468 +20626,256 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Representation of tabbed windows using Immutable.js
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * application state for tab manager
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * and then retrieve the instance from the background window in the popup
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 	
 	
-	/**
-	 * An item in a tabbed window.
-	 *
-	 * May be associated with an open tab, a bookmark, or both
-	 */
+	var TabManagerState = function (_Immutable$Record) {
+	  _inherits(TabManagerState, _Immutable$Record);
 	
-	var TabItem = exports.TabItem = function (_Immutable$Record) {
-	  _inherits(TabItem, _Immutable$Record);
+	  function TabManagerState() {
+	    _classCallCheck(this, TabManagerState);
 	
-	  function TabItem() {
-	    _classCallCheck(this, TabItem);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabItem).apply(this, arguments));
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabManagerState).apply(this, arguments));
 	  }
 	
-	  _createClass(TabItem, [{
-	    key: 'title',
-	    get: function get() {
-	      if (this.open) {
-	        return this.tabTitle;
+	  _createClass(TabManagerState, [{
+	    key: 'registerTabWindow',
+	
+	    /**
+	     * Update store to include the specified window, indexed by
+	     * open window id or bookmark id
+	     *
+	     * Note that if an earlier snapshot of tabWindow is in the store, it will be
+	     * replaced
+	     */
+	    value: function registerTabWindow(tabWindow) {
+	      var nextWindowIdMap = tabWindow.open ? this.windowIdMap.set(tabWindow.openWindowId, tabWindow) : this.windowIdMap;
+	      var nextBookmarkIdMap = tabWindow.saved ? this.bookmarkIdMap.set(tabWindow.savedFolderId, tabWindow) : this.bookmarkIdMap;
+	
+	      return this.set('windowIdMap', nextWindowIdMap).set('bookmarkIdMap', nextBookmarkIdMap);
+	    }
+	  }, {
+	    key: 'registerTabWindows',
+	    value: function registerTabWindows(tabWindows) {
+	      return _.reduce(tabWindows, function (acc, w) {
+	        return acc.registerTabWindow(w);
+	      }, this);
+	    }
+	  }, {
+	    key: 'handleTabWindowClosed',
+	    value: function handleTabWindowClosed(tabWindow) {
+	      // console.log("handleTabWindowClosed: ", tabWindow.toJS());
+	      /*
+	       * We only remove window from map of open windows (windowIdMap) but then we re-register
+	       * reverted window to ensure that a reverted version of saved window stays in
+	       * bookmarkIdMap.
+	       */
+	      var closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId);
+	
+	      var revertedWindow = TabWindow.removeOpenWindowState(tabWindow);
+	
+	      return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(revertedWindow);
+	    }
+	  }, {
+	    key: 'handleTabClosed',
+	    value: function handleTabClosed(tabWindow, tabId) {
+	      var updWindow = TabWindow.closeTab(tabWindow, tabId);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabSaved',
+	    value: function handleTabSaved(tabWindow, tabItem, tabNode) {
+	      var updWindow = TabWindow.saveTab(tabWindow, tabItem, tabNode);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabUnsaved',
+	    value: function handleTabUnsaved(tabWindow, tabItem) {
+	      var updWindow = TabWindow.unsaveTab(tabWindow, tabItem);
+	      return this.registerTabWindow(updWindow);
+	    }
+	
+	    /**
+	     * attach a Chrome window to a specific tab window (after opening a saved window)
+	     */
+	
+	  }, {
+	    key: 'attachChromeWindow',
+	    value: function attachChromeWindow(tabWindow, chromeWindow) {
+	      // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow);
+	
+	      // Was this Chrome window id previously associated with some other tab window?
+	      var oldTabWindow = this.windowIdMap.get(chromeWindow.id);
+	
+	      // A store without oldTabWindow
+	      var rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this;
+	
+	      var attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
+	
+	      console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
+	
+	      return rmStore.registerTabWindow(attachedTabWindow);
+	    }
+	
+	    /**
+	     * Synchronize internal state of our store with snapshot
+	     * of current Chrome window state
+	     *
+	     * @param chromeWindow window to synchronize
+	     */
+	
+	  }, {
+	    key: 'syncChromeWindow',
+	    value: function syncChromeWindow(chromeWindow) {
+	      var prevTabWindow = this.windowIdMap.get(chromeWindow.id);
+	      /*
+	      if (!prevTabWindow) {
+	        console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow);
+	      }
+	      */
+	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
+	
+	      return this.registerTabWindow(tabWindow);
+	    }
+	
+	    /**
+	     * synchronize the currently open windows from chrome.windows.getAll with
+	     * internal map of open windows
+	     */
+	
+	  }, {
+	    key: 'syncWindowList',
+	    value: function syncWindowList(chromeWindowList) {
+	      var tabWindows = this.getOpen();
+	
+	      // Iterate through tab windows (our current list of open windows)
+	      // closing any not in chromeWindowList:
+	      var chromeIds = _.map(chromeWindowList, 'id');
+	      var chromeIdSet = new Set(chromeIds);
+	
+	      var closedWindows = _.filter(tabWindows, function (tw) {
+	        return !chromeIdSet.has(tw.openWindowId);
+	      });
+	
+	      var closedWinStore = _.reduce(closedWindows, function (acc, tw) {
+	        return acc.handleTabWindowClosed(tw);
+	      }, this);
+	
+	      // Now update all open windows:
+	      return _.reduce(chromeWindowList, function (acc, cw) {
+	        return acc.syncChromeWindow(cw);
+	      }, closedWinStore);
+	    }
+	  }, {
+	    key: 'setCurrentWindow',
+	    value: function setCurrentWindow(windowId) {
+	      var tabWindow = this.getTabWindowByChromeId(windowId);
+	
+	      if (!tabWindow) {
+	        console.log('setCurrentWindow: window id ', windowId, 'not found');
+	        return this;
 	      }
 	
-	      return this.savedTitle;
+	      // TODO: We really should find any other window with focus===true and clear it
+	      var updWindow = tabWindow.set('focused', true);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'removeBookmarkIdMapEntry',
+	    value: function removeBookmarkIdMapEntry(tabWindow) {
+	      return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));
+	    }
+	  }, {
+	    key: 'unmanageWindow',
+	    value: function unmanageWindow(tabWindow) {
+	      // Get a view of this store with tabWindow removed from bookmarkIdMap:
+	      var rmStore = this.removeBookmarkIdMapEntry(tabWindow);
+	
+	      // disconnect from the previously associated bookmark folder and re-register
+	      var umWindow = TabWindow.removeSavedWindowState(tabWindow);
+	      return rmStore.registerTabWindow(umWindow);
+	    }
+	
+	    /**
+	     * attach a bookmark folder to a specific chrome window
+	     */
+	
+	  }, {
+	    key: 'attachBookmarkFolder',
+	    value: function attachBookmarkFolder(bookmarkFolder, chromeWindow) {
+	      var folderTabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
+	
+	      var mergedTabWindow = TabWindow.updateWindow(folderTabWindow, chromeWindow);
+	
+	      // And re-register in store maps:
+	      return this.registerTabWindow(mergedTabWindow);
+	    }
+	
+	    /**
+	     * get the currently open tab windows
+	     */
+	
+	  }, {
+	    key: 'getOpen',
+	    value: function getOpen() {
+	      var openWindows = this.windowIdMap.toIndexedSeq().toArray();
+	      return openWindows;
+	    }
+	  }, {
+	    key: 'getAll',
+	    value: function getAll() {
+	      var openWindows = this.getOpen();
+	      var closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter(function (w) {
+	        return !w.open;
+	      }).toArray();
+	      return openWindows.concat(closedSavedWindows);
+	    }
+	
+	    // returns a tabWindow or undefined
+	
+	  }, {
+	    key: 'getTabWindowByChromeId',
+	    value: function getTabWindowByChromeId(windowId) {
+	      return this.windowIdMap.get(windowId);
+	    }
+	  }, {
+	    key: 'countOpenWindows',
+	    value: function countOpenWindows() {
+	      return this.windowIdMap.count();
+	    }
+	  }, {
+	    key: 'countSavedWindows',
+	    value: function countSavedWindows() {
+	      return this.bookmarkIdMap.count();
+	    }
+	  }, {
+	    key: 'countOpenTabs',
+	    value: function countOpenTabs() {
+	      return this.windowIdMap.reduce(function (count, w) {
+	        return count + w.openTabCount;
+	      }, 0);
 	    }
 	  }]);
 	
-	  return TabItem;
+	  return TabManagerState;
 	}(Immutable.Record({
-	  url: '',
-	  audible: false,
-	
-	  /* Saved state fields
-	  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
-	
-	  // We should perhaps break these out into their own Record type
-	  saved: false,
-	  savedBookmarkId: '',
-	  savedBookmarkIndex: 0, // position in bookmark folder
-	  savedTitle: '',
-	
-	  // Note: Must be kept in sync with resetSavedItem
-	  // Again: Suggests we should possibly break these out into their own record type
-	  open: false, // Note: Saved tabs may be closed even when containing window is open
-	  openTabId: -1,
-	  active: false,
-	  openTabIndex: 0, // index of open tab in its window
-	  favIconUrl: '',
-	  tabTitle: ''
+	  windowIdMap: Immutable.Map(), // maps from chrome window id for open windows
+	  bookmarkIdMap: Immutable.Map(), // maps from bookmark id for saved windows
+	  folderId: -1,
+	  archiveFolderId: -1
 	}));
 	
-	/**
-	 * Initialize a TabItem from a bookmark
-	 *
-	 * Returned TabItem is closed (not associated with an open tab)
-	 */
-	
-	
-	function makeBookmarkedTabItem(bm) {
-	  var urlStr = bm.url;
-	  if (!urlStr) {
-	    console.error('makeBookmarkedTabItem: Malformed bookmark: missing URL!: ', bm);
-	    urlStr = ''; // better than null or undefined!
-	  }
-	
-	  if (bm.title === undefined) {
-	    console.warn('makeBookmarkedTabItem: Bookmark title undefined (ignoring...): ', bm);
-	  }
-	
-	  var tabItem = new TabItem({
-	    url: urlStr,
-	
-	    saved: true,
-	    savedTitle: _.get(bm, 'title', urlStr),
-	
-	    savedBookmarkId: bm.id,
-	    savedBookmarkIndex: bm.index
-	  });
-	
-	  return tabItem;
-	}
-	
-	/**
-	 * Initialize a TabItem from an open Chrome tab
-	 */
-	function makeOpenTabItem(tab) {
-	  var urlStr = tab.url;
-	  if (!urlStr) {
-	    console.error('malformed tab -- no URL: ', tab);
-	    urlStr = '';
-	  }
-	  /*
-	    if (!tab.title) {
-	      console.warn("tab missing title (ignoring...): ", tab);
-	    }
-	  */
-	  var tabItem = new TabItem({
-	    url: urlStr,
-	    audible: tab.audible,
-	    favIconUrl: tab.favIconUrl,
-	    open: true,
-	    tabTitle: _.get(tab, 'title', urlStr),
-	    openTabId: tab.id,
-	    active: tab.active,
-	    openTabIndex: tab.index
-	  });
-	  return tabItem;
-	}
-	
-	/**
-	 * Returns the base saved state of a tab item (no open tab info)
-	 */
-	function resetSavedItem(ti) {
-	  return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
-	}
-	
-	/**
-	 * Return the base state of an open tab (no saved tab info)
-	 */
-	function resetOpenItem(ti) {
-	  return ti.remove('saved').remove('savedBookmarkId').remove('savedBookmarkIndex').remove('savedTitle');
-	}
-	
-	/**
-	 * A TabWindow
-	 *
-	 * Tab windows have a title and a set of tab items.
-	 *
-	 * A TabWindow has 3 possible states:
-	 *   (open,!saved)   - An open Chrome window that has not had its tabs saved
-	 *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
-	 *   (!open,saved)   - A previously saved window that is not currently open
-	 */
-	
-	var TabWindow = exports.TabWindow = function (_Immutable$Record2) {
-	  _inherits(TabWindow, _Immutable$Record2);
-	
-	  function TabWindow() {
-	    _classCallCheck(this, TabWindow);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(TabWindow).apply(this, arguments));
-	  }
-	
-	  _createClass(TabWindow, [{
-	    key: 'computeTitle',
-	    value: function computeTitle() {
-	      if (this.saved) {
-	        return this.savedTitle;
-	      }
-	
-	      var activeTab = this.tabItems.find(function (t) {
-	        return t.active;
-	      });
-	
-	      if (!activeTab) {
-	        // shouldn't happen!
-	        console.warn('TabWindow.get title(): No active tab found: ', this.toJS());
-	
-	        var openTabItem = this.tabItems.find(function (t) {
-	          return t.open;
-	        });
-	        if (!openTabItem) {
-	          return '';
-	        }
-	        return openTabItem.title;
-	      }
-	
-	      return activeTab.title;
-	    }
-	  }, {
-	    key: 'title',
-	    get: function get() {
-	      if (this._title === undefined) {
-	        this._title = this.computeTitle();
-	      }
-	
-	      return this._title;
-	    }
-	  }, {
-	    key: 'openTabCount',
-	    get: function get() {
-	      return this.tabItems.count(function (ti) {
-	        return ti.open;
-	      });
-	    }
-	  }]);
-	
-	  return TabWindow;
-	}(Immutable.Record({
-	  saved: false,
-	  savedTitle: '',
-	  savedFolderId: -1,
-	
-	  open: false,
-	  openWindowId: -1,
-	  focused: false,
-	
-	  tabItems: Immutable.Seq() }));
-	
-	/**
-	 * reset a window to its base saved state (after window is closed)
-	 */
-	
-	
-	function removeOpenWindowState(tabWindow) {
-	  var savedItems = tabWindow.tabItems.filter(function (ti) {
-	    return ti.saved;
-	  });
-	  var resetSavedItems = savedItems.map(resetSavedItem);
-	
-	  return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems', resetSavedItems);
-	}
-	
-	/*
-	 * remove any saved state, keeping only open tab and window state
-	 *
-	 * Used when unsave'ing a saved window
-	 */
-	function removeSavedWindowState(tabWindow) {
-	  return tabWindow.remove('saved').remove('savedFolderId').remove('savedTitle');
-	}
-	
-	/**
-	 * Initialize an unopened TabWindow from a bookmarks folder
-	 */
-	function makeFolderTabWindow(bookmarkFolder) {
-	  var itemChildren = bookmarkFolder.children.filter(function (node) {
-	    return 'url' in node;
-	  });
-	  var tabItems = Immutable.Seq(itemChildren.map(makeBookmarkedTabItem));
-	  var fallbackTitle = '';
-	  if (bookmarkFolder.title === undefined) {
-	    console.error('makeFolderTabWindow: malformed bookmarkFolder -- missing title: ', bookmarkFolder);
-	    if (tabItems.count() > 0) {
-	      fallbackTitle = tabItems.get(0).title;
-	    }
-	  }
-	
-	  var tabWindow = new TabWindow({
-	    saved: true,
-	    savedTitle: _.get(bookmarkFolder, 'title', fallbackTitle),
-	    savedFolderId: bookmarkFolder.id,
-	    tabItems: tabItems
-	  });
-	
-	  return tabWindow;
-	}
-	
-	/**
-	 * Initialize a TabWindow from an open Chrome window
-	 */
-	function makeChromeTabWindow(chromeWindow) {
-	  var tabItems = chromeWindow.tabs.map(makeOpenTabItem);
-	  var tabWindow = new TabWindow({
-	    open: true,
-	    openWindowId: chromeWindow.id,
-	    focused: chromeWindow.focused,
-	    tabItems: Immutable.Seq(tabItems)
-	  });
-	
-	  return tabWindow;
-	}
-	
-	/**
-	 * Gather open tab items and a set of non-open saved tabItems from the given
-	 * open tabs and tab items based on URL matching, without regard to
-	 * tab ordering.  Auxiliary helper function for mergeOpenTabs.
-	 */
-	function getOpenTabInfo(tabItems, openTabs) {
-	  var chromeOpenTabItems = Immutable.Seq(openTabs.map(makeOpenTabItem));
-	
-	  // console.log("getOpenTabInfo: openTabs: ", openTabs);
-	  // console.log("getOpenTabInfo: chromeOpenTabItems: " + JSON.stringify(chromeOpenTabItems,null,4));
-	  var openUrlMap = Immutable.Map(chromeOpenTabItems.groupBy(function (ti) {
-	    return ti.url;
-	  }));
-	
-	  // console.log("getOpenTabInfo: openUrlMap: ", openUrlMap.toJS());
-	
-	  // Now we need to do two things:
-	  // 1. augment chromeOpenTabItems with bookmark Ids / saved state (if it exists)
-	  // 2. figure out which savedTabItems are not in openTabs
-	  var savedItems = tabItems.filter(function (ti) {
-	    return ti.saved;
-	  });
-	
-	  // Restore the saved items to their base state (no open tab info), since we
-	  // only want to pick up open tab info from what was passed in in openTabs
-	  var baseSavedItems = savedItems.map(resetSavedItem);
-	
-	  // The entries in savedUrlMap *should* be singletons, but we'll use groupBy to
-	  // get a type-compatible Seq so that we can merge with openUrlMap using
-	  // mergeWith:
-	  var savedUrlMap = Immutable.Map(baseSavedItems.groupBy(function (ti) {
-	    return ti.url;
-	  }));
-	
-	  // console.log("getOpenTabInfo: savedUrlMap : " + savedUrlMap.toJS());
-	
-	  function mergeTabItems(openItems, mergeSavedItems) {
-	    var savedItem = mergeSavedItems.get(0);
-	    return openItems.map(function (openItem) {
-	      return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex).set('savedTitle', savedItem.savedTitle);
-	    });
-	  }
-	
-	  var mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
-	
-	  // console.log("mergedMap: ", mergedMap.toJS());
-	
-	  // console.log("getOpenTabInfo: mergedMap :" + JSON.stringify(mergedMap,null,4));
-	
-	  // partition mergedMap into open and closed tabItems:
-	  var partitionedMap = mergedMap.toIndexedSeq().flatten(true).groupBy(function (ti) {
-	    return ti.open;
-	  });
-	
-	  // console.log("partitionedMap: ", partitionedMap.toJS());
-	
-	  return partitionedMap;
-	}
-	
-	/**
-	 * Merge currently open tabs from an open Chrome window with tabItem state of a saved
-	 * tabWindow
-	 *
-	 * @param {Seq<TabItem>} tabItems -- previous TabItem state
-	 * @param {[Tab]} openTabs -- currently open tabs from Chrome window
-	 *
-	 * @returns {Seq<TabItem>} TabItems reflecting current window state
-	 */
-	function mergeOpenTabs(tabItems, openTabs) {
-	  var tabInfo = getOpenTabInfo(tabItems, openTabs);
-	
-	  /* TODO: Use algorithm from OLDtabWindow.js to determine tab order.
-	   * For now, let's just concat open and closed tabs, in their sorted order.
-	   */
-	  var openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy(function (ti) {
-	    return ti.openTabIndex;
-	  });
-	  var closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy(function (ti) {
-	    return ti.savedBookmarkIndex;
-	  });
-	
-	  var mergedTabItems = openTabItems.concat(closedTabItems);
-	
-	  return mergedTabItems;
-	}
-	
-	/**
-	 * update a TabWindow from a current snapshot of the Chrome Window
-	 *
-	 * @param {TabWindow} tabWindow - TabWindow to be updated
-	 * @param {ChromeWindow} chromeWindow - current snapshot of Chrome window state
-	 *
-	 * @return {TabWindow} Updated TabWindow
-	 */
-	function updateWindow(tabWindow, chromeWindow) {
-	  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
-	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
-	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
-	  return updWindow;
-	}
-	
-	/**
-	 * handle a tab that's been closed
-	 *
-	 * @param {TabWindow} tabWindow - tab window with tab that's been closed
-	 * @param {Number} tabId -- Chrome id of closed tab
-	 *
-	 * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
-	 */
-	function closeTab(tabWindow, tabId) {
-	  // console.log("closeTab: ", tabWindow, tabId);
-	
-	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tabId;
-	  });
-	
-	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 2);
-	
-	  var index = _tabWindow$tabItems$f2[0];
-	  var tabItem = _tabWindow$tabItems$f2[1];
-	
-	
-	  var updItems;
-	
-	  if (tabItem.saved) {
-	    var updTabItem = resetSavedItem(tabItem);
-	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
-	  } else {
-	    updItems = tabWindow.tabItems.splice(index, 1);
-	  }
-	
-	  return tabWindow.set('tabItems', updItems);
-	}
-	
-	/**
-	 * Update a tab's saved state
-	 *
-	 * @param {TabWindow} tabWindow - tab window with tab that's been closed
-	 * @param {TabItem} tabItem -- open tab that has been saved
-	 * @param {BookmarkTreeNode} tabNode -- bookmark node for saved bookmark
-	 *
-	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
-	 */
-	function saveTab(tabWindow, tabItem, tabNode) {
-	  var _tabWindow$tabItems$f3 = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tabItem.openTabId;
-	  });
-	
-	  var _tabWindow$tabItems$f4 = _slicedToArray(_tabWindow$tabItems$f3, 1);
-	
-	  var index = _tabWindow$tabItems$f4[0];
-	
-	
-	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
-	
-	  var updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
-	
-	  return tabWindow.set('tabItems', updItems);
-	}
-	
-	/**
-	 * Update a tab's saved state when tab has been 'unsaved' (i.e. bookmark removed)
-	 *
-	 * @param {TabWindow} tabWindow - tab window with tab that's been unsaved
-	 * @param {TabItem} tabItem -- open tab that has been saved
-	 *
-	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
-	 */
-	function unsaveTab(tabWindow, tabItem) {
-	  var _tabWindow$tabItems$f5 = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId;
-	  });
-	
-	  var _tabWindow$tabItems$f6 = _slicedToArray(_tabWindow$tabItems$f5, 1);
-	
-	  var index = _tabWindow$tabItems$f6[0];
-	
-	
-	  var updTabItem = resetOpenItem(tabItem);
-	
-	  var updItems;
-	  if (updTabItem.open) {
-	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
-	  } else {
-	    // It's neither open nor saved, so just get rid of it...
-	    updItems = tabWindow.tabItems.splice(index, 1);
-	  }
-	
-	  return tabWindow.set('tabItems', updItems);
-	}
+	exports.default = TabManagerState;
 
 /***/ },
-/* 7 */
-/*!***************************!*\
-  !*** ./src/js/actions.js ***!
-  \***************************/
+/* 8 */
+/*!********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/NewTabPage.js ***!
+  \********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -20355,424 +20883,197 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.syncChromeWindowById = syncChromeWindowById;
-	exports.syncChromeWindows = syncChromeWindows;
-	exports.openWindow = openWindow;
-	exports.closeTab = closeTab;
-	exports.saveTab = saveTab;
-	exports.unsaveTab = unsaveTab;
-	exports.closeWindow = closeWindow;
-	exports.activateTab = activateTab;
-	exports.revertWindow = revertWindow;
-	exports.manageWindow = manageWindow;
-	exports.unmanageWindow = unmanageWindow;
-	exports.showHelp = showHelp;
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
+	var _react = __webpack_require__(/*! react */ 9);
 	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
+	var React = _interopRequireWildcard(_react);
 	
-	var _utils = __webpack_require__(/*! ./utils */ 8);
+	var _actions = __webpack_require__(/*! ../actions */ 166);
 	
-	var utils = _interopRequireWildcard(_utils);
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _searchOps = __webpack_require__(/*! ../searchOps */ 168);
+	
+	var searchOps = _interopRequireWildcard(_searchOps);
+	
+	var _oneref = __webpack_require__(/*! oneref */ 169);
+	
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	
+	var _RevertModal2 = _interopRequireDefault(_RevertModal);
+	
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 184);
+	
+	var _SaveModal2 = _interopRequireDefault(_SaveModal);
+	
+	var _SelectableTabPage = __webpack_require__(/*! ./SelectableTabPage */ 185);
+	
+	var _SelectableTabPage2 = _interopRequireDefault(_SelectableTabPage);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var TABLI_HELP_URL = 'http://antonycourtney.github.io/tabli/tabli-usage.html';
-	
 	/**
-	 * sync a single Chrome window by its Chrome window id
-	 *
-	 * @param {function} cb -- callback to update state
+	 * send message to BGhelper
 	 */
-	function syncChromeWindowById(windowId, cb) {
-	  chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
-	    cb(function (state) {
-	      return state.syncChromeWindow(chromeWindow);
-	    });
+	function sendHelperMessage(msg) {
+	  var port = chrome.runtime.connect({ name: 'popup' });
+	  port.postMessage(msg);
+	  port.onMessage.addListener(function (response) {
+	    console.log('Got response message: ', response);
 	  });
 	}
 	
-	/**
-	 * get all open Chrome windows and synchronize state with our tab window store
-	 *
-	 * @param {function} cb -- callback to updated state
-	 */
-	function syncChromeWindows(cb) {
-	  var t_preGet = performance.now();
-	  chrome.windows.getAll({ populate: true }, function (windowList) {
-	    var t_postGet = performance.now();
-	    console.log('syncChromeWindows: chrome.windows.getAll took ', t_postGet - t_preGet, ' ms');
-	    var t_preSync = performance.now();
-	    cb(function (state) {
-	      return state.syncWindowList(windowList);
-	    });
-	    var t_postSync = performance.now();
-	    console.log('syncChromeWindows: syncWindowList took ', t_postSync - t_preSync, ' ms');
-	  });
-	}
+	var NewTabPage = React.createClass({
+	  displayName: 'NewTabPage',
+	  storeAsState: function storeAsState(winStore) {
+	    var tabWindows = winStore.getAll();
 	
-	/**
-	 * restore a bookmark window.
-	 *
-	 * N.B.: NOT exported; called from openWindow
-	 */
-	function restoreBookmarkWindow(tabWindow, cb) {
-	  /*
-	   * special case handling of replacing the contents of a fresh window
-	   */
-	  chrome.windows.getLastFocused({ populate: true }, function (currentChromeWindow) {
-	    var urls = tabWindow.tabItems.map(function (ti) {
-	      return ti.url;
-	    }).toArray();
-	    function cf(chromeWindow) {
-	      cb(function (state) {
-	        return state.attachChromeWindow(tabWindow, chromeWindow);
+	    var sortedWindows = tabWindows.sort(Util.windowCmp);
+	
+	    return {
+	      winStore: winStore,
+	      sortedWindows: sortedWindows
+	    };
+	  },
+	  getInitialState: function getInitialState() {
+	    var st = this.storeAsState(this.props.initialWinStore);
+	
+	    st.saveModalIsOpen = false;
+	    st.revertModalIsOpen = false;
+	    st.revertTabWindow = null;
+	    st.searchStr = '';
+	    st.searchRE = null;
+	    return st;
+	  },
+	  handleSearchInput: function handleSearchInput(rawSearchStr) {
+	    var searchStr = rawSearchStr.trim();
+	
+	    var searchRE = null;
+	    if (searchStr.length > 0) {
+	      searchRE = new RegExp(searchStr, 'i');
+	    }
+	
+	    console.log("search input: '" + searchStr + "'");
+	    this.setState({ searchStr: searchStr, searchRE: searchRE });
+	  },
+	  openSaveModal: function openSaveModal(tabWindow) {
+	    var initialTitle = tabWindow.title;
+	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
+	  },
+	  closeSaveModal: function closeSaveModal() {
+	    this.setState({ saveModalIsOpen: false });
+	  },
+	  openRevertModal: function openRevertModal(filteredTabWindow) {
+	    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
+	  },
+	  closeRevertModal: function closeRevertModal() {
+	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
+	  },
+	
+	
+	  /* handler for save modal */
+	  doSave: function doSave(titleStr) {
+	    var storeRef = this.props.storeRef;
+	    var tabliFolderId = storeRef.getValue().folderId;
+	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
+	    this.closeSaveModal();
+	  },
+	  doRevert: function doRevert(tabWindow) {
+	    // eslint-disable-line no-unused-vars
+	    var updateHandler = (0, _oneref.refUpdater)(this.props.storeRef);
+	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
+	    this.closeRevertModal();
+	  },
+	
+	
+	  /* render save modal (or not) based on this.state.saveModalIsOpen */
+	  renderSaveModal: function renderSaveModal() {
+	    var modal = null;
+	    if (this.state.saveModalIsOpen) {
+	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
+	        tabWindow: this.state.saveTabWindow,
+	        onClose: this.closeSaveModal,
+	        onSubmit: this.doSave,
+	        appComponent: this
 	      });
 	    }
 	
-	    if (currentChromeWindow.tabs.length === 1 && currentChromeWindow.tabs[0].url === 'chrome://newtab/') {
-	      // console.log("found new window -- replacing contents");
-	      var origTabId = currentChromeWindow.tabs[0].id;
+	    return modal;
+	  },
 	
-	      // new window -- replace contents with urls:
-	      // TODO: replace this loop with call to utils.seqActions
-	      for (var i = 0; i < urls.length; i++) {
-	        // First use our existing tab:
-	        if (i === 0) {
-	          chrome.tabs.update(origTabId, { url: urls[i] });
-	        } else {
-	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[i] };
-	          chrome.tabs.create(tabInfo);
-	        }
-	      }
 	
-	      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf);
-	    } else {
-	      // normal case -- create a new window for these urls:
-	      chrome.windows.create({ url: urls, focused: true, type: 'normal' }, cf);
-	    }
-	  });
-	}
-	
-	function openWindow(tabWindow, cb) {
-	  console.log('actions.openWindow: ', tabWindow.toJS(), cb);
-	
-	  if (tabWindow.open) {
-	    // existing, open window -- just transfer focus
-	    chrome.windows.update(tabWindow.openWindowId, { focused: true });
-	
-	    // TODO: update focus in winStore
-	  } else {
-	      // bookmarked window -- need to open it!
-	      restoreBookmarkWindow(tabWindow, cb);
-	    }
-	}
-	
-	function closeTab(tabWindow, tabId, cb) {
-	  var openTabCount = tabWindow.openTabCount;
-	  chrome.tabs.remove(tabId, function () {
-	    if (openTabCount === 1) {
-	      cb(function (state) {
-	        return state.handleTabWindowClosed(tabWindow);
-	      });
-	    } else {
-	      /*
-	       * We'd like to do a full chrome.windows.get here so that we get the currently active tab
-	       * but amazingly we still see the closed tab when we do that!
-	      chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
-	        console.log("closeTab: got window state: ", chromeWindow);
-	        winStore.syncChromeWindow(chromeWindow);
-	      });
-	      */
-	      cb(function (state) {
-	        return state.handleTabClosed(tabWindow, tabId);
+	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
+	  renderRevertModal: function renderRevertModal() {
+	    var modal = null;
+	    if (this.state.revertModalIsOpen) {
+	      modal = React.createElement(_RevertModal2.default, {
+	        tabWindow: this.state.revertTabWindow,
+	        onClose: this.closeRevertModal,
+	        onSubmit: this.doRevert,
+	        appComponent: this
 	      });
 	    }
-	  });
-	}
 	
-	function saveTab(tabWindow, tabItem, cb) {
-	  var tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
-	  chrome.bookmarks.create(tabMark, function (tabNode) {
-	    cb(function (state) {
-	      return state.handleTabSaved(tabWindow, tabItem, tabNode);
-	    });
-	  });
-	}
-	
-	function unsaveTab(tabWindow, tabItem, cb) {
-	  chrome.bookmarks.remove(tabItem.savedBookmarkId, function () {
-	    cb(function (state) {
-	      return state.handleTabUnsaved(tabWindow, tabItem);
-	    });
-	  });
-	}
-	
-	function closeWindow(tabWindow, cb) {
-	  if (!tabWindow.open) {
-	    console.log('closeWindow: request to close non-open window, ignoring...');
-	    return;
-	  }
-	
-	  chrome.windows.remove(tabWindow.openWindowId, function () {
-	    cb(function (state) {
-	      return state.handleTabWindowClosed(tabWindow);
-	    });
-	  });
-	}
-	
-	// activate a specific tab:
-	function activateTab(tabWindow, tab, tabIndex, cb) {
-	  // console.log("activateTab: ", tabWindow, tab );
-	
-	  if (tabWindow.open) {
-	    // OK, so we know this window is open.  What about the specific tab?
-	    if (tab.open) {
-	      // Tab is already open, just make it active:
-	      // console.log("making tab active");
-	      /*
-	            chrome.tabs.update(tab.openTabId, { active: true }, () => {
-	              // console.log("making tab's window active");
-	              chrome.windows.update(tabWindow.openWindowId, { focused: true });
-	            });
-	      */
-	      tabliBrowser.activateTab(tab.openTabId, function () {
-	        tabliBrowser.setFocusedWindow(tabWindow.openWindowId);
-	      });
-	    } else {
-	      // restore this bookmarked tab:
-	      var createOpts = {
-	        windowId: tabWindow.openWindowId,
-	        url: tab.url,
-	        index: tabIndex,
-	        active: true
-	      };
-	
-	      // console.log("restoring bookmarked tab")
-	      chrome.tabs.create(createOpts, function () {});
-	    }
-	  } else {
-	    // console.log("activateTab: opening non-open window");
-	    // TODO: insert our own callback so we can activate chosen tab after opening window!
-	    openWindow(tabWindow, cb);
-	  }
-	}
-	
-	function revertWindow(tabWindow, cb) {
-	  var currentTabIds = tabWindow.tabItems.filter(function (ti) {
-	    return ti.open;
-	  }).map(function (ti) {
-	    return ti.openTabId;
-	  }).toArray();
-	
-	  var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
-	
-	  // re-open saved URLs:
-	  // We need to do this before removing current tab ids or window will close
-	  var savedUrls = revertedTabWindow.tabItems.map(function (ti) {
-	    return ti.url;
-	  }).toArray();
-	
-	  for (var i = 0; i < savedUrls.length; i++) {
-	    // need to open it:
-	    var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
-	    chrome.tabs.create(tabInfo);
-	  }
-	
-	  // blow away all the existing tabs:
-	  chrome.tabs.remove(currentTabIds, function () {
-	    syncChromeWindowById(tabWindow.openWindowId, cb);
-	  });
-	}
-	
-	/*
-	 * save the specified tab window and make it a managed window
-	 */
-	function manageWindow(tabliFolderId, tabWindow, title, cb) {
-	  // and write out a Bookmarks folder for this newly managed window:
-	  if (!tabliFolderId) {
-	    alert('Could not save bookmarks -- no tab manager folder');
-	  }
-	
-	  var windowFolder = { parentId: tabliFolderId,
-	    title: title
-	  };
-	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
-	    // console.log( "succesfully created bookmarks folder ", windowFolderNode );
-	    // console.log( "for window: ", tabWindow );
-	
-	    // We'll groupBy and then take the first item of each element of the sequence:
-	    var uniqTabItems = tabWindow.tabItems.groupBy(function (ti) {
-	      return ti.url;
-	    }).toIndexedSeq().map(function (vs) {
-	      return vs.get(0);
-	    }).toArray();
-	
-	    var bookmarkActions = uniqTabItems.map(function (tabItem) {
-	      function makeBookmarkAction(v, bmcb) {
-	        var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
-	        chrome.bookmarks.create(tabMark, bmcb);
-	      }
-	
-	      return makeBookmarkAction;
-	    });
-	
-	    utils.seqActions(bookmarkActions, null, function () {
-	      // Now do an explicit get of subtree to get node populated with children
-	      chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
-	        var fullFolderNode = folderNodes[0];
-	
-	        // We'll retrieve the latest chrome Window state and attach that:
-	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
-	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
-	          // set chromeWindow.focused to last focused state (tabWindow.focused)
-	          var focusedChromeWindow = Object.assign({}, chromeWindow, { focused: tabWindow.focused });
-	          cb(function (state) {
-	            return state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow);
-	          });
-	        });
-	      });
-	    });
-	  });
-	}
-	
-	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-	function unmanageWindow(archiveFolderId, tabWindow, cb) {
-	  // console.log("unmanageWindow: ", tabWindow.toJS());
-	  if (!archiveFolderId) {
-	    alert('could not move managed window folder to archive -- no archive folder');
-	    return;
-	  }
-	
-	  // Could potentially disambiguate names in archive folder...
-	  chrome.bookmarks.move(tabWindow.savedFolderId, { parentId: archiveFolderId }, function () {
-	    // console.log("unmanageWindow: bookmark folder moved to archive folder");
-	    cb(function (state) {
-	      return state.unmanageWindow(tabWindow);
-	    });
-	  });
-	}
-	
-	function showHelp() {
-	  console.log('showHelp: opening manual');
-	  chrome.tabs.create({ url: TABLI_HELP_URL });
-	}
-
-/***/ },
-/* 8 */
-/*!*************************!*\
-  !*** ./src/js/utils.js ***!
-  \*************************/
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.parseURL = parseURL;
-	exports.seqActions = seqActions;
-	exports.logWrap = logWrap;
-	/**
-	 *
-	 * Common utility routines
-	 */
-	// This function creates a new anchor element and uses location
-	// properties (inherent) to get the desired URL data. Some String
-	// operations are used (to normalize results across browsers).
-	// From http://james.padolsey.com/javascript/parsing-urls-with-the-dom/
-	function parseURL(url) {
-	  var a = document.createElement('a');
-	  a.href = url;
-	  return {
-	    source: url,
-	    protocol: a.protocol.replace(':', ''),
-	    host: a.hostname,
-	    port: a.port,
-	    query: a.search,
-	    params: function () {
-	      var ret = {};
-	      var seg = a.search.replace(/^\?/, '').split('&');
-	      var len = seg.length;
-	      var i = 0;
-	      var s;
-	      for (; i < len; i++) {
-	        if (!seg[i]) {
-	          continue;
-	        }
-	
-	        s = seg[i].split('=');
-	        ret[s[0]] = s[1];
-	      }
-	
-	      return ret;
-	    }(),
-	
-	    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [null, ''])[1],
-	    hash: a.hash.replace('#', ''),
-	    path: a.pathname.replace(/^([^\/])/, '/$1'),
-	    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [null, ''])[1],
-	    segments: a.pathname.replace(/^\//, '').split('/')
-	  };
-	}
-	
-	/**
-	 * chain a sequence of asynchronous actions
-	 *
-	
-	 */
-	function seqActions(actions, seed, onCompleted) {
-	  var index = 0;
-	
-	  function invokeNext(v) {
-	    var action = actions[index];
-	    action(v, function (res) {
-	      index = index + 1;
-	      if (index < actions.length) {
-	        invokeNext(res);
-	      } else {
-	        onCompleted(res);
-	      }
-	    });
-	  }
-	
-	  invokeNext(seed);
-	}
-	
-	// wrapper to log exceptions
-	function logWrap(f) {
-	  function wf() {
+	    return modal;
+	  },
+	  render: function render() {
 	    var ret;
 	    try {
-	      ret = f.apply(this, arguments);
+	      var saveModal = this.renderSaveModal();
+	      var revertModal = this.renderRevertModal();
+	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
+	      ret = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(_SelectableTabPage2.default, {
+	          onSearchInput: this.handleSearchInput,
+	          winStore: this.state.winStore,
+	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
+	          filteredWindows: filteredWindows,
+	          appComponent: this,
+	          searchStr: this.state.searchStr,
+	          searchRE: this.state.searchRE
+	        }),
+	        saveModal,
+	        revertModal
+	      );
 	    } catch (e) {
-	      console.error('logWrap: caught exception invoking function: ');
+	      console.error('App Component: caught exception during render: ');
 	      console.error(e.stack);
 	      throw e;
 	    }
 	
 	    return ret;
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var _this = this;
+	
+	    if (this.props.noListener) {
+	      return;
+	    }
+	
+	    var storeRef = this.props.storeRef;
+	    /*
+	     * This listener is essential for triggering a (recursive) re-render
+	     * in response to a state change.
+	     */
+	    var listenerId = storeRef.addViewListener(function () {
+	      console.log('TabliPopup: viewListener: updating store from storeRef');
+	      _this.setState(_this.storeAsState(storeRef.getValue()));
+	    });
+	
+	    // console.log("componentWillMount: added view listener: ", listenerId);
+	    sendHelperMessage({ listenerId: listenerId });
 	  }
+	});
 	
-	  return wf;
-	}
-	
-	/*
-	var CONTEXT_MENU_ID = 99;
-	var contextMenuCreated = false;
-
-	function initContextMenu() {
-	  var sendToMenuItem = { type: "normal",
-	                     id: CONTEXT_MENU_ID,
-	                     title: "Open Link in Existing Window",
-	                     contexts: [ "link" ]
-	                    };
-	  chrome.contextMenus.create( sendToMenuItem, function() {
-	    contextMenuCreated = true;
-	  });
-	}
-	*/
+	exports.default = NewTabPage;
 
 /***/ },
 /* 9 */
@@ -40838,8 +41139,528 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 12)))
 
 /***/ },
-/* 166 */,
+/* 166 */
+/*!******************************************!*\
+  !*** ./src/tabli-core/src/js/actions.js ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.syncChromeWindowById = syncChromeWindowById;
+	exports.syncChromeWindows = syncChromeWindows;
+	exports.openWindow = openWindow;
+	exports.closeTab = closeTab;
+	exports.saveTab = saveTab;
+	exports.unsaveTab = unsaveTab;
+	exports.closeWindow = closeWindow;
+	exports.activateTab = activateTab;
+	exports.revertWindow = revertWindow;
+	exports.manageWindow = manageWindow;
+	exports.unmanageWindow = unmanageWindow;
+	exports.showHelp = showHelp;
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	var _utils = __webpack_require__(/*! ./utils */ 167);
+	
+	var utils = _interopRequireWildcard(_utils);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var TABLI_HELP_URL = 'http://antonycourtney.github.io/tabli/tabli-usage.html';
+	
+	/**
+	 * sync a single Chrome window by its Chrome window id
+	 *
+	 * @param {function} cb -- callback to update state
+	 */
+	function syncChromeWindowById(windowId, cb) {
+	  chrome.windows.get(windowId, { populate: true }, function (chromeWindow) {
+	    cb(function (state) {
+	      return state.syncChromeWindow(chromeWindow);
+	    });
+	  });
+	}
+	
+	/**
+	 * get all open Chrome windows and synchronize state with our tab window store
+	 *
+	 * @param {function} cb -- callback to updated state
+	 */
+	function syncChromeWindows(cb) {
+	  var t_preGet = performance.now();
+	  chrome.windows.getAll({ populate: true }, function (windowList) {
+	    var t_postGet = performance.now();
+	    console.log('syncChromeWindows: chrome.windows.getAll took ', t_postGet - t_preGet, ' ms');
+	    var t_preSync = performance.now();
+	    cb(function (state) {
+	      return state.syncWindowList(windowList);
+	    });
+	    var t_postSync = performance.now();
+	    console.log('syncChromeWindows: syncWindowList took ', t_postSync - t_preSync, ' ms');
+	  });
+	}
+	
+	/**
+	 * restore a bookmark window.
+	 *
+	 * N.B.: NOT exported; called from openWindow
+	 */
+	function restoreBookmarkWindow(tabWindow, cb) {
+	  /*
+	   * special case handling of replacing the contents of a fresh window
+	   */
+	  chrome.windows.getLastFocused({ populate: true }, function (currentChromeWindow) {
+	    var urls = tabWindow.tabItems.map(function (ti) {
+	      return ti.url;
+	    }).toArray();
+	    function cf(chromeWindow) {
+	      cb(function (state) {
+	        return state.attachChromeWindow(tabWindow, chromeWindow);
+	      });
+	    }
+	
+	    if (currentChromeWindow.tabs.length === 1 && currentChromeWindow.tabs[0].url === 'chrome://newtab/') {
+	      // console.log("found new window -- replacing contents");
+	      var origTabId = currentChromeWindow.tabs[0].id;
+	
+	      // new window -- replace contents with urls:
+	      // TODO: replace this loop with call to utils.seqActions
+	      for (var i = 0; i < urls.length; i++) {
+	        // First use our existing tab:
+	        if (i === 0) {
+	          chrome.tabs.update(origTabId, { url: urls[i] });
+	        } else {
+	          var tabInfo = { windowId: currentChromeWindow.id, url: urls[i] };
+	          chrome.tabs.create(tabInfo);
+	        }
+	      }
+	
+	      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf);
+	    } else {
+	      // normal case -- create a new window for these urls:
+	      chrome.windows.create({ url: urls, focused: true, type: 'normal' }, cf);
+	    }
+	  });
+	}
+	
+	function openWindow(tabWindow, cb) {
+	  console.log('actions.openWindow: ', tabWindow.toJS(), cb);
+	
+	  if (tabWindow.open) {
+	    // existing, open window -- just transfer focus
+	    chrome.windows.update(tabWindow.openWindowId, { focused: true });
+	
+	    // TODO: update focus in winStore
+	  } else {
+	      // bookmarked window -- need to open it!
+	      restoreBookmarkWindow(tabWindow, cb);
+	    }
+	}
+	
+	function closeTab(tabWindow, tabId, cb) {
+	  var openTabCount = tabWindow.openTabCount;
+	  chrome.tabs.remove(tabId, function () {
+	    if (openTabCount === 1) {
+	      cb(function (state) {
+	        return state.handleTabWindowClosed(tabWindow);
+	      });
+	    } else {
+	      /*
+	       * We'd like to do a full chrome.windows.get here so that we get the currently active tab
+	       * but amazingly we still see the closed tab when we do that!
+	      chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
+	        console.log("closeTab: got window state: ", chromeWindow);
+	        winStore.syncChromeWindow(chromeWindow);
+	      });
+	      */
+	      cb(function (state) {
+	        return state.handleTabClosed(tabWindow, tabId);
+	      });
+	    }
+	  });
+	}
+	
+	function saveTab(tabWindow, tabItem, cb) {
+	  var tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url };
+	  chrome.bookmarks.create(tabMark, function (tabNode) {
+	    cb(function (state) {
+	      return state.handleTabSaved(tabWindow, tabItem, tabNode);
+	    });
+	  });
+	}
+	
+	function unsaveTab(tabWindow, tabItem, cb) {
+	  chrome.bookmarks.remove(tabItem.savedBookmarkId, function () {
+	    cb(function (state) {
+	      return state.handleTabUnsaved(tabWindow, tabItem);
+	    });
+	  });
+	}
+	
+	function closeWindow(tabWindow, cb) {
+	  if (!tabWindow.open) {
+	    console.log('closeWindow: request to close non-open window, ignoring...');
+	    return;
+	  }
+	
+	  chrome.windows.remove(tabWindow.openWindowId, function () {
+	    cb(function (state) {
+	      return state.handleTabWindowClosed(tabWindow);
+	    });
+	  });
+	}
+	
+	// activate a specific tab:
+	function activateTab(tabWindow, tab, tabIndex, cb) {
+	  // console.log("activateTab: ", tabWindow, tab );
+	
+	  if (tabWindow.open) {
+	    // OK, so we know this window is open.  What about the specific tab?
+	    if (tab.open) {
+	      // Tab is already open, just make it active:
+	      // console.log("making tab active");
+	      /*
+	            chrome.tabs.update(tab.openTabId, { active: true }, () => {
+	              // console.log("making tab's window active");
+	              chrome.windows.update(tabWindow.openWindowId, { focused: true });
+	            });
+	      */
+	      tabliBrowser.activateTab(tab.openTabId, function () {
+	        tabliBrowser.setFocusedWindow(tabWindow.openWindowId);
+	      });
+	    } else {
+	      // restore this bookmarked tab:
+	      var createOpts = {
+	        windowId: tabWindow.openWindowId,
+	        url: tab.url,
+	        index: tabIndex,
+	        active: true
+	      };
+	
+	      // console.log("restoring bookmarked tab")
+	      chrome.tabs.create(createOpts, function () {});
+	    }
+	  } else {
+	    // console.log("activateTab: opening non-open window");
+	    // TODO: insert our own callback so we can activate chosen tab after opening window!
+	    openWindow(tabWindow, cb);
+	  }
+	}
+	
+	function revertWindow(tabWindow, cb) {
+	  var currentTabIds = tabWindow.tabItems.filter(function (ti) {
+	    return ti.open;
+	  }).map(function (ti) {
+	    return ti.openTabId;
+	  }).toArray();
+	
+	  var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
+	
+	  // re-open saved URLs:
+	  // We need to do this before removing current tab ids or window will close
+	  var savedUrls = revertedTabWindow.tabItems.map(function (ti) {
+	    return ti.url;
+	  }).toArray();
+	
+	  for (var i = 0; i < savedUrls.length; i++) {
+	    // need to open it:
+	    var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
+	    chrome.tabs.create(tabInfo);
+	  }
+	
+	  // blow away all the existing tabs:
+	  chrome.tabs.remove(currentTabIds, function () {
+	    syncChromeWindowById(tabWindow.openWindowId, cb);
+	  });
+	}
+	
+	/*
+	 * save the specified tab window and make it a managed window
+	 */
+	function manageWindow(tabliFolderId, tabWindow, title, cb) {
+	  // and write out a Bookmarks folder for this newly managed window:
+	  if (!tabliFolderId) {
+	    alert('Could not save bookmarks -- no tab manager folder');
+	  }
+	
+	  var windowFolder = { parentId: tabliFolderId,
+	    title: title
+	  };
+	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
+	    // console.log( "succesfully created bookmarks folder ", windowFolderNode );
+	    // console.log( "for window: ", tabWindow );
+	
+	    // We'll groupBy and then take the first item of each element of the sequence:
+	    var uniqTabItems = tabWindow.tabItems.groupBy(function (ti) {
+	      return ti.url;
+	    }).toIndexedSeq().map(function (vs) {
+	      return vs.get(0);
+	    }).toArray();
+	
+	    var bookmarkActions = uniqTabItems.map(function (tabItem) {
+	      function makeBookmarkAction(v, bmcb) {
+	        var tabMark = { parentId: windowFolderNode.id, title: tabItem.title, url: tabItem.url };
+	        chrome.bookmarks.create(tabMark, bmcb);
+	      }
+	
+	      return makeBookmarkAction;
+	    });
+	
+	    utils.seqActions(bookmarkActions, null, function () {
+	      // Now do an explicit get of subtree to get node populated with children
+	      chrome.bookmarks.getSubTree(windowFolderNode.id, function (folderNodes) {
+	        var fullFolderNode = folderNodes[0];
+	
+	        // We'll retrieve the latest chrome Window state and attach that:
+	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
+	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
+	          // set chromeWindow.focused to last focused state (tabWindow.focused)
+	          var focusedChromeWindow = Object.assign({}, chromeWindow, { focused: tabWindow.focused });
+	          cb(function (state) {
+	            return state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow);
+	          });
+	        });
+	      });
+	    });
+	  });
+	}
+	
+	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
+	function unmanageWindow(archiveFolderId, tabWindow, cb) {
+	  // console.log("unmanageWindow: ", tabWindow.toJS());
+	  if (!archiveFolderId) {
+	    alert('could not move managed window folder to archive -- no archive folder');
+	    return;
+	  }
+	
+	  // Could potentially disambiguate names in archive folder...
+	  chrome.bookmarks.move(tabWindow.savedFolderId, { parentId: archiveFolderId }, function () {
+	    // console.log("unmanageWindow: bookmark folder moved to archive folder");
+	    cb(function (state) {
+	      return state.unmanageWindow(tabWindow);
+	    });
+	  });
+	}
+	
+	function showHelp() {
+	  console.log('showHelp: opening manual');
+	  chrome.tabs.create({ url: TABLI_HELP_URL });
+	}
+
+/***/ },
 /* 167 */
+/*!****************************************!*\
+  !*** ./src/tabli-core/src/js/utils.js ***!
+  \****************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.parseURL = parseURL;
+	exports.seqActions = seqActions;
+	/**
+	 *
+	 * Common utility routines
+	 */
+	// This function creates a new anchor element and uses location
+	// properties (inherent) to get the desired URL data. Some String
+	// operations are used (to normalize results across browsers).
+	// From http://james.padolsey.com/javascript/parsing-urls-with-the-dom/
+	function parseURL(url) {
+	  var a = document.createElement('a');
+	  a.href = url;
+	  return {
+	    source: url,
+	    protocol: a.protocol.replace(':', ''),
+	    host: a.hostname,
+	    port: a.port,
+	    query: a.search,
+	    params: function () {
+	      var ret = {};
+	      var seg = a.search.replace(/^\?/, '').split('&');
+	      var len = seg.length;
+	      var i = 0;
+	      var s;
+	      for (; i < len; i++) {
+	        if (!seg[i]) {
+	          continue;
+	        }
+	
+	        s = seg[i].split('=');
+	        ret[s[0]] = s[1];
+	      }
+	
+	      return ret;
+	    }(),
+	
+	    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [null, ''])[1],
+	    hash: a.hash.replace('#', ''),
+	    path: a.pathname.replace(/^([^\/])/, '/$1'),
+	    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [null, ''])[1],
+	    segments: a.pathname.replace(/^\//, '').split('/')
+	  };
+	}
+	
+	/**
+	 * chain a sequence of asynchronous actions
+	 *
+	
+	 */
+	function seqActions(actions, seed, onCompleted) {
+	  var index = 0;
+	
+	  function invokeNext(v) {
+	    var action = actions[index];
+	    action(v, function (res) {
+	      index = index + 1;
+	      if (index < actions.length) {
+	        invokeNext(res);
+	      } else {
+	        onCompleted(res);
+	      }
+	    });
+	  }
+	
+	  invokeNext(seed);
+	}
+	
+	/*
+	var CONTEXT_MENU_ID = 99;
+	var contextMenuCreated = false;
+
+	function initContextMenu() {
+	  var sendToMenuItem = { type: "normal",
+	                     id: CONTEXT_MENU_ID,
+	                     title: "Open Link in Existing Window",
+	                     contexts: [ "link" ]
+	                    };
+	  chrome.contextMenus.create( sendToMenuItem, function() {
+	    contextMenuCreated = true;
+	  });
+	}
+	*/
+
+/***/ },
+/* 168 */
+/*!********************************************!*\
+  !*** ./src/tabli-core/src/js/searchOps.js ***!
+  \********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.matchTabItem = matchTabItem;
+	exports.matchTabWindow = matchTabWindow;
+	exports.filterTabWindows = filterTabWindows;
+	
+	var _lodash = __webpack_require__(/*! lodash */ 4);
+	
+	var _ = _interopRequireWildcard(_lodash);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 6);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/**
+	 * A TabItem augmented with search results
+	 */
+	var FilteredTabItem = Immutable.Record({
+	  tabItem: new TabWindow.TabItem(),
+	
+	  urlMatches: null,
+	  titleMatches: null
+	});
+	
+	/**
+	 * Use a RegExp to match a particular TabItem
+	 *
+	 * @return {FilteredTabItem} filtered item (or null if no match)
+	 */
+	/**
+	 * Search and filter operations on TabWindows
+	 */
+	function matchTabItem(tabItem, searchExp) {
+	  var urlMatches = tabItem.url.match(searchExp);
+	  var titleMatches = tabItem.title.match(searchExp);
+	
+	  if (urlMatches === null && titleMatches === null) {
+	    return null;
+	  }
+	
+	  return new FilteredTabItem({ tabItem: tabItem, urlMatches: urlMatches, titleMatches: titleMatches });
+	}
+	
+	/**
+	 * A TabWindow augmented with search results
+	 */
+	var FilteredTabWindow = Immutable.Record({
+	  tabWindow: new TabWindow.TabWindow(),
+	  titleMatches: [],
+	  itemMatches: Immutable.Seq() });
+	
+	/**
+	 * Match a TabWindow using a Regexp
+	 *
+	 */
+	// matching tab items
+	function matchTabWindow(tabWindow, searchExp) {
+	  var itemMatches = tabWindow.tabItems.map(function (ti) {
+	    return matchTabItem(ti, searchExp);
+	  }).filter(function (fti) {
+	    return fti !== null;
+	  });
+	  var titleMatches = tabWindow.title.match(searchExp);
+	
+	  if (titleMatches === null && itemMatches.count() === 0) {
+	    return null;
+	  }
+	
+	  return FilteredTabWindow({ tabWindow: tabWindow, titleMatches: titleMatches, itemMatches: itemMatches });
+	}
+	
+	/**
+	 * filter an array of TabWindows using a searchRE to obtain
+	 * an array of FilteredTabWindow
+	 */
+	function filterTabWindows(tabWindows, searchExp) {
+	  var res;
+	  if (searchExp === null) {
+	    res = _.map(tabWindows, function (tw) {
+	      return new FilteredTabWindow({ tabWindow: tw });
+	    });
+	  } else {
+	    var mappedWindows = _.map(tabWindows, function (tw) {
+	      return matchTabWindow(tw, searchExp);
+	    });
+	    res = _.filter(mappedWindows, function (fw) {
+	      return fw !== null;
+	    });
+	  }
+	
+	  return res;
+	}
+
+/***/ },
+/* 169 */
 /*!*******************************!*\
   !*** ./~/oneref/lib/index.js ***!
   \*******************************/
@@ -40847,11 +41668,11 @@
 
 	'use strict';
 	
-	var _AppContainer = __webpack_require__(/*! ./AppContainer */ 168);
+	var _AppContainer = __webpack_require__(/*! ./AppContainer */ 170);
 	
 	var _AppContainer2 = _interopRequireDefault(_AppContainer);
 	
-	var _oneRef = __webpack_require__(/*! ./oneRef */ 169);
+	var _oneRef = __webpack_require__(/*! ./oneRef */ 171);
 	
 	var OneRef = _interopRequireWildcard(_oneRef);
 	
@@ -40862,7 +41683,7 @@
 	module.exports = { AppContainer: _AppContainer2.default, Ref: OneRef.Ref, refUpdater: OneRef.refUpdater };
 
 /***/ },
-/* 168 */
+/* 170 */
 /*!**************************************!*\
   !*** ./~/oneref/lib/AppContainer.js ***!
   \**************************************/
@@ -40880,7 +41701,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _oneRef = __webpack_require__(/*! ./oneRef */ 169);
+	var _oneRef = __webpack_require__(/*! ./oneRef */ 171);
 	
 	var OneRef = _interopRequireWildcard(_oneRef);
 	
@@ -40969,7 +41790,7 @@
 	exports.default = AppContainer;
 
 /***/ },
-/* 169 */
+/* 171 */
 /*!********************************!*\
   !*** ./~/oneref/lib/oneRef.js ***!
   \********************************/
@@ -40984,7 +41805,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _events = __webpack_require__(/*! events */ 170);
+	var _events = __webpack_require__(/*! events */ 172);
 	
 	var _events2 = _interopRequireDefault(_events);
 	
@@ -41066,10 +41887,10 @@
 	};
 
 /***/ },
-/* 170 */
-/*!*************************************!*\
-  !*** ./~/oneref/~/events/events.js ***!
-  \*************************************/
+/* 172 */
+/*!****************************!*\
+  !*** ./~/events/events.js ***!
+  \****************************/
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -41373,12 +42194,10 @@
 
 
 /***/ },
-/* 171 */,
-/* 172 */,
 /* 173 */
-/*!*****************************!*\
-  !*** ./src/js/searchOps.js ***!
-  \*****************************/
+/*!*********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/RevertModal.js ***!
+  \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41386,108 +42205,193 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.matchTabItem = matchTabItem;
-	exports.matchTabWindow = matchTabWindow;
-	exports.filterTabWindows = filterTabWindows;
 	
-	var _lodash = __webpack_require__(/*! lodash */ 3);
+	var _react = __webpack_require__(/*! react */ 9);
 	
-	var _ = _interopRequireWildcard(_lodash);
+	var React = _interopRequireWildcard(_react);
 	
-	var _immutable = __webpack_require__(/*! immutable */ 5);
+	var _immutable = __webpack_require__(/*! immutable */ 6);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _constants = __webpack_require__(/*! ./constants */ 175);
+	
+	var Constants = _interopRequireWildcard(_constants);
+	
+	var _Modal = __webpack_require__(/*! ./Modal */ 178);
+	
+	var Modal = _interopRequireWildcard(_Modal);
+	
+	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 3);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	/**
-	 * A TabItem augmented with search results
+	/*
+	 * Modal dialog for reverting a bookmarked window
 	 */
-	var FilteredTabItem = Immutable.Record({
-	  tabItem: new TabWindow.TabItem(),
+	var RevertModal = React.createClass({
+	  displayName: 'RevertModal',
+	  handleKeyDown: function handleKeyDown(e) {
+	    if (e.keyCode === Constants.KEY_ESC) {
+	      // ESC key
+	      e.preventDefault();
+	      this.props.onClose(e);
+	    } else if (e.keyCode === Constants.KEY_ENTER) {
+	      this.handleSubmit(e);
+	    }
+	  },
+	  handleSubmit: function handleSubmit(e) {
+	    e.preventDefault();
+	    this.props.onSubmit(this.props.tabWindow);
+	  },
+	  renderItem: function renderItem(tabItem) {
+	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
 	
-	  urlMatches: null,
-	  titleMatches: null
+	    // Skip the chrome FAVICONs; they just throw when accessed.
+	    if (fiSrc.indexOf('chrome://theme/') === 0) {
+	      fiSrc = '';
+	    }
+	
+	    var tabFavIcon = React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc });
+	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
+	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
+	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
+	    return React.createElement(
+	      'div',
+	      { style: _styles2.default.noWrap },
+	      tabFavIcon,
+	      React.createElement(
+	        'span',
+	        { style: tabTitleStyles },
+	        tabItem.title
+	      ),
+	      React.createElement('div', { style: _styles2.default.spacer })
+	    );
+	  },
+	  renderTabItems: function renderTabItems(tabItems) {
+	    var itemElems = tabItems.map(this.renderItem);
+	    return React.createElement(
+	      'div',
+	      { style: _styles2.default.tabList },
+	      itemElems
+	    );
+	  },
+	  render: function render() {
+	    var tabWindow = this.props.tabWindow;
+	    var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
+	    var savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map(function (ti) {
+	      return ti.url;
+	    }));
+	
+	    var itemsToClose = tabWindow.tabItems.filter(function (ti) {
+	      return !savedUrlsSet.has(ti.url);
+	    });
+	    var closeItemsElem = this.renderTabItems(itemsToClose);
+	
+	    var itemsToReload = tabWindow.tabItems.filter(function (ti) {
+	      return savedUrlsSet.has(ti.url);
+	    });
+	    var reloadItemsElem = this.renderTabItems(itemsToReload);
+	
+	    var closeSection = null;
+	    if (itemsToClose.count() > 0) {
+	      closeSection = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'p',
+	          null,
+	          'The following tabs will be closed:'
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.simpleTabContainer },
+	          closeItemsElem
+	        ),
+	        React.createElement('br', null)
+	      );
+	    }
+	
+	    return React.createElement(
+	      Modal.Dialog,
+	      { title: 'Revert Saved Window?', onClose: this.props.onClose },
+	      React.createElement(
+	        Modal.Body,
+	        null,
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.dialogInfoContents },
+	          closeSection,
+	          React.createElement(
+	            'p',
+	            null,
+	            'The following tabs will be reloaded:'
+	          ),
+	          React.createElement(
+	            'div',
+	            { style: _styles2.default.simpleTabContainer },
+	            reloadItemsElem
+	          ),
+	          React.createElement('br', null),
+	          React.createElement(
+	            'p',
+	            null,
+	            'This action can not be undone.'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: Util.merge(_styles2.default.alignRight) },
+	          React.createElement(
+	            'div',
+	            { style: Util.merge(_styles2.default.dialogButton, _styles2.default.primaryButton),
+	              onClick: this.handleSubmit,
+	              ref: 'okButton',
+	              tabIndex: 0,
+	              onKeyDown: this.handleKeyDown
+	            },
+	            'OK'
+	          ),
+	          React.createElement(
+	            'div',
+	            { style: _styles2.default.dialogButton,
+	              onClick: this.props.onClose,
+	              tabIndex: 0
+	            },
+	            'Cancel'
+	          )
+	        )
+	      )
+	    );
+	  },
+	
+	
+	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
+	  componentDidMount: function componentDidMount() {
+	    console.log('revertModal: did mount');
+	    this.refs.okButton.focus();
+	  }
 	});
 	
-	/**
-	 * Use a RegExp to match a particular TabItem
-	 *
-	 * @return {FilteredTabItem} filtered item (or null if no match)
-	 */
-	/**
-	 * Search and filter operations on TabWindows
-	 */
-	function matchTabItem(tabItem, searchExp) {
-	  var urlMatches = tabItem.url.match(searchExp);
-	  var titleMatches = tabItem.title.match(searchExp);
-	
-	  if (urlMatches === null && titleMatches === null) {
-	    return null;
-	  }
-	
-	  return new FilteredTabItem({ tabItem: tabItem, urlMatches: urlMatches, titleMatches: titleMatches });
-	}
-	
-	/**
-	 * A TabWindow augmented with search results
-	 */
-	var FilteredTabWindow = Immutable.Record({
-	  tabWindow: new TabWindow.TabWindow(),
-	  titleMatches: [],
-	  itemMatches: Immutable.Seq() });
-	
-	/**
-	 * Match a TabWindow using a Regexp
-	 *
-	 */
-	// matching tab items
-	function matchTabWindow(tabWindow, searchExp) {
-	  var itemMatches = tabWindow.tabItems.map(function (ti) {
-	    return matchTabItem(ti, searchExp);
-	  }).filter(function (fti) {
-	    return fti !== null;
-	  });
-	  var titleMatches = tabWindow.title.match(searchExp);
-	
-	  if (titleMatches === null && itemMatches.count() === 0) {
-	    return null;
-	  }
-	
-	  return FilteredTabWindow({ tabWindow: tabWindow, titleMatches: titleMatches, itemMatches: itemMatches });
-	}
-	
-	/**
-	 * filter an array of TabWindows using a searchRE to obtain
-	 * an array of FilteredTabWindow
-	 */
-	function filterTabWindows(tabWindows, searchExp) {
-	  var res;
-	  if (searchExp === null) {
-	    res = _.map(tabWindows, function (tw) {
-	      return new FilteredTabWindow({ tabWindow: tw });
-	    });
-	  } else {
-	    var mappedWindows = _.map(tabWindows, function (tw) {
-	      return matchTabWindow(tw, searchExp);
-	    });
-	    res = _.filter(mappedWindows, function (fw) {
-	      return fw !== null;
-	    });
-	  }
-	
-	  return res;
-	}
+	exports.default = RevertModal;
 
 /***/ },
 /* 174 */
-/*!*************************************!*\
-  !*** ./src/js/components/styles.js ***!
-  \*************************************/
+/*!****************************************************!*\
+  !*** ./src/tabli-core/src/js/components/styles.js ***!
+  \****************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41685,6 +42589,15 @@
 	    backgroundColor: '#7472ff',
 	    marginRight: '20px'
 	  },
+	  popoutButton: {
+	    backgroundImage: mkUrl('images/popout.png'),
+	    backgroundRepeat: 'no-repeat',
+	    backgroundPosition: 'center center',
+	    marginRight: 15
+	  },
+	  popoutButtonHover: {
+	    backgroundColor: '#dadada'
+	  },
 	  helpButton: {
 	    color: '#7472ff'
 	  },
@@ -41840,8 +42753,8 @@
 	    marginTop: 5
 	  },
 	  searchInput: {
-	    width: 285,
-	    maxWidth: 285
+	    width: 265,
+	    maxWidth: 265
 	  },
 	  summarySpan: {
 	    marginRight: 5
@@ -41869,9 +42782,9 @@
 
 /***/ },
 /* 175 */
-/*!****************************************!*\
-  !*** ./src/js/components/constants.js ***!
-  \****************************************/
+/*!*******************************************************!*\
+  !*** ./src/tabli-core/src/js/components/constants.js ***!
+  \*******************************************************/
 /***/ function(module, exports) {
 
 	"use strict";
@@ -41894,15 +42807,15 @@
 
 /***/ },
 /* 176 */
-/*!***********************************************!*\
-  !*** ./src/js/components/browserConstants.js ***!
-  \***********************************************/
+/*!**************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/browserConstants.js ***!
+  \**************************************************************/
 /***/ function(module, exports) {
 
 	'use strict';
 	
 	var chromeConstants = { BROWSER_NAME: 'chrome', BROWSER_PATH_PREFIX: '../' };
-	var braveConstants = { BROWSER_NAME: 'brave', BROWSER_PATH_PREFIX: '../node_modules/tabli/build/' };
+	var braveConstants = { BROWSER_NAME: 'brave', BROWSER_PATH_PREFIX: '../node_modules/tabli-core/' };
 	
 	/**
 	 * do browser detection and assign constants to exported bindings.
@@ -41929,203 +42842,9 @@
 
 /***/ },
 /* 177 */
-/*!******************************************!*\
-  !*** ./src/js/components/RevertModal.js ***!
-  \******************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 9);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _immutable = __webpack_require__(/*! immutable */ 5);
-	
-	var Immutable = _interopRequireWildcard(_immutable);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 178);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
-	
-	var Constants = _interopRequireWildcard(_constants);
-	
-	var _Modal = __webpack_require__(/*! ./Modal */ 179);
-	
-	var Modal = _interopRequireWildcard(_Modal);
-	
-	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 6);
-	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	/*
-	 * Modal dialog for reverting a bookmarked window
-	 */
-	var RevertModal = React.createClass({
-	  displayName: 'RevertModal',
-	  handleKeyDown: function handleKeyDown(e) {
-	    if (e.keyCode === Constants.KEY_ESC) {
-	      // ESC key
-	      e.preventDefault();
-	      this.props.onClose(e);
-	    } else if (e.keyCode === Constants.KEY_ENTER) {
-	      this.handleSubmit(e);
-	    }
-	  },
-	  handleSubmit: function handleSubmit(e) {
-	    e.preventDefault();
-	    this.props.onSubmit(this.props.tabWindow);
-	  },
-	  renderItem: function renderItem(tabItem) {
-	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
-	
-	    // Skip the chrome FAVICONs; they just throw when accessed.
-	    if (fiSrc.indexOf('chrome://theme/') === 0) {
-	      fiSrc = '';
-	    }
-	
-	    var tabFavIcon = React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc });
-	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
-	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
-	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
-	    return React.createElement(
-	      'div',
-	      { style: _styles2.default.noWrap },
-	      tabFavIcon,
-	      React.createElement(
-	        'span',
-	        { style: tabTitleStyles },
-	        tabItem.title
-	      ),
-	      React.createElement('div', { style: _styles2.default.spacer })
-	    );
-	  },
-	  renderTabItems: function renderTabItems(tabItems) {
-	    var itemElems = tabItems.map(this.renderItem);
-	    return React.createElement(
-	      'div',
-	      { style: _styles2.default.tabList },
-	      itemElems
-	    );
-	  },
-	  render: function render() {
-	    var tabWindow = this.props.tabWindow;
-	    var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
-	    var savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map(function (ti) {
-	      return ti.url;
-	    }));
-	
-	    var itemsToClose = tabWindow.tabItems.filter(function (ti) {
-	      return !savedUrlsSet.has(ti.url);
-	    });
-	    var closeItemsElem = this.renderTabItems(itemsToClose);
-	
-	    var itemsToReload = tabWindow.tabItems.filter(function (ti) {
-	      return savedUrlsSet.has(ti.url);
-	    });
-	    var reloadItemsElem = this.renderTabItems(itemsToReload);
-	
-	    var closeSection = null;
-	    if (itemsToClose.count() > 0) {
-	      closeSection = React.createElement(
-	        'div',
-	        null,
-	        React.createElement(
-	          'p',
-	          null,
-	          'The following tabs will be closed:'
-	        ),
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.simpleTabContainer },
-	          closeItemsElem
-	        ),
-	        React.createElement('br', null)
-	      );
-	    }
-	
-	    return React.createElement(
-	      Modal.Dialog,
-	      { title: 'Revert Saved Window?', onClose: this.props.onClose },
-	      React.createElement(
-	        Modal.Body,
-	        null,
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.dialogInfoContents },
-	          closeSection,
-	          React.createElement(
-	            'p',
-	            null,
-	            'The following tabs will be reloaded:'
-	          ),
-	          React.createElement(
-	            'div',
-	            { style: _styles2.default.simpleTabContainer },
-	            reloadItemsElem
-	          ),
-	          React.createElement('br', null),
-	          React.createElement(
-	            'p',
-	            null,
-	            'This action can not be undone.'
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { style: Util.merge(_styles2.default.alignRight) },
-	          React.createElement(
-	            'div',
-	            { style: Util.merge(_styles2.default.dialogButton, _styles2.default.primaryButton),
-	              onClick: this.handleSubmit,
-	              ref: 'okButton',
-	              tabIndex: 0,
-	              onKeyDown: this.handleKeyDown
-	            },
-	            'OK'
-	          ),
-	          React.createElement(
-	            'div',
-	            { style: _styles2.default.dialogButton,
-	              onClick: this.props.onClose,
-	              tabIndex: 0
-	            },
-	            'Cancel'
-	          )
-	        )
-	      )
-	    );
-	  },
-	
-	
-	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
-	  componentDidMount: function componentDidMount() {
-	    console.log('revertModal: did mount');
-	    this.refs.okButton.focus();
-	  }
-	});
-	
-	exports.default = RevertModal;
-
-/***/ },
-/* 178 */
-/*!***********************************!*\
-  !*** ./src/js/components/util.js ***!
-  \***********************************/
+/*!**************************************************!*\
+  !*** ./src/tabli-core/src/js/components/util.js ***!
+  \**************************************************/
 /***/ function(module, exports) {
 
 	'use strict';
@@ -42182,10 +42901,10 @@
 	}
 
 /***/ },
-/* 179 */
-/*!************************************!*\
-  !*** ./src/js/components/Modal.js ***!
-  \************************************/
+/* 178 */
+/*!***************************************************!*\
+  !*** ./src/tabli-core/src/js/components/Modal.js ***!
+  \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42203,11 +42922,11 @@
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 178);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 180);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -42292,10 +43011,10 @@
 	});
 
 /***/ },
-/* 180 */
-/*!*******************************************!*\
-  !*** ./src/js/components/HeaderButton.js ***!
-  \*******************************************/
+/* 179 */
+/*!**********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/HeaderButton.js ***!
+  \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42308,7 +43027,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 181);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 180);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
@@ -42316,11 +43035,11 @@
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 178);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 184);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
@@ -42362,16 +43081,16 @@
 	exports.default = HeaderButton;
 
 /***/ },
-/* 181 */
+/* 180 */
 /*!***************************************************!*\
   !*** ./~/react-addons-pure-render-mixin/index.js ***!
   \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 182);
+	module.exports = __webpack_require__(/*! react/lib/ReactComponentWithPureRenderMixin */ 181);
 
 /***/ },
-/* 182 */
+/* 181 */
 /*!**********************************************************!*\
   !*** ./~/react/lib/ReactComponentWithPureRenderMixin.js ***!
   \**********************************************************/
@@ -42390,7 +43109,7 @@
 	
 	'use strict';
 	
-	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 183);
+	var shallowCompare = __webpack_require__(/*! ./shallowCompare */ 182);
 	
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -42425,7 +43144,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 183 */
+/* 182 */
 /*!***************************************!*\
   !*** ./~/react/lib/shallowCompare.js ***!
   \***************************************/
@@ -42457,10 +43176,10 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 184 */
-/*!****************************************!*\
-  !*** ./src/js/components/Hoverable.js ***!
-  \****************************************/
+/* 183 */
+/*!*******************************************************!*\
+  !*** ./src/tabli-core/src/js/components/Hoverable.js ***!
+  \*******************************************************/
 /***/ function(module, exports) {
 
 	"use strict";
@@ -42489,10 +43208,10 @@
 	exports.default = Hoverable;
 
 /***/ },
-/* 185 */
-/*!****************************************!*\
-  !*** ./src/js/components/SaveModal.js ***!
-  \****************************************/
+/* 184 */
+/*!*******************************************************!*\
+  !*** ./src/tabli-core/src/js/components/SaveModal.js ***!
+  \*******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42513,7 +43232,7 @@
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _Modal = __webpack_require__(/*! ./Modal */ 179);
+	var _Modal = __webpack_require__(/*! ./Modal */ 178);
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
@@ -42592,11 +43311,213 @@
 	exports.default = SaveModal;
 
 /***/ },
-/* 186 */,
-/* 187 */
-/*!****************************************!*\
-  !*** ./src/js/components/SearchBar.js ***!
-  \****************************************/
+/* 185 */
+/*!***************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/SelectableTabPage.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 166);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 186);
+	
+	var _SearchBar2 = _interopRequireDefault(_SearchBar);
+	
+	var _TabTileList = __webpack_require__(/*! ./TabTileList */ 187);
+	
+	var _TabTileList2 = _interopRequireDefault(_TabTileList);
+	
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
+	
+	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function matchingTabCount(searchStr, filteredTabWindow) {
+	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+	  return ret;
+	}
+	
+	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
+	  if (searchStr.length === 0) {
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabItem = tabWindow.tabItems.get(tabIndex);
+	    return tabItem;
+	  }
+	  var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
+	  return filteredItem.tabItem;
+	}
+	
+	/**
+	 * An element that manages the selection.
+	 *
+	 * We want this as a distinct element from its parent TabMan, because it does local state management
+	 * and validation that should happen with respect to the (already calculated) props containing
+	 * filtered windows that we receive from above
+	 */
+	var SelectableTabPage = React.createClass({
+	  displayName: 'SelectableTabPage',
+	  getInitialState: function getInitialState() {
+	    return {
+	      selectedWindowIndex: 0,
+	      selectedTabIndex: 0
+	    };
+	  },
+	  handlePrevSelection: function handlePrevSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	
+	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
+	    } else {
+	      // Already on first tab, try to back up to previous window:
+	      if (this.state.selectedWindowIndex > 0) {
+	        var prevWindowIndex = this.state.selectedWindowIndex - 1;
+	        var prevWindow = this.props.filteredWindows[prevWindowIndex];
+	        var prevTabCount = this.props.searchStr.length > 0 ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
+	
+	        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
+	      }
+	    }
+	  },
+	  handleNextSelection: function handleNextSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    // We'd prefer to use expanded state of window rather then open/closed state,
+	    // but that's hidden in the component...
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
+	    } else {
+	      // Already on last tab, try to advance to next window:
+	      if (this.state.selectedWindowIndex + 1 < this.props.filteredWindows.length) {
+	        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
+	      }
+	    }
+	  },
+	  handleSelectionEnter: function handleSelectionEnter() {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	
+	    // TODO: deal with this.state.selectedTabIndex==-1
+	
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
+	    console.log('opening: ', selectedTabItem.toJS());
+	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    var selectedWindowIndex = this.state.selectedWindowIndex;
+	    var nextFilteredWindows = nextProps.filteredWindows;
+	
+	    if (selectedWindowIndex >= nextFilteredWindows.length) {
+	      if (nextFilteredWindows.length === 0) {
+	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
+	        console.log('resetting indices');
+	      } else {
+	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
+	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
+	      }
+	    } else {
+	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
+	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
+	      this.setState({ selectedTabIndex: nextTabIndex });
+	    }
+	  },
+	  render: function render() {
+	    var winStore = this.props.winStore;
+	    var openTabCount = winStore.countOpenTabs();
+	    var openWinCount = winStore.countOpenWindows();
+	    var savedCount = winStore.countSavedWindows();
+	
+	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
+	    var summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'div',
+	        { className: 'container' },
+	        React.createElement(
+	          'div',
+	          { className: 'row' },
+	          React.createElement('div', { className: 'com-sm-1' }),
+	          React.createElement(
+	            'div',
+	            { className: 'col-sm-10' },
+	            React.createElement('img', { src: '../images/popout-icon-1.png' }),
+	            React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
+	              onSearchUp: this.handlePrevSelection,
+	              onSearchDown: this.handleNextSelection,
+	              onSearchEnter: this.handleSelectionEnter
+	            })
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'container-fluid' },
+	          React.createElement(_TabTileList2.default, { winStore: this.props.winStore,
+	            storeUpdateHandler: this.props.storeUpdateHandler,
+	            filteredWindows: this.props.filteredWindows,
+	            appComponent: this.props.appComponent,
+	            searchStr: this.props.searchStr,
+	            searchRE: this.props.searchRE,
+	            selectedWindowIndex: this.state.selectedWindowIndex,
+	            selectedTabIndex: this.state.selectedTabIndex
+	          })
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.tabPageFooter },
+	        React.createElement(
+	          'span',
+	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
+	          summarySentence
+	        )
+	      )
+	    );
+	  }
+	});
+	
+	exports.default = SelectableTabPage;
+
+/***/ },
+/* 186 */
+/*!*******************************************************!*\
+  !*** ./src/tabli-core/src/js/components/SearchBar.js ***!
+  \*******************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42617,13 +43538,21 @@
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 7);
+	var _actions = __webpack_require__(/*! ../actions */ 166);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _lodash = __webpack_require__(/*! lodash */ 3);
+	var _lodash = __webpack_require__(/*! lodash */ 4);
 	
 	var _ = _interopRequireWildcard(_lodash);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
+	
+	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -42682,13 +43611,25 @@
 	    e.preventDefault();
 	    actions.showHelp();
 	  },
+	  handlePopoutClick: function handlePopoutClick(e) {
+	    console.log('Popout button clicked!');
+	    e.preventDefault();
+	  },
 	  render: function render() {
+	    var popoutButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.popoutButton),
+	      visible: true,
+	      hoverStyle: _styles2.default.popoutButtonHover,
+	      title: 'Tabli Popout Window',
+	      onClick: this.handlePopoutClick
+	    });
+	
 	    var helpButton = React.createElement('span', { className: 'fa fa-question-circle fa-lg', style: _styles2.default.helpButton,
 	      title: 'Open Tabli Usage Manual', onClick: this.handleHelpClick
 	    });
 	    return React.createElement(
 	      'div',
 	      { style: _styles2.default.headerContainer },
+	      popoutButton,
 	      React.createElement('input', { style: _styles2.default.searchInput, type: 'text', ref: 'searchInput', id: 'searchBox', placeholder: 'Search...',
 	        onChange: this.handleChange, onKeyDown: this.handleKeyDown,
 	        title: 'Search Page Titles and URLs'
@@ -42701,24 +43642,10 @@
 	exports.default = SearchBar;
 
 /***/ },
-/* 188 */,
-/* 189 */,
-/* 190 */
-/*!******************************!*\
-  !*** ./~/react-dom/index.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 11);
-
-
-/***/ },
-/* 191 */
-/*!*******************************************!*\
-  !*** ./src/js/components/WindowHeader.js ***!
-  \*******************************************/
+/* 187 */
+/*!*********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/TabTileList.js ***!
+  \*********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42735,27 +43662,313 @@
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 178);
+	var _FilteredTabTile = __webpack_require__(/*! ./FilteredTabTile */ 188);
+	
+	var _FilteredTabTile2 = _interopRequireDefault(_FilteredTabTile);
+	
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
+	
+	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var TabTileList = React.createClass({
+	  displayName: 'TabTileList',
+	  render: function render() {
+	    var focusedWindowElem = [];
+	    var openWindows = [];
+	    var savedWindows = [];
+	
+	    var filteredWindows = this.props.filteredWindows;
+	    for (var i = 0; i < filteredWindows.length; i++) {
+	      var filteredTabWindow = filteredWindows[i];
+	      var tabWindow = filteredTabWindow.tabWindow;
+	      var id = 'tabWindow' + i;
+	      var isOpen = tabWindow.open;
+	      var isFocused = tabWindow.focused;
+	      var isSelected = i === this.props.selectedWindowIndex;
+	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
+	
+	      var initialExpandedState = isOpen ? null : true;
+	      var windowElem = React.createElement(_FilteredTabTile2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        filteredTabWindow: filteredTabWindow, key: id,
+	        searchStr: this.props.searchStr,
+	        searchRE: this.props.searchRE,
+	        isSelected: isSelected,
+	        selectedTabIndex: selectedTabIndex,
+	        appComponent: this.props.appComponent,
+	        initialExpandedState: true
+	      });
+	      if (isFocused) {
+	        focusedWindowElem = windowElem;
+	      } else if (isOpen) {
+	        openWindows.push(windowElem);
+	      } else {
+	        savedWindows.push(windowElem);
+	      }
+	    }
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Open Windows' },
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.tabTileContainer },
+	          focusedWindowElem,
+	          openWindows
+	        )
+	      ),
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Closed, Saved Windows' },
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.tabTileContainer },
+	          savedWindows
+	        )
+	      )
+	    );
+	  }
+	});
+	
+	exports.default = TabTileList;
+
+/***/ },
+/* 188 */
+/*!*************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/FilteredTabTile.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 189);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 6);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 7);
+	var _actions = __webpack_require__(/*! ../actions */ 166);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 181);
-	
-	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
-	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 184);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 180);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
+	
+	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
+	
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
+	
+	var _TabItem2 = _interopRequireDefault(_TabItem);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var FilteredTabTile = React.createClass({
+	  displayName: 'FilteredTabTile',
+	
+	  mixins: [_Hoverable2.default],
+	
+	  getInitialState: function getInitialState() {
+	    // Note:  We initialize this with null rather than false so that it will follow
+	    // open / closed state of window
+	    return { expanded: this.props.initialExpandedState };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    if (nextProps.isSelected && !this.props.isSelected) {
+	      // scroll div for this window into view:
+	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+	    }
+	  },
+	  handleOpen: function handleOpen() {
+	    console.log('handleOpen', this, this.props);
+	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleClose: function handleClose(event) {
+	    // eslint-disable-line no-unused-vars
+	    // console.log("handleClose");
+	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleRevert: function handleRevert(event) {
+	    // eslint-disable-line no-unused-vars
+	    var appComponent = this.props.appComponent;
+	    appComponent.openRevertModal(this.props.filteredTabWindow);
+	  },
+	
+	
+	  /* expanded state follows window open/closed state unless it is
+	   * explicitly set interactively by the user
+	   */
+	  getExpandedState: function getExpandedState() {
+	    if (this.state.expanded === null) {
+	      return this.props.filteredTabWindow.tabWindow.open;
+	    }
+	    return this.state.expanded;
+	  },
+	  renderTabItems: function renderTabItems(tabWindow, tabs) {
+	    /*
+	     * We tried explicitly checking for expanded state and
+	     * returning null if not expanded, but (somewhat surprisingly) it
+	     * was no faster, even with dozens of hidden tabs
+	     */
+	    var items = [];
+	    for (var i = 0; i < tabs.count(); i++) {
+	      var id = 'tabItem-' + i;
+	      var isSelected = i === this.props.selectedTabIndex;
+	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        tabWindow: tabWindow,
+	        tab: tabs.get(i),
+	        key: id,
+	        tabIndex: i,
+	        isSelected: isSelected,
+	        appComponent: this.props.appComponent
+	      });
+	      items.push(tabItem);
+	    }
+	
+	    var expanded = this.getExpandedState();
+	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
+	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle, _styles2.default.tileTabContainer);
+	    return React.createElement(
+	      'div',
+	      { style: tabListStyle },
+	      items
+	    );
+	  },
+	  handleExpand: function handleExpand(expand) {
+	    this.setState({ expanded: expand });
+	  },
+	  render: function render() {
+	    var filteredTabWindow = this.props.filteredTabWindow;
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabs;
+	    if (this.props.searchStr.length === 0) {
+	      tabs = tabWindow.tabItems;
+	    } else {
+	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
+	        return fti.tabItem;
+	      });
+	    }
+	
+	    /*
+	     * optimization:  Let's only render tabItems if expanded
+	     */
+	    var expanded = this.getExpandedState();
+	    var tabItems = null;
+	    if (expanded) {
+	      tabItems = this.renderTabItems(tabWindow, tabs);
+	    } else {
+	      // render empty list of tab items to get -ve margin rollup layout right...
+	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
+	    }
+	
+	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
+	      storeUpdateHandler: this.props.storeUpdateHandler,
+	      tabWindow: tabWindow,
+	      expanded: expanded,
+	      onExpand: this.handleExpand,
+	      onOpen: this.handleOpen,
+	      onRevert: this.handleRevert,
+	      onClose: this.handleClose,
+	      appComponent: this.props.appComponent
+	    });
+	
+	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
+	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle, _styles2.default.tabWindowTile);
+	
+	    return React.createElement(
+	      'div',
+	      { ref: 'windowDiv', style: windowStyles, onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut },
+	      windowHeader,
+	      tabItems
+	    );
+	  }
+	});
+	
+	exports.default = FilteredTabTile;
+
+/***/ },
+/* 189 */
+/*!******************************!*\
+  !*** ./~/react-dom/index.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 11);
+
+
+/***/ },
+/* 190 */
+/*!**********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/WindowHeader.js ***!
+  \**********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 166);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 180);
+	
+	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
+	
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
+	
+	var _Hoverable2 = _interopRequireDefault(_Hoverable);
+	
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 192);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 191);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
 	
@@ -42853,10 +44066,10 @@
 	exports.default = WindowHeader;
 
 /***/ },
-/* 192 */
-/*!*********************************************!*\
-  !*** ./src/js/components/ExpanderButton.js ***!
-  \*********************************************/
+/* 191 */
+/*!************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/ExpanderButton.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42869,7 +44082,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 181);
+	var _reactAddonsPureRenderMixin = __webpack_require__(/*! react-addons-pure-render-mixin */ 180);
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
@@ -42877,7 +44090,7 @@
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 178);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
@@ -42906,10 +44119,10 @@
 	exports.default = ExpanderButton;
 
 /***/ },
-/* 193 */
-/*!**************************************!*\
-  !*** ./src/js/components/TabItem.js ***!
-  \**************************************/
+/* 192 */
+/*!*****************************************************!*\
+  !*** ./src/tabli-core/src/js/components/TabItem.js ***!
+  \*****************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42926,19 +44139,19 @@
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _util = __webpack_require__(/*! ./util */ 178);
+	var _util = __webpack_require__(/*! ./util */ 177);
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 7);
+	var _actions = __webpack_require__(/*! ../actions */ 166);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 184);
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 180);
+	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 179);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
@@ -43069,10 +44282,10 @@
 	exports.default = TabItem;
 
 /***/ },
-/* 194 */
-/*!************************************************!*\
-  !*** ./src/js/components/WindowListSection.js ***!
-  \************************************************/
+/* 193 */
+/*!***************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/WindowListSection.js ***!
+  \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43123,6 +44336,766 @@
 	});
 	
 	exports.default = WindowListSection;
+
+/***/ },
+/* 194 */
+/*!***************************************************!*\
+  !*** ./src/tabli-core/src/js/components/Popup.js ***!
+  \***************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 166);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _searchOps = __webpack_require__(/*! ../searchOps */ 168);
+	
+	var searchOps = _interopRequireWildcard(_searchOps);
+	
+	var _oneref = __webpack_require__(/*! oneref */ 169);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	
+	var _RevertModal2 = _interopRequireDefault(_RevertModal);
+	
+	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 184);
+	
+	var _SaveModal2 = _interopRequireDefault(_SaveModal);
+	
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 195);
+	
+	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/**
+	 * send message to BGhelper
+	 */
+	function sendHelperMessage(msg) {
+	  var port = chrome.runtime.connect({ name: 'popup' });
+	  port.postMessage(msg);
+	  port.onMessage.addListener(function (response) {
+	    console.log('Got response message: ', response);
+	  });
+	}
+	
+	var Popup = React.createClass({
+	  displayName: 'Popup',
+	  storeAsState: function storeAsState(winStore) {
+	    var tabWindows = winStore.getAll();
+	
+	    var sortedWindows = tabWindows.sort(Util.windowCmp);
+	
+	    return {
+	      winStore: winStore,
+	      sortedWindows: sortedWindows
+	    };
+	  },
+	  getInitialState: function getInitialState() {
+	    var st = this.storeAsState(this.props.initialWinStore);
+	
+	    st.saveModalIsOpen = false;
+	    st.revertModalIsOpen = false;
+	    st.revertTabWindow = null;
+	    st.searchStr = '';
+	    st.searchRE = null;
+	    return st;
+	  },
+	  handleSearchInput: function handleSearchInput(rawSearchStr) {
+	    var searchStr = rawSearchStr.trim();
+	
+	    var searchRE = null;
+	    if (searchStr.length > 0) {
+	      searchRE = new RegExp(searchStr, 'i');
+	    }
+	
+	    console.log("search input: '" + searchStr + "'");
+	    this.setState({ searchStr: searchStr, searchRE: searchRE });
+	  },
+	  openSaveModal: function openSaveModal(tabWindow) {
+	    var initialTitle = tabWindow.title;
+	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
+	  },
+	  closeSaveModal: function closeSaveModal() {
+	    this.setState({ saveModalIsOpen: false });
+	  },
+	  openRevertModal: function openRevertModal(filteredTabWindow) {
+	    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
+	  },
+	  closeRevertModal: function closeRevertModal() {
+	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
+	  },
+	
+	
+	  /* handler for save modal */
+	  doSave: function doSave(titleStr) {
+	    var storeRef = this.props.storeRef;
+	    var tabliFolderId = storeRef.getValue().folderId;
+	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
+	    this.closeSaveModal();
+	  },
+	  doRevert: function doRevert(tabWindow) {
+	    // eslint-disable-line no-unused-vars
+	    var updateHandler = (0, _oneref.refUpdater)(this.props.storeRef);
+	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
+	    this.closeRevertModal();
+	  },
+	
+	
+	  /* render save modal (or not) based on this.state.saveModalIsOpen */
+	  renderSaveModal: function renderSaveModal() {
+	    var modal = null;
+	    if (this.state.saveModalIsOpen) {
+	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
+	        tabWindow: this.state.saveTabWindow,
+	        onClose: this.closeSaveModal,
+	        onSubmit: this.doSave,
+	        appComponent: this
+	      });
+	    }
+	
+	    return modal;
+	  },
+	
+	
+	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
+	  renderRevertModal: function renderRevertModal() {
+	    var modal = null;
+	    if (this.state.revertModalIsOpen) {
+	      modal = React.createElement(_RevertModal2.default, {
+	        tabWindow: this.state.revertTabWindow,
+	        onClose: this.closeRevertModal,
+	        onSubmit: this.doRevert,
+	        appComponent: this
+	      });
+	    }
+	
+	    return modal;
+	  },
+	  render: function render() {
+	    var ret;
+	    try {
+	      var saveModal = this.renderSaveModal();
+	      var revertModal = this.renderRevertModal();
+	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
+	      ret = React.createElement(
+	        'div',
+	        { style: _styles2.default.popupContainer },
+	        React.createElement(_SelectablePopup2.default, {
+	          onSearchInput: this.handleSearchInput,
+	          winStore: this.state.winStore,
+	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
+	          filteredWindows: filteredWindows,
+	          appComponent: this,
+	          searchStr: this.state.searchStr,
+	          searchRE: this.state.searchRE
+	        }),
+	        saveModal,
+	        revertModal
+	      );
+	    } catch (e) {
+	      console.error('App Component: caught exception during render: ');
+	      console.error(e.stack);
+	      throw e;
+	    }
+	
+	    return ret;
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var _this = this;
+	
+	    if (this.props.noListener) {
+	      return;
+	    }
+	
+	    var storeRef = this.props.storeRef;
+	    /*
+	     * This listener is essential for triggering a (recursive) re-render
+	     * in response to a state change.
+	     */
+	    var listenerId = storeRef.addViewListener(function () {
+	      console.log('TabliPopup: viewListener: updating store from storeRef');
+	      _this.setState(_this.storeAsState(storeRef.getValue()));
+	    });
+	
+	    // console.log("componentWillMount: added view listener: ", listenerId);
+	    sendHelperMessage({ listenerId: listenerId });
+	  }
+	});
+	
+	exports.default = Popup;
+
+/***/ },
+/* 195 */
+/*!*************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/SelectablePopup.js ***!
+  \*************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 166);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 186);
+	
+	var _SearchBar2 = _interopRequireDefault(_SearchBar);
+	
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 196);
+	
+	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function matchingTabCount(searchStr, filteredTabWindow) {
+	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+	  return ret;
+	}
+	
+	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
+	  if (searchStr.length === 0) {
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabItem = tabWindow.tabItems.get(tabIndex);
+	    return tabItem;
+	  }
+	  var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
+	  return filteredItem.tabItem;
+	}
+	
+	/**
+	 * An element that manages the selection.
+	 *
+	 * We want this as a distinct element from its parent TabMan, because it does local state management
+	 * and validation that should happen with respect to the (already calculated) props containing
+	 * filtered windows that we receive from above
+	 */
+	var SelectablePopup = React.createClass({
+	  displayName: 'SelectablePopup',
+	  getInitialState: function getInitialState() {
+	    return {
+	      selectedWindowIndex: 0,
+	      selectedTabIndex: 0
+	    };
+	  },
+	  handlePrevSelection: function handlePrevSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	
+	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
+	    } else {
+	      // Already on first tab, try to back up to previous window:
+	      if (this.state.selectedWindowIndex > 0) {
+	        var prevWindowIndex = this.state.selectedWindowIndex - 1;
+	        var prevWindow = this.props.filteredWindows[prevWindowIndex];
+	        var prevTabCount = this.props.searchStr.length > 0 ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
+	
+	        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
+	      }
+	    }
+	  },
+	  handleNextSelection: function handleNextSelection(byPage) {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	
+	    // We'd prefer to use expanded state of window rather then open/closed state,
+	    // but that's hidden in the component...
+	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount && !byPage) {
+	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
+	    } else {
+	      // Already on last tab, try to advance to next window:
+	      if (this.state.selectedWindowIndex + 1 < this.props.filteredWindows.length) {
+	        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
+	      }
+	    }
+	  },
+	  handleSelectionEnter: function handleSelectionEnter() {
+	    if (this.props.filteredWindows.length === 0) {
+	      return;
+	    }
+	
+	    // TODO: deal with this.state.selectedTabIndex==-1
+	
+	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
+	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
+	    console.log('opening: ', selectedTabItem.toJS());
+	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    var selectedWindowIndex = this.state.selectedWindowIndex;
+	    var nextFilteredWindows = nextProps.filteredWindows;
+	
+	    if (selectedWindowIndex >= nextFilteredWindows.length) {
+	      if (nextFilteredWindows.length === 0) {
+	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
+	        console.log('resetting indices');
+	      } else {
+	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
+	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
+	      }
+	    } else {
+	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
+	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
+	      this.setState({ selectedTabIndex: nextTabIndex });
+	    }
+	  },
+	  render: function render() {
+	    var winStore = this.props.winStore;
+	    var openTabCount = winStore.countOpenTabs();
+	    var openWinCount = winStore.countOpenWindows();
+	    var savedCount = winStore.countSavedWindows();
+	
+	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
+	    var summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupHeader },
+	        React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
+	          onSearchUp: this.handlePrevSelection,
+	          onSearchDown: this.handleNextSelection,
+	          onSearchEnter: this.handleSelectionEnter
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupBody },
+	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          filteredWindows: this.props.filteredWindows,
+	          appComponent: this.props.appComponent,
+	          searchStr: this.props.searchStr,
+	          searchRE: this.props.searchRE,
+	          selectedWindowIndex: this.state.selectedWindowIndex,
+	          selectedTabIndex: this.state.selectedTabIndex
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupFooter },
+	        React.createElement(
+	          'span',
+	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
+	          summarySentence
+	        )
+	      )
+	    );
+	  }
+	});
+	
+	exports.default = SelectablePopup;
+
+/***/ },
+/* 196 */
+/*!***********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/TabWindowList.js ***!
+  \***********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 197);
+	
+	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
+	
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
+	
+	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var TabWindowList = React.createClass({
+	  displayName: 'TabWindowList',
+	  render: function render() {
+	    var focusedWindowElem = [];
+	    var openWindows = [];
+	    var savedWindows = [];
+	
+	    var filteredWindows = this.props.filteredWindows;
+	    for (var i = 0; i < filteredWindows.length; i++) {
+	      var filteredTabWindow = filteredWindows[i];
+	      var tabWindow = filteredTabWindow.tabWindow;
+	      var id = 'tabWindow' + i;
+	      var isOpen = tabWindow.open;
+	      var isFocused = tabWindow.focused;
+	      var isSelected = i === this.props.selectedWindowIndex;
+	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
+	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        filteredTabWindow: filteredTabWindow, key: id,
+	        searchStr: this.props.searchStr,
+	        searchRE: this.props.searchRE,
+	        isSelected: isSelected,
+	        selectedTabIndex: selectedTabIndex,
+	        appComponent: this.props.appComponent
+	      });
+	      if (isFocused) {
+	        focusedWindowElem = windowElem;
+	      } else if (isOpen) {
+	        openWindows.push(windowElem);
+	      } else {
+	        savedWindows.push(windowElem);
+	      }
+	    }
+	
+	    var savedSection = null;
+	    if (savedWindows.length > 0) {
+	      savedSection = React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Saved Closed Windows' },
+	        savedWindows
+	      );
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Current Window' },
+	        focusedWindowElem
+	      ),
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Other Open Windows' },
+	        openWindows
+	      ),
+	      savedSection
+	    );
+	  }
+	});
+	
+	exports.default = TabWindowList;
+
+/***/ },
+/* 197 */
+/*!***************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/FilteredTabWindow.js ***!
+  \***************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 189);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 6);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 174);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _actions = __webpack_require__(/*! ../actions */ 166);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
+	
+	var _Hoverable2 = _interopRequireDefault(_Hoverable);
+	
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
+	
+	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
+	
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
+	
+	var _TabItem2 = _interopRequireDefault(_TabItem);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var FilteredTabWindow = React.createClass({
+	  displayName: 'FilteredTabWindow',
+	
+	  mixins: [_Hoverable2.default],
+	
+	  getInitialState: function getInitialState() {
+	    // Note:  We initialize this with null rather than false so that it will follow
+	    // open / closed state of window
+	    return { expanded: null };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    if (nextProps.isSelected && !this.props.isSelected) {
+	      // scroll div for this window into view:
+	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+	    }
+	  },
+	  handleOpen: function handleOpen() {
+	    console.log('handleOpen', this, this.props);
+	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleClose: function handleClose(event) {
+	    // eslint-disable-line no-unused-vars
+	    // console.log("handleClose");
+	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	  },
+	  handleRevert: function handleRevert(event) {
+	    // eslint-disable-line no-unused-vars
+	    var appComponent = this.props.appComponent;
+	    appComponent.openRevertModal(this.props.filteredTabWindow);
+	  },
+	
+	
+	  /* expanded state follows window open/closed state unless it is
+	   * explicitly set interactively by the user
+	   */
+	  getExpandedState: function getExpandedState() {
+	    if (this.state.expanded === null) {
+	      return this.props.filteredTabWindow.tabWindow.open;
+	    }
+	    return this.state.expanded;
+	  },
+	  renderTabItems: function renderTabItems(tabWindow, tabs) {
+	    /*
+	     * We tried explicitly checking for expanded state and
+	     * returning null if not expanded, but (somewhat surprisingly) it
+	     * was no faster, even with dozens of hidden tabs
+	     */
+	    var items = [];
+	    for (var i = 0; i < tabs.count(); i++) {
+	      var id = 'tabItem-' + i;
+	      var isSelected = i === this.props.selectedTabIndex;
+	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
+	        storeUpdateHandler: this.props.storeUpdateHandler,
+	        tabWindow: tabWindow,
+	        tab: tabs.get(i),
+	        key: id,
+	        tabIndex: i,
+	        isSelected: isSelected,
+	        appComponent: this.props.appComponent
+	      });
+	      items.push(tabItem);
+	    }
+	
+	    var expanded = this.getExpandedState();
+	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
+	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle);
+	    return React.createElement(
+	      'div',
+	      { style: tabListStyle },
+	      items
+	    );
+	  },
+	  handleExpand: function handleExpand(expand) {
+	    this.setState({ expanded: expand });
+	  },
+	  render: function render() {
+	    var filteredTabWindow = this.props.filteredTabWindow;
+	    var tabWindow = filteredTabWindow.tabWindow;
+	    var tabs;
+	    if (this.props.searchStr.length === 0) {
+	      tabs = tabWindow.tabItems;
+	    } else {
+	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
+	        return fti.tabItem;
+	      });
+	    }
+	
+	    /*
+	     * optimization:  Let's only render tabItems if expanded
+	     */
+	    var expanded = this.getExpandedState();
+	    var tabItems = null;
+	    if (expanded) {
+	      tabItems = this.renderTabItems(tabWindow, tabs);
+	    } else {
+	      // render empty list of tab items to get -ve margin rollup layout right...
+	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
+	    }
+	
+	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
+	      storeUpdateHandler: this.props.storeUpdateHandler,
+	      tabWindow: tabWindow,
+	      expanded: expanded,
+	      onExpand: this.handleExpand,
+	      onOpen: this.handleOpen,
+	      onRevert: this.handleRevert,
+	      onClose: this.handleClose,
+	      appComponent: this.props.appComponent
+	    });
+	
+	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
+	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle);
+	
+	    return React.createElement(
+	      'div',
+	      { ref: 'windowDiv', style: windowStyles, onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut },
+	      windowHeader,
+	      tabItems
+	    );
+	  }
+	});
+	
+	exports.default = FilteredTabWindow;
+
+/***/ },
+/* 198 */
+/*!******************************************!*\
+  !*** ./src/tabli-core/src/js/viewRef.js ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _oneref = __webpack_require__(/*! oneref */ 169);
+	
+	var OneRef = _interopRequireWildcard(_oneref);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	/**
+	 * A wrapper around OneRef.Ref that tracks listeners by numeric id
+	 * so that we can share a ref between background page and popup
+	 * in Chrome extension and clean up when popup goes away
+	 *
+	 *
+	 */
+	
+	var ViewRef = function (_OneRef$Ref) {
+	  _inherits(ViewRef, _OneRef$Ref);
+	
+	  /**
+	   * construct a new ViewRef with initial value v
+	   */
+	
+	  function ViewRef(v) {
+	    _classCallCheck(this, ViewRef);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ViewRef).call(this, v));
+	
+	    _this.viewListeners = [];
+	    return _this;
+	  }
+	
+	  /*
+	   * Add a view listener and return its listener id
+	   *
+	   * We have our own interface here because we don't have a reliable destructor / close event
+	   * on the chrome extension popup window, and our GC technique requires us to have
+	   * numeric id's (rather than object references) that we can encode in a Chrome JSON
+	   * message
+	   */
+	
+	
+	  _createClass(ViewRef, [{
+	    key: 'addViewListener',
+	    value: function addViewListener(listener) {
+	      // check to ensure this listener not yet registered:
+	      var idx = this.viewListeners.indexOf(listener);
+	      if (idx === -1) {
+	        idx = this.viewListeners.length;
+	        this.viewListeners.push(listener);
+	        this.on('change', listener);
+	      }
+	
+	      return idx;
+	    }
+	  }, {
+	    key: 'removeViewListener',
+	    value: function removeViewListener(id) {
+	      // console.log("removeViewListener: removing listener id ", id);
+	      var listener = this.viewListeners[id];
+	      if (listener) {
+	        this.removeListener('change', listener);
+	      } else {
+	        console.warn('removeViewListener: No listener found for id ', id);
+	      }
+	
+	      delete this.viewListeners[id];
+	    }
+	  }]);
+	
+	  return ViewRef;
+	}(OneRef.Ref);
+	
+	exports.default = ViewRef;
 
 /***/ }
 /******/ ]);
