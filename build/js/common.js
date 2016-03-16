@@ -382,6 +382,7 @@
 	  open: false,
 	  openWindowId: -1,
 	  focused: false,
+	  windowType: '',
 	
 	  tabItems: Immutable.Seq() }));
 	
@@ -396,7 +397,7 @@
 	  });
 	  var resetSavedItems = savedItems.map(resetSavedItem);
 	
-	  return tabWindow.remove('open').remove('openWindowId').remove('focused').set('tabItems', resetSavedItems);
+	  return tabWindow.remove('open').remove('openWindowId').remove('focused').remove('windowType').set('tabItems', resetSavedItems);
 	}
 	
 	/*
@@ -443,6 +444,7 @@
 	    open: true,
 	    openWindowId: chromeWindow.id,
 	    focused: chromeWindow.focused,
+	    windowType: chromeWindow.type,
 	    tabItems: Immutable.Seq(tabItems)
 	  });
 	
@@ -546,7 +548,7 @@
 	function updateWindow(tabWindow, chromeWindow) {
 	  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
 	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
-	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('open', true).set('openWindowId', chromeWindow.id);
+	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('windowType', chromeWindow.type).set('open', true).set('openWindowId', chromeWindow.id);
 	  return updWindow;
 	}
 	
@@ -20833,6 +20835,14 @@
 	        return !w.open;
 	      }).toArray();
 	      return openWindows.concat(closedSavedWindows);
+	    }
+	  }, {
+	    key: 'getTabWindowsByType',
+	    value: function getTabWindowsByType(windowType) {
+	      var openWindows = this.getOpen();
+	      return _.filter(openWindows, function (w) {
+	        return w.windowType === windowType;
+	      });
 	    }
 	
 	    // returns a tabWindow or undefined
@@ -41162,6 +41172,7 @@
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
 	exports.showHelp = showHelp;
+	exports.showPopout = showPopout;
 	
 	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
 	
@@ -41453,6 +41464,29 @@
 	  console.log('showHelp: opening manual');
 	  chrome.tabs.create({ url: TABLI_HELP_URL });
 	}
+	
+	function showPopout(winStore, cb) {
+	  console.log('showPopout: displaying popout....');
+	
+	  var popupTabWindows = winStore.getTabWindowsByType("popup");
+	  if (popupTabWindows.length > 0) {
+	    var ptw = popupTabWindows[0];
+	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
+	  } else {
+	    chrome.windows.create({ url: "popup.html",
+	      type: "detached_panel",
+	      left: 0, top: 0,
+	      width: 350,
+	      height: 625
+	    });
+	  }
+	
+	  var tabWindows = winStore.getOpen();
+	  var winTypes = tabWindows.map(function (w) {
+	    return w.windowType;
+	  });
+	  console.log("window types: ", winTypes);
+	}
 
 /***/ },
 /* 167 */
@@ -41655,6 +41689,11 @@
 	      return fw !== null;
 	    });
 	  }
+	
+	  // And restrict to windows with "normal" windowType:
+	  res = _.filter(res, function (fw) {
+	    return !fw.tabWindow.open || fw.tabWindow.windowType === "normal";
+	  });
 	
 	  return res;
 	}
@@ -42716,6 +42755,7 @@
 	    left: 0,
 	    width: 352,
 	    maxWidth: 352,
+	    height: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
 	    maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
 	    /* adding this border is useful for debugging styling issues:
 	    /* border: '1px solid #bababa' */
@@ -43613,7 +43653,7 @@
 	  },
 	  handlePopoutClick: function handlePopoutClick(e) {
 	    console.log('Popout button clicked!');
-	    e.preventDefault();
+	    actions.showPopout(this.props.winStore, this.props.storeRefUpdater);
 	  },
 	  render: function render() {
 	    var popoutButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.popoutButton),
@@ -44700,7 +44740,9 @@
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.popupHeader },
-	        React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
+	        React.createElement(_SearchBar2.default, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          onSearchInput: this.props.onSearchInput,
 	          onSearchUp: this.handlePrevSelection,
 	          onSearchDown: this.handleNextSelection,
 	          onSearchEnter: this.handleSelectionEnter

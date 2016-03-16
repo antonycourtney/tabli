@@ -172,6 +172,11 @@ export default class TabManagerState extends Immutable.Record({
     return openWindows.concat(closedSavedWindows);
   }
 
+  getTabWindowsByType(windowType) {
+    const openWindows = this.getOpen();
+    return _.filter(openWindows, w => w.windowType === windowType);
+  }
+
   // returns a tabWindow or undefined
   getTabWindowByChromeId(windowId) {
     return this.windowIdMap.get(windowId);

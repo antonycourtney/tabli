@@ -121,7 +121,9 @@ const SelectablePopup = React.createClass({
     return (
       <div>
         <div style={Styles.popupHeader}>
-          <SearchBar onSearchInput={this.props.onSearchInput}
+          <SearchBar winStore={this.props.winStore}
+                     storeUpdateHandler={this.props.storeUpdateHandler}
+                     onSearchInput={this.props.onSearchInput}
                      onSearchUp={this.handlePrevSelection}
                      onSearchDown={this.handleNextSelection}
                      onSearchEnter={this.handleSelectionEnter}

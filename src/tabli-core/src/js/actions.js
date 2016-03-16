@@ -250,3 +250,25 @@ export function showHelp() {
   console.log('showHelp: opening manual');
   chrome.tabs.create({ url: TABLI_HELP_URL });
 }
+
+export function showPopout(winStore,cb) {
+  console.log('showPopout: displaying popout....');
+
+  const popupTabWindows = winStore.getTabWindowsByType("popup");
+  if (popupTabWindows.length > 0) {
+    const ptw = popupTabWindows[0];
+    tabliBrowser.setFocusedWindow(ptw.openWindowId);
+  } else {
+    chrome.windows.create({ url: "popup.html", 
+      type: "detached_panel",
+      left: 0, top: 0, 
+      width: 350,
+      height: 625 
+    });    
+  }
+
+  const tabWindows = winStore.getOpen();
+  const winTypes = tabWindows.map(w => w.windowType);
+  console.log("window types: ", winTypes);
+}
+

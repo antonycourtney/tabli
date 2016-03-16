@@ -68,5 +68,8 @@ export function filterTabWindows(tabWindows, searchExp) {
     res = _.filter(mappedWindows, (fw) => fw !== null);
   }
 
+  // And restrict to windows with "normal" windowType:
+  res = _.filter(res, (fw) => !fw.tabWindow.open || fw.tabWindow.windowType==="normal")
+
   return res;
 }

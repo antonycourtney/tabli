@@ -24,6 +24,8 @@ webpackJsonp([0],{
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
+	var _oneref = __webpack_require__(/*! oneref */ 169);
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -190,6 +192,10 @@ webpackJsonp([0],{
 	  return renderAndSave;
 	}
 	
+	function invokeLater(f) {
+	  window.setTimeout(f, 0);
+	}
+	
 	function main() {
 	  initWinStore(function (bmStore) {
 	    // console.log("init: done reading bookmarks: ", bmStore);
@@ -215,7 +221,16 @@ webpackJsonp([0],{
 	        type: "detached_panel",
 	        left: 0, top: 0,
 	        width: 350,
-	        height: 600
+	        height: 625
+	      });
+	
+	      var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
+	      chrome.windows.onRemoved.addListener(function (windowId) {
+	        storeRefUpdater(function (state) {
+	          var tabWindow = state.getTabWindowByChromeId(windowId);
+	          var st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
+	          return st;
+	        });
 	      });
 	    });
 	  });

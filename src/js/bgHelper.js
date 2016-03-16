@@ -15,6 +15,7 @@ const ViewRef = Tabli.ViewRef;
 import * as React from 'react';
 
 import * as ReactDOMServer from 'react-dom/server';
+import { refUpdater } from 'oneref';
 
 const tabmanFolderTitle = 'Tabli Saved Windows';
 const archiveFolderTitle = '_Archive';
@@ -161,6 +162,10 @@ function makeRenderListener(storeRef) {
   return renderAndSave;
 }
 
+function invokeLater(f) {
+  window.setTimeout(f, 0);
+}
+
 function main() {
   initWinStore((bmStore) => {
     // console.log("init: done reading bookmarks: ", bmStore);
@@ -170,6 +175,7 @@ function main() {
       const syncedStore = uf(bmStore);
 
       window.storeRef = new ViewRef(syncedStore);
+
 
       // dumpAll(winStore);
       // dumpChromeWindows();
@@ -186,7 +192,16 @@ function main() {
         type: "detached_panel",
         left: 0, top: 0, 
         width: 350,
-        height: 600 
+        height: 625 
+      });
+
+      const storeRefUpdater = refUpdater(window.storeRef);
+      chrome.windows.onRemoved.addListener((windowId) => {
+        storeRefUpdater((state) => {
+          const tabWindow = state.getTabWindowByChromeId(windowId);
+          const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
+          return st;
+        });
       });
     });
   });

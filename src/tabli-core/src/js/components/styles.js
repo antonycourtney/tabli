@@ -306,6 +306,7 @@ const styles = {
     left: 0,  
     width: 352,
     maxWidth: 352,
+    height: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
     maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
     /* adding this border is useful for debugging styling issues:
     /* border: '1px solid #bababa' */
