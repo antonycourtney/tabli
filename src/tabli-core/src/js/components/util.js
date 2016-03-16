@@ -20,26 +20,24 @@ export function merge() {
  * sort criteria for window list:
  *   open windows first, then alpha by title
  */
-export function windowCmp(tabWindowA, tabWindowB) {
-  // focused window very first:
-  const fA = tabWindowA.focused;
-  const fB = tabWindowB.focused;
-  if (fA !== fB) {
-    if (fA) {
-      return -1;
-    }
-    return 1;
-  }
+export function windowCmp(currentWindowId) {
+  const cf = (tabWindowA, tabWindowB) => {
+    // focused window very first:
+      if (tabWindowA.open && tabWindowA.openWindowId === currentWindowId)
+        return -1;
+      if (tabWindowB.open && tabWindow.B.openWindowId === currentWindowId)
+        return 1;
 
-  // open windows first:
-  if (tabWindowA.open !== tabWindowB.open) {
-    if (tabWindowA.open) {
-      return -1;
+    // open windows first:
+    if (tabWindowA.open !== tabWindowB.open) {
+      if (tabWindowA.open) {
+        return -1;
+      }
+      return 1;
     }
-    return 1;
-  }
 
-  var tA = tabWindowA.title;
-  var tB = tabWindowB.title;
-  return tA.localeCompare(tB);
+    var tA = tabWindowA.title;
+    var tB = tabWindowB.title;
+    return tA.localeCompare(tB);
+  }
 }

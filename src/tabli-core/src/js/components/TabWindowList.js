@@ -15,7 +15,7 @@ const TabWindowList = React.createClass({
       var tabWindow = filteredTabWindow.tabWindow;
       var id = 'tabWindow' + i;
       var isOpen = tabWindow.open;
-      var isFocused = tabWindow.focused;
+      var isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
       var isSelected = (i === this.props.selectedWindowIndex);
       const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
       var windowElem = (

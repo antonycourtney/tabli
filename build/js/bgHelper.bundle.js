@@ -20,7 +20,7 @@ webpackJsonp([0],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 199);
+	var _server = __webpack_require__(/*! react-dom/server */ 195);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
@@ -127,8 +127,7 @@ webpackJsonp([0],{
 	      var listenerId = msg.listenerId;
 	      port.onDisconnect.addListener(function () {
 	        storeRef.removeViewListener(listenerId);
-	
-	        // console.log("Removed view listener ", listenerId);
+	        console.log("Removed view listener ", listenerId);
 	      });
 	    });
 	  });
@@ -176,7 +175,7 @@ webpackJsonp([0],{
 	function makeRenderListener(storeRef) {
 	  function renderAndSave() {
 	    var winStore = storeRef.getValue();
-	
+	    console.log("renderAndSave");
 	    /* Let's create a dummy app element to render our current store
 	     * React.renderToString() will remount the component, so really want a fresh element here with exactly
 	     * the store state we wish to render and save.
@@ -196,6 +195,27 @@ webpackJsonp([0],{
 	  window.setTimeout(f, 0);
 	}
 	
+	function registerEventHandlers(uf) {
+	  chrome.windows.onRemoved.addListener(function (windowId) {
+	    uf(function (state) {
+	      var tabWindow = state.getTabWindowByChromeId(windowId);
+	      var st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
+	      return st;
+	    });
+	  });
+	  chrome.windows.onCreated.addListener(function (chromeWindow) {
+	    uf(function (state) {
+	      return state.syncChromeWindow(chromeWindow);
+	    });
+	  });
+	  chrome.windows.onFocusChanged.addListener(function (windowId) {
+	    if (windowId === chrome.windows.WINDOW_ID_NONE) return;
+	    uf(function (state) {
+	      return state.setCurrentWindow(windowId);
+	    });
+	  }, { windowTypes: ['normal'] });
+	}
+	
 	function main() {
 	  initWinStore(function (bmStore) {
 	    // console.log("init: done reading bookmarks: ", bmStore);
@@ -203,7 +223,6 @@ webpackJsonp([0],{
 	    actions.syncChromeWindows(function (uf) {
 	      console.log('initial sync of chrome windows complete.');
 	      var syncedStore = uf(bmStore);
-	
 	      window.storeRef = new ViewRef(syncedStore);
 	
 	      // dumpAll(winStore);
@@ -217,20 +236,10 @@ webpackJsonp([0],{
 	
 	      setupConnectionListener(window.storeRef);
 	
-	      chrome.windows.create({ url: "popup.html",
-	        type: "detached_panel",
-	        left: 0, top: 0,
-	        width: 350,
-	        height: 625
-	      });
-	
 	      var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
-	      chrome.windows.onRemoved.addListener(function (windowId) {
-	        storeRefUpdater(function (state) {
-	          var tabWindow = state.getTabWindowByChromeId(windowId);
-	          var st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
-	          return st;
-	        });
+	      registerEventHandlers(storeRefUpdater);
+	      invokeLater(function () {
+	        return actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
 	      });
 	    });
 	  });
@@ -271,7 +280,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 199:
+/***/ 195:
 /*!*******************************!*\
   !*** ./~/react-dom/server.js ***!
   \*******************************/

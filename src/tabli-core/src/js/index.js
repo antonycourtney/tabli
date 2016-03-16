@@ -7,7 +7,6 @@
 
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
-import NewTabPage from './components/NewTabPage';
 import Popup from './components/Popup';
 import Styles from './components/styles';
 import * as actions from './actions';

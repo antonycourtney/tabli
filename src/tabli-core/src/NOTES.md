@@ -66,3 +66,11 @@ X Instead of single listener reg, using port/disconnected technique to GC popup 
   http://stackoverflow.com/questions/15798516/is-there-an-event-for-when-a-chrome-extension-popup-is-closed
 
 X BUG: Revert causes window to temporarily disappear from window list  
+
+
+=======
+- Need to check on handling of 'focused'
+
+
+
+

@@ -23,8 +23,8 @@ function sendHelperMessage(msg) {
 const Popup = React.createClass({
   storeAsState(winStore) {
     var tabWindows = winStore.getAll();
-
-    var sortedWindows = tabWindows.sort(Util.windowCmp);
+    var cmpFn = Util.windowCmp(winStore.currentWindowId);
+    var sortedWindows = tabWindows.sort(cmpFn);
 
     return {
       winStore,
@@ -75,8 +75,9 @@ const Popup = React.createClass({
   /* handler for save modal */
   doSave(titleStr) {
     const storeRef = this.props.storeRef;
-    const tabliFolderId = storeRef.getValue().folderId;
-    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, refUpdater(storeRef));
+    const storeState = storeRef.getValue();
+    const tabliFolderId = storeState.folderId;
+    actions.manageWindow(tabliFolderId, storeState.currentWindowId, this.state.saveTabWindow, titleStr, refUpdater(storeRef));
     this.closeSaveModal();
   },
 

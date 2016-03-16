@@ -13,6 +13,7 @@ export default class TabManagerState extends Immutable.Record({
   bookmarkIdMap: Immutable.Map(),   // maps from bookmark id for saved windows
   folderId: -1,
   archiveFolderId: -1,
+  currentWindowId: -1               // chrome window id of window with focus
 }) {
   /**
    * Update store to include the specified window, indexed by
@@ -97,7 +98,12 @@ export default class TabManagerState extends Immutable.Record({
     */
     const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 
-    return this.registerTabWindow(tabWindow);
+    const stReg = this.registerTabWindow(tabWindow);
+
+    // if window has focus, update current window id:
+    const st = chromeWindow.focused ? stReg.set('currentWindowId',chromeWindow.id) : stReg;
+
+    return st;
   }
 
   /**
@@ -121,16 +127,7 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   setCurrentWindow(windowId) {
-    const tabWindow = this.getTabWindowByChromeId(windowId);
-
-    if (!tabWindow) {
-      console.log('setCurrentWindow: window id ', windowId, 'not found');
-      return this;
-    }
-
-    // TODO: We really should find any other window with focus===true and clear it
-    const updWindow = tabWindow.set('focused', true);
-    return this.registerTabWindow(updWindow);
+    return this.set('currentWindowId',windowId);
   }
 
   removeBookmarkIdMapEntry(tabWindow) {

@@ -1,4 +1,4 @@
-webpackJsonp([3],{
+webpackJsonp([2],{
 
 /***/ 0:
 /*!******************************!*\
@@ -20,7 +20,7 @@ webpackJsonp([3],{
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
-	var _utils = __webpack_require__(/*! ./utils */ 201);
+	var _utils = __webpack_require__(/*! ./utils */ 197);
 	
 	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
 	
@@ -151,7 +151,7 @@ webpackJsonp([3],{
 
 /***/ },
 
-/***/ 201:
+/***/ 197:
 /*!*************************!*\
   !*** ./src/js/utils.js ***!
   \*************************/

@@ -189,7 +189,7 @@ export function revertWindow(tabWindow, cb) {
 /*
  * save the specified tab window and make it a managed window
  */
-export function manageWindow(tabliFolderId, tabWindow, title, cb) {
+export function manageWindow(tabliFolderId, currentWindowId, tabWindow, title, cb) {
   // and write out a Bookmarks folder for this newly managed window:
   if (!tabliFolderId) {
     alert('Could not save bookmarks -- no tab manager folder');
@@ -223,7 +223,12 @@ export function manageWindow(tabliFolderId, tabWindow, title, cb) {
         chrome.windows.get(tabWindow.openWindowId, { populate: true }, (chromeWindow) => {
           // Hack:  Chrome may think focus has moved to the popup itself, so let's just
           // set chromeWindow.focused to last focused state (tabWindow.focused)
-          const focusedChromeWindow = Object.assign({}, chromeWindow, { focused: tabWindow.focused });
+
+          // 16Mar16: Removing for now because 'focused' field removed from tabWindow,
+          // subsumed by currentWindowId in tabManagerState.
+          // TODO: Fix this by passing in currentWindowId from above...
+          const focused = (tabWindow.openWindowId === currentWindowId);
+          const focusedChromeWindow = Object.assign({}, chromeWindow, { focused });
           cb((state) => state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow));
         });
       });
@@ -266,9 +271,5 @@ export function showPopout(winStore,cb) {
       height: 625 
     });    
   }
-
-  const tabWindows = winStore.getOpen();
-  const winTypes = tabWindows.map(w => w.windowType);
-  console.log("window types: ", winTypes);
 }
 

@@ -127,7 +127,6 @@ export class TabWindow extends Immutable.Record({
 
   open: false,
   openWindowId: -1,
-  focused: false,
   windowType: '',
 
   tabItems: Immutable.Seq(),  // <TabItem>
@@ -174,7 +173,7 @@ export function removeOpenWindowState(tabWindow) {
   const savedItems = tabWindow.tabItems.filter((ti) => ti.saved);
   const resetSavedItems = savedItems.map(resetSavedItem);
 
-  return tabWindow.remove('open').remove('openWindowId').remove('focused').remove('windowType').set('tabItems', resetSavedItems);
+  return tabWindow.remove('open').remove('openWindowId').remove('windowType').set('tabItems', resetSavedItems);
 }
 
 /*
@@ -214,11 +213,11 @@ export function makeFolderTabWindow(bookmarkFolder) {
  * Initialize a TabWindow from an open Chrome window
  */
 export function makeChromeTabWindow(chromeWindow) {
-  const tabItems = chromeWindow.tabs.map(makeOpenTabItem);
+  const chromeTabs = chromeWindow.tabs ? chromeWindow.tabs : [];
+  const tabItems = chromeTabs.map(makeOpenTabItem);
   const tabWindow = new TabWindow({
     open: true,
     openWindowId: chromeWindow.id,
-    focused: chromeWindow.focused,
     windowType: chromeWindow.type,
     tabItems: Immutable.Seq(tabItems),
   });
@@ -314,7 +313,6 @@ export function updateWindow(tabWindow, chromeWindow) {
   const mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
   const updWindow = tabWindow
                       .set('tabItems', mergedTabItems)
-                      .set('focused', chromeWindow.focused)
                       .set('windowType', chromeWindow.type)
                       .set('open', true)
                       .set('openWindowId', chromeWindow.id);

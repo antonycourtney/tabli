@@ -101,8 +101,7 @@ function setupConnectionListener(storeRef) {
       var listenerId = msg.listenerId;
       port.onDisconnect.addListener(() => {
         storeRef.removeViewListener(listenerId);
-
-        // console.log("Removed view listener ", listenerId);
+        console.log("Removed view listener ", listenerId);
       });
     });
   });
@@ -146,7 +145,7 @@ function dumpChromeWindows() { // eslint-disable-line no-unused-vars
 function makeRenderListener(storeRef) {
   function renderAndSave() {
     const winStore = storeRef.getValue();
-
+    console.log("renderAndSave");
     /* Let's create a dummy app element to render our current store
      * React.renderToString() will remount the component, so really want a fresh element here with exactly
      * the store state we wish to render and save.
@@ -166,6 +165,30 @@ function invokeLater(f) {
   window.setTimeout(f, 0);
 }
 
+function registerEventHandlers(uf) {
+    chrome.windows.onRemoved.addListener((windowId) => {
+      uf((state) => {
+        const tabWindow = state.getTabWindowByChromeId(windowId);
+        const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
+        return st;
+      });
+    });
+    chrome.windows.onCreated.addListener(chromeWindow => {
+      uf((state) => {
+        return state.syncChromeWindow(chromeWindow);
+      });
+    });
+    chrome.windows.onFocusChanged.addListener(windowId => {
+      if (windowId===chrome.windows.WINDOW_ID_NONE)
+        return;
+      uf((state) => {
+        return state.setCurrentWindow(windowId);
+      });
+    },
+      { windowTypes: ['normal'] }
+    )
+}
+
 function main() {
   initWinStore((bmStore) => {
     // console.log("init: done reading bookmarks: ", bmStore);
@@ -173,9 +196,7 @@ function main() {
     actions.syncChromeWindows((uf) => {
       console.log('initial sync of chrome windows complete.');
       const syncedStore = uf(bmStore);
-
       window.storeRef = new ViewRef(syncedStore);
-
 
       // dumpAll(winStore);
       // dumpChromeWindows();
@@ -188,21 +209,10 @@ function main() {
 
       setupConnectionListener(window.storeRef);
 
-      chrome.windows.create({ url: "popup.html", 
-        type: "detached_panel",
-        left: 0, top: 0, 
-        width: 350,
-        height: 625 
-      });
 
       const storeRefUpdater = refUpdater(window.storeRef);
-      chrome.windows.onRemoved.addListener((windowId) => {
-        storeRefUpdater((state) => {
-          const tabWindow = state.getTabWindowByChromeId(windowId);
-          const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
-          return st;
-        });
-      });
+      registerEventHandlers(storeRefUpdater);      
+      invokeLater(() => actions.showPopout(window.storeRef.getValue(),storeRefUpdater));
     });
   });
 }

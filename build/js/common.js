@@ -30,7 +30,7 @@
 /******/ 	// "0" means "already loaded"
 /******/ 	// Array means "loading", array contains callbacks
 /******/ 	var installedChunks = {
-/******/ 		4:0
+/******/ 		3:0
 /******/ 	};
 /******/
 /******/ 	// The require function
@@ -76,7 +76,7 @@
 /******/ 			script.charset = 'utf-8';
 /******/ 			script.async = true;
 /******/
-/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"bgHelper","1":"renderTest","2":"tabliNewTabPage","3":"tabliPopup"}[chunkId]||chunkId) + ".bundle.js";
+/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"bgHelper","1":"renderTest","2":"tabliPopup"}[chunkId]||chunkId) + ".bundle.js";
 /******/ 			head.appendChild(script);
 /******/ 		}
 /******/ 	};
@@ -115,15 +115,11 @@
 	
 	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
 	
-	var _NewTabPage = __webpack_require__(/*! ./components/NewTabPage */ 8);
-	
-	var _NewTabPage2 = _interopRequireDefault(_NewTabPage);
-	
-	var _Popup = __webpack_require__(/*! ./components/Popup */ 194);
+	var _Popup = __webpack_require__(/*! ./components/Popup */ 8);
 	
 	var _Popup2 = _interopRequireDefault(_Popup);
 	
-	var _styles = __webpack_require__(/*! ./components/styles */ 174);
+	var _styles = __webpack_require__(/*! ./components/styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -131,7 +127,7 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _viewRef = __webpack_require__(/*! ./viewRef */ 198);
+	var _viewRef = __webpack_require__(/*! ./viewRef */ 194);
 	
 	var _viewRef2 = _interopRequireDefault(_viewRef);
 	
@@ -381,7 +377,6 @@
 	
 	  open: false,
 	  openWindowId: -1,
-	  focused: false,
 	  windowType: '',
 	
 	  tabItems: Immutable.Seq() }));
@@ -397,7 +392,7 @@
 	  });
 	  var resetSavedItems = savedItems.map(resetSavedItem);
 	
-	  return tabWindow.remove('open').remove('openWindowId').remove('focused').remove('windowType').set('tabItems', resetSavedItems);
+	  return tabWindow.remove('open').remove('openWindowId').remove('windowType').set('tabItems', resetSavedItems);
 	}
 	
 	/*
@@ -439,11 +434,11 @@
 	 * Initialize a TabWindow from an open Chrome window
 	 */
 	function makeChromeTabWindow(chromeWindow) {
-	  var tabItems = chromeWindow.tabs.map(makeOpenTabItem);
+	  var chromeTabs = chromeWindow.tabs ? chromeWindow.tabs : [];
+	  var tabItems = chromeTabs.map(makeOpenTabItem);
 	  var tabWindow = new TabWindow({
 	    open: true,
 	    openWindowId: chromeWindow.id,
-	    focused: chromeWindow.focused,
 	    windowType: chromeWindow.type,
 	    tabItems: Immutable.Seq(tabItems)
 	  });
@@ -548,7 +543,7 @@
 	function updateWindow(tabWindow, chromeWindow) {
 	  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
 	  var mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
-	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('focused', chromeWindow.focused).set('windowType', chromeWindow.type).set('open', true).set('openWindowId', chromeWindow.id);
+	  var updWindow = tabWindow.set('tabItems', mergedTabItems).set('windowType', chromeWindow.type).set('open', true).set('openWindowId', chromeWindow.id);
 	  return updWindow;
 	}
 	
@@ -20741,7 +20736,12 @@
 	      */
 	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 	
-	      return this.registerTabWindow(tabWindow);
+	      var stReg = this.registerTabWindow(tabWindow);
+	
+	      // if window has focus, update current window id:
+	      var st = chromeWindow.focused ? stReg.set('currentWindowId', chromeWindow.id) : stReg;
+	
+	      return st;
 	    }
 	
 	    /**
@@ -20775,16 +20775,7 @@
 	  }, {
 	    key: 'setCurrentWindow',
 	    value: function setCurrentWindow(windowId) {
-	      var tabWindow = this.getTabWindowByChromeId(windowId);
-	
-	      if (!tabWindow) {
-	        console.log('setCurrentWindow: window id ', windowId, 'not found');
-	        return this;
-	      }
-	
-	      // TODO: We really should find any other window with focus===true and clear it
-	      var updWindow = tabWindow.set('focused', true);
-	      return this.registerTabWindow(updWindow);
+	      return this.set('currentWindowId', windowId);
 	    }
 	  }, {
 	    key: 'removeBookmarkIdMapEntry',
@@ -20876,16 +20867,17 @@
 	  windowIdMap: Immutable.Map(), // maps from chrome window id for open windows
 	  bookmarkIdMap: Immutable.Map(), // maps from bookmark id for saved windows
 	  folderId: -1,
-	  archiveFolderId: -1
+	  archiveFolderId: -1,
+	  currentWindowId: -1 // chrome window id of window with focus
 	}));
 	
 	exports.default = TabManagerState;
 
 /***/ },
 /* 8 */
-/*!********************************************************!*\
-  !*** ./src/tabli-core/src/js/components/NewTabPage.js ***!
-  \********************************************************/
+/*!***************************************************!*\
+  !*** ./src/tabli-core/src/js/components/Popup.js ***!
+  \***************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -20908,7 +20900,11 @@
 	
 	var _oneref = __webpack_require__(/*! oneref */ 169);
 	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 176);
 	
 	var _RevertModal2 = _interopRequireDefault(_RevertModal);
 	
@@ -20916,9 +20912,9 @@
 	
 	var _SaveModal2 = _interopRequireDefault(_SaveModal);
 	
-	var _SelectableTabPage = __webpack_require__(/*! ./SelectableTabPage */ 185);
+	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 185);
 	
-	var _SelectableTabPage2 = _interopRequireDefault(_SelectableTabPage);
+	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
 	
 	var _util = __webpack_require__(/*! ./util */ 177);
 	
@@ -20939,12 +20935,12 @@
 	  });
 	}
 	
-	var NewTabPage = React.createClass({
-	  displayName: 'NewTabPage',
+	var Popup = React.createClass({
+	  displayName: 'Popup',
 	  storeAsState: function storeAsState(winStore) {
 	    var tabWindows = winStore.getAll();
-	
-	    var sortedWindows = tabWindows.sort(Util.windowCmp);
+	    var cmpFn = Util.windowCmp(winStore.currentWindowId);
+	    var sortedWindows = tabWindows.sort(cmpFn);
 	
 	    return {
 	      winStore: winStore,
@@ -20990,8 +20986,9 @@
 	  /* handler for save modal */
 	  doSave: function doSave(titleStr) {
 	    var storeRef = this.props.storeRef;
-	    var tabliFolderId = storeRef.getValue().folderId;
-	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
+	    var storeState = storeRef.getValue();
+	    var tabliFolderId = storeState.folderId;
+	    actions.manageWindow(tabliFolderId, storeState.currentWindowId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
 	    this.closeSaveModal();
 	  },
 	  doRevert: function doRevert(tabWindow) {
@@ -21040,8 +21037,8 @@
 	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
 	      ret = React.createElement(
 	        'div',
-	        null,
-	        React.createElement(_SelectableTabPage2.default, {
+	        { style: _styles2.default.popupContainer },
+	        React.createElement(_SelectablePopup2.default, {
 	          onSearchInput: this.handleSearchInput,
 	          winStore: this.state.winStore,
 	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
@@ -21083,7 +21080,7 @@
 	  }
 	});
 	
-	exports.default = NewTabPage;
+	exports.default = Popup;
 
 /***/ },
 /* 9 */
@@ -41395,7 +41392,7 @@
 	/*
 	 * save the specified tab window and make it a managed window
 	 */
-	function manageWindow(tabliFolderId, tabWindow, title, cb) {
+	function manageWindow(tabliFolderId, currentWindowId, tabWindow, title, cb) {
 	  // and write out a Bookmarks folder for this newly managed window:
 	  if (!tabliFolderId) {
 	    alert('Could not save bookmarks -- no tab manager folder');
@@ -41433,7 +41430,12 @@
 	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
 	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
 	          // set chromeWindow.focused to last focused state (tabWindow.focused)
-	          var focusedChromeWindow = Object.assign({}, chromeWindow, { focused: tabWindow.focused });
+	
+	          // 16Mar16: Removing for now because 'focused' field removed from tabWindow,
+	          // subsumed by currentWindowId in tabManagerState.
+	          // TODO: Fix this by passing in currentWindowId from above...
+	          var focused = tabWindow.openWindowId === currentWindowId;
+	          var focusedChromeWindow = Object.assign({}, chromeWindow, { focused: focused });
 	          cb(function (state) {
 	            return state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow);
 	          });
@@ -41480,12 +41482,6 @@
 	      height: 625
 	    });
 	  }
-	
-	  var tabWindows = winStore.getOpen();
-	  var winTypes = tabWindows.map(function (w) {
-	    return w.windowType;
-	  });
-	  console.log("window types: ", winTypes);
 	}
 
 /***/ },
@@ -42234,200 +42230,6 @@
 
 /***/ },
 /* 173 */
-/*!*********************************************************!*\
-  !*** ./src/tabli-core/src/js/components/RevertModal.js ***!
-  \*********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 9);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _immutable = __webpack_require__(/*! immutable */ 6);
-	
-	var Immutable = _interopRequireWildcard(_immutable);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 177);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
-	
-	var Constants = _interopRequireWildcard(_constants);
-	
-	var _Modal = __webpack_require__(/*! ./Modal */ 178);
-	
-	var Modal = _interopRequireWildcard(_Modal);
-	
-	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 3);
-	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	/*
-	 * Modal dialog for reverting a bookmarked window
-	 */
-	var RevertModal = React.createClass({
-	  displayName: 'RevertModal',
-	  handleKeyDown: function handleKeyDown(e) {
-	    if (e.keyCode === Constants.KEY_ESC) {
-	      // ESC key
-	      e.preventDefault();
-	      this.props.onClose(e);
-	    } else if (e.keyCode === Constants.KEY_ENTER) {
-	      this.handleSubmit(e);
-	    }
-	  },
-	  handleSubmit: function handleSubmit(e) {
-	    e.preventDefault();
-	    this.props.onSubmit(this.props.tabWindow);
-	  },
-	  renderItem: function renderItem(tabItem) {
-	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
-	
-	    // Skip the chrome FAVICONs; they just throw when accessed.
-	    if (fiSrc.indexOf('chrome://theme/') === 0) {
-	      fiSrc = '';
-	    }
-	
-	    var tabFavIcon = React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc });
-	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
-	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
-	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
-	    return React.createElement(
-	      'div',
-	      { style: _styles2.default.noWrap },
-	      tabFavIcon,
-	      React.createElement(
-	        'span',
-	        { style: tabTitleStyles },
-	        tabItem.title
-	      ),
-	      React.createElement('div', { style: _styles2.default.spacer })
-	    );
-	  },
-	  renderTabItems: function renderTabItems(tabItems) {
-	    var itemElems = tabItems.map(this.renderItem);
-	    return React.createElement(
-	      'div',
-	      { style: _styles2.default.tabList },
-	      itemElems
-	    );
-	  },
-	  render: function render() {
-	    var tabWindow = this.props.tabWindow;
-	    var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
-	    var savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map(function (ti) {
-	      return ti.url;
-	    }));
-	
-	    var itemsToClose = tabWindow.tabItems.filter(function (ti) {
-	      return !savedUrlsSet.has(ti.url);
-	    });
-	    var closeItemsElem = this.renderTabItems(itemsToClose);
-	
-	    var itemsToReload = tabWindow.tabItems.filter(function (ti) {
-	      return savedUrlsSet.has(ti.url);
-	    });
-	    var reloadItemsElem = this.renderTabItems(itemsToReload);
-	
-	    var closeSection = null;
-	    if (itemsToClose.count() > 0) {
-	      closeSection = React.createElement(
-	        'div',
-	        null,
-	        React.createElement(
-	          'p',
-	          null,
-	          'The following tabs will be closed:'
-	        ),
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.simpleTabContainer },
-	          closeItemsElem
-	        ),
-	        React.createElement('br', null)
-	      );
-	    }
-	
-	    return React.createElement(
-	      Modal.Dialog,
-	      { title: 'Revert Saved Window?', onClose: this.props.onClose },
-	      React.createElement(
-	        Modal.Body,
-	        null,
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.dialogInfoContents },
-	          closeSection,
-	          React.createElement(
-	            'p',
-	            null,
-	            'The following tabs will be reloaded:'
-	          ),
-	          React.createElement(
-	            'div',
-	            { style: _styles2.default.simpleTabContainer },
-	            reloadItemsElem
-	          ),
-	          React.createElement('br', null),
-	          React.createElement(
-	            'p',
-	            null,
-	            'This action can not be undone.'
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { style: Util.merge(_styles2.default.alignRight) },
-	          React.createElement(
-	            'div',
-	            { style: Util.merge(_styles2.default.dialogButton, _styles2.default.primaryButton),
-	              onClick: this.handleSubmit,
-	              ref: 'okButton',
-	              tabIndex: 0,
-	              onKeyDown: this.handleKeyDown
-	            },
-	            'OK'
-	          ),
-	          React.createElement(
-	            'div',
-	            { style: _styles2.default.dialogButton,
-	              onClick: this.props.onClose,
-	              tabIndex: 0
-	            },
-	            'Cancel'
-	          )
-	        )
-	      )
-	    );
-	  },
-	
-	
-	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
-	  componentDidMount: function componentDidMount() {
-	    console.log('revertModal: did mount');
-	    this.refs.okButton.focus();
-	  }
-	});
-	
-	exports.default = RevertModal;
-
-/***/ },
-/* 174 */
 /*!****************************************************!*\
   !*** ./src/tabli-core/src/js/components/styles.js ***!
   \****************************************************/
@@ -42439,11 +42241,11 @@
 	  value: true
 	});
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _browserConstants = __webpack_require__(/*! ./browserConstants */ 176);
+	var _browserConstants = __webpack_require__(/*! ./browserConstants */ 175);
 	
 	var BC = _interopRequireWildcard(_browserConstants);
 	
@@ -42821,7 +42623,7 @@
 	exports.default = styles;
 
 /***/ },
-/* 175 */
+/* 174 */
 /*!*******************************************************!*\
   !*** ./src/tabli-core/src/js/components/constants.js ***!
   \*******************************************************/
@@ -42846,7 +42648,7 @@
 	var KEY_QUESTION = exports.KEY_QUESTION = 191;
 
 /***/ },
-/* 176 */
+/* 175 */
 /*!**************************************************************!*\
   !*** ./src/tabli-core/src/js/components/browserConstants.js ***!
   \**************************************************************/
@@ -42879,6 +42681,200 @@
 	  initBrowser();
 	  initialized = true;
 	}
+
+/***/ },
+/* 176 */
+/*!*********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/RevertModal.js ***!
+  \*********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 6);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _styles = __webpack_require__(/*! ./styles */ 173);
+	
+	var _styles2 = _interopRequireDefault(_styles);
+	
+	var _util = __webpack_require__(/*! ./util */ 177);
+	
+	var Util = _interopRequireWildcard(_util);
+	
+	var _constants = __webpack_require__(/*! ./constants */ 174);
+	
+	var Constants = _interopRequireWildcard(_constants);
+	
+	var _Modal = __webpack_require__(/*! ./Modal */ 178);
+	
+	var Modal = _interopRequireWildcard(_Modal);
+	
+	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 3);
+	
+	var TabWindow = _interopRequireWildcard(_tabWindow);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	/*
+	 * Modal dialog for reverting a bookmarked window
+	 */
+	var RevertModal = React.createClass({
+	  displayName: 'RevertModal',
+	  handleKeyDown: function handleKeyDown(e) {
+	    if (e.keyCode === Constants.KEY_ESC) {
+	      // ESC key
+	      e.preventDefault();
+	      this.props.onClose(e);
+	    } else if (e.keyCode === Constants.KEY_ENTER) {
+	      this.handleSubmit(e);
+	    }
+	  },
+	  handleSubmit: function handleSubmit(e) {
+	    e.preventDefault();
+	    this.props.onSubmit(this.props.tabWindow);
+	  },
+	  renderItem: function renderItem(tabItem) {
+	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
+	
+	    // Skip the chrome FAVICONs; they just throw when accessed.
+	    if (fiSrc.indexOf('chrome://theme/') === 0) {
+	      fiSrc = '';
+	    }
+	
+	    var tabFavIcon = React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc });
+	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
+	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
+	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
+	    return React.createElement(
+	      'div',
+	      { style: _styles2.default.noWrap },
+	      tabFavIcon,
+	      React.createElement(
+	        'span',
+	        { style: tabTitleStyles },
+	        tabItem.title
+	      ),
+	      React.createElement('div', { style: _styles2.default.spacer })
+	    );
+	  },
+	  renderTabItems: function renderTabItems(tabItems) {
+	    var itemElems = tabItems.map(this.renderItem);
+	    return React.createElement(
+	      'div',
+	      { style: _styles2.default.tabList },
+	      itemElems
+	    );
+	  },
+	  render: function render() {
+	    var tabWindow = this.props.tabWindow;
+	    var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
+	    var savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map(function (ti) {
+	      return ti.url;
+	    }));
+	
+	    var itemsToClose = tabWindow.tabItems.filter(function (ti) {
+	      return !savedUrlsSet.has(ti.url);
+	    });
+	    var closeItemsElem = this.renderTabItems(itemsToClose);
+	
+	    var itemsToReload = tabWindow.tabItems.filter(function (ti) {
+	      return savedUrlsSet.has(ti.url);
+	    });
+	    var reloadItemsElem = this.renderTabItems(itemsToReload);
+	
+	    var closeSection = null;
+	    if (itemsToClose.count() > 0) {
+	      closeSection = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'p',
+	          null,
+	          'The following tabs will be closed:'
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.simpleTabContainer },
+	          closeItemsElem
+	        ),
+	        React.createElement('br', null)
+	      );
+	    }
+	
+	    return React.createElement(
+	      Modal.Dialog,
+	      { title: 'Revert Saved Window?', onClose: this.props.onClose },
+	      React.createElement(
+	        Modal.Body,
+	        null,
+	        React.createElement(
+	          'div',
+	          { style: _styles2.default.dialogInfoContents },
+	          closeSection,
+	          React.createElement(
+	            'p',
+	            null,
+	            'The following tabs will be reloaded:'
+	          ),
+	          React.createElement(
+	            'div',
+	            { style: _styles2.default.simpleTabContainer },
+	            reloadItemsElem
+	          ),
+	          React.createElement('br', null),
+	          React.createElement(
+	            'p',
+	            null,
+	            'This action can not be undone.'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { style: Util.merge(_styles2.default.alignRight) },
+	          React.createElement(
+	            'div',
+	            { style: Util.merge(_styles2.default.dialogButton, _styles2.default.primaryButton),
+	              onClick: this.handleSubmit,
+	              ref: 'okButton',
+	              tabIndex: 0,
+	              onKeyDown: this.handleKeyDown
+	            },
+	            'OK'
+	          ),
+	          React.createElement(
+	            'div',
+	            { style: _styles2.default.dialogButton,
+	              onClick: this.props.onClose,
+	              tabIndex: 0
+	            },
+	            'Cancel'
+	          )
+	        )
+	      )
+	    );
+	  },
+	
+	
+	  /* HACK - get focus to the OK button, because tabIndex getting ignored. */
+	  componentDidMount: function componentDidMount() {
+	    console.log('revertModal: did mount');
+	    this.refs.okButton.focus();
+	  }
+	});
+	
+	exports.default = RevertModal;
 
 /***/ },
 /* 177 */
@@ -42916,28 +42912,24 @@
 	 * sort criteria for window list:
 	 *   open windows first, then alpha by title
 	 */
-	function windowCmp(tabWindowA, tabWindowB) {
-	  // focused window very first:
-	  var fA = tabWindowA.focused;
-	  var fB = tabWindowB.focused;
-	  if (fA !== fB) {
-	    if (fA) {
-	      return -1;
-	    }
-	    return 1;
-	  }
+	function windowCmp(currentWindowId) {
+	  var cf = function cf(tabWindowA, tabWindowB) {
+	    // focused window very first:
+	    if (tabWindowA.open && tabWindowA.openWindowId === currentWindowId) return -1;
+	    if (tabWindowB.open && tabWindow.B.openWindowId === currentWindowId) return 1;
 	
-	  // open windows first:
-	  if (tabWindowA.open !== tabWindowB.open) {
-	    if (tabWindowA.open) {
-	      return -1;
+	    // open windows first:
+	    if (tabWindowA.open !== tabWindowB.open) {
+	      if (tabWindowA.open) {
+	        return -1;
+	      }
+	      return 1;
 	    }
-	    return 1;
-	  }
 	
-	  var tA = tabWindowA.title;
-	  var tB = tabWindowB.title;
-	  return tA.localeCompare(tB);
+	    var tA = tabWindowA.title;
+	    var tB = tabWindowB.title;
+	    return tA.localeCompare(tB);
+	  };
 	}
 
 /***/ },
@@ -42958,7 +42950,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -43071,7 +43063,7 @@
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -43264,11 +43256,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -43352,9 +43344,9 @@
 
 /***/ },
 /* 185 */
-/*!***************************************************************!*\
-  !*** ./src/tabli-core/src/js/components/SelectableTabPage.js ***!
-  \***************************************************************/
+/*!*************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/SelectablePopup.js ***!
+  \*************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43367,7 +43359,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -43383,13 +43375,9 @@
 	
 	var _SearchBar2 = _interopRequireDefault(_SearchBar);
 	
-	var _TabTileList = __webpack_require__(/*! ./TabTileList */ 187);
+	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 187);
 	
-	var _TabTileList2 = _interopRequireDefault(_TabTileList);
-	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
-	
-	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
+	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -43417,8 +43405,8 @@
 	 * and validation that should happen with respect to the (already calculated) props containing
 	 * filtered windows that we receive from above
 	 */
-	var SelectableTabPage = React.createClass({
-	  displayName: 'SelectableTabPage',
+	var SelectablePopup = React.createClass({
+	  displayName: 'SelectablePopup',
 	  getInitialState: function getInitialState() {
 	    return {
 	      selectedWindowIndex: 0,
@@ -43508,39 +43496,31 @@
 	      null,
 	      React.createElement(
 	        'div',
-	        { className: 'container' },
-	        React.createElement(
-	          'div',
-	          { className: 'row' },
-	          React.createElement('div', { className: 'com-sm-1' }),
-	          React.createElement(
-	            'div',
-	            { className: 'col-sm-10' },
-	            React.createElement('img', { src: '../images/popout-icon-1.png' }),
-	            React.createElement(_SearchBar2.default, { onSearchInput: this.props.onSearchInput,
-	              onSearchUp: this.handlePrevSelection,
-	              onSearchDown: this.handleNextSelection,
-	              onSearchEnter: this.handleSelectionEnter
-	            })
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'container-fluid' },
-	          React.createElement(_TabTileList2.default, { winStore: this.props.winStore,
-	            storeUpdateHandler: this.props.storeUpdateHandler,
-	            filteredWindows: this.props.filteredWindows,
-	            appComponent: this.props.appComponent,
-	            searchStr: this.props.searchStr,
-	            searchRE: this.props.searchRE,
-	            selectedWindowIndex: this.state.selectedWindowIndex,
-	            selectedTabIndex: this.state.selectedTabIndex
-	          })
-	        )
+	        { style: _styles2.default.popupHeader },
+	        React.createElement(_SearchBar2.default, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          onSearchInput: this.props.onSearchInput,
+	          onSearchUp: this.handlePrevSelection,
+	          onSearchDown: this.handleNextSelection,
+	          onSearchEnter: this.handleSelectionEnter
+	        })
 	      ),
 	      React.createElement(
 	        'div',
-	        { style: _styles2.default.tabPageFooter },
+	        { style: _styles2.default.popupBody },
+	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          filteredWindows: this.props.filteredWindows,
+	          appComponent: this.props.appComponent,
+	          searchStr: this.props.searchStr,
+	          searchRE: this.props.searchRE,
+	          selectedWindowIndex: this.state.selectedWindowIndex,
+	          selectedTabIndex: this.state.selectedTabIndex
+	        })
+	      ),
+	      React.createElement(
+	        'div',
+	        { style: _styles2.default.popupFooter },
 	        React.createElement(
 	          'span',
 	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
@@ -43551,7 +43531,7 @@
 	  }
 	});
 	
-	exports.default = SelectableTabPage;
+	exports.default = SelectablePopup;
 
 /***/ },
 /* 186 */
@@ -43570,11 +43550,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _constants = __webpack_require__(/*! ./constants */ 175);
+	var _constants = __webpack_require__(/*! ./constants */ 174);
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
@@ -43683,9 +43663,9 @@
 
 /***/ },
 /* 187 */
-/*!*********************************************************!*\
-  !*** ./src/tabli-core/src/js/components/TabTileList.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** ./src/tabli-core/src/js/components/TabWindowList.js ***!
+  \***********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43698,13 +43678,9 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 188);
 	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _FilteredTabTile = __webpack_require__(/*! ./FilteredTabTile */ 188);
-	
-	var _FilteredTabTile2 = _interopRequireDefault(_FilteredTabTile);
+	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
 	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
 	
@@ -43714,8 +43690,8 @@
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var TabTileList = React.createClass({
-	  displayName: 'TabTileList',
+	var TabWindowList = React.createClass({
+	  displayName: 'TabWindowList',
 	  render: function render() {
 	    var focusedWindowElem = [];
 	    var openWindows = [];
@@ -43727,20 +43703,17 @@
 	      var tabWindow = filteredTabWindow.tabWindow;
 	      var id = 'tabWindow' + i;
 	      var isOpen = tabWindow.open;
-	      var isFocused = tabWindow.focused;
+	      var isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
 	      var isSelected = i === this.props.selectedWindowIndex;
 	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
-	
-	      var initialExpandedState = isOpen ? null : true;
-	      var windowElem = React.createElement(_FilteredTabTile2.default, { winStore: this.props.winStore,
+	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
 	        storeUpdateHandler: this.props.storeUpdateHandler,
 	        filteredTabWindow: filteredTabWindow, key: id,
 	        searchStr: this.props.searchStr,
 	        searchRE: this.props.searchRE,
 	        isSelected: isSelected,
 	        selectedTabIndex: selectedTabIndex,
-	        appComponent: this.props.appComponent,
-	        initialExpandedState: true
+	        appComponent: this.props.appComponent
 	      });
 	      if (isFocused) {
 	        focusedWindowElem = windowElem;
@@ -43750,39 +43723,41 @@
 	        savedWindows.push(windowElem);
 	      }
 	    }
+	
+	    var savedSection = null;
+	    if (savedWindows.length > 0) {
+	      savedSection = React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Saved Closed Windows' },
+	        savedWindows
+	      );
+	    }
+	
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
 	        _WindowListSection2.default,
-	        { title: 'Open Windows' },
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.tabTileContainer },
-	          focusedWindowElem,
-	          openWindows
-	        )
+	        { title: 'Current Window' },
+	        focusedWindowElem
 	      ),
 	      React.createElement(
 	        _WindowListSection2.default,
-	        { title: 'Closed, Saved Windows' },
-	        React.createElement(
-	          'div',
-	          { style: _styles2.default.tabTileContainer },
-	          savedWindows
-	        )
-	      )
+	        { title: 'Other Open Windows' },
+	        openWindows
+	      ),
+	      savedSection
 	    );
 	  }
 	});
 	
-	exports.default = TabTileList;
+	exports.default = TabWindowList;
 
 /***/ },
 /* 188 */
-/*!*************************************************************!*\
-  !*** ./src/tabli-core/src/js/components/FilteredTabTile.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** ./src/tabli-core/src/js/components/FilteredTabWindow.js ***!
+  \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43803,7 +43778,7 @@
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -43831,15 +43806,15 @@
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var FilteredTabTile = React.createClass({
-	  displayName: 'FilteredTabTile',
+	var FilteredTabWindow = React.createClass({
+	  displayName: 'FilteredTabWindow',
 	
 	  mixins: [_Hoverable2.default],
 	
 	  getInitialState: function getInitialState() {
 	    // Note:  We initialize this with null rather than false so that it will follow
 	    // open / closed state of window
-	    return { expanded: this.props.initialExpandedState };
+	    return { expanded: null };
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    if (nextProps.isSelected && !this.props.isSelected) {
@@ -43896,7 +43871,7 @@
 	
 	    var expanded = this.getExpandedState();
 	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
-	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle, _styles2.default.tileTabContainer);
+	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle);
 	    return React.createElement(
 	      'div',
 	      { style: tabListStyle },
@@ -43942,7 +43917,7 @@
 	    });
 	
 	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
-	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle, _styles2.default.tabWindowTile);
+	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle);
 	
 	    return React.createElement(
 	      'div',
@@ -43953,7 +43928,7 @@
 	  }
 	});
 	
-	exports.default = FilteredTabTile;
+	exports.default = FilteredTabWindow;
 
 /***/ },
 /* 189 */
@@ -43984,7 +43959,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -44126,7 +44101,7 @@
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -44175,7 +44150,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -44338,7 +44313,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
+	var _styles = __webpack_require__(/*! ./styles */ 173);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -44379,674 +44354,6 @@
 
 /***/ },
 /* 194 */
-/*!***************************************************!*\
-  !*** ./src/tabli-core/src/js/components/Popup.js ***!
-  \***************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 9);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _actions = __webpack_require__(/*! ../actions */ 166);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _searchOps = __webpack_require__(/*! ../searchOps */ 168);
-	
-	var searchOps = _interopRequireWildcard(_searchOps);
-	
-	var _oneref = __webpack_require__(/*! oneref */ 169);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _RevertModal = __webpack_require__(/*! ./RevertModal */ 173);
-	
-	var _RevertModal2 = _interopRequireDefault(_RevertModal);
-	
-	var _SaveModal = __webpack_require__(/*! ./SaveModal */ 184);
-	
-	var _SaveModal2 = _interopRequireDefault(_SaveModal);
-	
-	var _SelectablePopup = __webpack_require__(/*! ./SelectablePopup */ 195);
-	
-	var _SelectablePopup2 = _interopRequireDefault(_SelectablePopup);
-	
-	var _util = __webpack_require__(/*! ./util */ 177);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	/**
-	 * send message to BGhelper
-	 */
-	function sendHelperMessage(msg) {
-	  var port = chrome.runtime.connect({ name: 'popup' });
-	  port.postMessage(msg);
-	  port.onMessage.addListener(function (response) {
-	    console.log('Got response message: ', response);
-	  });
-	}
-	
-	var Popup = React.createClass({
-	  displayName: 'Popup',
-	  storeAsState: function storeAsState(winStore) {
-	    var tabWindows = winStore.getAll();
-	
-	    var sortedWindows = tabWindows.sort(Util.windowCmp);
-	
-	    return {
-	      winStore: winStore,
-	      sortedWindows: sortedWindows
-	    };
-	  },
-	  getInitialState: function getInitialState() {
-	    var st = this.storeAsState(this.props.initialWinStore);
-	
-	    st.saveModalIsOpen = false;
-	    st.revertModalIsOpen = false;
-	    st.revertTabWindow = null;
-	    st.searchStr = '';
-	    st.searchRE = null;
-	    return st;
-	  },
-	  handleSearchInput: function handleSearchInput(rawSearchStr) {
-	    var searchStr = rawSearchStr.trim();
-	
-	    var searchRE = null;
-	    if (searchStr.length > 0) {
-	      searchRE = new RegExp(searchStr, 'i');
-	    }
-	
-	    console.log("search input: '" + searchStr + "'");
-	    this.setState({ searchStr: searchStr, searchRE: searchRE });
-	  },
-	  openSaveModal: function openSaveModal(tabWindow) {
-	    var initialTitle = tabWindow.title;
-	    this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow });
-	  },
-	  closeSaveModal: function closeSaveModal() {
-	    this.setState({ saveModalIsOpen: false });
-	  },
-	  openRevertModal: function openRevertModal(filteredTabWindow) {
-	    this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow });
-	  },
-	  closeRevertModal: function closeRevertModal() {
-	    this.setState({ revertModalIsOpen: false, revertTabWindow: null });
-	  },
-	
-	
-	  /* handler for save modal */
-	  doSave: function doSave(titleStr) {
-	    var storeRef = this.props.storeRef;
-	    var tabliFolderId = storeRef.getValue().folderId;
-	    actions.manageWindow(tabliFolderId, this.state.saveTabWindow, titleStr, (0, _oneref.refUpdater)(storeRef));
-	    this.closeSaveModal();
-	  },
-	  doRevert: function doRevert(tabWindow) {
-	    // eslint-disable-line no-unused-vars
-	    var updateHandler = (0, _oneref.refUpdater)(this.props.storeRef);
-	    actions.revertWindow(this.state.revertTabWindow, updateHandler);
-	    this.closeRevertModal();
-	  },
-	
-	
-	  /* render save modal (or not) based on this.state.saveModalIsOpen */
-	  renderSaveModal: function renderSaveModal() {
-	    var modal = null;
-	    if (this.state.saveModalIsOpen) {
-	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
-	        tabWindow: this.state.saveTabWindow,
-	        onClose: this.closeSaveModal,
-	        onSubmit: this.doSave,
-	        appComponent: this
-	      });
-	    }
-	
-	    return modal;
-	  },
-	
-	
-	  /* render revert modal (or not) based on this.state.revertModalIsOpen */
-	  renderRevertModal: function renderRevertModal() {
-	    var modal = null;
-	    if (this.state.revertModalIsOpen) {
-	      modal = React.createElement(_RevertModal2.default, {
-	        tabWindow: this.state.revertTabWindow,
-	        onClose: this.closeRevertModal,
-	        onSubmit: this.doRevert,
-	        appComponent: this
-	      });
-	    }
-	
-	    return modal;
-	  },
-	  render: function render() {
-	    var ret;
-	    try {
-	      var saveModal = this.renderSaveModal();
-	      var revertModal = this.renderRevertModal();
-	      var filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE);
-	      ret = React.createElement(
-	        'div',
-	        { style: _styles2.default.popupContainer },
-	        React.createElement(_SelectablePopup2.default, {
-	          onSearchInput: this.handleSearchInput,
-	          winStore: this.state.winStore,
-	          storeUpdateHandler: (0, _oneref.refUpdater)(this.props.storeRef),
-	          filteredWindows: filteredWindows,
-	          appComponent: this,
-	          searchStr: this.state.searchStr,
-	          searchRE: this.state.searchRE
-	        }),
-	        saveModal,
-	        revertModal
-	      );
-	    } catch (e) {
-	      console.error('App Component: caught exception during render: ');
-	      console.error(e.stack);
-	      throw e;
-	    }
-	
-	    return ret;
-	  },
-	  componentWillMount: function componentWillMount() {
-	    var _this = this;
-	
-	    if (this.props.noListener) {
-	      return;
-	    }
-	
-	    var storeRef = this.props.storeRef;
-	    /*
-	     * This listener is essential for triggering a (recursive) re-render
-	     * in response to a state change.
-	     */
-	    var listenerId = storeRef.addViewListener(function () {
-	      console.log('TabliPopup: viewListener: updating store from storeRef');
-	      _this.setState(_this.storeAsState(storeRef.getValue()));
-	    });
-	
-	    // console.log("componentWillMount: added view listener: ", listenerId);
-	    sendHelperMessage({ listenerId: listenerId });
-	  }
-	});
-	
-	exports.default = Popup;
-
-/***/ },
-/* 195 */
-/*!*************************************************************!*\
-  !*** ./src/tabli-core/src/js/components/SelectablePopup.js ***!
-  \*************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 9);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 177);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _actions = __webpack_require__(/*! ../actions */ 166);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _SearchBar = __webpack_require__(/*! ./SearchBar */ 186);
-	
-	var _SearchBar2 = _interopRequireDefault(_SearchBar);
-	
-	var _TabWindowList = __webpack_require__(/*! ./TabWindowList */ 196);
-	
-	var _TabWindowList2 = _interopRequireDefault(_TabWindowList);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	function matchingTabCount(searchStr, filteredTabWindow) {
-	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
-	  return ret;
-	}
-	
-	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
-	  if (searchStr.length === 0) {
-	    var tabWindow = filteredTabWindow.tabWindow;
-	    var tabItem = tabWindow.tabItems.get(tabIndex);
-	    return tabItem;
-	  }
-	  var filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
-	  return filteredItem.tabItem;
-	}
-	
-	/**
-	 * An element that manages the selection.
-	 *
-	 * We want this as a distinct element from its parent TabMan, because it does local state management
-	 * and validation that should happen with respect to the (already calculated) props containing
-	 * filtered windows that we receive from above
-	 */
-	var SelectablePopup = React.createClass({
-	  displayName: 'SelectablePopup',
-	  getInitialState: function getInitialState() {
-	    return {
-	      selectedWindowIndex: 0,
-	      selectedTabIndex: 0
-	    };
-	  },
-	  handlePrevSelection: function handlePrevSelection(byPage) {
-	    if (this.props.filteredWindows.length === 0) {
-	      return;
-	    }
-	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
-	
-	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
-	
-	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
-	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
-	    } else {
-	      // Already on first tab, try to back up to previous window:
-	      if (this.state.selectedWindowIndex > 0) {
-	        var prevWindowIndex = this.state.selectedWindowIndex - 1;
-	        var prevWindow = this.props.filteredWindows[prevWindowIndex];
-	        var prevTabCount = this.props.searchStr.length > 0 ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count();
-	
-	        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 });
-	      }
-	    }
-	  },
-	  handleNextSelection: function handleNextSelection(byPage) {
-	    if (this.props.filteredWindows.length === 0) {
-	      return;
-	    }
-	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
-	    var tabCount = this.props.searchStr.length > 0 ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
-	
-	    // We'd prefer to use expanded state of window rather then open/closed state,
-	    // but that's hidden in the component...
-	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex + 1 < tabCount && !byPage) {
-	      this.setState({ selectedTabIndex: this.state.selectedTabIndex + 1 });
-	    } else {
-	      // Already on last tab, try to advance to next window:
-	      if (this.state.selectedWindowIndex + 1 < this.props.filteredWindows.length) {
-	        this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 });
-	      }
-	    }
-	  },
-	  handleSelectionEnter: function handleSelectionEnter() {
-	    if (this.props.filteredWindows.length === 0) {
-	      return;
-	    }
-	
-	    // TODO: deal with this.state.selectedTabIndex==-1
-	
-	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
-	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
-	    console.log('opening: ', selectedTabItem.toJS());
-	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    var selectedWindowIndex = this.state.selectedWindowIndex;
-	    var nextFilteredWindows = nextProps.filteredWindows;
-	
-	    if (selectedWindowIndex >= nextFilteredWindows.length) {
-	      if (nextFilteredWindows.length === 0) {
-	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
-	        console.log('resetting indices');
-	      } else {
-	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
-	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
-	      }
-	    } else {
-	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
-	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
-	      this.setState({ selectedTabIndex: nextTabIndex });
-	    }
-	  },
-	  render: function render() {
-	    var winStore = this.props.winStore;
-	    var openTabCount = winStore.countOpenTabs();
-	    var openWinCount = winStore.countOpenWindows();
-	    var savedCount = winStore.countSavedWindows();
-	
-	    // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
-	    var summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.';
-	
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.popupHeader },
-	        React.createElement(_SearchBar2.default, { winStore: this.props.winStore,
-	          storeUpdateHandler: this.props.storeUpdateHandler,
-	          onSearchInput: this.props.onSearchInput,
-	          onSearchUp: this.handlePrevSelection,
-	          onSearchDown: this.handleNextSelection,
-	          onSearchEnter: this.handleSelectionEnter
-	        })
-	      ),
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.popupBody },
-	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
-	          storeUpdateHandler: this.props.storeUpdateHandler,
-	          filteredWindows: this.props.filteredWindows,
-	          appComponent: this.props.appComponent,
-	          searchStr: this.props.searchStr,
-	          searchRE: this.props.searchRE,
-	          selectedWindowIndex: this.state.selectedWindowIndex,
-	          selectedTabIndex: this.state.selectedTabIndex
-	        })
-	      ),
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.popupFooter },
-	        React.createElement(
-	          'span',
-	          { style: Util.merge(_styles2.default.closed, _styles2.default.summarySpan) },
-	          summarySentence
-	        )
-	      )
-	    );
-	  }
-	});
-	
-	exports.default = SelectablePopup;
-
-/***/ },
-/* 196 */
-/*!***********************************************************!*\
-  !*** ./src/tabli-core/src/js/components/TabWindowList.js ***!
-  \***********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 9);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 197);
-	
-	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
-	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
-	
-	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	var TabWindowList = React.createClass({
-	  displayName: 'TabWindowList',
-	  render: function render() {
-	    var focusedWindowElem = [];
-	    var openWindows = [];
-	    var savedWindows = [];
-	
-	    var filteredWindows = this.props.filteredWindows;
-	    for (var i = 0; i < filteredWindows.length; i++) {
-	      var filteredTabWindow = filteredWindows[i];
-	      var tabWindow = filteredTabWindow.tabWindow;
-	      var id = 'tabWindow' + i;
-	      var isOpen = tabWindow.open;
-	      var isFocused = tabWindow.focused;
-	      var isSelected = i === this.props.selectedWindowIndex;
-	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
-	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
-	        storeUpdateHandler: this.props.storeUpdateHandler,
-	        filteredTabWindow: filteredTabWindow, key: id,
-	        searchStr: this.props.searchStr,
-	        searchRE: this.props.searchRE,
-	        isSelected: isSelected,
-	        selectedTabIndex: selectedTabIndex,
-	        appComponent: this.props.appComponent
-	      });
-	      if (isFocused) {
-	        focusedWindowElem = windowElem;
-	      } else if (isOpen) {
-	        openWindows.push(windowElem);
-	      } else {
-	        savedWindows.push(windowElem);
-	      }
-	    }
-	
-	    var savedSection = null;
-	    if (savedWindows.length > 0) {
-	      savedSection = React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Saved Closed Windows' },
-	        savedWindows
-	      );
-	    }
-	
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Current Window' },
-	        focusedWindowElem
-	      ),
-	      React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Other Open Windows' },
-	        openWindows
-	      ),
-	      savedSection
-	    );
-	  }
-	});
-	
-	exports.default = TabWindowList;
-
-/***/ },
-/* 197 */
-/*!***************************************************************!*\
-  !*** ./src/tabli-core/src/js/components/FilteredTabWindow.js ***!
-  \***************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 9);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _reactDom = __webpack_require__(/*! react-dom */ 189);
-	
-	var ReactDOM = _interopRequireWildcard(_reactDom);
-	
-	var _immutable = __webpack_require__(/*! immutable */ 6);
-	
-	var Immutable = _interopRequireWildcard(_immutable);
-	
-	var _styles = __webpack_require__(/*! ./styles */ 174);
-	
-	var _styles2 = _interopRequireDefault(_styles);
-	
-	var _util = __webpack_require__(/*! ./util */ 177);
-	
-	var Util = _interopRequireWildcard(_util);
-	
-	var _actions = __webpack_require__(/*! ../actions */ 166);
-	
-	var actions = _interopRequireWildcard(_actions);
-	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 183);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
-	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
-	
-	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
-	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
-	
-	var _TabItem2 = _interopRequireDefault(_TabItem);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	var FilteredTabWindow = React.createClass({
-	  displayName: 'FilteredTabWindow',
-	
-	  mixins: [_Hoverable2.default],
-	
-	  getInitialState: function getInitialState() {
-	    // Note:  We initialize this with null rather than false so that it will follow
-	    // open / closed state of window
-	    return { expanded: null };
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    if (nextProps.isSelected && !this.props.isSelected) {
-	      // scroll div for this window into view:
-	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
-	    }
-	  },
-	  handleOpen: function handleOpen() {
-	    console.log('handleOpen', this, this.props);
-	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
-	  },
-	  handleClose: function handleClose(event) {
-	    // eslint-disable-line no-unused-vars
-	    // console.log("handleClose");
-	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
-	  },
-	  handleRevert: function handleRevert(event) {
-	    // eslint-disable-line no-unused-vars
-	    var appComponent = this.props.appComponent;
-	    appComponent.openRevertModal(this.props.filteredTabWindow);
-	  },
-	
-	
-	  /* expanded state follows window open/closed state unless it is
-	   * explicitly set interactively by the user
-	   */
-	  getExpandedState: function getExpandedState() {
-	    if (this.state.expanded === null) {
-	      return this.props.filteredTabWindow.tabWindow.open;
-	    }
-	    return this.state.expanded;
-	  },
-	  renderTabItems: function renderTabItems(tabWindow, tabs) {
-	    /*
-	     * We tried explicitly checking for expanded state and
-	     * returning null if not expanded, but (somewhat surprisingly) it
-	     * was no faster, even with dozens of hidden tabs
-	     */
-	    var items = [];
-	    for (var i = 0; i < tabs.count(); i++) {
-	      var id = 'tabItem-' + i;
-	      var isSelected = i === this.props.selectedTabIndex;
-	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
-	        storeUpdateHandler: this.props.storeUpdateHandler,
-	        tabWindow: tabWindow,
-	        tab: tabs.get(i),
-	        key: id,
-	        tabIndex: i,
-	        isSelected: isSelected,
-	        appComponent: this.props.appComponent
-	      });
-	      items.push(tabItem);
-	    }
-	
-	    var expanded = this.getExpandedState();
-	    var expandableContentStyle = expanded ? _styles2.default.expandablePanelContentOpen : _styles2.default.expandablePanelContentClosed;
-	    var tabListStyle = Util.merge(_styles2.default.tabList, expandableContentStyle);
-	    return React.createElement(
-	      'div',
-	      { style: tabListStyle },
-	      items
-	    );
-	  },
-	  handleExpand: function handleExpand(expand) {
-	    this.setState({ expanded: expand });
-	  },
-	  render: function render() {
-	    var filteredTabWindow = this.props.filteredTabWindow;
-	    var tabWindow = filteredTabWindow.tabWindow;
-	    var tabs;
-	    if (this.props.searchStr.length === 0) {
-	      tabs = tabWindow.tabItems;
-	    } else {
-	      tabs = filteredTabWindow.itemMatches.map(function (fti) {
-	        return fti.tabItem;
-	      });
-	    }
-	
-	    /*
-	     * optimization:  Let's only render tabItems if expanded
-	     */
-	    var expanded = this.getExpandedState();
-	    var tabItems = null;
-	    if (expanded) {
-	      tabItems = this.renderTabItems(tabWindow, tabs);
-	    } else {
-	      // render empty list of tab items to get -ve margin rollup layout right...
-	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
-	    }
-	
-	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
-	      storeUpdateHandler: this.props.storeUpdateHandler,
-	      tabWindow: tabWindow,
-	      expanded: expanded,
-	      onExpand: this.handleExpand,
-	      onOpen: this.handleOpen,
-	      onRevert: this.handleRevert,
-	      onClose: this.handleClose,
-	      appComponent: this.props.appComponent
-	    });
-	
-	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
-	    var windowStyles = Util.merge(_styles2.default.tabWindow, _styles2.default.expandablePanel, selectedStyle);
-	
-	    return React.createElement(
-	      'div',
-	      { ref: 'windowDiv', style: windowStyles, onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut },
-	      windowHeader,
-	      tabItems
-	    );
-	  }
-	});
-	
-	exports.default = FilteredTabWindow;
-
-/***/ },
-/* 198 */
 /*!******************************************!*\
   !*** ./src/tabli-core/src/js/viewRef.js ***!
   \******************************************/
