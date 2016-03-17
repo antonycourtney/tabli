@@ -163,6 +163,7 @@
 	exports.closeTab = closeTab;
 	exports.saveTab = saveTab;
 	exports.unsaveTab = unsaveTab;
+	exports.setActiveTab = setActiveTab;
 	
 	var _lodash = __webpack_require__(/*! lodash */ 4);
 	
@@ -633,6 +634,57 @@
 	    // It's neither open nor saved, so just get rid of it...
 	    updItems = tabWindow.tabItems.splice(index, 1);
 	  }
+	
+	  return tabWindow.set('tabItems', updItems);
+	}
+	
+	/**
+	 * Set the active tab in a window to the tab with specified tabId
+	 *
+	 * @param {TabWindow} tabWindow -- tab window to be updated
+	 * @param {tabId} activeTabId - chrome tab id of active tab
+	 *
+	 * @return {TabWindow} tabWindow updated with specified tab as active tab.
+	 */
+	function setActiveTab(tabWindow, tabId) {
+	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.open && ti.openTabId === tabId;
+	  });
+	
+	  if (!tabPos) {
+	    console.warn("setActiveTab -- tab id not found: ", tabId);
+	    return tabWindow;
+	  }
+	
+	  var _tabPos = _slicedToArray(tabPos, 2);
+	
+	  var index = _tabPos[0];
+	  var tabItem = _tabPos[1];
+	
+	  if (tabItem.active) {
+	    console.log("setActiveTab: tab was already active, igoring");
+	    return tabWindow;
+	  }
+	
+	  var prevPos = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.active;
+	  });
+	
+	  var nonActiveItems;
+	  if (prevPos) {
+	    var _prevPos = _slicedToArray(prevPos, 2);
+	
+	    var prevIndex = _prevPos[0];
+	    var prevActiveTab = _prevPos[1];
+	
+	    var updPrevActiveTab = prevActiveTab.set('active', false);
+	    nonActiveItems = tabWindow.tabItems.splice(prevIndex, 1, updPrevActiveTab);
+	  } else {
+	    nonActiveItems = tabWindow.tabItems;
+	  }
+	
+	  var updActiveTab = tabItem.set('active', true);
+	  var updItems = nonActiveItems.splice(index, 1, updActiveTab);
 	
 	  return tabWindow.set('tabItems', updItems);
 	}
@@ -20693,6 +20745,12 @@
 	    key: 'handleTabUnsaved',
 	    value: function handleTabUnsaved(tabWindow, tabItem) {
 	      var updWindow = TabWindow.unsaveTab(tabWindow, tabItem);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabActivated',
+	    value: function handleTabActivated(tabWindow, tabId) {
+	      var updWindow = TabWindow.setActiveTab(tabWindow, tabId);
 	      return this.registerTabWindow(updWindow);
 	    }
 	

@@ -388,3 +388,42 @@ export function unsaveTab(tabWindow, tabItem) {
 
   return tabWindow.set('tabItems', updItems);
 }
+
+/**
+ * Set the active tab in a window to the tab with specified tabId
+ *
+ * @param {TabWindow} tabWindow -- tab window to be updated
+ * @param {tabId} activeTabId - chrome tab id of active tab
+ *
+ * @return {TabWindow} tabWindow updated with specified tab as active tab.
+ */ 
+export function setActiveTab(tabWindow, tabId) {
+  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
+
+  if (!tabPos) {
+    console.warn("setActiveTab -- tab id not found: ", tabId);
+    return tabWindow;
+  }
+
+  const [index, tabItem] = tabPos;
+  if (tabItem.active) {
+    console.log("setActiveTab: tab was already active, igoring");
+    return tabWindow;
+  }
+
+  const prevPos = tabWindow.tabItems.findEntry((ti) => ti.active )
+
+  var nonActiveItems;
+  if (prevPos) {
+    const [prevIndex, prevActiveTab] = prevPos;
+    const updPrevActiveTab = prevActiveTab.set('active', false);
+    nonActiveItems = tabWindow.tabItems.splice(prevIndex, 1, updPrevActiveTab);
+  } else {
+    nonActiveItems = tabWindow.tabItems;
+  }
+
+  const updActiveTab = tabItem.set('active',true);
+  const updItems = nonActiveItems.splice(index, 1, updActiveTab);
+
+  return tabWindow.set('tabItems',updItems);
+}

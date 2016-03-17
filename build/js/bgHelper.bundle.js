@@ -196,6 +196,7 @@ webpackJsonp([0],{
 	}
 	
 	function registerEventHandlers(uf) {
+	  // window events:
 	  chrome.windows.onRemoved.addListener(function (windowId) {
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(windowId);
@@ -214,6 +215,24 @@ webpackJsonp([0],{
 	      return state.setCurrentWindow(windowId);
 	    });
 	  }, { windowTypes: ['normal'] });
+	
+	  // tab events:
+	  chrome.tabs.onCreated.addListener(function (tab) {
+	    console.log("tabs.onCreated: ", tab);
+	  });
+	  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+	    console.log("tabs.onUpdated: ", tabId, changeInfo, tab);
+	  });
+	  chrome.tabs.onActivated.addListener(function (activeInfo) {
+	    uf(function (state) {
+	      var tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
+	      if (!tabWindow) {
+	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId);
+	      }
+	      var st = tabWindow ? state.handleTabActivated(tabWindow, activeInfo.tabId) : state;
+	      return st;
+	    });
+	  });
 	}
 	
 	function main() {

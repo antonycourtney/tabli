@@ -69,7 +69,10 @@ X BUG: Revert causes window to temporarily disappear from window list
 
 
 =======
-- Need to check on handling of 'focused'
+- Re-run manual test of saving windows (changes around focused handling)
+
+- Issue with selected tab and keyboard navigation: No longer starts with tab in "Current Window" or able to select Current Window tabs via up / down keys
+
 
 
 
