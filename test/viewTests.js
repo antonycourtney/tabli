@@ -1,16 +1,16 @@
 'use strict';
 
 import * as fs from 'fs';
-import * as actions from '../src/js/actions';
+import * as actions from '../src/tabli-core/src/js/actions';
 import './testHelper';
 import test from 'tape';
 import React from 'react';
 import * as ReactTestUtils from 'react-addons-test-utils'
-import ViewRef from '../src/js/viewRef';
-import TabManagerState from '../src/js/tabManagerState';
-import TabliPopup from '../src/js/components/Popup';
-import SearchBar from '../src/js/components/SearchBar';
-import TabItem from '../src/js/components/TabItem';
+import ViewRef from '../src/tabli-core/src/js/viewRef';
+import TabManagerState from '../src/tabli-core/src/js/tabManagerState';
+import TabliPopup from '../src/tabli-core/src/js/components/Popup';
+import SearchBar from '../src/tabli-core/src/js/components/SearchBar';
+import TabItem from '../src/tabli-core/src/js/components/TabItem';
 import * as sinon from 'sinon';
 
 function getWindowSnap() {

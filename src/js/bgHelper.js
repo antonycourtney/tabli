@@ -146,6 +146,10 @@ function makeRenderListener(storeRef) {
   function renderAndSave() {
     const winStore = storeRef.getValue();
     console.log("renderAndSave");
+    if (winStore === window.savedStore) {
+      console.log("renderAndSave: current and save store match, skipping render...");
+      return;
+    }
     /* Let's create a dummy app element to render our current store
      * React.renderToString() will remount the component, so really want a fresh element here with exactly
      * the store state we wish to render and save.

@@ -110,6 +110,8 @@ export default class TabManagerState extends Immutable.Record({
     */
     const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 
+    console.log("syncChromeWindow: id: ", chromeWindow.id,", tabWindow===prevTabWindow: ", tabWindow===prevTabWindow );
+
     const stReg = this.registerTabWindow(tabWindow);
 
     // if window has focus, update current window id:
@@ -132,10 +134,17 @@ export default class TabManagerState extends Immutable.Record({
 
     var closedWindows = _.filter(tabWindows, (tw) => !chromeIdSet.has(tw.openWindowId));
 
+    console.log("syncWindowList: closedWindows: ", closedWindows);
+
     var closedWinStore = _.reduce(closedWindows, (acc, tw) => acc.handleTabWindowClosed(tw), this);
 
+    console.log("syncWindowList: closedWinStore===this:", closedWinStore===this );
+
     // Now update all open windows:
-    return _.reduce(chromeWindowList, (acc, cw) => acc.syncChromeWindow(cw), closedWinStore);
+    const nextSt = _.reduce(chromeWindowList, (acc, cw) => acc.syncChromeWindow(cw), closedWinStore);
+
+    console.log("syncWindowList: nextSt===this: ", nextSt===this);
+    return nextSt;
   }
 
   setCurrentWindow(windowId) {

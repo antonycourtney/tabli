@@ -20835,6 +20835,8 @@
 	      */
 	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 	
+	      console.log("syncChromeWindow: id: ", chromeWindow.id, ", tabWindow===prevTabWindow: ", tabWindow === prevTabWindow);
+	
 	      var stReg = this.registerTabWindow(tabWindow);
 	
 	      // if window has focus, update current window id:
@@ -20862,14 +20864,21 @@
 	        return !chromeIdSet.has(tw.openWindowId);
 	      });
 	
+	      console.log("syncWindowList: closedWindows: ", closedWindows);
+	
 	      var closedWinStore = _.reduce(closedWindows, function (acc, tw) {
 	        return acc.handleTabWindowClosed(tw);
 	      }, this);
 	
+	      console.log("syncWindowList: closedWinStore===this:", closedWinStore === this);
+	
 	      // Now update all open windows:
-	      return _.reduce(chromeWindowList, function (acc, cw) {
+	      var nextSt = _.reduce(chromeWindowList, function (acc, cw) {
 	        return acc.syncChromeWindow(cw);
 	      }, closedWinStore);
+	
+	      console.log("syncWindowList: nextSt===this: ", nextSt === this);
+	      return nextSt;
 	    }
 	  }, {
 	    key: 'setCurrentWindow',
@@ -41298,7 +41307,7 @@
 	/**
 	 * get all open Chrome windows and synchronize state with our tab window store
 	 *
-	 * @param {function} cb -- callback to updated state
+	 * @param {function} cb -- callback to update state
 	 */
 	function syncChromeWindows(cb) {
 	  var t_preGet = performance.now();

@@ -17,7 +17,7 @@ export function syncChromeWindowById(windowId, cb) {
 /**
  * get all open Chrome windows and synchronize state with our tab window store
  *
- * @param {function} cb -- callback to updated state
+ * @param {function} cb -- callback to update state
  */
 export function syncChromeWindows(cb) {
   var t_preGet = performance.now();

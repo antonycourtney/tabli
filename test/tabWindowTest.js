@@ -1,6 +1,6 @@
 
 import test from 'tape';
-import * as TabWindow from '../src/js/tabWindow';
+import * as TabWindow from '../src/tabli-core/src/js/tabWindow';
 import difflet from 'difflet';
 
 function dumpDiffs(objA, objB) {
@@ -88,7 +88,7 @@ test('makeFolderTabWindow', (t) => {
       savedFolderId: '431',
       open: false,
       openWindowId: -1,
-      focused: false,
+      windowType: "",
       tabItems: [
         {
           url: 'https://github.com/mbostock/d3/wiki/API-Reference',
@@ -481,7 +481,7 @@ test('chromeTabWindow', (t) => {
       savedFolderId: -1,
       open: true,
       openWindowId: 442,
-      focused: false,
+      windowType: 'normal',
       tabItems: [
         {
           url: 'http://facebook.github.io/react/docs/component-api.html',
@@ -585,7 +585,7 @@ test('chromeTabWindow', (t) => {
 
   // dumpDiffs(tabWindowJS,expectedTabWindow);
 
-  t.deepEqual(tabWindowJS, expectedTabWindow, 'makeFolderTabWindow basic functionality');
+  t.deepEqual(tabWindowJS, expectedTabWindow, 'chromeTabWindow basic functionality');
 
   // Check that title matches active tab:
   const baseTitle = baseTabWindow.title;

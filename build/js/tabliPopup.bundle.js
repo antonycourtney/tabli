@@ -84,6 +84,7 @@ webpackJsonp([2],{
 	
 	      // And set current focused window:
 	      var nextStore = syncStore.setCurrentWindow(currentWindowId);
+	      console.log("doRender: syncStore===savedStore: ", syncStore === savedStore, ", nextStore: ", nextStore === savedStore);
 	      storeRef.setValue(nextStore);
 	
 	      // logHTML("Updated savedHTML", renderedString);
@@ -93,6 +94,7 @@ webpackJsonp([2],{
 	    }));
 	  }
 	
+	  // Just for curiosity, let's assume saved HTML up-to-date...
 	  setTimeout(doRender, 0);
 	}
 	
