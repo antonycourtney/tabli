@@ -69,6 +69,13 @@ export default class TabManagerState extends Immutable.Record({
     return this.registerTabWindow(updWindow);
   }
 
+  handleTabUpdated(tabWindow, tab) {
+    console.log("handleTabUpdated: before: ", tabWindow.toJS());
+    const updWindow = TabWindow.updateTabItem(tabWindow, tab);
+    console.log("handleTabUpdated: after: ", updWindow.toJS());
+    return this.registerTabWindow(updWindow);    
+  }
+
   /**
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */

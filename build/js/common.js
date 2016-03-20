@@ -164,6 +164,7 @@
 	exports.saveTab = saveTab;
 	exports.unsaveTab = unsaveTab;
 	exports.setActiveTab = setActiveTab;
+	exports.updateTabItem = updateTabItem;
 	
 	var _lodash = __webpack_require__(/*! lodash */ 4);
 	
@@ -685,6 +686,38 @@
 	
 	  var updActiveTab = tabItem.set('active', true);
 	  var updItems = nonActiveItems.splice(index, 1, updActiveTab);
+	
+	  return tabWindow.set('tabItems', updItems);
+	}
+	
+	/**
+	 * update a tabItem in a TabWindow to latest chrome tab state
+	 *
+	 * May be called with a new or an existing tab
+	 *
+	 * @param {TabWindow} tabWindow -- tab window to be updated
+	 * @param {Tab} tab - chrome tab state 
+	 *
+	 * @return {TabWindow} tabWindow with updated tab state
+	 */
+	function updateTabItem(tabWindow, tab) {
+	  var tabItem = makeOpenTabItem(tab);
+	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
+	    return ti.open && ti.openTabId === tab.id;
+	  });
+	
+	  var updItems;
+	  if (!tabPos) {
+	    // new tab:
+	    updItems = tabWindow.tabItems.splice(tab.index, 0, tabItem);
+	  } else {
+	    var _tabPos2 = _slicedToArray(tabPos, 1);
+	
+	    var index = _tabPos2[0];
+	
+	    console.log("updateTabItem: ", index, tabItem.toJS());
+	    updItems = tabWindow.tabItems.splice(index, 1, tabItem);
+	  }
 	
 	  return tabWindow.set('tabItems', updItems);
 	}
@@ -20751,6 +20784,14 @@
 	    key: 'handleTabActivated',
 	    value: function handleTabActivated(tabWindow, tabId) {
 	      var updWindow = TabWindow.setActiveTab(tabWindow, tabId);
+	      return this.registerTabWindow(updWindow);
+	    }
+	  }, {
+	    key: 'handleTabUpdated',
+	    value: function handleTabUpdated(tabWindow, tab) {
+	      console.log("handleTabUpdated: before: ", tabWindow.toJS());
+	      var updWindow = TabWindow.updateTabItem(tabWindow, tab);
+	      console.log("handleTabUpdated: after: ", updWindow.toJS());
 	      return this.registerTabWindow(updWindow);
 	    }
 	
@@ -41486,16 +41527,8 @@
 	
 	        // We'll retrieve the latest chrome Window state and attach that:
 	        chrome.windows.get(tabWindow.openWindowId, { populate: true }, function (chromeWindow) {
-	          // Hack:  Chrome may think focus has moved to the popup itself, so let's just
-	          // set chromeWindow.focused to last focused state (tabWindow.focused)
-	
-	          // 16Mar16: Removing for now because 'focused' field removed from tabWindow,
-	          // subsumed by currentWindowId in tabManagerState.
-	          // TODO: Fix this by passing in currentWindowId from above...
-	          var focused = tabWindow.openWindowId === currentWindowId;
-	          var focusedChromeWindow = Object.assign({}, chromeWindow, { focused: focused });
 	          cb(function (state) {
-	            return state.attachBookmarkFolder(fullFolderNode, focusedChromeWindow);
+	            return state.attachBookmarkFolder(fullFolderNode, chromeWindow);
 	          });
 	        });
 	      });

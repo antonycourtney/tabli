@@ -427,3 +427,30 @@ export function setActiveTab(tabWindow, tabId) {
 
   return tabWindow.set('tabItems',updItems);
 }
+
+/**
+ * update a tabItem in a TabWindow to latest chrome tab state
+ *
+ * May be called with a new or an existing tab
+ *
+ * @param {TabWindow} tabWindow -- tab window to be updated
+ * @param {Tab} tab - chrome tab state 
+ *
+ * @return {TabWindow} tabWindow with updated tab state
+ */
+export function updateTabItem(tabWindow,tab) {
+  const tabItem = makeOpenTabItem(tab);
+  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tab.id);
+
+  var updItems;
+  if (!tabPos) {
+    // new tab:
+    updItems = tabWindow.tabItems.splice(tab.index,0,tabItem);
+  } else {
+    const [index] = tabPos;
+    console.log("updateTabItem: ", index, tabItem.toJS());
+    updItems = tabWindow.tabItems.splice(index,1,tabItem);
+  }
+
+  return tabWindow.set('tabItems',updItems);  
+}

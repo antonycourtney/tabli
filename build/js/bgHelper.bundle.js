@@ -218,19 +218,48 @@ webpackJsonp([0],{
 	
 	  // tab events:
 	  chrome.tabs.onCreated.addListener(function (tab) {
-	    console.log("tabs.onCreated: ", tab);
+	    uf(function (state) {
+	      var tabWindow = state.getTabWindowByChromeId(tab.windowId);
+	      if (!tabWindow) {
+	        console.warn("tabs.onCreated: window id not found: ", tab.windowId);
+	        return state;
+	      }
+	      return state.handleTabUpdated(tabWindow, tab);
+	    });
 	  });
 	  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-	    console.log("tabs.onUpdated: ", tabId, changeInfo, tab);
+	    uf(function (state) {
+	      var tabWindow = state.getTabWindowByChromeId(tab.windowId);
+	      if (!tabWindow) {
+	        console.warn("tabs.onUpdated: window id not found: ", tab.windowId);
+	        return state;
+	      }
+	      return state.handleTabUpdated(tabWindow, tab);
+	    });
 	  });
 	  chrome.tabs.onActivated.addListener(function (activeInfo) {
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
 	      if (!tabWindow) {
 	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId);
+	        return state;
 	      }
 	      var st = tabWindow ? state.handleTabActivated(tabWindow, activeInfo.tabId) : state;
 	      return st;
+	    });
+	  });
+	  chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+	    uf(function (state) {
+	      var tabWindow = state.getTabWindowByChromeId(removeInfo.windowId);
+	      if (!tabWindow) {
+	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId);
+	        return state;
+	      }
+	      if (removeInfo.isWindowClosing) {
+	        // window closing, ignore...
+	        return state;
+	      }
+	      return state.handleTabClosed(tabWindow, tabId);
 	    });
 	  });
 	}
