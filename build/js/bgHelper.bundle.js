@@ -16,6 +16,10 @@ webpackJsonp([0],{
 	
 	var Tabli = _interopRequireWildcard(_index);
 	
+	var _lodash = __webpack_require__(/*! lodash */ 4);
+	
+	var _ = _interopRequireWildcard(_lodash);
+	
 	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
@@ -30,14 +34,12 @@ webpackJsonp([0],{
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	/**
-	 * Background helper page.
-	 * Gathering bookmark and window state and places in local storage so that
-	 * popup rendering will be as fast as possible
-	 */
+	var TabManagerState = Tabli.TabManagerState; /**
+	                                              * Background helper page.
+	                                              * Gathering bookmark and window state and places in local storage so that
+	                                              * popup rendering will be as fast as possible
+	                                              */
 	
-	
-	var TabManagerState = Tabli.TabManagerState;
 	var TabWindow = Tabli.TabWindow;
 	var Popup = Tabli.components.Popup;
 	var actions = Tabli.actions;
@@ -176,7 +178,7 @@ webpackJsonp([0],{
 	  function renderAndSave() {
 	    var winStore = storeRef.getValue();
 	    console.log("renderAndSave");
-	    if (winStore === window.savedStore) {
+	    if (winStore.equals(window.savedStore)) {
 	      console.log("renderAndSave: current and save store match, skipping render...");
 	      return;
 	    }
@@ -232,6 +234,7 @@ webpackJsonp([0],{
 	    });
 	  });
 	  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+	    console.log("tabs.onUpdated: changeInfo: ", changeInfo);
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(tab.windowId);
 	      if (!tabWindow) {
@@ -256,7 +259,7 @@ webpackJsonp([0],{
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(removeInfo.windowId);
 	      if (!tabWindow) {
-	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId);
+	        console.warn("tabs.onActivated: window id not found: ", removeInfo.windowId);
 	        return state;
 	      }
 	      if (removeInfo.isWindowClosing) {
@@ -284,14 +287,33 @@ webpackJsonp([0],{
 	
 	      // And call it once to get started:
 	      renderListener();
-	      window.storeRef.on('change', renderListener);
+	
+	      /*
+	       * The renderListener is just doing a background render to enable us to
+	       * display an initial server-rendered preview of the HTML when opening the popup
+	       * and (hopefully) speed up the actual render since DOM changes should be
+	       * minimized.
+	       *
+	       * Let's throttle this way down to avoid spending too many cycles building
+	       * this non-interactive preview.
+	       */
+	      var throttledRenderListener = _.debounce(renderListener, 2000);
+	      window.storeRef.on('change', throttledRenderListener);
 	
 	      setupConnectionListener(window.storeRef);
 	
 	      var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
 	      registerEventHandlers(storeRefUpdater);
-	      invokeLater(function () {
-	        return actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
+	
+	      /*
+	       * OK, this really shows limits of our refUpdater strategy, which conflates the
+	       * state updater action with the notion of a completion callback.
+	       * We really want to use callback chaining to ensure we don't show the popout
+	       * until after the popout is closed.
+	       */
+	      actions.closePopout(window.storeRef.getValue(), function (uf) {
+	        storeRefUpdater(uf);
+	        actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
 	      });
 	    });
 	  });

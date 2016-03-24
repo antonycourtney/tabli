@@ -159,12 +159,19 @@ const Popup = React.createClass({
      * This listener is essential for triggering a (recursive) re-render
      * in response to a state change.
      */
-    var listenerId = storeRef.addViewListener(() => {
-      console.log('TabliPopup: viewListener: updating store from storeRef');
+    const viewStateListener = () => {
+      console.log('TabliPopup: viewListener: updating popup state from storeRef');
+      const t_preSet = performance.now();
       this.setState(this.storeAsState(storeRef.getValue()));
-    });
+      const t_postSet = performance.now();
+      console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
+    };
 
-    // console.log("componentWillMount: added view listener: ", listenerId);
+    const throttledListener = _.debounce(viewStateListener, 200);
+
+    var listenerId = storeRef.addViewListener(throttledListener);
+
+    console.log("componentWillMount: added view listener: ", listenerId);
     sendHelperMessage({ listenerId });
   },
 });

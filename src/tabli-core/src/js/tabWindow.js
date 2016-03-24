@@ -329,7 +329,13 @@ export function updateWindow(tabWindow, chromeWindow) {
  */
 export function closeTab(tabWindow, tabId) {
   // console.log("closeTab: ", tabWindow, tabId);
-  var [index, tabItem] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
+  const entry = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
+
+  if (!entry) {
+    console.warn("closeTab: could not find closed tab id ", tabId);
+    return tabWindow;
+  }
+  const [index, tabItem] = entry;
 
   var updItems;
 

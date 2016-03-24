@@ -73,7 +73,16 @@ X BUG: Revert causes window to temporarily disappear from window list
 
 - Issue with selected tab and keyboard navigation: No longer starts with tab in "Current Window" or able to select Current Window tabs via up / down keys
 
+- Need to transfer focus to Search... box on click in popout
+
+- Need a way to cancel search
 
 
+- When opening windows from popout, need to use size of last normal window
 
+- window.onRemoved or tabs.onRemoved handler behaving incorrectly on saved tabs -- re-opening a saved window after tabs are closed only shown New Tab.
 
+- Something going very wrong with focus indication -- seeing multiple tabs indicated as having focus.
+(...clue: I def see this happening when opening links from TweetDeck.)
+hypothesis: updateTabItem() getting called to set active to true, without calling setActiveTab().
+Potential easy fix: call setActiveTab() if tab to be updated is active.

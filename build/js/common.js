@@ -559,15 +559,19 @@
 	 */
 	function closeTab(tabWindow, tabId) {
 	  // console.log("closeTab: ", tabWindow, tabId);
-	
-	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
+	  var entry = tabWindow.tabItems.findEntry(function (ti) {
 	    return ti.open && ti.openTabId === tabId;
 	  });
 	
-	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 2);
+	  if (!entry) {
+	    console.warn("closeTab: could not find closed tab id ", tabId);
+	    return tabWindow;
+	  }
 	
-	  var index = _tabWindow$tabItems$f2[0];
-	  var tabItem = _tabWindow$tabItems$f2[1];
+	  var _entry = _slicedToArray(entry, 2);
+	
+	  var index = _entry[0];
+	  var tabItem = _entry[1];
 	
 	
 	  var updItems;
@@ -592,13 +596,13 @@
 	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
 	 */
 	function saveTab(tabWindow, tabItem, tabNode) {
-	  var _tabWindow$tabItems$f3 = tabWindow.tabItems.findEntry(function (ti) {
+	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
 	    return ti.open && ti.openTabId === tabItem.openTabId;
 	  });
 	
-	  var _tabWindow$tabItems$f4 = _slicedToArray(_tabWindow$tabItems$f3, 1);
+	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 1);
 	
-	  var index = _tabWindow$tabItems$f4[0];
+	  var index = _tabWindow$tabItems$f2[0];
 	
 	
 	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
@@ -617,13 +621,13 @@
 	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
 	 */
 	function unsaveTab(tabWindow, tabItem) {
-	  var _tabWindow$tabItems$f5 = tabWindow.tabItems.findEntry(function (ti) {
+	  var _tabWindow$tabItems$f3 = tabWindow.tabItems.findEntry(function (ti) {
 	    return ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId;
 	  });
 	
-	  var _tabWindow$tabItems$f6 = _slicedToArray(_tabWindow$tabItems$f5, 1);
+	  var _tabWindow$tabItems$f4 = _slicedToArray(_tabWindow$tabItems$f3, 1);
 	
-	  var index = _tabWindow$tabItems$f6[0];
+	  var index = _tabWindow$tabItems$f4[0];
 	
 	
 	  var updTabItem = resetOpenItem(tabItem);
@@ -20789,9 +20793,7 @@
 	  }, {
 	    key: 'handleTabUpdated',
 	    value: function handleTabUpdated(tabWindow, tab) {
-	      console.log("handleTabUpdated: before: ", tabWindow.toJS());
 	      var updWindow = TabWindow.updateTabItem(tabWindow, tab);
-	      console.log("handleTabUpdated: after: ", updWindow.toJS());
 	      return this.registerTabWindow(updWindow);
 	    }
 	
@@ -20834,9 +20836,6 @@
 	      }
 	      */
 	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
-	
-	      console.log("syncChromeWindow: id: ", chromeWindow.id, ", tabWindow===prevTabWindow: ", tabWindow === prevTabWindow);
-	
 	      var stReg = this.registerTabWindow(tabWindow);
 	
 	      // if window has focus, update current window id:
@@ -20863,21 +20862,14 @@
 	      var closedWindows = _.filter(tabWindows, function (tw) {
 	        return !chromeIdSet.has(tw.openWindowId);
 	      });
-	
-	      console.log("syncWindowList: closedWindows: ", closedWindows);
-	
 	      var closedWinStore = _.reduce(closedWindows, function (acc, tw) {
 	        return acc.handleTabWindowClosed(tw);
 	      }, this);
-	
-	      console.log("syncWindowList: closedWinStore===this:", closedWinStore === this);
 	
 	      // Now update all open windows:
 	      var nextSt = _.reduce(chromeWindowList, function (acc, cw) {
 	        return acc.syncChromeWindow(cw);
 	      }, closedWinStore);
-	
-	      console.log("syncWindowList: nextSt===this: ", nextSt === this);
 	      return nextSt;
 	    }
 	  }, {
@@ -21178,12 +21170,19 @@
 	     * This listener is essential for triggering a (recursive) re-render
 	     * in response to a state change.
 	     */
-	    var listenerId = storeRef.addViewListener(function () {
-	      console.log('TabliPopup: viewListener: updating store from storeRef');
+	    var viewStateListener = function viewStateListener() {
+	      console.log('TabliPopup: viewListener: updating popup state from storeRef');
+	      var t_preSet = performance.now();
 	      _this.setState(_this.storeAsState(storeRef.getValue()));
-	    });
+	      var t_postSet = performance.now();
+	      console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
+	    };
 	
-	    // console.log("componentWillMount: added view listener: ", listenerId);
+	    var throttledListener = _.debounce(viewStateListener, 200);
+	
+	    var listenerId = storeRef.addViewListener(throttledListener);
+	
+	    console.log("componentWillMount: added view listener: ", listenerId);
 	    sendHelperMessage({ listenerId: listenerId });
 	  }
 	});
@@ -41277,6 +41276,7 @@
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
 	exports.showHelp = showHelp;
+	exports.closePopout = closePopout;
 	exports.showPopout = showPopout;
 	
 	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
@@ -41565,6 +41565,18 @@
 	function showHelp() {
 	  console.log('showHelp: opening manual');
 	  chrome.tabs.create({ url: TABLI_HELP_URL });
+	}
+	
+	function closePopout(winStore, cb) {
+	  var popupTabWindows = winStore.getTabWindowsByType("popup");
+	  if (popupTabWindows.length > 0) {
+	    var ptw = popupTabWindows[0];
+	    closeWindow(ptw, cb);
+	  } else {
+	    cb(function (state) {
+	      return state;
+	    });
+	  }
 	}
 	
 	function showPopout(winStore, cb) {

@@ -59,8 +59,11 @@ function renderPopup(currentWindowId) {
 
       // And set current focused window:
       const nextStore = syncStore.setCurrentWindow(currentWindowId);
-      console.log("doRender: syncStore===savedStore: ", syncStore===savedStore, ", nextStore: ", nextStore===savedStore);
-      storeRef.setValue(nextStore);
+      if (!(nextStore.equals(savedStore))) {
+        storeRef.setValue(nextStore);
+      } else {
+        console.log("doRender: nextStore.equals(savedStore) -- skipping setValue")
+      }
 
       // logHTML("Updated savedHTML", renderedString);
       var t_postSyncUpdate = performance.now();

@@ -248,6 +248,17 @@ export function showHelp() {
   chrome.tabs.create({ url: TABLI_HELP_URL });
 }
 
+
+export function closePopout(winStore,cb) {
+  const popupTabWindows = winStore.getTabWindowsByType("popup");
+  if (popupTabWindows.length > 0) {
+    const ptw = popupTabWindows[0];
+    closeWindow(ptw,cb);
+  } else {
+    cb(state => state);
+  }
+}
+
 export function showPopout(winStore,cb) {
   console.log('showPopout: displaying popout....');
 

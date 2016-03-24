@@ -5,6 +5,7 @@
  */
 import chromeBrowser from './chromeBrowser';
 import * as Tabli from '../tabli-core/src/js/index';
+import * as _ from 'lodash';
 
 const TabManagerState = Tabli.TabManagerState;
 const TabWindow = Tabli.TabWindow;
@@ -146,7 +147,7 @@ function makeRenderListener(storeRef) {
   function renderAndSave() {
     const winStore = storeRef.getValue();
     console.log("renderAndSave");
-    if (winStore === window.savedStore) {
+    if (winStore.equals(window.savedStore)) {
       console.log("renderAndSave: current and save store match, skipping render...");
       return;
     }
@@ -205,6 +206,7 @@ function registerEventHandlers(uf) {
       });
     });
     chrome.tabs.onUpdated.addListener((tabId,changeInfo,tab) => {
+      console.log("tabs.onUpdated: changeInfo: ", changeInfo);
       uf(state => {
         const tabWindow = state.getTabWindowByChromeId(tab.windowId);
         if (!tabWindow) {
@@ -229,7 +231,7 @@ function registerEventHandlers(uf) {
       uf(state => {
         const tabWindow = state.getTabWindowByChromeId(removeInfo.windowId);
         if (!tabWindow) {
-          console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId);
+          console.warn("tabs.onActivated: window id not found: ", removeInfo.windowId);
           return state;
         }
         if (removeInfo.isWindowClosing) {
@@ -257,14 +259,35 @@ function main() {
 
       // And call it once to get started:
       renderListener();
-      window.storeRef.on('change', renderListener);
+
+      /*
+       * The renderListener is just doing a background render to enable us to
+       * display an initial server-rendered preview of the HTML when opening the popup
+       * and (hopefully) speed up the actual render since DOM changes should be
+       * minimized.
+       *
+       * Let's throttle this way down to avoid spending too many cycles building
+       * this non-interactive preview.
+       */
+      const throttledRenderListener = _.debounce(renderListener, 2000);
+      window.storeRef.on('change', throttledRenderListener);
 
       setupConnectionListener(window.storeRef);
 
 
       const storeRefUpdater = refUpdater(window.storeRef);
-      registerEventHandlers(storeRefUpdater);      
-      invokeLater(() => actions.showPopout(window.storeRef.getValue(),storeRefUpdater));
+      registerEventHandlers(storeRefUpdater);
+
+      /*
+       * OK, this really shows limits of our refUpdater strategy, which conflates the
+       * state updater action with the notion of a completion callback.
+       * We really want to use callback chaining to ensure we don't show the popout
+       * until after the popout is closed.
+       */
+      actions.closePopout(window.storeRef.getValue(),(uf) => {
+        storeRefUpdater(uf);      
+        actions.showPopout(window.storeRef.getValue(),storeRefUpdater);
+      });
     });
   });
 }
