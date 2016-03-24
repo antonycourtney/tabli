@@ -26,7 +26,7 @@ const TabItem = React.createClass({
     if (!this.props.tab.open) {
       return;
     }
-    var tabId = this.props.tab.openTabId;
+    var tabId = this.props.tab.openState.openTabId;
     actions.closeTab(this.props.tabWindow, tabId, this.props.storeUpdateHandler);
   },
 
@@ -85,7 +85,8 @@ const TabItem = React.createClass({
       tabCheckItem = <div style={Styles.headerButton} />;
     }
 
-    var fiSrc = tab.favIconUrl ? tab.favIconUrl : '';
+    const favIconUrl = tab.open ? tab.openState.favIconUrl : null;
+    var fiSrc = favIconUrl ? favIconUrl : '';
 
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {

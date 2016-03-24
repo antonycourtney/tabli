@@ -5,39 +5,68 @@ import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 
 /**
+ * Tab state that is persisted as a bookmark
+ */
+const SavedTabState = Immutable.Record({
+  bookmarkId: '',
+  bookmarkIndex: 0,   // position in bookmark folder
+  title: '',
+  url: ''  
+});
+
+
+/**
+ * Tab state associated with an open browser tab
+ */
+const OpenTabState = Immutable.Record({
+  url: '',
+  openTabId: -1,
+  active: false,
+  openTabIndex: 0,  // index of open tab in its window
+  favIconUrl: '',
+  title: '',
+  audible: false  
+});
+
+
+/**
  * An item in a tabbed window.
  *
  * May be associated with an open tab, a bookmark, or both
  */
 export class TabItem extends Immutable.Record({
   url: '',
-  audible: false,
 
-  /* Saved state fields
-  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
-
-  // We should perhaps break these out into their own Record type
   saved: false,
-  savedBookmarkId: '',
-  savedBookmarkIndex: 0,   // position in bookmark folder
-  savedTitle: '',
+  savedState: null, // SavedTabState iff saved
 
-  // Note: Must be kept in sync with resetSavedItem
-  // Again: Suggests we should possibly break these out into their own record type
   open: false,    // Note: Saved tabs may be closed even when containing window is open
-  openTabId: -1,
-  active: false,
-  openTabIndex: 0,  // index of open tab in its window
-  favIconUrl: '',
-  tabTitle: '',
+  openState: null // OpenTabState iff open
 }) {
   get title() {
     if (this.open) {
-      return this.tabTitle;
+      return this.openState.title;
     }
 
-    return this.savedTitle;
+    return this.savedState.title;
   }
+}
+
+/**
+ * Initialize saved tab state from a bookmark
+ */
+function makeSavedTabState(bm) {
+  const url = _.get(bm,'url','');
+  if (url.length===0) {
+    console.warn('makeSavedTabState: malformed bookmark: missing URL!: ', bm);    
+  }
+  const ts = new SavedTabState({
+    url,
+    title: _.get(bm,'title',url),
+    bookmarkId: bm.id,
+    bookmarkIndex: bm.index
+  });
+  return ts;
 }
 
 /**
@@ -46,52 +75,46 @@ export class TabItem extends Immutable.Record({
  * Returned TabItem is closed (not associated with an open tab)
  */
 function makeBookmarkedTabItem(bm) {
-  var urlStr = bm.url;
-  if (!urlStr) {
-    console.error('makeBookmarkedTabItem: Malformed bookmark: missing URL!: ', bm);
-    urlStr = '';  // better than null or undefined!
-  }
-
-  if (bm.title === undefined) {
-    console.warn('makeBookmarkedTabItem: Bookmark title undefined (ignoring...): ', bm);
-  }
+  const savedState = makeSavedTabState(bm);
 
   const tabItem = new TabItem({
-    url: urlStr,
-
+    url: savedState.url,
     saved: true,
-    savedTitle: _.get(bm, 'title', urlStr),
-
-    savedBookmarkId: bm.id,
-    savedBookmarkIndex: bm.index,
+    savedState
   });
-
   return tabItem;
+}
+
+/**
+ * initialize OpenTabState from a browser tab
+ */
+function makeOpenTabState(tab) {
+  const url = _.get(tab,'url','');
+  if (url.length===0) {
+    console.warn('makeOpenTabState: no URL for tab: ', tab);    
+  }
+  const ts = new OpenTabState({
+    url,
+    audible: tab.audible,
+    favIconUrl: tab.favIconUrl,
+    title: _.get(tab, 'title', url),
+    openTabId: tab.id,
+    active: tab.active,
+    openTabIndex: tab.index
+  });
+  return ts;
 }
 
 /**
  * Initialize a TabItem from an open Chrome tab
  */
 function makeOpenTabItem(tab) {
-  var urlStr = tab.url;
-  if (!urlStr) {
-    console.error('malformed tab -- no URL: ', tab);
-    urlStr = '';
-  }
-  /*
-    if (!tab.title) {
-      console.warn("tab missing title (ignoring...): ", tab);
-    }
-*/
+  const openState = makeOpenTabState(tab);
+
   const tabItem = new TabItem({
-    url: urlStr,
-    audible: tab.audible,
-    favIconUrl: tab.favIconUrl,
+    url: openState.url,
     open: true,
-    tabTitle: _.get(tab, 'title', urlStr),
-    openTabId: tab.id,
-    active: tab.active,
-    openTabIndex: tab.index,
+    openState
   });
   return tabItem;
 }
@@ -100,14 +123,14 @@ function makeOpenTabItem(tab) {
  * Returns the base saved state of a tab item (no open tab info)
  */
 function resetSavedItem(ti) {
-  return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
+  return ti.remove('open').remove('openState');
 }
 
 /**
  * Return the base state of an open tab (no saved tab info)
  */
 function resetOpenItem(ti) {
-  return ti.remove('saved').remove('savedBookmarkId').remove('savedBookmarkIndex').remove('savedTitle');
+  return ti.remove('saved').remove('savedState');
 }
 
 /**
@@ -145,7 +168,7 @@ export class TabWindow extends Immutable.Record({
       return this.savedTitle;
     }
 
-    const activeTab = this.tabItems.find((t) => t.active);
+    const activeTab = this.tabItems.find((t) => t.open && t.openState.active);
 
     if (!activeTab) {
       // shouldn't happen!
@@ -258,9 +281,7 @@ function getOpenTabInfo(tabItems, openTabs) {
   function mergeTabItems(openItems, mergeSavedItems) {
     const savedItem = mergeSavedItems.get(0);
     return openItems.map((openItem) => openItem.set('saved', true)
-                                        .set('savedBookmarkId', savedItem.savedBookmarkId)
-                                        .set('savedBookmarkIndex', savedItem.savedBookmarkIndex)
-                                        .set('savedTitle', savedItem.savedTitle));
+                                        .set('savedState', savedItem.savedState));
   }
 
   const mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
@@ -292,8 +313,8 @@ function mergeOpenTabs(tabItems, openTabs) {
   /* TODO: Use algorithm from OLDtabWindow.js to determine tab order.
    * For now, let's just concat open and closed tabs, in their sorted order.
    */
-  const openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy((ti) => ti.openTabIndex);
-  const closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy((ti) => ti.savedBookmarkIndex);
+  const openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy((ti) => ti.openState.openTabIndex);
+  const closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy((ti) => ti.savedState.bookmarkIndex);
 
   const mergedTabItems = openTabItems.concat(closedTabItems);
 
@@ -329,7 +350,7 @@ export function updateWindow(tabWindow, chromeWindow) {
  */
 export function closeTab(tabWindow, tabId) {
   // console.log("closeTab: ", tabWindow, tabId);
-  const entry = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
+  const entry = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
 
   if (!entry) {
     console.warn("closeTab: could not find closed tab id ", tabId);
@@ -359,12 +380,12 @@ export function closeTab(tabWindow, tabId) {
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function saveTab(tabWindow, tabItem, tabNode) {
-  var [index] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabItem.openTabId);
+  var [index] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabItem.openState.openTabId);
+
+  const savedState = new SavedTabState(tabNode);
 
   const updTabItem = tabItem.set('saved', true)
-                      .set('savedTitle', tabNode.title)
-                      .set('savedBookmarkId', tabNode.id)
-                      .set('savedBookmarkIndex', tabNode.index);
+                      .set('savedState', savedState);
 
   const updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 
@@ -380,8 +401,7 @@ export function saveTab(tabWindow, tabItem, tabNode) {
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function unsaveTab(tabWindow, tabItem) {
-  var [index] = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId);
-
+  var [index] = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.savedState.bookmarkId === tabItem.savedState.bookmarkId);
   const updTabItem = resetOpenItem(tabItem);
 
   var updItems;
@@ -404,7 +424,7 @@ export function unsaveTab(tabWindow, tabItem) {
  * @return {TabWindow} tabWindow updated with specified tab as active tab.
  */ 
 export function setActiveTab(tabWindow, tabId) {
-  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tabId);
+  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
 
   if (!tabPos) {
     console.warn("setActiveTab -- tab id not found: ", tabId);
@@ -417,18 +437,20 @@ export function setActiveTab(tabWindow, tabId) {
     return tabWindow;
   }
 
-  const prevPos = tabWindow.tabItems.findEntry((ti) => ti.active )
+  const prevPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.active )
 
   var nonActiveItems;
   if (prevPos) {
     const [prevIndex, prevActiveTab] = prevPos;
-    const updPrevActiveTab = prevActiveTab.set('active', false);
+    const updPrevOpenState = prevActiveTab.openState.remove('active');
+    const updPrevActiveTab = prevActiveTab.set('openState', updPrevOpenState);
     nonActiveItems = tabWindow.tabItems.splice(prevIndex, 1, updPrevActiveTab);
   } else {
     nonActiveItems = tabWindow.tabItems;
   }
 
-  const updActiveTab = tabItem.set('active',true);
+  const updOpenState = tabItem.openState.set('active',true);
+  const updActiveTab = tabItem.set('openState',updOpenState);
   const updItems = nonActiveItems.splice(index, 1, updActiveTab);
 
   return tabWindow.set('tabItems',updItems);
@@ -445,8 +467,11 @@ export function setActiveTab(tabWindow, tabId) {
  * @return {TabWindow} tabWindow with updated tab state
  */
 export function updateTabItem(tabWindow,tab) {
+  /* TODO: Not quite right -- if tab.url differs from previous tabs[tabPos].url, may need to
+   * split or merge tabItems
+   */
   const tabItem = makeOpenTabItem(tab);
-  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openTabId === tab.id);
+  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tab.id);
 
   var updItems;
   if (!tabPos) {

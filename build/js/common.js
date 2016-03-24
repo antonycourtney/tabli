@@ -186,6 +186,29 @@
 	
 	
 	/**
+	 * Tab state that is persisted as a bookmark
+	 */
+	var SavedTabState = Immutable.Record({
+	  bookmarkId: '',
+	  bookmarkIndex: 0, // position in bookmark folder
+	  title: '',
+	  url: ''
+	});
+	
+	/**
+	 * Tab state associated with an open browser tab
+	 */
+	var OpenTabState = Immutable.Record({
+	  url: '',
+	  openTabId: -1,
+	  active: false,
+	  openTabIndex: 0, // index of open tab in its window
+	  favIconUrl: '',
+	  title: '',
+	  audible: false
+	});
+	
+	/**
 	 * An item in a tabbed window.
 	 *
 	 * May be associated with an open tab, a bookmark, or both
@@ -204,91 +227,89 @@
 	    key: 'title',
 	    get: function get() {
 	      if (this.open) {
-	        return this.tabTitle;
+	        return this.openState.title;
 	      }
 	
-	      return this.savedTitle;
+	      return this.savedState.title;
 	    }
 	  }]);
 	
 	  return TabItem;
 	}(Immutable.Record({
 	  url: '',
-	  audible: false,
 	
-	  /* Saved state fields
-	  /* NOTE!  Must be sure to keep these in sync with mergeTabItems() */
-	
-	  // We should perhaps break these out into their own Record type
 	  saved: false,
-	  savedBookmarkId: '',
-	  savedBookmarkIndex: 0, // position in bookmark folder
-	  savedTitle: '',
+	  savedState: null, // SavedTabState iff saved
 	
-	  // Note: Must be kept in sync with resetSavedItem
-	  // Again: Suggests we should possibly break these out into their own record type
 	  open: false, // Note: Saved tabs may be closed even when containing window is open
-	  openTabId: -1,
-	  active: false,
-	  openTabIndex: 0, // index of open tab in its window
-	  favIconUrl: '',
-	  tabTitle: ''
+	  openState: null // OpenTabState iff open
 	}));
+	
+	/**
+	 * Initialize saved tab state from a bookmark
+	 */
+	
+	
+	function makeSavedTabState(bm) {
+	  var url = _.get(bm, 'url', '');
+	  if (url.length === 0) {
+	    console.warn('makeSavedTabState: malformed bookmark: missing URL!: ', bm);
+	  }
+	  var ts = new SavedTabState({
+	    url: url,
+	    title: _.get(bm, 'title', url),
+	    bookmarkId: bm.id,
+	    bookmarkIndex: bm.index
+	  });
+	  return ts;
+	}
 	
 	/**
 	 * Initialize a TabItem from a bookmark
 	 *
 	 * Returned TabItem is closed (not associated with an open tab)
 	 */
-	
-	
 	function makeBookmarkedTabItem(bm) {
-	  var urlStr = bm.url;
-	  if (!urlStr) {
-	    console.error('makeBookmarkedTabItem: Malformed bookmark: missing URL!: ', bm);
-	    urlStr = ''; // better than null or undefined!
-	  }
-	
-	  if (bm.title === undefined) {
-	    console.warn('makeBookmarkedTabItem: Bookmark title undefined (ignoring...): ', bm);
-	  }
+	  var savedState = makeSavedTabState(bm);
 	
 	  var tabItem = new TabItem({
-	    url: urlStr,
-	
+	    url: savedState.url,
 	    saved: true,
-	    savedTitle: _.get(bm, 'title', urlStr),
-	
-	    savedBookmarkId: bm.id,
-	    savedBookmarkIndex: bm.index
+	    savedState: savedState
 	  });
-	
 	  return tabItem;
+	}
+	
+	/**
+	 * initialize OpenTabState from a browser tab
+	 */
+	function makeOpenTabState(tab) {
+	  var url = _.get(tab, 'url', '');
+	  if (url.length === 0) {
+	    console.warn('makeOpenTabState: no URL for tab: ', tab);
+	  }
+	  var ts = new OpenTabState({
+	    url: url,
+	    audible: tab.audible,
+	    favIconUrl: tab.favIconUrl,
+	    title: _.get(tab, 'title', url),
+	    openTabId: tab.id,
+	    active: tab.active,
+	    openTabIndex: tab.index
+	  });
+	  return ts;
 	}
 	
 	/**
 	 * Initialize a TabItem from an open Chrome tab
 	 */
 	function makeOpenTabItem(tab) {
-	  var urlStr = tab.url;
-	  if (!urlStr) {
-	    console.error('malformed tab -- no URL: ', tab);
-	    urlStr = '';
-	  }
-	  /*
-	    if (!tab.title) {
-	      console.warn("tab missing title (ignoring...): ", tab);
-	    }
-	  */
+	  var openState = makeOpenTabState(tab);
+	
 	  var tabItem = new TabItem({
-	    url: urlStr,
-	    audible: tab.audible,
-	    favIconUrl: tab.favIconUrl,
+	    url: openState.url,
 	    open: true,
-	    tabTitle: _.get(tab, 'title', urlStr),
-	    openTabId: tab.id,
-	    active: tab.active,
-	    openTabIndex: tab.index
+	    openState: openState
 	  });
 	  return tabItem;
 	}
@@ -297,14 +318,14 @@
 	 * Returns the base saved state of a tab item (no open tab info)
 	 */
 	function resetSavedItem(ti) {
-	  return ti.remove('open').remove('tabTitle').remove('openTabId').remove('active').remove('openTabIndex').remove('favIconUrl');
+	  return ti.remove('open').remove('openState');
 	}
 	
 	/**
 	 * Return the base state of an open tab (no saved tab info)
 	 */
 	function resetOpenItem(ti) {
-	  return ti.remove('saved').remove('savedBookmarkId').remove('savedBookmarkIndex').remove('savedTitle');
+	  return ti.remove('saved').remove('savedState');
 	}
 	
 	/**
@@ -335,7 +356,7 @@
 	      }
 	
 	      var activeTab = this.tabItems.find(function (t) {
-	        return t.active;
+	        return t.open && t.openState.active;
 	      });
 	
 	      if (!activeTab) {
@@ -487,7 +508,7 @@
 	  function mergeTabItems(openItems, mergeSavedItems) {
 	    var savedItem = mergeSavedItems.get(0);
 	    return openItems.map(function (openItem) {
-	      return openItem.set('saved', true).set('savedBookmarkId', savedItem.savedBookmarkId).set('savedBookmarkIndex', savedItem.savedBookmarkIndex).set('savedTitle', savedItem.savedTitle);
+	      return openItem.set('saved', true).set('savedState', savedItem.savedState);
 	    });
 	  }
 	
@@ -523,10 +544,10 @@
 	   * For now, let's just concat open and closed tabs, in their sorted order.
 	   */
 	  var openTabItems = tabInfo.get(true, Immutable.Seq()).sortBy(function (ti) {
-	    return ti.openTabIndex;
+	    return ti.openState.openTabIndex;
 	  });
 	  var closedTabItems = tabInfo.get(false, Immutable.Seq()).sortBy(function (ti) {
-	    return ti.savedBookmarkIndex;
+	    return ti.savedState.bookmarkIndex;
 	  });
 	
 	  var mergedTabItems = openTabItems.concat(closedTabItems);
@@ -560,7 +581,7 @@
 	function closeTab(tabWindow, tabId) {
 	  // console.log("closeTab: ", tabWindow, tabId);
 	  var entry = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tabId;
+	    return ti.open && ti.openState.openTabId === tabId;
 	  });
 	
 	  if (!entry) {
@@ -597,7 +618,7 @@
 	 */
 	function saveTab(tabWindow, tabItem, tabNode) {
 	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tabItem.openTabId;
+	    return ti.open && ti.openState.openTabId === tabItem.openState.openTabId;
 	  });
 	
 	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 1);
@@ -605,7 +626,9 @@
 	  var index = _tabWindow$tabItems$f2[0];
 	
 	
-	  var updTabItem = tabItem.set('saved', true).set('savedTitle', tabNode.title).set('savedBookmarkId', tabNode.id).set('savedBookmarkIndex', tabNode.index);
+	  var savedState = new SavedTabState(tabNode);
+	
+	  var updTabItem = tabItem.set('saved', true).set('savedState', savedState);
 	
 	  var updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 	
@@ -622,13 +645,12 @@
 	 */
 	function unsaveTab(tabWindow, tabItem) {
 	  var _tabWindow$tabItems$f3 = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.saved && ti.savedBookmarkId === tabItem.savedBookmarkId;
+	    return ti.saved && ti.savedState.bookmarkId === tabItem.savedState.bookmarkId;
 	  });
 	
 	  var _tabWindow$tabItems$f4 = _slicedToArray(_tabWindow$tabItems$f3, 1);
 	
 	  var index = _tabWindow$tabItems$f4[0];
-	
 	
 	  var updTabItem = resetOpenItem(tabItem);
 	
@@ -653,7 +675,7 @@
 	 */
 	function setActiveTab(tabWindow, tabId) {
 	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tabId;
+	    return ti.open && ti.openState.openTabId === tabId;
 	  });
 	
 	  if (!tabPos) {
@@ -672,7 +694,7 @@
 	  }
 	
 	  var prevPos = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.active;
+	    return ti.open && ti.openState.active;
 	  });
 	
 	  var nonActiveItems;
@@ -682,13 +704,15 @@
 	    var prevIndex = _prevPos[0];
 	    var prevActiveTab = _prevPos[1];
 	
-	    var updPrevActiveTab = prevActiveTab.set('active', false);
+	    var updPrevOpenState = prevActiveTab.openState.remove('active');
+	    var updPrevActiveTab = prevActiveTab.set('openState', updPrevOpenState);
 	    nonActiveItems = tabWindow.tabItems.splice(prevIndex, 1, updPrevActiveTab);
 	  } else {
 	    nonActiveItems = tabWindow.tabItems;
 	  }
 	
-	  var updActiveTab = tabItem.set('active', true);
+	  var updOpenState = tabItem.openState.set('active', true);
+	  var updActiveTab = tabItem.set('openState', updOpenState);
 	  var updItems = nonActiveItems.splice(index, 1, updActiveTab);
 	
 	  return tabWindow.set('tabItems', updItems);
@@ -705,9 +729,12 @@
 	 * @return {TabWindow} tabWindow with updated tab state
 	 */
 	function updateTabItem(tabWindow, tab) {
+	  /* TODO: Not quite right -- if tab.url differs from previous tabs[tabPos].url, may need to
+	   * split or merge tabItems
+	   */
 	  var tabItem = makeOpenTabItem(tab);
 	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openTabId === tab.id;
+	    return ti.open && ti.openState.openTabId === tab.id;
 	  });
 	
 	  var updItems;
@@ -41448,7 +41475,7 @@
 	              chrome.windows.update(tabWindow.openWindowId, { focused: true });
 	            });
 	      */
-	      tabliBrowser.activateTab(tab.openTabId, function () {
+	      tabliBrowser.activateTab(tab.openState.openTabId, function () {
 	        tabliBrowser.setFocusedWindow(tabWindow.openWindowId);
 	      });
 	    } else {
@@ -44307,7 +44334,7 @@
 	    if (!this.props.tab.open) {
 	      return;
 	    }
-	    var tabId = this.props.tab.openTabId;
+	    var tabId = this.props.tab.openState.openTabId;
 	    actions.closeTab(this.props.tabWindow, tabId, this.props.storeUpdateHandler);
 	  },
 	  handleBookmarkTabItem: function handleBookmarkTabItem(event) {
@@ -44361,7 +44388,8 @@
 	      tabCheckItem = React.createElement('div', { style: _styles2.default.headerButton });
 	    }
 	
-	    var fiSrc = tab.favIconUrl ? tab.favIconUrl : '';
+	    var favIconUrl = tab.open ? tab.openState.favIconUrl : null;
+	    var fiSrc = favIconUrl ? favIconUrl : '';
 	
 	    // Skip the chrome FAVICONs; they just throw when accessed.
 	    if (fiSrc.indexOf('chrome://theme/') === 0) {

@@ -78,103 +78,95 @@ test('makeFolderTabWindow', (t) => {
   const tabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
   const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()));
 
-  //console.log("makeFolderTabWindow returned:");
-  //console.log(JSON.stringify(tabWindowJS,null,2));
+/*
+  console.log("makeFolderTabWindow returned:");
+  console.log(">>>>>>>");
+  console.log(JSON.stringify(tabWindowJS,null,2));
+  console.log(">>>>>>>");
+*/
 
   const expectedTabWindow =
-     {
-      saved: true,
-      savedTitle: 'd3 docs',
-      savedFolderId: '431',
-      open: false,
-      openWindowId: -1,
-      windowType: "",
-      tabItems: [
+    {
+      "saved": true,
+      "savedTitle": "d3 docs",
+      "savedFolderId": "431",
+      "open": false,
+      "openWindowId": -1,
+      "windowType": "",
+      "tabItems": [
         {
-          url: 'https://github.com/mbostock/d3/wiki/API-Reference',
-          saved: true,
-          savedBookmarkId: '432',
-          savedBookmarkIndex: 0,
-          savedTitle: 'API Reference · mbostock/d3 Wiki',
-          open: false,
-          openTabId: -1,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: '',
-          tabTitle: '',
-          audible: false,
+          "url": "https://github.com/mbostock/d3/wiki/API-Reference",
+          "saved": true,
+          "savedState": {
+            "bookmarkId": "432",
+            "bookmarkIndex": 0,
+            "title": "API Reference · mbostock/d3 Wiki",
+            "url": "https://github.com/mbostock/d3/wiki/API-Reference"
+          },
+          "open": false,
+          "openState": null
         },
         {
-          url: 'http://d3js.org/',
-          saved: true,
-          savedBookmarkId: '534',
-          savedBookmarkIndex: 1,
-          savedTitle: 'D3.js - Data-Driven Documents',
-          open: false,
-          openTabId: -1,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: '',
-          tabTitle: '',
-          audible: false,
+          "url": "http://d3js.org/",
+          "saved": true,
+          "savedState": {
+            "bookmarkId": "534",
+            "bookmarkIndex": 1,
+            "title": "D3.js - Data-Driven Documents",
+            "url": "http://d3js.org/"
+          },
+          "open": false,
+          "openState": null
         },
         {
-          url: 'https://github.com/mbostock/d3/wiki/Gallery',
-          saved: true,
-          savedBookmarkId: '535',
-          savedBookmarkIndex: 2,
-          savedTitle: 'Gallery · mbostock/d3 Wiki',
-          open: false,
-          openTabId: -1,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: '',
-          tabTitle: '',
-          audible: false,
+          "url": "https://github.com/mbostock/d3/wiki/Gallery",
+          "saved": true,
+          "savedState": {
+            "bookmarkId": "535",
+            "bookmarkIndex": 2,
+            "title": "Gallery · mbostock/d3 Wiki",
+            "url": "https://github.com/mbostock/d3/wiki/Gallery"
+          },
+          "open": false,
+          "openState": null
         },
         {
-          url: 'https://github.com/mbostock/d3/wiki/Tutorials',
-          saved: true,
-          savedBookmarkId: '536',
-          savedBookmarkIndex: 3,
-          savedTitle: 'Tutorials · mbostock/d3 Wiki',
-          open: false,
-          openTabId: -1,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: '',
-          tabTitle: '',
-          audible: false,
+          "url": "https://github.com/mbostock/d3/wiki/Tutorials",
+          "saved": true,
+          "savedState": {
+            "bookmarkId": "536",
+            "bookmarkIndex": 3,
+            "title": "Tutorials · mbostock/d3 Wiki",
+            "url": "https://github.com/mbostock/d3/wiki/Tutorials"
+          },
+          "open": false,
+          "openState": null
         },
         {
-          url: 'http://bl.ocks.org/mbostock/6123708',
-          saved: true,
-          savedBookmarkId: '537',
-          savedBookmarkIndex: 4,
-          savedTitle: 'Drag + Zoom',
-          open: false,
-          openTabId: -1,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: '',
-          tabTitle: '',
-          audible: false,
+          "url": "http://bl.ocks.org/mbostock/6123708",
+          "saved": true,
+          "savedState": {
+            "bookmarkId": "537",
+            "bookmarkIndex": 4,
+            "title": "Drag + Zoom",
+            "url": "http://bl.ocks.org/mbostock/6123708"
+          },
+          "open": false,
+          "openState": null
         },
         {
-          url: 'http://bl.ocks.org/mbostock/1667367',
-          saved: true,
-          savedBookmarkId: '613',
-          savedBookmarkIndex: 5,
-          savedTitle: 'Focus+Context via Brushing',
-          open: false,
-          openTabId: -1,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: '',
-          tabTitle: '',
-          audible: false,
-        },
-      ],
+          "url": "http://bl.ocks.org/mbostock/1667367",
+          "saved": true,
+          "savedState": {
+            "bookmarkId": "613",
+            "bookmarkIndex": 5,
+            "title": "Focus+Context via Brushing",
+            "url": "http://bl.ocks.org/mbostock/1667367"
+          },
+          "open": false,
+          "openState": null
+        }
+      ]
     };
 
   console.log('diffs between tabWindowJS and expected:');
@@ -471,116 +463,125 @@ test('chromeTabWindow', (t) => {
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
 
-  // console.log("makeChromeTabWindow returned: ");
-  // console.log(JSON.stringify(tabWindowJS,null,2));
+  console.log("makeChromeTabWindow returned: ");
+  console.log(">>>>>");
+  console.log(JSON.stringify(tabWindowJS,null,2));
+  console.log(">>>>>");
 
   const expectedTabWindow =
     {
-      saved: false,
-      savedTitle: '',
-      savedFolderId: -1,
-      open: true,
-      openWindowId: 442,
-      windowType: 'normal',
-      tabItems: [
+      "saved": false,
+      "savedTitle": "",
+      "savedFolderId": -1,
+      "open": true,
+      "openWindowId": 442,
+      "windowType": "normal",
+      "tabItems": [
         {
-          url: 'http://facebook.github.io/react/docs/component-api.html',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 443,
-          active: false,
-          openTabIndex: 0,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          tabTitle: 'Component API | React',
-          audible: false,
+          "url": "http://facebook.github.io/react/docs/component-api.html",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "http://facebook.github.io/react/docs/component-api.html",
+            "openTabId": 443,
+            "active": false,
+            "openTabIndex": 0,
+            "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+            "title": "Component API | React",
+            "audible": false
+          }
         },
         {
-          url: 'http://facebook.github.io/react/docs/tutorial.html',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 445,
-          active: false,
-          openTabIndex: 1,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          tabTitle: 'Tutorial | React',
-          audible: false,
+          "url": "http://facebook.github.io/react/docs/tutorial.html",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "http://facebook.github.io/react/docs/tutorial.html",
+            "openTabId": 445,
+            "active": false,
+            "openTabIndex": 1,
+            "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+            "title": "Tutorial | React",
+            "audible": false
+          }
         },
         {
-          url: 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 447,
-          active: false,
-          openTabIndex: 2,
-          favIconUrl: 'http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d',
-          tabTitle: 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
-          audible: false,
+          "url": "http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat",
+            "openTabId": 447,
+            "active": false,
+            "openTabIndex": 2,
+            "favIconUrl": "http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d",
+            "title": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
+            "audible": false
+          }
         },
         {
-          url: 'http://facebook.github.io/flux/docs/overview.html#content',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 449,
-          active: false,
-          openTabIndex: 3,
-          tabTitle: 'Flux | Application Architecture for Building User Interfaces',
-          audible: false,
+          "url": "http://facebook.github.io/flux/docs/overview.html#content",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "http://facebook.github.io/flux/docs/overview.html#content",
+            "openTabId": 449,
+            "active": false,
+            "openTabIndex": 3,
+            "title": "Flux | Application Architecture for Building User Interfaces",
+            "audible": false
+          }
         },
         {
-          url: 'http://fluxxor.com/',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 451,
-          active: false,
-          openTabIndex: 4,
-          favIconUrl: 'http://fluxxor.com/favicon.ico',
-          tabTitle: 'Fluxxor - Home',
-          audible: false,
+          "url": "http://fluxxor.com/",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "http://fluxxor.com/",
+            "openTabId": 451,
+            "active": false,
+            "openTabIndex": 4,
+            "favIconUrl": "http://fluxxor.com/favicon.ico",
+            "title": "Fluxxor - Home",
+            "audible": false
+          }
         },
         {
-          url: 'http://facebook.github.io/fixed-data-table/',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 453,
-          active: false,
-          openTabIndex: 5,
-          favIconUrl: 'http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png',
-          tabTitle: 'FixedDataTable',
-          audible: false,
+          "url": "http://facebook.github.io/fixed-data-table/",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "http://facebook.github.io/fixed-data-table/",
+            "openTabId": 453,
+            "active": false,
+            "openTabIndex": 5,
+            "favIconUrl": "http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png",
+            "title": "FixedDataTable",
+            "audible": false
+          }
         },
         {
-          url: 'https://developer.chrome.com/extensions/declare_permissions',
-          saved: false,
-          savedBookmarkId: '',
-          savedBookmarkIndex: 0,
-          savedTitle: '',
-          open: true,
-          openTabId: 734,
-          active: true,
-          openTabIndex: 6,
-          favIconUrl: 'https://www.google.com/images/icons/product/chrome-32.png',
-          tabTitle: 'Declare Permissions - Google Chrome',
-          audible: false,
-        },
-      ],
+          "url": "https://developer.chrome.com/extensions/declare_permissions",
+          "saved": false,
+          "savedState": null,
+          "open": true,
+          "openState": {
+            "url": "https://developer.chrome.com/extensions/declare_permissions",
+            "openTabId": 734,
+            "active": true,
+            "openTabIndex": 6,
+            "favIconUrl": "https://www.google.com/images/icons/product/chrome-32.png",
+            "title": "Declare Permissions - Google Chrome",
+            "audible": false
+          }
+        }
+      ]
     };
 
   // dumpDiffs(tabWindowJS,expectedTabWindow);

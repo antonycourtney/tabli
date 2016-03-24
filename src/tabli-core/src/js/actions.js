@@ -143,7 +143,7 @@ export function activateTab(tabWindow, tab, tabIndex, cb) {
         chrome.windows.update(tabWindow.openWindowId, { focused: true });
       });
 */
-      tabliBrowser.activateTab(tab.openTabId, () => {
+      tabliBrowser.activateTab(tab.openState.openTabId, () => {
         tabliBrowser.setFocusedWindow(tabWindow.openWindowId)
       })
     } else {
