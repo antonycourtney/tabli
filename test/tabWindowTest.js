@@ -463,10 +463,12 @@ test('chromeTabWindow', (t) => {
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
 
+/*
   console.log("makeChromeTabWindow returned: ");
   console.log(">>>>>");
   console.log(JSON.stringify(tabWindowJS,null,2));
   console.log(">>>>>");
+*/
 
   const expectedTabWindow =
     {

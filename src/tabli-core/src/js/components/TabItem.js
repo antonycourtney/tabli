@@ -97,12 +97,12 @@ const TabItem = React.createClass({
 
     var tabFavIcon = (fiSrc.length > 0) ? <img style={Styles.favIcon} src={fiSrc} /> : emptyFavIcon;
 
-    var tabActiveStyle = tab.active ? Styles.activeSpan : null;
+    var tabActiveStyle = (tab.open && tab.openState.active) ? Styles.activeSpan : null;
     var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
     var hoverStyle = this.state.hovering ? Styles.tabItemHover : null;
     var selectedStyle = this.props.isSelected ? Styles.tabItemSelected : null;
 
-    const audibleIcon = tab.audible ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null;
+    const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null;
 
     var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
     var closeButton = (

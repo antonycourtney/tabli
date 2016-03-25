@@ -206,17 +206,17 @@ function registerEventHandlers(uf) {
       });
     });
     chrome.tabs.onUpdated.addListener((tabId,changeInfo,tab) => {
-      console.log("tabs.onUpdated: changeInfo: ", changeInfo);
       uf(state => {
         const tabWindow = state.getTabWindowByChromeId(tab.windowId);
         if (!tabWindow) {
           console.warn("tabs.onUpdated: window id not found: ", tab.windowId);
           return state;
         }
-        return state.handleTabUpdated(tabWindow,tab);
+        return state.handleTabUpdated(tabWindow,tabId,changeInfo);
       });
     });
     chrome.tabs.onActivated.addListener(activeInfo => {
+      console.log("tabs.onActivated: ", activeInfo);
       uf((state) => {
         const tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
         if (!tabWindow) {

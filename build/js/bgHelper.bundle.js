@@ -234,17 +234,17 @@ webpackJsonp([0],{
 	    });
 	  });
 	  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-	    console.log("tabs.onUpdated: changeInfo: ", changeInfo);
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(tab.windowId);
 	      if (!tabWindow) {
 	        console.warn("tabs.onUpdated: window id not found: ", tab.windowId);
 	        return state;
 	      }
-	      return state.handleTabUpdated(tabWindow, tab);
+	      return state.handleTabUpdated(tabWindow, tabId, changeInfo);
 	    });
 	  });
 	  chrome.tabs.onActivated.addListener(function (activeInfo) {
+	    console.log("tabs.onActivated: ", activeInfo);
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
 	      if (!tabWindow) {

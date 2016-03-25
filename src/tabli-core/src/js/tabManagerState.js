@@ -69,8 +69,13 @@ export default class TabManagerState extends Immutable.Record({
     return this.registerTabWindow(updWindow);
   }
 
-  handleTabUpdated(tabWindow, tab) {
-    const updWindow = TabWindow.updateTabItem(tabWindow, tab);
+  handleTabCreated(tabWindow, tab) {
+    const updWindow = TabWindow.createTab(tabWindow, tab);
+    return this.registerTabWindow(updWindow);    
+  }
+
+  handleTabUpdated(tabWindow, tabId, changeInfo) {
+    const updWindow = TabWindow.updateTabItem(tabWindow, tabId, changeInfo);
     return this.registerTabWindow(updWindow);    
   }
 

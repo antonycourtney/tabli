@@ -86,3 +86,5 @@ X BUG: Revert causes window to temporarily disappear from window list
 (...clue: I def see this happening when opening links from TweetDeck.)
 hypothesis: updateTabItem() getting called to set active to true, without calling setActiveTab().
 Potential easy fix: call setActiveTab() if tab to be updated is active.
+
+- Should change TabItem.url into a property accessor
