@@ -146,9 +146,9 @@ function dumpChromeWindows() { // eslint-disable-line no-unused-vars
 function makeRenderListener(storeRef) {
   function renderAndSave() {
     const winStore = storeRef.getValue();
-    console.log("renderAndSave");
+    // console.log("renderAndSave");
     if (winStore.equals(window.savedStore)) {
-      console.log("renderAndSave: current and save store match, skipping render...");
+      // console.log("renderAndSave: current and save store match, skipping render...");
       return;
     }
     /* Let's create a dummy app element to render our current store
@@ -202,7 +202,7 @@ function registerEventHandlers(uf) {
           console.warn("tabs.onCreated: window id not found: ", tab.windowId);
           return state;
         }
-        return state.handleTabUpdated(tabWindow,tab);
+        return state.handleTabCreated(tabWindow,tab);
       });
     });
     chrome.tabs.onUpdated.addListener((tabId,changeInfo,tab) => {
@@ -216,7 +216,7 @@ function registerEventHandlers(uf) {
       });
     });
     chrome.tabs.onActivated.addListener(activeInfo => {
-      console.log("tabs.onActivated: ", activeInfo);
+      // console.log("tabs.onActivated: ", activeInfo);
       uf((state) => {
         const tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
         if (!tabWindow) {

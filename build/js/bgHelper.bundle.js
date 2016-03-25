@@ -177,9 +177,9 @@ webpackJsonp([0],{
 	function makeRenderListener(storeRef) {
 	  function renderAndSave() {
 	    var winStore = storeRef.getValue();
-	    console.log("renderAndSave");
+	    // console.log("renderAndSave");
 	    if (winStore.equals(window.savedStore)) {
-	      console.log("renderAndSave: current and save store match, skipping render...");
+	      // console.log("renderAndSave: current and save store match, skipping render...");
 	      return;
 	    }
 	    /* Let's create a dummy app element to render our current store
@@ -230,7 +230,7 @@ webpackJsonp([0],{
 	        console.warn("tabs.onCreated: window id not found: ", tab.windowId);
 	        return state;
 	      }
-	      return state.handleTabUpdated(tabWindow, tab);
+	      return state.handleTabCreated(tabWindow, tab);
 	    });
 	  });
 	  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
@@ -244,7 +244,7 @@ webpackJsonp([0],{
 	    });
 	  });
 	  chrome.tabs.onActivated.addListener(function (activeInfo) {
-	    console.log("tabs.onActivated: ", activeInfo);
+	    // console.log("tabs.onActivated: ", activeInfo);
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
 	      if (!tabWindow) {

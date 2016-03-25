@@ -233,12 +233,19 @@
 	
 	      return this.savedState.title;
 	    }
+	  }, {
+	    key: 'url',
+	    get: function get() {
+	      if (this.open) {
+	        return this.openState.url;
+	      }
+	
+	      return this.savedState.url;
+	    }
 	  }]);
 	
 	  return TabItem;
 	}(Immutable.Record({
-	  url: '',
-	
 	  saved: false,
 	  savedState: null, // SavedTabState iff saved
 	
@@ -274,7 +281,6 @@
 	  var savedState = makeSavedTabState(bm);
 	
 	  var tabItem = new TabItem({
-	    url: savedState.url,
 	    saved: true,
 	    savedState: savedState
 	  });
@@ -308,7 +314,6 @@
 	  var openState = makeOpenTabState(tab);
 	
 	  var tabItem = new TabItem({
-	    url: openState.url,
 	    open: true,
 	    openState: openState
 	  });
@@ -544,12 +549,14 @@
 	}
 	
 	/**
-	 * Update a TabWindow by adding a newly created tab
+	 * re-merge saved and open tab items for a window.
+	 *
+	 * Called both after a new tab has been added or URL has changed in an existing tab.
 	 *
 	 * @param {TabWindow} tabWindow - TabWindow to be updated
-	 * @param {Tab} tab - newly created Chrome tab  
+	 * @param {Tab|Null} optChromeTab - optional newly created Chrome tab
 	 */
-	function createTab(tabWindow, tab) {
+	function mergeTabWindowTabItems(tabWindow, optChromeTab) {
 	  var tabItems = tabWindow.tabItems;
 	
 	  var baseSavedItems = tabItems.filter(function (ti) {
@@ -559,11 +566,21 @@
 	    return ti.open;
 	  }).map(resetOpenItem);
 	
-	  var updOpenItems = baseOpenItems.push(makeOpenTabItem(tab));
+	  var updOpenItems = optChromeTab ? baseOpenItems.toList().push(makeOpenTabItem(optChromeTab)) : baseOpenItems;
 	
-	  var mergedItems = mergeSavedOpenedTabs(baseSavedItems, updOpenItems);
+	  var mergedItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems);
 	  var updWindow = tabWindow.set('tabItems', mergedItems);
 	  return updWindow;
+	}
+	
+	/**
+	 * Update a TabWindow by adding a newly created tab
+	 *
+	 * @param {TabWindow} tabWindow - TabWindow to be updated
+	 * @param {Tab} tab - newly created Chrome tab  
+	 */
+	function createTab(tabWindow, tab) {
+	  return mergeTabWindowTabItems(tabWindow, tab);
 	}
 	
 	/**
@@ -741,9 +758,6 @@
 	 * @return {TabWindow} tabWindow with updated tab state
 	 */
 	function updateTabItem(tabWindow, tabId, changeInfo) {
-	  /* TODO: Not quite right -- if tab.url differs from previous tabs[tabPos].url, may need to
-	   * split or merge tabItems
-	   */
 	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
 	    return ti.open && ti.openState.openTabId === tabId;
 	  });
@@ -752,34 +766,34 @@
 	  if (!tabPos) {
 	    // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
 	    return tabWindow;
-	  } else {
-	    var _tabPos2 = _slicedToArray(tabPos, 2);
-	
-	    var index = _tabPos2[0];
-	    var prevTabItem = _tabPos2[1];
-	
-	    var prevOpenState = prevTabItem.openState;
-	    var updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo));
-	
-	    if (updKeys.length == 0) return TabWindow;
-	
-	    var updOpenState = _.reduce(updKeys, function (acc, k) {
-	      return acc.set(k, changeInfo[k]);
-	    }, prevOpenState);
-	    console.log("updateTabItems: updOpenState: ", updOpenState.toJS());
-	
-	    if (_.has(changeInfo, 'url')) {
-	      // May have to split or merge:
-	      console.warn("updateTabItems: TODO: url change!");
-	    }
-	
-	    var updTabItem = updKeys.length > 0 ? prevTabItem.set('openState', updOpenState) : prevTabItem;
-	
-	    // console.log("updateTabItem: ", index, updTabItem.toJS());
-	    updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 	  }
 	
-	  return tabWindow.set('tabItems', updItems);
+	  var _tabPos2 = _slicedToArray(tabPos, 2);
+	
+	  var index = _tabPos2[0];
+	  var prevTabItem = _tabPos2[1];
+	
+	  var prevOpenState = prevTabItem.openState;
+	  var updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo));
+	
+	  if (updKeys.length == 0) return TabWindow;
+	
+	  var updOpenState = _.reduce(updKeys, function (acc, k) {
+	    return acc.set(k, changeInfo[k]);
+	  }, prevOpenState);
+	
+	  var updTabItem = updKeys.length > 0 ? prevTabItem.set('openState', updOpenState) : prevTabItem;
+	
+	  // console.log("updateTabItem: ", index, updTabItem.toJS());
+	  updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
+	
+	  var updWindow = tabWindow.set('tabItems', updItems);
+	
+	  if (_.has(changeInfo, 'url')) {
+	    // May have to split or the updated tabItems -- just re-merge all tabs:
+	    return mergeTabWindowTabItems(updWindow);
+	  }
+	  return updWindow;
 	}
 
 /***/ },

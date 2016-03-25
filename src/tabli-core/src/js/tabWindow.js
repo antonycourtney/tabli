@@ -35,8 +35,6 @@ const OpenTabState = Immutable.Record({
  * May be associated with an open tab, a bookmark, or both
  */
 export class TabItem extends Immutable.Record({
-  url: '',
-
   saved: false,
   savedState: null, // SavedTabState iff saved
 
@@ -49,6 +47,14 @@ export class TabItem extends Immutable.Record({
     }
 
     return this.savedState.title;
+  }
+
+  get url() {
+    if (this.open) {
+      return this.openState.url;
+    }
+
+    return this.savedState.url;
   }
 }
 
@@ -78,7 +84,6 @@ function makeBookmarkedTabItem(bm) {
   const savedState = makeSavedTabState(bm);
 
   const tabItem = new TabItem({
-    url: savedState.url,
     saved: true,
     savedState
   });
@@ -112,7 +117,6 @@ function makeOpenTabItem(tab) {
   const openState = makeOpenTabState(tab);
 
   const tabItem = new TabItem({
-    url: openState.url,
     open: true,
     openState
   });
@@ -309,6 +313,28 @@ function mergeOpenTabs(tabItems, openTabs) {
 }
 
 
+
+/**
+ * re-merge saved and open tab items for a window.
+ *
+ * Called both after a new tab has been added or URL has changed in an existing tab.
+ *
+ * @param {TabWindow} tabWindow - TabWindow to be updated
+ * @param {Tab|Null} optChromeTab - optional newly created Chrome tab
+ */
+function mergeTabWindowTabItems(tabWindow, optChromeTab) {
+  const tabItems = tabWindow.tabItems;
+
+  const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
+  const baseOpenItems = tabItems.filter(ti => ti.open).map(resetOpenItem);
+
+  const updOpenItems = optChromeTab ? baseOpenItems.toList().push(makeOpenTabItem(optChromeTab)) : baseOpenItems;
+
+  const mergedItems = mergeSavedOpenTabs(baseSavedItems,updOpenItems);
+  const updWindow = tabWindow.set('tabItems',mergedItems);
+  return updWindow;
+}
+
 /**
  * Update a TabWindow by adding a newly created tab
  *
@@ -316,16 +342,7 @@ function mergeOpenTabs(tabItems, openTabs) {
  * @param {Tab} tab - newly created Chrome tab  
  */
 export function createTab(tabWindow, tab) {
-  const tabItems = tabWindow.tabItems;
-
-  const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
-  const baseOpenItems = tabItems.filter(ti => ti.open).map(resetOpenItem);
-
-  const updOpenItems = baseOpenItems.push(makeOpenTabItem(tab));
-
-  const mergedItems = mergeSavedOpenedTabs(baseSavedItems,updOpenItems);
-  const updWindow = tabWindow.set('tabItems',mergedItems);
-  return updWindow;
+  return mergeTabWindowTabItems(tabWindow, tab);
 }
 
 /**
@@ -475,36 +492,33 @@ export function setActiveTab(tabWindow, tabId) {
  * @return {TabWindow} tabWindow with updated tab state
  */
 export function updateTabItem(tabWindow,tabId,changeInfo) {
-  /* TODO: Not quite right -- if tab.url differs from previous tabs[tabPos].url, may need to
-   * split or merge tabItems
-   */
   const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
 
   var updItems;
   if (!tabPos) {
     // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
     return tabWindow;
-  } else {
-    const [index, prevTabItem] = tabPos;
-    const prevOpenState = prevTabItem.openState;
-    const updKeys = _.intersection(_.keys(prevOpenState.toJS()),_.keys(changeInfo));
-
-    if (updKeys.length==0)
-      return TabWindow;
-    
-    const updOpenState = _.reduce(updKeys,(acc,k) => acc.set(k,changeInfo[k]),prevOpenState);
-    console.log("updateTabItems: updOpenState: ", updOpenState.toJS());
-
-    if (_.has(changeInfo,'url')) {
-      // May have to split or merge:
-      console.warn("updateTabItems: TODO: url change!");   
-    }
-
-    const updTabItem = (updKeys.length > 0) ? prevTabItem.set('openState',updOpenState) : prevTabItem;
-
-    // console.log("updateTabItem: ", index, updTabItem.toJS());
-    updItems = tabWindow.tabItems.splice(index,1,updTabItem);
   }
+  const [index, prevTabItem] = tabPos;
+  const prevOpenState = prevTabItem.openState;
+  const updKeys = _.intersection(_.keys(prevOpenState.toJS()),_.keys(changeInfo));
 
-  return tabWindow.set('tabItems',updItems);  
+  if (updKeys.length==0)
+    return TabWindow;
+  
+  const updOpenState = _.reduce(updKeys,(acc,k) => acc.set(k,changeInfo[k]),prevOpenState);
+
+  const updTabItem = (updKeys.length > 0) ? prevTabItem.set('openState',updOpenState) : prevTabItem;
+
+  // console.log("updateTabItem: ", index, updTabItem.toJS());
+  updItems = tabWindow.tabItems.splice(index,1,updTabItem);
+  
+  const updWindow = tabWindow.set('tabItems',updItems);  
+
+  if (_.has(changeInfo,'url')) {
+    // May have to split or the updated tabItems -- just re-merge all tabs:
+    return mergeTabWindowTabItems(updWindow);
+  }
+  return updWindow;
 }
+
