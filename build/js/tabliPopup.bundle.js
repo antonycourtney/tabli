@@ -16,11 +16,11 @@ webpackJsonp([2],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 189);
+	var _reactDom = __webpack_require__(/*! react-dom */ 191);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
-	var _utils = __webpack_require__(/*! ./utils */ 197);
+	var _utils = __webpack_require__(/*! ./utils */ 192);
 	
 	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
 	
@@ -156,7 +156,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 197:
+/***/ 192:
 /*!*************************!*\
   !*** ./src/js/utils.js ***!
   \*************************/

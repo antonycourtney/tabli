@@ -24,7 +24,7 @@ webpackJsonp([0],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 195);
+	var _server = __webpack_require__(/*! react-dom/server */ 189);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
@@ -354,7 +354,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 195:
+/***/ 189:
 /*!*******************************!*\
   !*** ./~/react-dom/server.js ***!
   \*******************************/

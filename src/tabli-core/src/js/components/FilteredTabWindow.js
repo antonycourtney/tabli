@@ -21,10 +21,13 @@ const FilteredTabWindow = React.createClass({
   },
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.isSelected && !this.props.isSelected) {
+    // If this window becomes either focused or selected:
+    /*
+    if ((nextProps.isFocused && !this.props.isFocused) || (nextProps.isSelected && !this.props.isSelected)) {
       // scroll div for this window into view:
-      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoViewIfNeeded();
+      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoView(If);
     }
+    */
   },
 
   handleOpen() {
@@ -124,10 +127,19 @@ const FilteredTabWindow = React.createClass({
       />);
 
     var selectedStyle = this.props.isSelected ? Styles.tabWindowSelected : null;
-    var windowStyles = Util.merge(Styles.tabWindow, Styles.expandablePanel, selectedStyle);
+    var focusedStyle = this.props.isFocused ? Styles.tabWindowFocused : null;
+    var windowStyles = Util.merge(Styles.tabWindow, Styles.expandablePanel, selectedStyle, focusedStyle);
 
+    var windowDivProps = {
+      style: windowStyles,
+      onMouseOver: this.handleMouseOver,
+      onMouseOut: this.handleMouseOut
+    };
+    if (this.props.focusedRef!=null) {
+      windowDivProps.ref = this.props.focusedRef;
+    }
     return (
-      <div ref="windowDiv" style={windowStyles} onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} >
+      <div {...windowDivProps} >
         {windowHeader}
         {tabItems}
       </div>

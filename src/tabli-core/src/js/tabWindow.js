@@ -95,9 +95,6 @@ function makeBookmarkedTabItem(bm) {
  */
 function makeOpenTabState(tab) {
   const url = _.get(tab,'url','');
-  if (url.length===0) {
-    console.warn('makeOpenTabState: no URL for tab: ', tab);    
-  }
   const ts = new OpenTabState({
     url,
     audible: tab.audible,

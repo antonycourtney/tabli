@@ -4,6 +4,10 @@ import FilteredTabWindow from './FilteredTabWindow';
 import WindowListSection from './WindowListSection';
 
 const TabWindowList = React.createClass({
+
+
+
+
   render() {
     var focusedWindowElem = [];
     var openWindows = [];
@@ -17,6 +21,7 @@ const TabWindowList = React.createClass({
       var isOpen = tabWindow.open;
       var isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
       var isSelected = (i === this.props.selectedWindowIndex);
+      var focusedRefCb = isFocused ? this.props.setFocusedTabWindowRef : null;
       const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
       var windowElem = (
         <FilteredTabWindow winStore={this.props.winStore}
@@ -25,12 +30,15 @@ const TabWindowList = React.createClass({
           searchStr={this.props.searchStr}
           searchRE={this.props.searchRE}
           isSelected={isSelected}
+          isFocused={isFocused}
+          focusedRef={focusedRefCb}
           selectedTabIndex={selectedTabIndex}
           appComponent={this.props.appComponent}
         />);
       if (isFocused) {
         focusedWindowElem = windowElem;
-      } else if (isOpen) {
+      }
+      if (isOpen) {
         openWindows.push(windowElem);
       } else {
         savedWindows.push(windowElem);
@@ -48,10 +56,7 @@ const TabWindowList = React.createClass({
 
     return (
       <div>
-        <WindowListSection title="Current Window">
-          {focusedWindowElem}
-        </WindowListSection>
-        <WindowListSection title="Other Open Windows">
+        <WindowListSection title="Open Windows">
           {openWindows}
         </WindowListSection>
         {savedSection}

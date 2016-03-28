@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Styles from './styles';
 import * as Util from './util';
+import * as Constants from './constants';
 
 import * as actions from '../actions';
 import SearchBar from './SearchBar';
@@ -109,6 +110,20 @@ const SelectablePopup = React.createClass({
     }
   },
 
+  // callback used with ref keep track of DOM node 
+  setFocusedTabWindowRef(ref) {
+    console.log("setFocusedTabWindowRef: ref: ", ref, ", bodyRef: ", this.bodyRef);
+    if ((ref!=null) && (this.bodyRef!=null))  {
+      console.log("setting bodyRef.scrollTop");
+      this.bodyRef.scrollTop = ref.offsetTop - this.bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
+    }
+  },
+
+  setBodyRef(ref) {
+    console.log("setBodyRef: ", ref);
+    this.bodyRef = ref;
+  },
+
   render() {
     const winStore = this.props.winStore;
     const openTabCount = winStore.countOpenTabs();
@@ -129,7 +144,7 @@ const SelectablePopup = React.createClass({
                      onSearchEnter={this.handleSelectionEnter}
           />
         </div>
-        <div style={Styles.popupBody}>
+        <div style={Styles.popupBody} ref={this.setBodyRef}>
           <TabWindowList winStore={this.props.winStore}
                            storeUpdateHandler={this.props.storeUpdateHandler}
                            filteredWindows={this.props.filteredWindows}
@@ -138,6 +153,7 @@ const SelectablePopup = React.createClass({
                            searchRE={this.props.searchRE}
                            selectedWindowIndex={this.state.selectedWindowIndex}
                            selectedTabIndex={this.state.selectedTabIndex}
+                           setFocusedTabWindowRef={this.setFocusedTabWindowRef}
           />
          </div>
          <div style={Styles.popupFooter}>

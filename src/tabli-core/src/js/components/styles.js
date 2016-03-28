@@ -27,7 +27,10 @@ const styles = {
     margin: 10
   },
   tabWindowSelected: {
-    boxShadow: '0px 0px 5px 2px #7472ff',
+    border: '2px solid #a0a0a0'
+  },
+  tabWindowFocused: {
+    boxShadow: '0px 0px 5px 2px #7472ff'
   },
   windowHeader: {
     backgroundColor: '#ebe9eb',
