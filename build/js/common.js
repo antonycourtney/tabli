@@ -127,7 +127,7 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _viewRef = __webpack_require__(/*! ./viewRef */ 188);
+	var _viewRef = __webpack_require__(/*! ./viewRef */ 194);
 	
 	var _viewRef2 = _interopRequireDefault(_viewRef);
 	
@@ -43675,19 +43675,50 @@
 	      this.setState({ selectedTabIndex: nextTabIndex });
 	    }
 	  },
+	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
+	    var isPopup = !this.props.isPopout;
+	    console.log("updateScrollPos: bodyRef:", bodyRef, ", windowRef:", windowRef, "isPopup: ", isPopup);
+	    if (windowRef != null && bodyRef != null) {
+	      var viewportTop = bodyRef.scrollTop;
+	      var viewportHeight = bodyRef.clientHeight;
 	
+	      var windowTop = windowRef.offsetTop;
+	      var windowHeight = windowRef.scrollHeight;
 	
-	  // callback used with ref keep track of DOM node
-	  setFocusedTabWindowRef: function setFocusedTabWindowRef(ref) {
-	    console.log("setFocusedTabWindowRef: ref: ", ref, ", bodyRef: ", this.bodyRef);
-	    if (ref != null && this.bodyRef != null) {
-	      console.log("setting bodyRef.scrollTop");
-	      this.bodyRef.scrollTop = ref.offsetTop - this.bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
+	      // the annoying extra bit:
+	      var offsetTop = bodyRef.offsetTop;
+	
+	      console.log("updateScrollPos: ", { offsetTop: offsetTop, viewportTop: viewportTop, viewportHeight: viewportHeight, windowTop: windowTop, windowHeight: windowHeight });
+	
+	      if (windowTop < viewportTop || windowTop + windowHeight > viewportTop + viewportHeight || isPopup) {
+	        console.log("updateScrollPos: setting scroll position");
+	
+	        if (windowHeight > viewportHeight || isPopup) {
+	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
+	        } else {
+	          // since we know only scroll if
+	          // set padding to center taget window in viewport:
+	          var viewportPad = (viewportHeight - windowHeight) / 2;
+	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE;
+	        }
+	      }
 	    }
 	  },
+	
+	
+	  // Scrollable body (container) DOM ref
 	  setBodyRef: function setBodyRef(ref) {
 	    console.log("setBodyRef: ", ref);
 	    this.bodyRef = ref;
+	    this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
+	  },
+	
+	
+	  // DOM ref for currently focused tab window:
+	  setFocusedTabWindowRef: function setFocusedTabWindowRef(ref) {
+	    console.log("setFocusedTabWindowRef: ", ref);
+	    this.focusedWindowRef = ref;
+	    this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
 	  },
 	  render: function render() {
 	    var winStore = this.props.winStore;
@@ -43886,11 +43917,11 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 193);
+	var _FilteredTabWindow = __webpack_require__(/*! ./FilteredTabWindow */ 188);
 	
 	var _FilteredTabWindow2 = _interopRequireDefault(_FilteredTabWindow);
 	
-	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 197);
+	var _WindowListSection = __webpack_require__(/*! ./WindowListSection */ 193);
 	
 	var _WindowListSection2 = _interopRequireDefault(_WindowListSection);
 	
@@ -43962,115 +43993,6 @@
 
 /***/ },
 /* 188 */
-/*!******************************************!*\
-  !*** ./src/tabli-core/src/js/viewRef.js ***!
-  \******************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _oneref = __webpack_require__(/*! oneref */ 169);
-	
-	var OneRef = _interopRequireWildcard(_oneref);
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	/**
-	 * A wrapper around OneRef.Ref that tracks listeners by numeric id
-	 * so that we can share a ref between background page and popup
-	 * in Chrome extension and clean up when popup goes away
-	 *
-	 *
-	 */
-	
-	var ViewRef = function (_OneRef$Ref) {
-	  _inherits(ViewRef, _OneRef$Ref);
-	
-	  /**
-	   * construct a new ViewRef with initial value v
-	   */
-	
-	  function ViewRef(v) {
-	    _classCallCheck(this, ViewRef);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ViewRef).call(this, v));
-	
-	    _this.viewListeners = [];
-	    return _this;
-	  }
-	
-	  /*
-	   * Add a view listener and return its listener id
-	   *
-	   * We have our own interface here because we don't have a reliable destructor / close event
-	   * on the chrome extension popup window, and our GC technique requires us to have
-	   * numeric id's (rather than object references) that we can encode in a Chrome JSON
-	   * message
-	   */
-	
-	
-	  _createClass(ViewRef, [{
-	    key: 'addViewListener',
-	    value: function addViewListener(listener) {
-	      // check to ensure this listener not yet registered:
-	      var idx = this.viewListeners.indexOf(listener);
-	      if (idx === -1) {
-	        idx = this.viewListeners.length;
-	        this.viewListeners.push(listener);
-	        this.on('change', listener);
-	      }
-	
-	      return idx;
-	    }
-	  }, {
-	    key: 'removeViewListener',
-	    value: function removeViewListener(id) {
-	      // console.log("removeViewListener: removing listener id ", id);
-	      var listener = this.viewListeners[id];
-	      if (listener) {
-	        this.removeListener('change', listener);
-	      } else {
-	        console.warn('removeViewListener: No listener found for id ', id);
-	      }
-	
-	      delete this.viewListeners[id];
-	    }
-	  }]);
-	
-	  return ViewRef;
-	}(OneRef.Ref);
-	
-	exports.default = ViewRef;
-
-/***/ },
-/* 189 */,
-/* 190 */,
-/* 191 */
-/*!******************************!*\
-  !*** ./~/react-dom/index.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 11);
-
-
-/***/ },
-/* 192 */,
-/* 193 */
 /*!***************************************************************!*\
   !*** ./src/tabli-core/src/js/components/FilteredTabWindow.js ***!
   \***************************************************************/
@@ -44086,7 +44008,7 @@
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 191);
+	var _reactDom = __webpack_require__(/*! react-dom */ 189);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
@@ -44110,11 +44032,11 @@
 	
 	var _Hoverable2 = _interopRequireDefault(_Hoverable);
 	
-	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 194);
+	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 190);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
 	
-	var _TabItem = __webpack_require__(/*! ./TabItem */ 196);
+	var _TabItem = __webpack_require__(/*! ./TabItem */ 192);
 	
 	var _TabItem2 = _interopRequireDefault(_TabItem);
 	
@@ -44259,7 +44181,19 @@
 	exports.default = FilteredTabWindow;
 
 /***/ },
-/* 194 */
+/* 189 */
+/*!******************************!*\
+  !*** ./~/react-dom/index.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOM */ 11);
+
+
+/***/ },
+/* 190 */
 /*!**********************************************************!*\
   !*** ./src/tabli-core/src/js/components/WindowHeader.js ***!
   \**********************************************************/
@@ -44299,7 +44233,7 @@
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
 	
-	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 195);
+	var _ExpanderButton = __webpack_require__(/*! ./ExpanderButton */ 191);
 	
 	var _ExpanderButton2 = _interopRequireDefault(_ExpanderButton);
 	
@@ -44397,7 +44331,7 @@
 	exports.default = WindowHeader;
 
 /***/ },
-/* 195 */
+/* 191 */
 /*!************************************************************!*\
   !*** ./src/tabli-core/src/js/components/ExpanderButton.js ***!
   \************************************************************/
@@ -44450,7 +44384,7 @@
 	exports.default = ExpanderButton;
 
 /***/ },
-/* 196 */
+/* 192 */
 /*!*****************************************************!*\
   !*** ./src/tabli-core/src/js/components/TabItem.js ***!
   \*****************************************************/
@@ -44614,7 +44548,7 @@
 	exports.default = TabItem;
 
 /***/ },
-/* 197 */
+/* 193 */
 /*!***************************************************************!*\
   !*** ./src/tabli-core/src/js/components/WindowListSection.js ***!
   \***************************************************************/
@@ -44668,6 +44602,100 @@
 	});
 	
 	exports.default = WindowListSection;
+
+/***/ },
+/* 194 */
+/*!******************************************!*\
+  !*** ./src/tabli-core/src/js/viewRef.js ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _oneref = __webpack_require__(/*! oneref */ 169);
+	
+	var OneRef = _interopRequireWildcard(_oneref);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	/**
+	 * A wrapper around OneRef.Ref that tracks listeners by numeric id
+	 * so that we can share a ref between background page and popup
+	 * in Chrome extension and clean up when popup goes away
+	 *
+	 *
+	 */
+	
+	var ViewRef = function (_OneRef$Ref) {
+	  _inherits(ViewRef, _OneRef$Ref);
+	
+	  /**
+	   * construct a new ViewRef with initial value v
+	   */
+	
+	  function ViewRef(v) {
+	    _classCallCheck(this, ViewRef);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ViewRef).call(this, v));
+	
+	    _this.viewListeners = [];
+	    return _this;
+	  }
+	
+	  /*
+	   * Add a view listener and return its listener id
+	   *
+	   * We have our own interface here because we don't have a reliable destructor / close event
+	   * on the chrome extension popup window, and our GC technique requires us to have
+	   * numeric id's (rather than object references) that we can encode in a Chrome JSON
+	   * message
+	   */
+	
+	
+	  _createClass(ViewRef, [{
+	    key: 'addViewListener',
+	    value: function addViewListener(listener) {
+	      // check to ensure this listener not yet registered:
+	      var idx = this.viewListeners.indexOf(listener);
+	      if (idx === -1) {
+	        idx = this.viewListeners.length;
+	        this.viewListeners.push(listener);
+	        this.on('change', listener);
+	      }
+	
+	      return idx;
+	    }
+	  }, {
+	    key: 'removeViewListener',
+	    value: function removeViewListener(id) {
+	      // console.log("removeViewListener: removing listener id ", id);
+	      var listener = this.viewListeners[id];
+	      if (listener) {
+	        this.removeListener('change', listener);
+	      } else {
+	        console.warn('removeViewListener: No listener found for id ', id);
+	      }
+	
+	      delete this.viewListeners[id];
+	    }
+	  }]);
+	
+	  return ViewRef;
+	}(OneRef.Ref);
+	
+	exports.default = ViewRef;
 
 /***/ }
 /******/ ]);

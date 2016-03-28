@@ -75,8 +75,7 @@ X BUG: Revert causes window to temporarily disappear from window list
 
 - Need to transfer focus to Search... box on click in popout
 
-- Need a way to cancel search
-
+- Need a way to cancel search (essential for popout)
 
 - When opening windows from popout, need to use size of last normal window
 
@@ -88,3 +87,7 @@ hypothesis: updateTabItem() getting called to set active to true, without callin
 Potential easy fix: call setActiveTab() if tab to be updated is active.
 
 - Should change TabItem.url into a property accessor
+
+- on windowFocus change should set selectedWindow to focused window and selected tab to active tab
+
+- Should change scroll behavior to only adjust scroll position if body not 100% visible

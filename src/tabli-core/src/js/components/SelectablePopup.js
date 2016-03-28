@@ -110,19 +110,53 @@ const SelectablePopup = React.createClass({
     }
   },
 
-  // callback used with ref keep track of DOM node 
-  setFocusedTabWindowRef(ref) {
-    console.log("setFocusedTabWindowRef: ref: ", ref, ", bodyRef: ", this.bodyRef);
-    if ((ref!=null) && (this.bodyRef!=null))  {
-      console.log("setting bodyRef.scrollTop");
-      this.bodyRef.scrollTop = ref.offsetTop - this.bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
+  updateScrollPos(bodyRef,windowRef) {
+    const isPopup = !(this.props.isPopout);
+    console.log("updateScrollPos: bodyRef:", bodyRef, ", windowRef:", windowRef, "isPopup: ", isPopup);
+    if ((windowRef!=null) && (bodyRef!=null))  {
+      const viewportTop = bodyRef.scrollTop;
+      const viewportHeight = bodyRef.clientHeight;
+
+      const windowTop = windowRef.offsetTop;
+      const windowHeight = windowRef.scrollHeight;
+
+      // the annoying extra bit:
+      const offsetTop = bodyRef.offsetTop;
+
+      console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
+
+
+      if ((windowTop < viewportTop) ||
+          ((windowTop + windowHeight) > (viewportTop + viewportHeight)) ||
+          isPopup) {
+        console.log("updateScrollPos: setting scroll position");
+
+        if ((windowHeight > viewportHeight) || isPopup) {
+          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
+        } else {
+          // since we know only scroll if 
+          // set padding to center taget window in viewport:
+          const viewportPad = (viewportHeight - windowHeight) / 2;
+          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE;          
+        }
+      }
     }
   },
 
+  // Scrollable body (container) DOM ref
   setBodyRef(ref) {
     console.log("setBodyRef: ", ref);
     this.bodyRef = ref;
+    this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
   },
+
+  // DOM ref for currently focused tab window:
+  setFocusedTabWindowRef(ref) {
+    console.log("setFocusedTabWindowRef: ", ref);
+    this.focusedWindowRef = ref;
+    this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
+  },
+
 
   render() {
     const winStore = this.props.winStore;
