@@ -267,7 +267,7 @@ export function showPopout(winStore,cb) {
     const ptw = popupTabWindows[0];
     tabliBrowser.setFocusedWindow(ptw.openWindowId);
   } else {
-    chrome.windows.create({ url: "popup.html", 
+    chrome.windows.create({ url: "popout.html", 
       type: "detached_panel",
       left: 0, top: 0, 
       width: 350,

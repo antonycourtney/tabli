@@ -9,6 +9,7 @@ module.exports = {
     entry: {
       renderTest: "./src/js/renderTest.js",
       tabliPopup: "./src/js/tabliPopup.js",
+      tabliPopout: "./src/js/tabliPopout.js",
       bgHelper: "./src/js/bgHelper.js"
     },
     output: {

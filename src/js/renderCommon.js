@@ -15,6 +15,9 @@ const actions = Tabli.actions;
  * Main entry point to rendering the popup window
  */
 function renderPopup(currentWindowId,isPopout) {
+
+  console.log("renderPopup: isPopout: ", isPopout);
+
   var t_preRender = performance.now();
   var bgPage = chrome.extension.getBackgroundPage();
 

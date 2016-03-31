@@ -30,7 +30,7 @@
 /******/ 	// "0" means "already loaded"
 /******/ 	// Array means "loading", array contains callbacks
 /******/ 	var installedChunks = {
-/******/ 		3:0
+/******/ 		4:0
 /******/ 	};
 /******/
 /******/ 	// The require function
@@ -76,7 +76,7 @@
 /******/ 			script.charset = 'utf-8';
 /******/ 			script.async = true;
 /******/
-/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"bgHelper","1":"renderTest","2":"tabliPopup"}[chunkId]||chunkId) + ".bundle.js";
+/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"bgHelper","1":"renderTest","2":"tabliPopout","3":"tabliPopup"}[chunkId]||chunkId) + ".bundle.js";
 /******/ 			head.appendChild(script);
 /******/ 		}
 /******/ 	};
@@ -21121,7 +21121,7 @@
 	    };
 	  },
 	  getInitialState: function getInitialState() {
-	    var st = this.storeAsState(this.props.initialWinStore);
+	    var st = this.storeAsState(this.props.initialWinStore, true);
 	
 	    st.saveModalIsOpen = false;
 	    st.revertModalIsOpen = false;
@@ -21138,7 +21138,6 @@
 	      searchRE = new RegExp(searchStr, 'i');
 	    }
 	
-	    console.log("search input: '" + searchStr + "'");
 	    this.setState({ searchStr: searchStr, searchRE: searchRE });
 	  },
 	  openSaveModal: function openSaveModal(tabWindow) {
@@ -21218,7 +21217,8 @@
 	          filteredWindows: filteredWindows,
 	          appComponent: this,
 	          searchStr: this.state.searchStr,
-	          searchRE: this.state.searchRE
+	          searchRE: this.state.searchRE,
+	          isPopout: this.props.isPopout
 	        }),
 	        saveModal,
 	        revertModal
@@ -21244,11 +21244,13 @@
 	     * in response to a state change.
 	     */
 	    var viewStateListener = function viewStateListener() {
-	      console.log('TabliPopup: viewListener: updating popup state from storeRef');
+	      // console.log('TabliPopup: viewListener: updating popup state from storeRef');
 	      var t_preSet = performance.now();
-	      _this.setState(_this.storeAsState(storeRef.getValue()));
+	
+	      var nextStore = storeRef.getValue();
+	      _this.setState(_this.storeAsState(nextStore));
 	      var t_postSet = performance.now();
-	      console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
+	      // console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
 	    };
 	
 	    var throttledListener = _.debounce(viewStateListener, 200);
@@ -41660,7 +41662,7 @@
 	    var ptw = popupTabWindows[0];
 	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
 	  } else {
-	    chrome.windows.create({ url: "popup.html",
+	    chrome.windows.create({ url: "popout.html",
 	      type: "detached_panel",
 	      left: 0, top: 0,
 	      width: 350,
@@ -43603,7 +43605,8 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      selectedWindowIndex: 0,
-	      selectedTabIndex: 0
+	      selectedTabIndex: 0,
+	      scrolledToWindowId: -1
 	    };
 	  },
 	  handlePrevSelection: function handlePrevSelection(byPage) {
@@ -43675,10 +43678,19 @@
 	      this.setState({ selectedTabIndex: nextTabIndex });
 	    }
 	  },
+	
+	
+	  /*
+	   * We have to do some fairly horrible change detection here because
+	   * React only seems to support imperative handling of scroll position and
+	   * kbd focus
+	   */
 	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
+	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId;
+	    // console.log("updateScrollPos: scrolledTo: ", this.state.scrolledToWindowId, ", current: ",
+	    //  this.props.winStore.currentWindowId, ", needScroll: ", needScrollUpdate);
 	    var isPopup = !this.props.isPopout;
-	    console.log("updateScrollPos: bodyRef:", bodyRef, ", windowRef:", windowRef, "isPopup: ", isPopup);
-	    if (windowRef != null && bodyRef != null) {
+	    if (windowRef != null && bodyRef != null && needScrollUpdate) {
 	      var viewportTop = bodyRef.scrollTop;
 	      var viewportHeight = bodyRef.clientHeight;
 	
@@ -43688,10 +43700,9 @@
 	      // the annoying extra bit:
 	      var offsetTop = bodyRef.offsetTop;
 	
-	      console.log("updateScrollPos: ", { offsetTop: offsetTop, viewportTop: viewportTop, viewportHeight: viewportHeight, windowTop: windowTop, windowHeight: windowHeight });
-	
+	      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
 	      if (windowTop < viewportTop || windowTop + windowHeight > viewportTop + viewportHeight || isPopup) {
-	        console.log("updateScrollPos: setting scroll position");
+	        // console.log("updateScrollPos: setting scroll position");
 	
 	        if (windowHeight > viewportHeight || isPopup) {
 	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -43702,22 +43713,23 @@
 	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE;
 	        }
 	      }
+	      this.setState({ scrolledToWindowId: this.props.winStore.currentWindowId,
+	        selectedWindowIndex: this.focusedWindowIndex });
 	    }
 	  },
 	
 	
 	  // Scrollable body (container) DOM ref
 	  setBodyRef: function setBodyRef(ref) {
-	    console.log("setBodyRef: ", ref);
 	    this.bodyRef = ref;
 	    this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
 	  },
 	
 	
 	  // DOM ref for currently focused tab window:
-	  setFocusedTabWindowRef: function setFocusedTabWindowRef(ref) {
-	    console.log("setFocusedTabWindowRef: ", ref);
+	  setFocusedTabWindowRef: function setFocusedTabWindowRef(ref, windowIndex) {
 	    this.focusedWindowRef = ref;
+	    this.focusedWindowIndex = windowIndex;
 	    this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
 	  },
 	  render: function render() {
@@ -43824,7 +43836,7 @@
 	    this.props.onSearchInput(searchStr);
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
-	    console.log('handleKeyDown: ', _.omit(e, _.isObject));
+	    // console.log('handleKeyDown: ', _.omit(e, _.isObject));
 	    if (e.keyCode === Constants.KEY_F1 || e.keyCode === Constants.KEY_QUESTION && e.ctrlKey && e.shiftKey) {
 	      e.preventDefault();
 	      actions.showHelp();
@@ -43949,6 +43961,7 @@
 	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
 	        storeUpdateHandler: this.props.storeUpdateHandler,
 	        filteredTabWindow: filteredTabWindow, key: id,
+	        index: i,
 	        searchStr: this.props.searchStr,
 	        searchRE: this.props.searchRE,
 	        isSelected: isSelected,
@@ -44055,16 +44068,14 @@
 	    return { expanded: null };
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // If this window becomes either focused or selected:
-	    /*
-	    if ((nextProps.isFocused && !this.props.isFocused) || (nextProps.isSelected && !this.props.isSelected)) {
-	      // scroll div for this window into view:
-	      ReactDOM.findDOMNode(this.refs.windowDiv).scrollIntoView(If);
+	    if (nextProps.isSelected && !this.props.isSelected) {
+	      // If this window becomes selected:
+	      if (this.windowDivRef) {
+	        this.windowDivRef.scrollIntoViewIfNeeded();
+	      }
 	    }
-	    */
 	  },
 	  handleOpen: function handleOpen() {
-	    console.log('handleOpen', this, this.props);
 	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
 	  },
 	  handleClose: function handleClose(event) {
@@ -44123,6 +44134,8 @@
 	    this.setState({ expanded: expand });
 	  },
 	  render: function render() {
+	    var _this = this;
+	
 	    var filteredTabWindow = this.props.filteredTabWindow;
 	    var tabWindow = filteredTabWindow.tabWindow;
 	    var tabs;
@@ -44166,9 +44179,12 @@
 	      onMouseOver: this.handleMouseOver,
 	      onMouseOut: this.handleMouseOut
 	    };
-	    if (this.props.focusedRef != null) {
-	      windowDivProps.ref = this.props.focusedRef;
-	    }
+	    windowDivProps.ref = function (ref) {
+	      _this.windowDivRef = ref;
+	      if (_this.props.focusedRef) {
+	        _this.props.focusedRef(ref, _this.props.index);
+	      }
+	    };
 	    return React.createElement(
 	      'div',
 	      windowDivProps,

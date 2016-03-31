@@ -28,12 +28,12 @@ const Popup = React.createClass({
 
     return {
       winStore,
-      sortedWindows,
+      sortedWindows
     };
   },
 
   getInitialState() {
-    var st = this.storeAsState(this.props.initialWinStore);
+    var st = this.storeAsState(this.props.initialWinStore,true);
 
     st.saveModalIsOpen = false;
     st.revertModalIsOpen = false;
@@ -51,7 +51,6 @@ const Popup = React.createClass({
       searchRE = new RegExp(searchStr, 'i');
     }
 
-    console.log("search input: '" + searchStr + "'");
     this.setState({ searchStr, searchRE });
   },
 
@@ -135,6 +134,7 @@ const Popup = React.createClass({
             appComponent={this}
             searchStr={this.state.searchStr}
             searchRE={this.state.searchRE}
+            isPopout={this.props.isPopout}
           />
           {saveModal}
           {revertModal}
@@ -160,11 +160,13 @@ const Popup = React.createClass({
      * in response to a state change.
      */
     const viewStateListener = () => {
-      console.log('TabliPopup: viewListener: updating popup state from storeRef');
+      // console.log('TabliPopup: viewListener: updating popup state from storeRef');
       const t_preSet = performance.now();
-      this.setState(this.storeAsState(storeRef.getValue()));
+
+      const nextStore = storeRef.getValue();
+      this.setState(this.storeAsState(nextStore));
       const t_postSet = performance.now();
-      console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
+      // console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
     };
 
     const throttledListener = _.debounce(viewStateListener, 200);

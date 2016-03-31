@@ -14,7 +14,7 @@ const SearchBar = React.createClass({
   },
 
   handleKeyDown(e) {
-    console.log('handleKeyDown: ', _.omit(e, _.isObject));
+    // console.log('handleKeyDown: ', _.omit(e, _.isObject));
     if ((e.keyCode === Constants.KEY_F1) ||
         (e.keyCode === Constants.KEY_QUESTION && e.ctrlKey && e.shiftKey)) {
       e.preventDefault();

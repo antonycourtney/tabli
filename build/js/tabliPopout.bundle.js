@@ -1,9 +1,9 @@
-webpackJsonp([3],{
+webpackJsonp([2],{
 
 /***/ 0:
-/*!******************************!*\
-  !*** ./src/js/tabliPopup.js ***!
-  \******************************/
+/*!*******************************!*\
+  !*** ./src/js/tabliPopout.js ***!
+  \*******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26,7 +26,7 @@ webpackJsonp([3],{
 	 */
 	function main() {
 	  window.onload = function () {
-	    return RenderCommon.getFocusedAndRender(false);
+	    return RenderCommon.getFocusedAndRender(true);
 	  };
 	}
 	
@@ -218,4 +218,4 @@ webpackJsonp([3],{
 /***/ }
 
 });
-//# sourceMappingURL=tabliPopup.bundle.js.map
+//# sourceMappingURL=tabliPopout.bundle.js.map

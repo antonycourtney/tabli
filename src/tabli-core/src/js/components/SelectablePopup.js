@@ -34,6 +34,7 @@ const SelectablePopup = React.createClass({
     return {
       selectedWindowIndex: 0,
       selectedTabIndex: 0,
+      scrolledToWindowId: -1
     };
   },
 
@@ -110,10 +111,17 @@ const SelectablePopup = React.createClass({
     }
   },
 
+  /*
+   * We have to do some fairly horrible change detection here because
+   * React only seems to support imperative handling of scroll position and
+   * kbd focus
+   */
   updateScrollPos(bodyRef,windowRef) {
+    const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId);
+    // console.log("updateScrollPos: scrolledTo: ", this.state.scrolledToWindowId, ", current: ",
+    //  this.props.winStore.currentWindowId, ", needScroll: ", needScrollUpdate);
     const isPopup = !(this.props.isPopout);
-    console.log("updateScrollPos: bodyRef:", bodyRef, ", windowRef:", windowRef, "isPopup: ", isPopup);
-    if ((windowRef!=null) && (bodyRef!=null))  {
+    if ((windowRef!=null) && (bodyRef!=null) && needScrollUpdate) {
       const viewportTop = bodyRef.scrollTop;
       const viewportHeight = bodyRef.clientHeight;
 
@@ -123,13 +131,11 @@ const SelectablePopup = React.createClass({
       // the annoying extra bit:
       const offsetTop = bodyRef.offsetTop;
 
-      console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
-
-
+      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
       if ((windowTop < viewportTop) ||
           ((windowTop + windowHeight) > (viewportTop + viewportHeight)) ||
           isPopup) {
-        console.log("updateScrollPos: setting scroll position");
+        // console.log("updateScrollPos: setting scroll position");
 
         if ((windowHeight > viewportHeight) || isPopup) {
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -140,20 +146,21 @@ const SelectablePopup = React.createClass({
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE;          
         }
       }
+      this.setState({ scrolledToWindowId: this.props.winStore.currentWindowId, 
+        selectedWindowIndex: this.focusedWindowIndex });
     }
   },
 
   // Scrollable body (container) DOM ref
   setBodyRef(ref) {
-    console.log("setBodyRef: ", ref);
     this.bodyRef = ref;
     this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
   },
 
   // DOM ref for currently focused tab window:
-  setFocusedTabWindowRef(ref) {
-    console.log("setFocusedTabWindowRef: ", ref);
+  setFocusedTabWindowRef(ref,windowIndex) {
     this.focusedWindowRef = ref;
+    this.focusedWindowIndex = windowIndex;
     this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
   },
 

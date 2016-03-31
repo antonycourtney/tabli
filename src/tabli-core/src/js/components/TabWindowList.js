@@ -27,6 +27,7 @@ const TabWindowList = React.createClass({
         <FilteredTabWindow winStore={this.props.winStore}
           storeUpdateHandler={this.props.storeUpdateHandler}
           filteredTabWindow={filteredTabWindow} key={id}
+          index={i}
           searchStr={this.props.searchStr}
           searchRE={this.props.searchRE}
           isSelected={isSelected}
