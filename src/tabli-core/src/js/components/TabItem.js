@@ -16,7 +16,7 @@ const TabItem = React.createClass({
 
     // console.log("TabItem: handleClick: tab: ", tab);
 
-    actions.activateTab(tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
+    actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
   },
 
   handleClose() {

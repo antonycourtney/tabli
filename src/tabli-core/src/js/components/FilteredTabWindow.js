@@ -30,7 +30,7 @@ const FilteredTabWindow = React.createClass({
    },
 
   handleOpen() {
-    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+    actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
   },
 
   handleClose(event) {  // eslint-disable-line no-unused-vars

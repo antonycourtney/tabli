@@ -77,7 +77,6 @@ X BUG: Revert causes window to temporarily disappear from window list
 
 - Need a way to cancel search (essential for popout)
 
-- When opening windows from popout, need to use size of last normal window
 
 - window.onRemoved or tabs.onRemoved handler behaving incorrectly on saved tabs -- re-opening a saved window after tabs are closed only shown New Tab.
 
@@ -91,3 +90,16 @@ Potential easy fix: call setActiveTab() if tab to be updated is active.
 - on windowFocus change should set selectedWindow to focused window and selected tab to active tab
 
 - Should change scroll behavior to only adjust scroll position if body not 100% visible
+
+- FavIcons now missing in revert modal.
+
+- Getting error with bad argument when performing revert
+
+- Improve tab sorting: Use tab index
+
+
+- When opening windows from popout, need to use size of last normal window
+  X grab width and height in TabWindow
+  X pass last focused window to actions.activateTab and actions.openWindow
+  - If there is no current window for pulling width and height, should use open window 0
+  

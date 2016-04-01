@@ -7,9 +7,13 @@ import * as actions from '../actions';
 import SearchBar from './SearchBar';
 import TabWindowList from './TabWindowList';
 
-function matchingTabCount(searchStr, filteredTabWindow) {
-  var ret = (searchStr.length > 0) ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+function matchingTabs(searchStr, filteredTabWindow) {
+  var ret = (searchStr.length > 0) ? filteredTabWindow.itemMatches : filteredTabWindow.tabWindow.tabItems;
   return ret;
+}
+
+function matchingTabsCount(searchStr, filteredTabWindow) {
+  return matchingTabs(searchStr,filteredTabWindow).count();
 }
 
 function selectedTab(filteredTabWindow, searchStr, tabIndex) {
@@ -89,7 +93,7 @@ const SelectablePopup = React.createClass({
     const selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
     const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
     console.log('opening: ', selectedTabItem.toJS());
-    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+    actions.activateTab(this.props.winStore.getCurrentWindow(), selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
   },
 
   componentWillReceiveProps(nextProps) {
@@ -102,11 +106,11 @@ const SelectablePopup = React.createClass({
         console.log('resetting indices');
       } else {
         var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
-        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
+        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabsCount(this.props.searchStr, lastWindow) - 1 });
       }
     } else {
       var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
-      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
+      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabsCount(this.props.searchStr, nextSelectedWindow) - 1);
       this.setState({ selectedTabIndex: nextTabIndex });
     }
   },
@@ -146,8 +150,18 @@ const SelectablePopup = React.createClass({
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE;          
         }
       }
+      // Set the selected window and tab to the focused window and its currently active tab:
+
+      const selectedWindow = this.props.filteredWindows[this.focusedWindowIndex];
+
+      const selectedTabs = matchingTabs(this.props.searchStr,selectedWindow);
+
+      const activeEntry = selectedTabs.findEntry((t) => t.open && t.openState.active);
+      const activeTabIndex = activeEntry ? activeEntry[0] : 0;
+
       this.setState({ scrolledToWindowId: this.props.winStore.currentWindowId, 
-        selectedWindowIndex: this.focusedWindowIndex });
+        selectedWindowIndex: this.focusedWindowIndex,
+        selectedTabIndex: activeTabIndex });
     }
   },
 

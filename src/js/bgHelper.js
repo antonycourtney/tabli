@@ -187,8 +187,9 @@ function registerEventHandlers(uf) {
     chrome.windows.onFocusChanged.addListener(windowId => {
       if (windowId===chrome.windows.WINDOW_ID_NONE)
         return;
+      console.log("onFocusChanged: setting current window id to ", windowId);
       uf((state) => {
-        return state.setCurrentWindow(windowId);
+        return state.setCurrentWindowId(windowId);
       });
     },
       { windowTypes: ['normal'] }
@@ -247,48 +248,53 @@ function main() {
   initWinStore((bmStore) => {
     // console.log("init: done reading bookmarks: ", bmStore);
     // window.winStore = winStore;
-    actions.syncChromeWindows((uf) => {
-      console.log('initial sync of chrome windows complete.');
-      const syncedStore = uf(bmStore);
-      window.storeRef = new ViewRef(syncedStore);
+    chrome.windows.getCurrent(null, (currentWindow) => {
+      console.log("bgHelper: currentWindow: ", currentWindow);
+      actions.syncChromeWindows((uf) => {
+        console.log('initial sync of chrome windows complete.');
+        const syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
+        console.log("window ids in store: ", _.keys(syncedStore.windowIdMap.toJS()));
+        console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
+        window.storeRef = new ViewRef(syncedStore);
 
-      // dumpAll(winStore);
-      // dumpChromeWindows();
+        // dumpAll(winStore);
+        // dumpChromeWindows();
 
-      const renderListener = makeRenderListener(window.storeRef);
+        const renderListener = makeRenderListener(window.storeRef);
 
-      // And call it once to get started:
-      renderListener();
+        // And call it once to get started:
+        renderListener();
 
-      /*
-       * The renderListener is just doing a background render to enable us to
-       * display an initial server-rendered preview of the HTML when opening the popup
-       * and (hopefully) speed up the actual render since DOM changes should be
-       * minimized.
-       *
-       * Let's throttle this way down to avoid spending too many cycles building
-       * this non-interactive preview.
-       */
-      const throttledRenderListener = _.debounce(renderListener, 2000);
-      window.storeRef.on('change', throttledRenderListener);
+        /*
+         * The renderListener is just doing a background render to enable us to
+         * display an initial server-rendered preview of the HTML when opening the popup
+         * and (hopefully) speed up the actual render since DOM changes should be
+         * minimized.
+         *
+         * Let's throttle this way down to avoid spending too many cycles building
+         * this non-interactive preview.
+         */
+        const throttledRenderListener = _.debounce(renderListener, 2000);
+        window.storeRef.on('change', throttledRenderListener);
 
-      setupConnectionListener(window.storeRef);
+        setupConnectionListener(window.storeRef);
 
 
-      const storeRefUpdater = refUpdater(window.storeRef);
-      registerEventHandlers(storeRefUpdater);
+        const storeRefUpdater = refUpdater(window.storeRef);
+        registerEventHandlers(storeRefUpdater);
 
-      /*
-       * OK, this really shows limits of our refUpdater strategy, which conflates the
-       * state updater action with the notion of a completion callback.
-       * We really want to use callback chaining to ensure we don't show the popout
-       * until after the popout is closed.
-       */
-      actions.closePopout(window.storeRef.getValue(),(uf) => {
-        storeRefUpdater(uf);      
-        actions.showPopout(window.storeRef.getValue(),storeRefUpdater);
+        /*
+         * OK, this really shows limits of our refUpdater strategy, which conflates the
+         * state updater action with the notion of a completion callback.
+         * We really want to use callback chaining to ensure we don't show the popout
+         * until after the popout is closed.
+         */
+        actions.closePopout(window.storeRef.getValue(),(uf) => {
+          storeRefUpdater(uf);      
+          actions.showPopout(window.storeRef.getValue(),storeRefUpdater);
+        });
       });
-    });
+    });    
   });
 }
 

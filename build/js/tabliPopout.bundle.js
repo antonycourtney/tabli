@@ -109,7 +109,7 @@ webpackJsonp([2],{
 	/**
 	 * Main entry point to rendering the popup window
 	 */
-	function renderPopup(currentWindowId, isPopout) {
+	function renderPopup(currentChromeWindow, isPopout) {
 	
 	  console.log("renderPopup: isPopout: ", isPopout);
 	
@@ -159,7 +159,8 @@ webpackJsonp([2],{
 	      var syncStore = uf(savedStore);
 	
 	      // And set current focused window:
-	      var nextStore = syncStore.setCurrentWindow(currentWindowId);
+	      console.log("renderPopup: setting current window to ", currentChromeWindow);
+	      var nextStore = syncStore.setCurrentWindow(currentChromeWindow);
 	      if (!nextStore.equals(savedStore)) {
 	        storeRef.setValue(nextStore);
 	      } else {
@@ -178,8 +179,8 @@ webpackJsonp([2],{
 	}
 	
 	function getFocusedAndRender(isPopout) {
-	  chrome.windows.getCurrent(null, function (currentWindow) {
-	    renderPopup(currentWindow.id, isPopout);
+	  chrome.windows.getCurrent(null, function (currentChromeWindow) {
+	    renderPopup(currentChromeWindow, isPopout);
 	  });
 	}
 

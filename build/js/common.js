@@ -404,6 +404,8 @@
 	  open: false,
 	  openWindowId: -1,
 	  windowType: '',
+	  width: 0,
+	  height: 0,
 	
 	  tabItems: Immutable.Seq() }));
 	
@@ -418,7 +420,7 @@
 	  });
 	  var resetSavedItems = savedItems.map(resetSavedItem);
 	
-	  return tabWindow.remove('open').remove('openWindowId').remove('windowType').set('tabItems', resetSavedItems);
+	  return tabWindow.remove('open').remove('openWindowId').remove('windowType').remove('width').remove('height').set('tabItems', resetSavedItems);
 	}
 	
 	/*
@@ -466,6 +468,8 @@
 	    open: true,
 	    openWindowId: chromeWindow.id,
 	    windowType: chromeWindow.type,
+	    width: chromeWindow.width,
+	    height: chromeWindow.height,
 	    tabItems: Immutable.Seq(tabItems)
 	  });
 	
@@ -20786,6 +20790,11 @@
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 	
 	
+	function normalBrowserWindow(cw) {
+	  var isNormal = cw.type === 'normal' && _.get(cw, 'tabs', []).length > 0;
+	  return isNormal;
+	}
+	
 	var TabManagerState = function (_Immutable$Record) {
 	  _inherits(TabManagerState, _Immutable$Record);
 	
@@ -20924,7 +20933,11 @@
 	
 	  }, {
 	    key: 'syncWindowList',
-	    value: function syncWindowList(chromeWindowList) {
+	    value: function syncWindowList(rawChromeWindowList) {
+	
+	      // restrict our management to normal chrome windows that have at least 1 tab:
+	      var chromeWindowList = _.filter(rawChromeWindowList, normalBrowserWindow);
+	
 	      var tabWindows = this.getOpen();
 	
 	      // Iterate through tab windows (our current list of open windows)
@@ -20946,9 +20959,21 @@
 	      return nextSt;
 	    }
 	  }, {
+	    key: 'setCurrentWindowId',
+	    value: function setCurrentWindowId(windowId) {
+	      var nextSt = this.windowIdMap.has(windowId) ? this.set('currentWindowId', windowId) : this;
+	      return nextSt;
+	    }
+	  }, {
 	    key: 'setCurrentWindow',
-	    value: function setCurrentWindow(windowId) {
-	      return this.set('currentWindowId', windowId);
+	    value: function setCurrentWindow(chromeWindow) {
+	      var nextSt = normalBrowserWindow(chromeWindow) ? this.setCurrentWindowId(chromeWindow.id) : this;
+	      return nextSt;
+	    }
+	  }, {
+	    key: 'getCurrentWindow',
+	    value: function getCurrentWindow() {
+	      return this.getTabWindowByChromeId(this.currentWindowId);
 	    }
 	  }, {
 	    key: 'removeBookmarkIdMapEntry',
@@ -41403,7 +41428,7 @@
 	 *
 	 * N.B.: NOT exported; called from openWindow
 	 */
-	function restoreBookmarkWindow(tabWindow, cb) {
+	function restoreBookmarkWindow(lastFocusedTabWindow, tabWindow, cb) {
 	  /*
 	   * special case handling of replacing the contents of a fresh window
 	   */
@@ -41436,22 +41461,30 @@
 	      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf);
 	    } else {
 	      // normal case -- create a new window for these urls:
-	      chrome.windows.create({ url: urls, focused: true, type: 'normal' }, cf);
+	      var createData = { url: urls, focused: true, type: 'normal' };
+	      if (lastFocusedTabWindow) {
+	        createData.width = lastFocusedTabWindow.width;
+	        createData.height = lastFocusedTabWindow.height;
+	      } else {
+	        // HACK. Would be better to use dimensions of some arbitrary open window
+	        createData.width = 1024;
+	        createData.height = 768;
+	      }
+	      chrome.windows.create(createData, cf);
 	    }
 	  });
 	}
 	
-	function openWindow(tabWindow, cb) {
-	  console.log('actions.openWindow: ', tabWindow.toJS(), cb);
+	function openWindow(lastFocusedTabWindow, targetTabWindow, cb) {
 	
-	  if (tabWindow.open) {
+	  if (targetTabWindow.open) {
 	    // existing, open window -- just transfer focus
-	    chrome.windows.update(tabWindow.openWindowId, { focused: true });
+	    chrome.windows.update(targetTabWindow.openWindowId, { focused: true });
 	
 	    // TODO: update focus in winStore
 	  } else {
 	      // bookmarked window -- need to open it!
-	      restoreBookmarkWindow(tabWindow, cb);
+	      restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, cb);
 	    }
 	}
 	
@@ -41509,10 +41542,10 @@
 	}
 	
 	// activate a specific tab:
-	function activateTab(tabWindow, tab, tabIndex, cb) {
+	function activateTab(lastFocusedTabWindow, targetTabWindow, tab, tabIndex, cb) {
 	  // console.log("activateTab: ", tabWindow, tab );
 	
-	  if (tabWindow.open) {
+	  if (targetTabWindow.open) {
 	    // OK, so we know this window is open.  What about the specific tab?
 	    if (tab.open) {
 	      // Tab is already open, just make it active:
@@ -41524,12 +41557,12 @@
 	            });
 	      */
 	      tabliBrowser.activateTab(tab.openState.openTabId, function () {
-	        tabliBrowser.setFocusedWindow(tabWindow.openWindowId);
+	        tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId);
 	      });
 	    } else {
 	      // restore this bookmarked tab:
 	      var createOpts = {
-	        windowId: tabWindow.openWindowId,
+	        windowId: targetTabWindow.openWindowId,
 	        url: tab.url,
 	        index: tabIndex,
 	        active: true
@@ -41541,7 +41574,7 @@
 	  } else {
 	    // console.log("activateTab: opening non-open window");
 	    // TODO: insert our own callback so we can activate chosen tab after opening window!
-	    openWindow(tabWindow, cb);
+	    openWindow(lastFocusedTabWindow, targetTabWindow, cb);
 	  }
 	}
 	
@@ -43578,9 +43611,13 @@
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	function matchingTabCount(searchStr, filteredTabWindow) {
-	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count();
+	function matchingTabs(searchStr, filteredTabWindow) {
+	  var ret = searchStr.length > 0 ? filteredTabWindow.itemMatches : filteredTabWindow.tabWindow.tabItems;
 	  return ret;
+	}
+	
+	function matchingTabsCount(searchStr, filteredTabWindow) {
+	  return matchingTabs(searchStr, filteredTabWindow).count();
 	}
 	
 	function selectedTab(filteredTabWindow, searchStr, tabIndex) {
@@ -43658,7 +43695,7 @@
 	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
 	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
 	    console.log('opening: ', selectedTabItem.toJS());
-	    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+	    actions.activateTab(this.props.winStore.getCurrentWindow(), selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    var selectedWindowIndex = this.state.selectedWindowIndex;
@@ -43670,11 +43707,11 @@
 	        console.log('resetting indices');
 	      } else {
 	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
-	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 });
+	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabsCount(this.props.searchStr, lastWindow) - 1 });
 	      }
 	    } else {
 	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
-	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1);
+	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabsCount(this.props.searchStr, nextSelectedWindow) - 1);
 	      this.setState({ selectedTabIndex: nextTabIndex });
 	    }
 	  },
@@ -43713,8 +43750,20 @@
 	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE;
 	        }
 	      }
+	      // Set the selected window and tab to the focused window and its currently active tab:
+	
+	      var selectedWindow = this.props.filteredWindows[this.focusedWindowIndex];
+	
+	      var selectedTabs = matchingTabs(this.props.searchStr, selectedWindow);
+	
+	      var activeEntry = selectedTabs.findEntry(function (t) {
+	        return t.open && t.openState.active;
+	      });
+	      var activeTabIndex = activeEntry ? activeEntry[0] : 0;
+	
 	      this.setState({ scrolledToWindowId: this.props.winStore.currentWindowId,
-	        selectedWindowIndex: this.focusedWindowIndex });
+	        selectedWindowIndex: this.focusedWindowIndex,
+	        selectedTabIndex: activeTabIndex });
 	    }
 	  },
 	
@@ -44076,7 +44125,7 @@
 	    }
 	  },
 	  handleOpen: function handleOpen() {
-	    actions.openWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	    actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
 	  },
 	  handleClose: function handleClose(event) {
 	    // eslint-disable-line no-unused-vars
@@ -44452,7 +44501,7 @@
 	
 	    // console.log("TabItem: handleClick: tab: ", tab);
 	
-	    actions.activateTab(tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
+	    actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
 	  },
 	  handleClose: function handleClose() {
 	    if (!this.props.tabWindow.open) {

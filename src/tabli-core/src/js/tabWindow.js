@@ -152,6 +152,8 @@ export class TabWindow extends Immutable.Record({
   open: false,
   openWindowId: -1,
   windowType: '',
+  width: 0,
+  height: 0,
 
   tabItems: Immutable.Seq(),  // <TabItem>
 }) {
@@ -197,7 +199,7 @@ export function removeOpenWindowState(tabWindow) {
   const savedItems = tabWindow.tabItems.filter((ti) => ti.saved);
   const resetSavedItems = savedItems.map(resetSavedItem);
 
-  return tabWindow.remove('open').remove('openWindowId').remove('windowType').set('tabItems', resetSavedItems);
+  return tabWindow.remove('open').remove('openWindowId').remove('windowType').remove('width').remove('height').set('tabItems', resetSavedItems);
 }
 
 /*
@@ -243,6 +245,8 @@ export function makeChromeTabWindow(chromeWindow) {
     open: true,
     openWindowId: chromeWindow.id,
     windowType: chromeWindow.type,
+    width: chromeWindow.width,
+    height: chromeWindow.height,
     tabItems: Immutable.Seq(tabItems),
   });
 

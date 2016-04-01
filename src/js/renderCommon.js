@@ -14,7 +14,7 @@ const actions = Tabli.actions;
 /**
  * Main entry point to rendering the popup window
  */
-function renderPopup(currentWindowId,isPopout) {
+function renderPopup(currentChromeWindow,isPopout) {
 
   console.log("renderPopup: isPopout: ", isPopout);
 
@@ -64,7 +64,8 @@ function renderPopup(currentWindowId,isPopout) {
       const syncStore = uf(savedStore);
 
       // And set current focused window:
-      const nextStore = syncStore.setCurrentWindow(currentWindowId);
+      console.log("renderPopup: setting current window to ", currentChromeWindow);      
+      const nextStore = syncStore.setCurrentWindow(currentChromeWindow);
       if (!(nextStore.equals(savedStore))) {
         storeRef.setValue(nextStore);
       } else {
@@ -83,7 +84,7 @@ function renderPopup(currentWindowId,isPopout) {
 }
 
 export function getFocusedAndRender(isPopout) {
-  chrome.windows.getCurrent(null, (currentWindow) => {
-    renderPopup(currentWindow.id,isPopout);
+  chrome.windows.getCurrent(null, (currentChromeWindow) => {
+    renderPopup(currentChromeWindow,isPopout);
   });
 }

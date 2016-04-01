@@ -8,6 +8,11 @@ import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 
+function normalBrowserWindow(cw) {
+  const isNormal = cw.type==='normal' && (_.get(cw,'tabs',[]).length > 0);
+  return isNormal;
+}
+
 export default class TabManagerState extends Immutable.Record({
   windowIdMap: Immutable.Map(),     // maps from chrome window id for open windows
   bookmarkIdMap: Immutable.Map(),   // maps from bookmark id for saved windows
@@ -124,7 +129,11 @@ export default class TabManagerState extends Immutable.Record({
    * synchronize the currently open windows from chrome.windows.getAll with
    * internal map of open windows
    */
-  syncWindowList(chromeWindowList) {
+  syncWindowList(rawChromeWindowList) {
+   
+    // restrict our management to normal chrome windows that have at least 1 tab: 
+    const chromeWindowList = _.filter(rawChromeWindowList,normalBrowserWindow);
+
     var tabWindows = this.getOpen();
 
     // Iterate through tab windows (our current list of open windows)
@@ -140,9 +149,21 @@ export default class TabManagerState extends Immutable.Record({
     return nextSt;
   }
 
-  setCurrentWindow(windowId) {
-    return this.set('currentWindowId',windowId);
+  setCurrentWindowId(windowId) {
+    const nextSt = this.windowIdMap.has(windowId) ? this.set('currentWindowId',windowId) : this;
+    return nextSt;
   }
+
+  setCurrentWindow(chromeWindow) {
+    const nextSt = normalBrowserWindow(chromeWindow) ? this.setCurrentWindowId(chromeWindow.id) : this;
+    return nextSt;
+  }
+
+
+  getCurrentWindow() {
+    return this.getTabWindowByChromeId(this.currentWindowId);
+  }
+
 
   removeBookmarkIdMapEntry(tabWindow) {
     return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));

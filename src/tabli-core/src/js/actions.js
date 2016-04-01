@@ -36,7 +36,7 @@ export function syncChromeWindows(cb) {
  *
  * N.B.: NOT exported; called from openWindow
  */
-function restoreBookmarkWindow(tabWindow, cb) {
+function restoreBookmarkWindow(lastFocusedTabWindow, tabWindow, cb) {
   /*
    * special case handling of replacing the contents of a fresh window
    */
@@ -66,22 +66,30 @@ function restoreBookmarkWindow(tabWindow, cb) {
       chrome.windows.get(currentChromeWindow.id, { populate: true }, cf);
     } else {
       // normal case -- create a new window for these urls:
-      chrome.windows.create({ url: urls, focused: true, type: 'normal' }, cf);
+      var createData = { url: urls, focused: true, type: 'normal' };
+      if (lastFocusedTabWindow) {
+        createData.width = lastFocusedTabWindow.width;
+        createData.height = lastFocusedTabWindow.height;
+      } else {
+        // HACK. Would be better to use dimensions of some arbitrary open window
+        createData.width = 1024;
+        createData.height = 768;    
+      }
+      chrome.windows.create(createData, cf);
     }
   });
 }
 
-export function openWindow(tabWindow, cb) {
-  console.log('actions.openWindow: ', tabWindow.toJS(), cb);
+export function openWindow(lastFocusedTabWindow,targetTabWindow, cb) {
 
-  if (tabWindow.open) {
+  if (targetTabWindow.open) {
     // existing, open window -- just transfer focus
-    chrome.windows.update(tabWindow.openWindowId, { focused: true });
+    chrome.windows.update(targetTabWindow.openWindowId, { focused: true });
 
     // TODO: update focus in winStore
   } else {
     // bookmarked window -- need to open it!
-    restoreBookmarkWindow(tabWindow, cb);
+    restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, cb);
   }
 }
 
@@ -129,10 +137,10 @@ export function closeWindow(tabWindow, cb) {
 }
 
 // activate a specific tab:
-export function activateTab(tabWindow, tab, tabIndex, cb) {
+export function activateTab(lastFocusedTabWindow,targetTabWindow, tab, tabIndex, cb) {
   // console.log("activateTab: ", tabWindow, tab );
 
-  if (tabWindow.open) {
+  if (targetTabWindow.open) {
     // OK, so we know this window is open.  What about the specific tab?
     if (tab.open) {
       // Tab is already open, just make it active:
@@ -144,12 +152,12 @@ export function activateTab(tabWindow, tab, tabIndex, cb) {
       });
 */
       tabliBrowser.activateTab(tab.openState.openTabId, () => {
-        tabliBrowser.setFocusedWindow(tabWindow.openWindowId)
+        tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId)
       })
     } else {
       // restore this bookmarked tab:
       var createOpts = {
-        windowId: tabWindow.openWindowId,
+        windowId: targetTabWindow.openWindowId,
         url: tab.url,
         index: tabIndex,
         active: true,
@@ -161,7 +169,7 @@ export function activateTab(tabWindow, tab, tabIndex, cb) {
   } else {
     // console.log("activateTab: opening non-open window");
     // TODO: insert our own callback so we can activate chosen tab after opening window!
-    openWindow(tabWindow, cb);
+    openWindow(lastFocusedTabWindow,targetTabWindow,cb);
   }
 }
 
