@@ -42986,7 +42986,7 @@
 	    var id = 'tabItem-' + tabItem.openState.openTabId;
 	    return React.createElement(
 	      'div',
-	      { key: id, style: _styles2.default.noWrap },
+	      { key: id, style: Util.merge(_styles2.default.noWrap, _styles2.default.tabItem) },
 	      tabFavIcon,
 	      React.createElement(
 	        'span',

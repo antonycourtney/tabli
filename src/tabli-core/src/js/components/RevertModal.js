@@ -42,7 +42,7 @@ const RevertModal = React.createClass({
     var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
     const id = 'tabItem-' + tabItem.openState.openTabId;
     return (
-        <div key={id} style={Styles.noWrap} >
+        <div key={id} style={Util.merge(Styles.noWrap, Styles.tabItem)} >
           {tabFavIcon}
           <span style={tabTitleStyles}>{tabItem.title}</span>
           <div style={Styles.spacer} />
