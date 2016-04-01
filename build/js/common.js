@@ -41582,15 +41582,17 @@
 	  var currentTabIds = tabWindow.tabItems.filter(function (ti) {
 	    return ti.open;
 	  }).map(function (ti) {
-	    return ti.openTabId;
+	    return ti.openState.openTabId;
 	  }).toArray();
 	
 	  var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
 	
 	  // re-open saved URLs:
 	  // We need to do this before removing current tab ids or window will close
-	  var savedUrls = revertedTabWindow.tabItems.map(function (ti) {
-	    return ti.url;
+	  var savedUrls = revertedTabWindow.tabItems.filter(function (ti) {
+	    return ti.saved;
+	  }).map(function (ti) {
+	    return ti.savedState.url;
 	  }).toArray();
 	
 	  for (var i = 0; i < savedUrls.length; i++) {
@@ -42970,7 +42972,7 @@
 	    this.props.onSubmit(this.props.tabWindow);
 	  },
 	  renderItem: function renderItem(tabItem) {
-	    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
+	    var fiSrc = tabItem.openState.favIconUrl ? tabItem.openState.favIconUrl : '';
 	
 	    // Skip the chrome FAVICONs; they just throw when accessed.
 	    if (fiSrc.indexOf('chrome://theme/') === 0) {
@@ -42981,9 +42983,10 @@
 	    var tabOpenStyle = tabItem.open ? null : _styles2.default.closed;
 	    var tabActiveStyle = tabItem.active ? _styles2.default.activeSpan : null;
 	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
+	    var id = 'tabItem-' + tabItem.openState.openTabId;
 	    return React.createElement(
 	      'div',
-	      { style: _styles2.default.noWrap },
+	      { key: id, style: _styles2.default.noWrap },
 	      tabFavIcon,
 	      React.createElement(
 	        'span',

@@ -187,7 +187,6 @@ function registerEventHandlers(uf) {
     chrome.windows.onFocusChanged.addListener(windowId => {
       if (windowId===chrome.windows.WINDOW_ID_NONE)
         return;
-      console.log("onFocusChanged: setting current window id to ", windowId);
       uf((state) => {
         return state.setCurrentWindowId(windowId);
       });

@@ -174,13 +174,13 @@ export function activateTab(lastFocusedTabWindow,targetTabWindow, tab, tabIndex,
 }
 
 export function revertWindow(tabWindow, cb) {
-  const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openTabId).toArray();
+  const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openState.openTabId).toArray();
 
   const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
 
   // re-open saved URLs:
   // We need to do this before removing current tab ids or window will close
-  var savedUrls = revertedTabWindow.tabItems.map((ti) => ti.url).toArray();
+  var savedUrls = revertedTabWindow.tabItems.filter((ti) => ti.saved).map((ti) => ti.savedState.url).toArray();
 
   for (var i = 0; i < savedUrls.length; i++) {
     // need to open it:

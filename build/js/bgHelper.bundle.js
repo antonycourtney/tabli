@@ -217,7 +217,6 @@ webpackJsonp([0],{
 	  });
 	  chrome.windows.onFocusChanged.addListener(function (windowId) {
 	    if (windowId === chrome.windows.WINDOW_ID_NONE) return;
-	    console.log("onFocusChanged: setting current window id to ", windowId);
 	    uf(function (state) {
 	      return state.setCurrentWindowId(windowId);
 	    });

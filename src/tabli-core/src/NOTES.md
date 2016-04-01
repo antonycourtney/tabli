@@ -77,7 +77,6 @@ X BUG: Revert causes window to temporarily disappear from window list
 
 - Need a way to cancel search (essential for popout)
 
-
 - window.onRemoved or tabs.onRemoved handler behaving incorrectly on saved tabs -- re-opening a saved window after tabs are closed only shown New Tab.
 
 - Something going very wrong with focus indication -- seeing multiple tabs indicated as having focus.
@@ -97,9 +96,14 @@ Potential easy fix: call setActiveTab() if tab to be updated is active.
 
 - Improve tab sorting: Use tab index
 
-
 - When opening windows from popout, need to use size of last normal window
   X grab width and height in TabWindow
   X pass last focused window to actions.activateTab and actions.openWindow
   - If there is no current window for pulling width and height, should use open window 0
+
+- Searching for "fac" in popout seems to skip Facebook saved window when using arrow keys to navigate...
+
+- FavIcon / title alignment looks off in Revert Dialog
+
+
   

@@ -29,7 +29,7 @@ const RevertModal = React.createClass({
   },
 
   renderItem(tabItem) {
-    var fiSrc = tabItem.favIconUrl ? tabItem.favIconUrl : '';
+    var fiSrc = tabItem.openState.favIconUrl ? tabItem.openState.favIconUrl : '';
 
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {
@@ -40,8 +40,9 @@ const RevertModal = React.createClass({
     const tabOpenStyle = tabItem.open ? null : Styles.closed;
     var tabActiveStyle = tabItem.active ? Styles.activeSpan : null;
     var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
+    const id = 'tabItem-' + tabItem.openState.openTabId;
     return (
-        <div style={Styles.noWrap} >
+        <div key={id} style={Styles.noWrap} >
           {tabFavIcon}
           <span style={tabTitleStyles}>{tabItem.title}</span>
           <div style={Styles.spacer} />
