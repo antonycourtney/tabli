@@ -83,7 +83,7 @@ const SelectablePopup = React.createClass({
     }
   },
 
-  handleSelectionEnter() {
+  handleSelectionEnter(inputRef) {
     if (this.props.filteredWindows.length === 0) {
       return;
     }
@@ -94,6 +94,9 @@ const SelectablePopup = React.createClass({
     const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
     console.log('opening: ', selectedTabItem.toJS());
     actions.activateTab(this.props.winStore.getCurrentWindow(), selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+    // And reset the search field:
+    inputRef.value = '';
+    this.props.onSearchInput('');
   },
 
   componentWillReceiveProps(nextProps) {

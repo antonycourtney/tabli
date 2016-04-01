@@ -103,7 +103,11 @@ Potential easy fix: call setActiveTab() if tab to be updated is active.
 
 - Searching for "fac" in popout seems to skip Facebook saved window when using arrow keys to navigate...
 
-- FavIcon / title alignment looks off in Revert Dialog
+X FavIcon / title alignment looks off in Revert Dialog
 
+X Keep track of popup window so we can close it on restart
 
-  
+X Reset search field on Enter or ESC
+
+- Format source using 'standard' 
+https://www.npmjs.com/package/standard

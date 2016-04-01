@@ -52,7 +52,7 @@ const SearchBar = React.createClass({
     if (e.keyCode === Constants.KEY_ENTER) {
       if (this.props.onSearchEnter) {
         e.preventDefault();
-        this.props.onSearchEnter();
+        this.props.onSearchEnter(this.refs.searchInput);
       }
     }
   },

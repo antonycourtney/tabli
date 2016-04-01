@@ -20790,9 +20790,11 @@
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 	
 	
-	function normalBrowserWindow(cw) {
-	  var isNormal = cw.type === 'normal' && _.get(cw, 'tabs', []).length > 0;
-	  return isNormal;
+	function validChromeWindow(cw, normalOnly) {
+	  var cwTabs = _.get(cw, 'tabs', []);
+	  var isNormal = cw.type === 'normal' && cwTabs.length > 0;
+	  var isPopout = cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === "Tabli";
+	  return isNormal || !normalOnly && isPopout;
 	}
 	
 	var TabManagerState = function (_Immutable$Record) {
@@ -20936,7 +20938,9 @@
 	    value: function syncWindowList(rawChromeWindowList) {
 	
 	      // restrict our management to normal chrome windows that have at least 1 tab:
-	      var chromeWindowList = _.filter(rawChromeWindowList, normalBrowserWindow);
+	      var chromeWindowList = _.filter(rawChromeWindowList, function (cw) {
+	        return validChromeWindow(cw, false);
+	      });
 	
 	      var tabWindows = this.getOpen();
 	
@@ -20967,7 +20971,7 @@
 	  }, {
 	    key: 'setCurrentWindow',
 	    value: function setCurrentWindow(chromeWindow) {
-	      var nextSt = normalBrowserWindow(chromeWindow) ? this.setCurrentWindowId(chromeWindow.id) : this;
+	      var nextSt = validChromeWindow(chromeWindow, true) ? this.setCurrentWindowId(chromeWindow.id) : this;
 	      return nextSt;
 	    }
 	  }, {
@@ -43688,7 +43692,7 @@
 	      }
 	    }
 	  },
-	  handleSelectionEnter: function handleSelectionEnter() {
+	  handleSelectionEnter: function handleSelectionEnter(inputRef) {
 	    if (this.props.filteredWindows.length === 0) {
 	      return;
 	    }
@@ -43699,6 +43703,9 @@
 	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
 	    console.log('opening: ', selectedTabItem.toJS());
 	    actions.activateTab(this.props.winStore.getCurrentWindow(), selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
+	    // And reset the search field:
+	    inputRef.value = '';
+	    this.props.onSearchInput('');
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    var selectedWindowIndex = this.state.selectedWindowIndex;
@@ -43925,7 +43932,7 @@
 	    if (e.keyCode === Constants.KEY_ENTER) {
 	      if (this.props.onSearchEnter) {
 	        e.preventDefault();
-	        this.props.onSearchEnter();
+	        this.props.onSearchEnter(this.refs.searchInput);
 	      }
 	    }
 	  },

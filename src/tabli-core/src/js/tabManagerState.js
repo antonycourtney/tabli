@@ -8,9 +8,11 @@ import * as _ from 'lodash';
 import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 
-function normalBrowserWindow(cw) {
-  const isNormal = cw.type==='normal' && (_.get(cw,'tabs',[]).length > 0);
-  return isNormal;
+function validChromeWindow(cw,normalOnly) {
+  const cwTabs = _.get(cw,'tabs',[]);
+  const isNormal = cw.type==='normal' && (cwTabs.length > 0);
+  const isPopout = cw.type==='popup' && cwTabs.length > 0 && cwTabs[0].title==="Tabli";
+  return isNormal || (!normalOnly && isPopout);
 }
 
 export default class TabManagerState extends Immutable.Record({
@@ -132,7 +134,7 @@ export default class TabManagerState extends Immutable.Record({
   syncWindowList(rawChromeWindowList) {
    
     // restrict our management to normal chrome windows that have at least 1 tab: 
-    const chromeWindowList = _.filter(rawChromeWindowList,normalBrowserWindow);
+    const chromeWindowList = _.filter(rawChromeWindowList,cw => validChromeWindow(cw,false));
 
     var tabWindows = this.getOpen();
 
@@ -155,7 +157,7 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   setCurrentWindow(chromeWindow) {
-    const nextSt = normalBrowserWindow(chromeWindow) ? this.setCurrentWindowId(chromeWindow.id) : this;
+    const nextSt = validChromeWindow(chromeWindow,true) ? this.setCurrentWindowId(chromeWindow.id) : this;
     return nextSt;
   }
 
