@@ -170,6 +170,17 @@ function invokeLater(f) {
   window.setTimeout(f, 0);
 }
 
+function onTabCreated(uf,tab) {
+  uf(state => {
+    const tabWindow = state.getTabWindowByChromeId(tab.windowId);
+    if (!tabWindow) {
+      console.warn("tabs.onCreated: window id not found: ", tab.windowId);
+      return state;
+    }
+    return state.handleTabCreated(tabWindow,tab);
+  });
+}
+
 function registerEventHandlers(uf) {
     // window events:
     chrome.windows.onRemoved.addListener((windowId) => {
@@ -195,16 +206,7 @@ function registerEventHandlers(uf) {
     );
 
     // tab events:
-    chrome.tabs.onCreated.addListener(tab => {
-      uf(state => {
-        const tabWindow = state.getTabWindowByChromeId(tab.windowId);
-        if (!tabWindow) {
-          console.warn("tabs.onCreated: window id not found: ", tab.windowId);
-          return state;
-        }
-        return state.handleTabCreated(tabWindow,tab);
-      });
-    });
+    chrome.tabs.onCreated.addListener(tab => onTabCreated(uf,tab));
     chrome.tabs.onUpdated.addListener((tabId,changeInfo,tab) => {
       uf(state => {
         const tabWindow = state.getTabWindowByChromeId(tab.windowId);
@@ -239,6 +241,21 @@ function registerEventHandlers(uf) {
           return state;
         }
         return state.handleTabClosed(tabWindow, tabId);
+      });
+    });
+    chrome.tabs.onReplaced.addListener((addedTabId,removedTabId) => {
+      console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
+      uf(state => {
+        const tabWindow = state.getTabWindowByChromeTabId(removedTabId);
+        if (!tabWindow) {
+          console.warn("tabs.onReplaced: could not find window for removed tab: ", removedTabId);
+          return state;
+        }
+        const nextSt = state.handleTabClosed(tabWindow,removedTabId);
+
+        // And arrange for the added tab to be added to the window:
+        chrome.tabs.get(addedTabId,tab => onTabCreated(uf,tab));
+        return nextSt;
       });
     });
 }

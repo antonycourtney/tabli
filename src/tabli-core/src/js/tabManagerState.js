@@ -216,6 +216,14 @@ export default class TabManagerState extends Immutable.Record({
     return this.windowIdMap.get(windowId);
   }
 
+  // Find a tabWindow containing the given tab id (or undefined)
+  // Not terribly efficient!
+  getTabWindowByChromeTabId(tabId) {
+    const tw = this.windowIdMap.find(w => w.findChromeTabId(tabId));
+    return tw;
+  }
+
+
   countOpenWindows() {
     return this.windowIdMap.count();
   }

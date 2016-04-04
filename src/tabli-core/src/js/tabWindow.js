@@ -190,6 +190,14 @@ export class TabWindow extends Immutable.Record({
   get openTabCount() {
     return this.tabItems.count((ti) => ti.open);
   }
+
+  /*
+   * Returns [index,TabItem] pair if window contains chrome tab id or else undefined
+   */
+  findChromeTabId(tabId) {
+    return this.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
+  }
+
 }
 
 /**
@@ -375,7 +383,7 @@ export function updateWindow(tabWindow, chromeWindow) {
  */
 export function closeTab(tabWindow, tabId) {
   // console.log("closeTab: ", tabWindow, tabId);
-  const entry = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
+  const entry = tabWindow.findChromeTabId(tabId);
 
   if (!entry) {
     console.warn("closeTab: could not find closed tab id ", tabId);
@@ -405,7 +413,7 @@ export function closeTab(tabWindow, tabId) {
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function saveTab(tabWindow, tabItem, tabNode) {
-  var [index] = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabItem.openState.openTabId);
+  var [index] = tabWindow.findChromeTabId(tabItem.openState.openTabId);
 
   const savedState = new SavedTabState(tabNode);
 
@@ -449,7 +457,7 @@ export function unsaveTab(tabWindow, tabItem) {
  * @return {TabWindow} tabWindow updated with specified tab as active tab.
  */ 
 export function setActiveTab(tabWindow, tabId) {
-  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
+  const tabPos = tabWindow.findChromeTabId(tabId);
 
   if (!tabPos) {
     // console.log("setActiveTab -- tab id not found: ", tabId);
@@ -493,11 +501,12 @@ export function setActiveTab(tabWindow, tabId) {
  * @return {TabWindow} tabWindow with updated tab state
  */
 export function updateTabItem(tabWindow,tabId,changeInfo) {
-  const tabPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
+  const tabPos = tabWindow.findChromeTabId(tabId);
 
   var updItems;
   if (!tabPos) {
-    // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
+    console.warn("updateTabItem: Got update for unknown tab id ", tabId);
+    console.log("updateTabItem: changeInfo: ", changeInfo);
     return tabWindow;
   }
   const [index, prevTabItem] = tabPos;

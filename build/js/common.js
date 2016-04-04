@@ -378,6 +378,18 @@
 	      return activeTab.title;
 	    }
 	  }, {
+	    key: 'findChromeTabId',
+	
+	
+	    /*
+	     * Returns [index,TabItem] pair if window contains chrome tab id or else undefined
+	     */
+	    value: function findChromeTabId(tabId) {
+	      return this.tabItems.findEntry(function (ti) {
+	        return ti.open && ti.openState.openTabId === tabId;
+	      });
+	    }
+	  }, {
 	    key: 'title',
 	    get: function get() {
 	      if (this._title === undefined) {
@@ -609,9 +621,7 @@
 	 */
 	function closeTab(tabWindow, tabId) {
 	  // console.log("closeTab: ", tabWindow, tabId);
-	  var entry = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openState.openTabId === tabId;
-	  });
+	  var entry = tabWindow.findChromeTabId(tabId);
 	
 	  if (!entry) {
 	    console.warn("closeTab: could not find closed tab id ", tabId);
@@ -646,13 +656,11 @@
 	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
 	 */
 	function saveTab(tabWindow, tabItem, tabNode) {
-	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openState.openTabId === tabItem.openState.openTabId;
-	  });
+	  var _tabWindow$findChrome = tabWindow.findChromeTabId(tabItem.openState.openTabId);
 	
-	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 1);
+	  var _tabWindow$findChrome2 = _slicedToArray(_tabWindow$findChrome, 1);
 	
-	  var index = _tabWindow$tabItems$f2[0];
+	  var index = _tabWindow$findChrome2[0];
 	
 	
 	  var savedState = new SavedTabState(tabNode);
@@ -673,13 +681,13 @@
 	 * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
 	 */
 	function unsaveTab(tabWindow, tabItem) {
-	  var _tabWindow$tabItems$f3 = tabWindow.tabItems.findEntry(function (ti) {
+	  var _tabWindow$tabItems$f = tabWindow.tabItems.findEntry(function (ti) {
 	    return ti.saved && ti.savedState.bookmarkId === tabItem.savedState.bookmarkId;
 	  });
 	
-	  var _tabWindow$tabItems$f4 = _slicedToArray(_tabWindow$tabItems$f3, 1);
+	  var _tabWindow$tabItems$f2 = _slicedToArray(_tabWindow$tabItems$f, 1);
 	
-	  var index = _tabWindow$tabItems$f4[0];
+	  var index = _tabWindow$tabItems$f2[0];
 	
 	  var updTabItem = resetOpenItem(tabItem);
 	
@@ -703,9 +711,7 @@
 	 * @return {TabWindow} tabWindow updated with specified tab as active tab.
 	 */
 	function setActiveTab(tabWindow, tabId) {
-	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openState.openTabId === tabId;
-	  });
+	  var tabPos = tabWindow.findChromeTabId(tabId);
 	
 	  if (!tabPos) {
 	    // console.log("setActiveTab -- tab id not found: ", tabId);
@@ -759,13 +765,12 @@
 	 * @return {TabWindow} tabWindow with updated tab state
 	 */
 	function updateTabItem(tabWindow, tabId, changeInfo) {
-	  var tabPos = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openState.openTabId === tabId;
-	  });
+	  var tabPos = tabWindow.findChromeTabId(tabId);
 	
 	  var updItems;
 	  if (!tabPos) {
-	    // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
+	    console.warn("updateTabItem: Got update for unknown tab id ", tabId);
+	    console.log("updateTabItem: changeInfo: ", changeInfo);
 	    return tabWindow;
 	  }
 	
@@ -21044,6 +21049,18 @@
 	    key: 'getTabWindowByChromeId',
 	    value: function getTabWindowByChromeId(windowId) {
 	      return this.windowIdMap.get(windowId);
+	    }
+	
+	    // Find a tabWindow containing the given tab id (or undefined)
+	    // Not terribly efficient!
+	
+	  }, {
+	    key: 'getTabWindowByChromeTabId',
+	    value: function getTabWindowByChromeTabId(tabId) {
+	      var tw = this.windowIdMap.find(function (w) {
+	        return w.findChromeTabId(tabId);
+	      });
+	      return tw;
 	    }
 	  }, {
 	    key: 'countOpenWindows',
