@@ -252,7 +252,7 @@ webpackJsonp([0],{
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
 	      if (!tabWindow) {
-	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId);
+	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId, activeInfo);
 	        return state;
 	      }
 	      var st = tabWindow ? state.handleTabActivated(tabWindow, activeInfo.tabId) : state;

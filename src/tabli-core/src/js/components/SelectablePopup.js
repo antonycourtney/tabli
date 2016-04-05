@@ -38,7 +38,8 @@ const SelectablePopup = React.createClass({
     return {
       selectedWindowIndex: 0,
       selectedTabIndex: 0,
-      scrolledToWindowId: -1
+      scrolledToWindowId: -1,
+      scrolledToTabId: -1
     };
   },
 
@@ -124,9 +125,15 @@ const SelectablePopup = React.createClass({
    * kbd focus
    */
   updateScrollPos(bodyRef,windowRef) {
-    const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId);
-    // console.log("updateScrollPos: scrolledTo: ", this.state.scrolledToWindowId, ", current: ",
-    //  this.props.winStore.currentWindowId, ", needScroll: ", needScrollUpdate);
+    const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId) ||
+                             (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId());
+    /*
+    console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
+                ", currentWindowId: ", this.props.winStore.currentWindowId );
+    console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
+                ", activeTabId: ", this.props.winStore.getActiveTabId(), 
+                ", needScroll: ", needScrollUpdate);
+    */
     const isPopup = !(this.props.isPopout);
     if ((windowRef!=null) && (bodyRef!=null) && needScrollUpdate) {
       const viewportTop = bodyRef.scrollTop;
@@ -161,10 +168,16 @@ const SelectablePopup = React.createClass({
 
       const activeEntry = selectedTabs.findEntry((t) => t.open && t.openState.active);
       const activeTabIndex = activeEntry ? activeEntry[0] : 0;
+      const activeTabId = this.props.winStore.getActiveTabId();
 
-      this.setState({ scrolledToWindowId: this.props.winStore.currentWindowId, 
+      const updState = { scrolledToWindowId: this.props.winStore.currentWindowId,
+        scrolledToTabId: activeTabId, 
         selectedWindowIndex: this.focusedWindowIndex,
-        selectedTabIndex: activeTabIndex });
+        selectedTabIndex: activeTabIndex 
+      };
+
+      // console.log("updateScrollPos: udpating State: ", updState);
+      this.setState(updState);
     }
   },
 

@@ -390,6 +390,15 @@
 	      });
 	    }
 	  }, {
+	    key: 'getActiveTabId',
+	    value: function getActiveTabId() {
+	      var activeTab = this.tabItems.find(function (t) {
+	        return t.open && t.openState.active;
+	      });
+	      var tabId = activeTab ? activeTab.openState.openTabId : undefined;
+	      return tabId;
+	    }
+	  }, {
 	    key: 'title',
 	    get: function get() {
 	      if (this._title === undefined) {
@@ -20983,6 +20992,13 @@
 	    key: 'getCurrentWindow',
 	    value: function getCurrentWindow() {
 	      return this.getTabWindowByChromeId(this.currentWindowId);
+	    }
+	  }, {
+	    key: 'getActiveTabId',
+	    value: function getActiveTabId() {
+	      var cw = this.getCurrentWindow();
+	      var tabId = cw ? cw.getActiveTabId() : undefined;
+	      return tabId;
 	    }
 	  }, {
 	    key: 'removeBookmarkIdMapEntry',
@@ -43667,7 +43683,8 @@
 	    return {
 	      selectedWindowIndex: 0,
 	      selectedTabIndex: 0,
-	      scrolledToWindowId: -1
+	      scrolledToWindowId: -1,
+	      scrolledToTabId: -1
 	    };
 	  },
 	  handlePrevSelection: function handlePrevSelection(byPage) {
@@ -43750,9 +43767,14 @@
 	   * kbd focus
 	   */
 	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
-	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId;
-	    // console.log("updateScrollPos: scrolledTo: ", this.state.scrolledToWindowId, ", current: ",
-	    //  this.props.winStore.currentWindowId, ", needScroll: ", needScrollUpdate);
+	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId || this.state.scrolledToTabId !== this.props.winStore.getActiveTabId();
+	    /*
+	    console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
+	                ", currentWindowId: ", this.props.winStore.currentWindowId );
+	    console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
+	                ", activeTabId: ", this.props.winStore.getActiveTabId(), 
+	                ", needScroll: ", needScrollUpdate);
+	    */
 	    var isPopup = !this.props.isPopout;
 	    if (windowRef != null && bodyRef != null && needScrollUpdate) {
 	      var viewportTop = bodyRef.scrollTop;
@@ -43787,10 +43809,16 @@
 	        return t.open && t.openState.active;
 	      });
 	      var activeTabIndex = activeEntry ? activeEntry[0] : 0;
+	      var activeTabId = this.props.winStore.getActiveTabId();
 	
-	      this.setState({ scrolledToWindowId: this.props.winStore.currentWindowId,
+	      var updState = { scrolledToWindowId: this.props.winStore.currentWindowId,
+	        scrolledToTabId: activeTabId,
 	        selectedWindowIndex: this.focusedWindowIndex,
-	        selectedTabIndex: activeTabIndex });
+	        selectedTabIndex: activeTabIndex
+	      };
+	
+	      // console.log("updateScrollPos: udpating State: ", updState);
+	      this.setState(updState);
 	    }
 	  },
 	

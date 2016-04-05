@@ -114,11 +114,16 @@ https://www.npmjs.com/package/standard
 
 - Right now we transfer selection to the active window and active tab when we get a window focus change event.  For consistency we should also transfer when we get an active tab change event.
 
-- BUG: New Tab doesn't seem to change title / URL. Repro: click on new tab on tab bar, type any URL.
+X BUG: New Tab doesn't seem to change title / URL. Repro: click on new tab on tab bar, type any URL.
 Conjecture:  Need to handle 'tab replaced' event
 
-- Getting exceptions in revert modal:
+X(?) Getting exceptions in revert modal:
   RevertModal.js:32 Uncaught TypeError: Cannot read property 'favIconUrl' of null
   
   2ReactCompositeComponent.js:559 Uncaught TypeError: Cannot read property '_currentElement' of null
+
+- Need to clear search field after opening a window or tab
+
+- If we switch tabs when a search is active, the window / tab may not be displayed. We'll record that we've scrolled to that window and tab when in fact we haven't.  We should probably force an updateScrollPos() in SelectablePopup when the selection is cleared.
+
 

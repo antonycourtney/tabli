@@ -198,6 +198,11 @@ export class TabWindow extends Immutable.Record({
     return this.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId);
   }
 
+  getActiveTabId() {
+    const activeTab = this.tabItems.find((t) => t.open && t.openState.active);
+    const tabId = activeTab ? activeTab.openState.openTabId : undefined;
+    return tabId;
+  }
 }
 
 /**

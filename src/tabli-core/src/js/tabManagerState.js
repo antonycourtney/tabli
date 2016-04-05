@@ -166,6 +166,11 @@ export default class TabManagerState extends Immutable.Record({
     return this.getTabWindowByChromeId(this.currentWindowId);
   }
 
+  getActiveTabId() {
+    const cw = this.getCurrentWindow();
+    const tabId = cw ? cw.getActiveTabId() : undefined;
+    return tabId;
+  }
 
   removeBookmarkIdMapEntry(tabWindow) {
     return this.set('bookmarkIdMap', this.bookmarkIdMap.delete(tabWindow.savedFolderId));
