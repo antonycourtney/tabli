@@ -326,8 +326,6 @@ function mergeOpenTabs(tabItems, openTabs) {
   return mergedTabItems;
 }
 
-
-
 /**
  * re-merge saved and open tab items for a window.
  *

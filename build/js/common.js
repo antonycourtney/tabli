@@ -42609,7 +42609,7 @@
 	  headerButton: {
 	    outline: 'none',
 	    border: 'none',
-	    backgroundColor: 'transparent',
+	    /* backgroundColor: 'transparent', */
 	    backgroundRepeat: 'no-repeat',
 	    width: 16,
 	    height: 16,
@@ -43368,7 +43368,7 @@
 	    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
 	    var hoverStyle = this.state.hovering && this.props.hoverStyle ? this.props.hoverStyle : null;
 	    var buttonStyle = Util.merge(this.props.baseStyle, hoverStyle);
-	    return React.createElement('button', { style: buttonStyle, title: this.props.title, onClick: this.handleClick,
+	    return React.createElement('button', { style: buttonStyle, className: this.props.className, title: this.props.title, onClick: this.handleClick,
 	      onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut
 	    });
 	  }
@@ -44638,15 +44638,18 @@
 	
 	    var audibleIcon = tab.open && tab.openState.audible ? React.createElement('div', { style: Util.merge(_styles2.default.headerButton, _styles2.default.audibleIcon) }) : null;
 	
-	    var closeStyle = Util.merge(_styles2.default.headerButton, _styles2.default.closeButton);
-	    var closeButton = React.createElement(_HeaderButton2.default, { baseStyle: closeStyle, visible: tab.open && this.state.hovering,
-	      hoverStyle: _styles2.default.closeButtonHover, title: 'Close Tab',
+	    var closeStyle = Util.merge(_styles2.default.headerButton);
+	
+	    // used to have: hoverStyle={Styles.closeButtonHover}
+	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: closeStyle, visible: tab.open,
+	      title: 'Close Tab',
 	      onClick: this.handleClose
 	    });
 	
 	    return React.createElement(
 	      'div',
 	      { style: Util.merge(_styles2.default.noWrap, _styles2.default.tabItem, hoverStyle, selectedStyle),
+	        className: 'tabItem',
 	        onMouseOut: this.handleMouseOut,
 	        onMouseOver: this.handleMouseOver,
 	        onClick: this.handleClick

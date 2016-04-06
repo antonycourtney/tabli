@@ -29,3 +29,18 @@ fieldset { padding:0; border:0; }
   padding: 5px;
   font-weight: bold;
 }
+
+.tabItem .closeButton {
+  visibility: hidden;
+}
+.tabItem:hover .closeButton {
+  visibility: visible;
+}
+.closeButton {
+  -webkit-mask-image: url('../images/interface-77.png');
+  background-color: #888888;
+}
+.closeButton:hover {
+  -webkit-mask-image: url('../images/interface-74.png');
+  background-color: #000000;
+}

@@ -126,4 +126,6 @@ X(?) Getting exceptions in revert modal:
 
 - If we switch tabs when a search is active, the window / tab may not be displayed. We'll record that we've scrolled to that window and tab when in fact we haven't.  We should probably force an updateScrollPos() in SelectablePopup when the selection is cleared.
 
+- Text in search box input no longer starts at top of open windows. (? artifact of starting from current open window?)
+
 

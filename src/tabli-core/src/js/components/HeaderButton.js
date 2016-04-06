@@ -30,7 +30,7 @@ var HeaderButton = React.createClass({
     var hoverStyle = (this.state.hovering && this.props.hoverStyle) ? this.props.hoverStyle : null;
     var buttonStyle = Util.merge(this.props.baseStyle, hoverStyle);
     return (
-      <button style={buttonStyle} title={this.props.title} onClick={this.handleClick}
+      <button style={buttonStyle} className={this.props.className} title={this.props.title} onClick={this.handleClick}
         onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}
       />);
   },

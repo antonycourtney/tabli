@@ -104,15 +104,18 @@ const TabItem = React.createClass({
 
     const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null;
 
-    var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
+    var closeStyle = Util.merge(Styles.headerButton);
+    
+    // used to have: hoverStyle={Styles.closeButtonHover}
     var closeButton = (
-      <HeaderButton baseStyle={closeStyle} visible={tab.open && this.state.hovering}
-        hoverStyle={Styles.closeButtonHover} title="Close Tab"
-        onClick={this.handleClose}
+      <HeaderButton className="closeButton" baseStyle={closeStyle} visible={tab.open}
+         title="Close Tab"
+         onClick={this.handleClose}
       />);
 
     return (
       <div style={Util.merge(Styles.noWrap, Styles.tabItem, hoverStyle, selectedStyle)}
+        className="tabItem"
         onMouseOut={this.handleMouseOut}
         onMouseOver={this.handleMouseOver}
         onClick={this.handleClick}

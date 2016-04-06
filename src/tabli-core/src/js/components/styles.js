@@ -98,7 +98,7 @@ const styles = {
   headerButton: {
     outline: 'none',
     border: 'none',
-    backgroundColor: 'transparent',
+    /* backgroundColor: 'transparent', */
     backgroundRepeat: 'no-repeat',
     width: 16,
     height: 16,
