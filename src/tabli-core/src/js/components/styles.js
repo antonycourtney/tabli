@@ -98,7 +98,6 @@ const styles = {
   headerButton: {
     outline: 'none',
     border: 'none',
-    /* backgroundColor: 'transparent', */
     backgroundRepeat: 'no-repeat',
     width: 16,
     height: 16,
@@ -184,6 +183,7 @@ const styles = {
   },
   popoutButton: {
     backgroundImage: mkUrl('images/popout.png'),
+    backgroundColor: 'transparent',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center center',
     marginRight: 15

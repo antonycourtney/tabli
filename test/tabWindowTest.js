@@ -93,9 +93,10 @@ test('makeFolderTabWindow', (t) => {
       "open": false,
       "openWindowId": -1,
       "windowType": "",
+      "width": 0,
+      "height": 0,
       "tabItems": [
         {
-          "url": "https://github.com/mbostock/d3/wiki/API-Reference",
           "saved": true,
           "savedState": {
             "bookmarkId": "432",
@@ -107,7 +108,6 @@ test('makeFolderTabWindow', (t) => {
           "openState": null
         },
         {
-          "url": "http://d3js.org/",
           "saved": true,
           "savedState": {
             "bookmarkId": "534",
@@ -119,7 +119,6 @@ test('makeFolderTabWindow', (t) => {
           "openState": null
         },
         {
-          "url": "https://github.com/mbostock/d3/wiki/Gallery",
           "saved": true,
           "savedState": {
             "bookmarkId": "535",
@@ -131,7 +130,6 @@ test('makeFolderTabWindow', (t) => {
           "openState": null
         },
         {
-          "url": "https://github.com/mbostock/d3/wiki/Tutorials",
           "saved": true,
           "savedState": {
             "bookmarkId": "536",
@@ -143,7 +141,6 @@ test('makeFolderTabWindow', (t) => {
           "openState": null
         },
         {
-          "url": "http://bl.ocks.org/mbostock/6123708",
           "saved": true,
           "savedState": {
             "bookmarkId": "537",
@@ -155,7 +152,6 @@ test('makeFolderTabWindow', (t) => {
           "openState": null
         },
         {
-          "url": "http://bl.ocks.org/mbostock/1667367",
           "saved": true,
           "savedState": {
             "bookmarkId": "613",
@@ -169,8 +165,11 @@ test('makeFolderTabWindow', (t) => {
       ]
     };
 
+
+  /*
   console.log('diffs between tabWindowJS and expected:');
   dumpDiffs(tabWindowJS, expectedTabWindow);
+  */
 
   t.deepEqual(tabWindowJS, expectedTabWindow, 'makeFolderTabWindow basic functionality');
 
@@ -478,9 +477,10 @@ test('chromeTabWindow', (t) => {
       "open": true,
       "openWindowId": 442,
       "windowType": "normal",
+      "width": 1258,
+      "height": 957,
       "tabItems": [
         {
-          "url": "http://facebook.github.io/react/docs/component-api.html",
           "saved": false,
           "savedState": null,
           "open": true,
@@ -495,7 +495,6 @@ test('chromeTabWindow', (t) => {
           }
         },
         {
-          "url": "http://facebook.github.io/react/docs/tutorial.html",
           "saved": false,
           "savedState": null,
           "open": true,
@@ -510,7 +509,6 @@ test('chromeTabWindow', (t) => {
           }
         },
         {
-          "url": "http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat",
           "saved": false,
           "savedState": null,
           "open": true,
@@ -525,7 +523,6 @@ test('chromeTabWindow', (t) => {
           }
         },
         {
-          "url": "http://facebook.github.io/flux/docs/overview.html#content",
           "saved": false,
           "savedState": null,
           "open": true,
@@ -539,7 +536,6 @@ test('chromeTabWindow', (t) => {
           }
         },
         {
-          "url": "http://fluxxor.com/",
           "saved": false,
           "savedState": null,
           "open": true,
@@ -554,7 +550,6 @@ test('chromeTabWindow', (t) => {
           }
         },
         {
-          "url": "http://facebook.github.io/fixed-data-table/",
           "saved": false,
           "savedState": null,
           "open": true,
@@ -569,7 +564,6 @@ test('chromeTabWindow', (t) => {
           }
         },
         {
-          "url": "https://developer.chrome.com/extensions/declare_permissions",
           "saved": false,
           "savedState": null,
           "open": true,

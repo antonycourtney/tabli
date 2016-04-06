@@ -107,7 +107,7 @@ test('isearch test', (t) => {
 
   const searchInput = searchBar.refs.searchInput;
 
-  searchInput.getDOMNode().value = 'git';
+  searchInput.value = 'git';
 
   /*
    * This also works:
@@ -154,7 +154,7 @@ test('search and open test', (t) => {
 
   const searchInput = searchBar.refs.searchInput;
 
-  searchInput.getDOMNode().value = 'git';
+  searchInput.value = 'git';
 
   ReactTestUtils.Simulate.change(searchInput);
   const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
