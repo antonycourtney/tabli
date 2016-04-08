@@ -127,13 +127,11 @@ const SelectablePopup = React.createClass({
   updateScrollPos(bodyRef,windowRef) {
     const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId) ||
                              (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId());
-    /*
     console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
                 ", currentWindowId: ", this.props.winStore.currentWindowId );
     console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
                 ", activeTabId: ", this.props.winStore.getActiveTabId(), 
                 ", needScroll: ", needScrollUpdate);
-    */
     const isPopup = !(this.props.isPopout);
     if ((windowRef!=null) && (bodyRef!=null) && needScrollUpdate) {
       const viewportTop = bodyRef.scrollTop;
@@ -145,11 +143,11 @@ const SelectablePopup = React.createClass({
       // the annoying extra bit:
       const offsetTop = bodyRef.offsetTop;
 
-      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
+      console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
       if ((windowTop < viewportTop) ||
           ((windowTop + windowHeight) > (viewportTop + viewportHeight)) ||
           isPopup) {
-        // console.log("updateScrollPos: setting scroll position");
+        console.log("updateScrollPos: setting scroll position");
 
         if ((windowHeight > viewportHeight) || isPopup) {
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -176,7 +174,7 @@ const SelectablePopup = React.createClass({
         selectedTabIndex: activeTabIndex 
       };
 
-      // console.log("updateScrollPos: udpating State: ", updState);
+      console.log("updateScrollPos: udpating State: ", updState);
       this.setState(updState);
     }
   },

@@ -177,14 +177,28 @@ function invokeLater(f) {
   window.setTimeout(f, 0);
 }
 
-function onTabCreated(uf,tab) {
+function onTabCreated(uf,tab,markActive) {
   uf(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId);
     if (!tabWindow) {
       console.warn("tabs.onCreated: window id not found: ", tab.windowId);
       return state;
     }
-    return state.handleTabCreated(tabWindow,tab);
+    const st = state.handleTabCreated(tabWindow,tab);
+    const nw = st.getTabWindowByChromeId(tab.windowId);
+    const ast = markActive ? st.handleTabActivated(nw,tab.id) : st;
+    return ast;
+  });
+}
+
+function onTabRemoved(uf,windowId,tabId) {
+  uf(state => {
+    const tabWindow = state.getTabWindowByChromeId(windowId);
+    if (!tabWindow) {
+      console.warn("tabs.onTabRemoved: window id not found: ", windowId);
+      return state;
+    }
+    return state.handleTabClosed(tabWindow, tabId);
   });
 }
 
@@ -237,21 +251,14 @@ function registerEventHandlers(uf) {
       });
     });
     chrome.tabs.onRemoved.addListener((tabId,removeInfo) => {
-      uf(state => {
-        const tabWindow = state.getTabWindowByChromeId(removeInfo.windowId);
-        if (!tabWindow) {
-          console.warn("tabs.onActivated: window id not found: ", removeInfo.windowId);
-          return state;
-        }
-        if (removeInfo.isWindowClosing) {
-          // window closing, ignore...
-          return state;
-        }
-        return state.handleTabClosed(tabWindow, tabId);
-      });
+      if (removeInfo.isWindowClosing) {
+        // window closing, ignore...
+        return;
+      }
+      onTabRemoved(uf,removeInfo.windowId,tabId);
     });
     chrome.tabs.onReplaced.addListener((addedTabId,removedTabId) => {
-      console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
+      // console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
       uf(state => {
         const tabWindow = state.getTabWindowByChromeTabId(removedTabId);
         if (!tabWindow) {
@@ -264,6 +271,19 @@ function registerEventHandlers(uf) {
         chrome.tabs.get(addedTabId,tab => onTabCreated(uf,tab));
         return nextSt;
       });
+    });
+    chrome.tabs.onMoved.addListener((tabId,moveInfo) => {
+      // console.log("tab.onMoved: ", tabId, moveInfo);
+      // Let's just refresh the whole window:
+      actions.syncChromeWindowById(moveInfo.windowId,uf);
+    });
+    chrome.tabs.onDetached.addListener((tabId,detachInfo) => {
+      // just handle like tab closing:
+      onTabRemoved(uf,detachInfo.oldWindowId,tabId);
+    });
+    chrome.tabs.onAttached.addListener((tabId,attachInfo) => {
+      // handle like tab creation:
+      chrome.tabs.get(tabId,tab => onTabCreated(uf,tab,true));
     });
 }
 

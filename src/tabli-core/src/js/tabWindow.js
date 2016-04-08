@@ -463,7 +463,7 @@ export function setActiveTab(tabWindow, tabId) {
   const tabPos = tabWindow.findChromeTabId(tabId);
 
   if (!tabPos) {
-    // console.log("setActiveTab -- tab id not found: ", tabId);
+    console.log("setActiveTab -- tab id not found: ", tabId);
     return tabWindow;
   }
 
@@ -473,22 +473,19 @@ export function setActiveTab(tabWindow, tabId) {
     return tabWindow;
   }
 
-  const prevPos = tabWindow.tabItems.findEntry((ti) => ti.open && ti.openState.active )
-
-  var nonActiveItems;
-  if (prevPos) {
-    const [prevIndex, prevActiveTab] = prevPos;
-    const updPrevOpenState = prevActiveTab.openState.remove('active');
-    const updPrevActiveTab = prevActiveTab.set('openState', updPrevOpenState);
-    nonActiveItems = tabWindow.tabItems.splice(prevIndex, 1, updPrevActiveTab);
-  } else {
-    nonActiveItems = tabWindow.tabItems;
+  // mark all other tabs as not active:
+  const tabItemRemoveActive = (ti) => {
+    return (ti.open ? ti.set('openState',ti.openState.remove('active')) : ti);
   }
+
+  const nonActiveItems = tabWindow.tabItems.map(tabItemRemoveActive);
 
   const updOpenState = tabItem.openState.set('active',true);
   const updActiveTab = tabItem.set('openState',updOpenState);
   const updItems = nonActiveItems.splice(index, 1, updActiveTab);
 
+  console.log("setting active tab at index ", index);
+  console.log("updated tabItems: ", updItems.toJS());
   return tabWindow.set('tabItems',updItems);
 }
 

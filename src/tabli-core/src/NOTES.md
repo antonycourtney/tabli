@@ -132,3 +132,22 @@ X(?) Getting exceptions in revert modal:
 
 - * Reverting when we have non-open saved tabs fails in RevertModal.renderItem() because tabItem.openState is null.  Need to check for tabItem.open.
 
+- Opening link from email or external app results in scrolling to wrong window.
+
+========
+Attempt to debug leakTest with babel-node and node-inspector:
+
+*** THIS DID NOT WORK:
+1. Start node process with --debug:
+# Note that for ordinary node, we'd do:
+# node --debug-brk=8010 test.js
+$ babel-node --debug-brk=8010 --presets es2015,react ./test/leakTest.js
+
+2. Start node-inspector:
+$ node-inspector --web-host 0.0.0.0
+
+3. visit URL from step 2:
+http://127.0.0.1:8080/?ws=127.0.0.1:8080&port=8010
+
+What worked (kind of) was running node directly via tests/leakTestWrap.
+

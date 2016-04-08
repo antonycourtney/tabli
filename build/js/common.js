@@ -723,7 +723,7 @@
 	  var tabPos = tabWindow.findChromeTabId(tabId);
 	
 	  if (!tabPos) {
-	    // console.log("setActiveTab -- tab id not found: ", tabId);
+	    console.log("setActiveTab -- tab id not found: ", tabId);
 	    return tabWindow;
 	  }
 	
@@ -737,28 +737,19 @@
 	    return tabWindow;
 	  }
 	
-	  var prevPos = tabWindow.tabItems.findEntry(function (ti) {
-	    return ti.open && ti.openState.active;
-	  });
+	  // mark all other tabs as not active:
+	  var tabItemRemoveActive = function tabItemRemoveActive(ti) {
+	    return ti.open ? ti.set('openState', ti.openState.remove('active')) : ti;
+	  };
 	
-	  var nonActiveItems;
-	  if (prevPos) {
-	    var _prevPos = _slicedToArray(prevPos, 2);
-	
-	    var prevIndex = _prevPos[0];
-	    var prevActiveTab = _prevPos[1];
-	
-	    var updPrevOpenState = prevActiveTab.openState.remove('active');
-	    var updPrevActiveTab = prevActiveTab.set('openState', updPrevOpenState);
-	    nonActiveItems = tabWindow.tabItems.splice(prevIndex, 1, updPrevActiveTab);
-	  } else {
-	    nonActiveItems = tabWindow.tabItems;
-	  }
+	  var nonActiveItems = tabWindow.tabItems.map(tabItemRemoveActive);
 	
 	  var updOpenState = tabItem.openState.set('active', true);
 	  var updActiveTab = tabItem.set('openState', updOpenState);
 	  var updItems = nonActiveItems.splice(index, 1, updActiveTab);
 	
+	  console.log("setting active tab at index ", index);
+	  console.log("updated tabItems: ", updItems.toJS());
 	  return tabWindow.set('tabItems', updItems);
 	}
 	
@@ -43778,13 +43769,8 @@
 	   */
 	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
 	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId || this.state.scrolledToTabId !== this.props.winStore.getActiveTabId();
-	    /*
-	    console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
-	                ", currentWindowId: ", this.props.winStore.currentWindowId );
-	    console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
-	                ", activeTabId: ", this.props.winStore.getActiveTabId(), 
-	                ", needScroll: ", needScrollUpdate);
-	    */
+	    console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, ", currentWindowId: ", this.props.winStore.currentWindowId);
+	    console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId, ", activeTabId: ", this.props.winStore.getActiveTabId(), ", needScroll: ", needScrollUpdate);
 	    var isPopup = !this.props.isPopout;
 	    if (windowRef != null && bodyRef != null && needScrollUpdate) {
 	      var viewportTop = bodyRef.scrollTop;
@@ -43796,9 +43782,9 @@
 	      // the annoying extra bit:
 	      var offsetTop = bodyRef.offsetTop;
 	
-	      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
+	      console.log("updateScrollPos: ", { offsetTop: offsetTop, viewportTop: viewportTop, viewportHeight: viewportHeight, windowTop: windowTop, windowHeight: windowHeight });
 	      if (windowTop < viewportTop || windowTop + windowHeight > viewportTop + viewportHeight || isPopup) {
-	        // console.log("updateScrollPos: setting scroll position");
+	        console.log("updateScrollPos: setting scroll position");
 	
 	        if (windowHeight > viewportHeight || isPopup) {
 	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -43827,7 +43813,7 @@
 	        selectedTabIndex: activeTabIndex
 	      };
 	
-	      // console.log("updateScrollPos: udpating State: ", updState);
+	      console.log("updateScrollPos: udpating State: ", updState);
 	      this.setState(updState);
 	    }
 	  },
