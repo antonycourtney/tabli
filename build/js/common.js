@@ -21177,6 +21177,10 @@
 	    var cmpFn = Util.windowCmp(winStore.currentWindowId);
 	    var sortedWindows = tabWindows.sort(cmpFn);
 	
+	    var winTitles = sortedWindows.map(function (w) {
+	      return w.title;
+	    });
+	
 	    return {
 	      winStore: winStore,
 	      sortedWindows: sortedWindows
@@ -43178,9 +43182,13 @@
 	 */
 	function windowCmp(currentWindowId) {
 	  var cf = function cf(tabWindowA, tabWindowB) {
-	    // focused window very first:
-	    if (tabWindowA.open && tabWindowA.openWindowId === currentWindowId) return -1;
-	    if (tabWindowB.open && tabWindow.B.openWindowId === currentWindowId) return 1;
+	    /*
+	      We used to sort with focused window very first:
+	      if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId)
+	        return -1;
+	      if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId)
+	        return 1;
+	    */
 	
 	    // open windows first:
 	    if (tabWindowA.open !== tabWindowB.open) {
@@ -43192,8 +43200,10 @@
 	
 	    var tA = tabWindowA.title;
 	    var tB = tabWindowB.title;
-	    return tA.localeCompare(tB);
+	    var ret = tA.localeCompare(tB, navigator.language, { sensitivity: "base" });
+	    return ret;
 	  };
+	  return cf;
 	}
 
 /***/ },

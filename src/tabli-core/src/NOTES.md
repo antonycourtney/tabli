@@ -128,4 +128,7 @@ X(?) Getting exceptions in revert modal:
 
 - Text in search box input no longer starts at top of open windows. (? artifact of starting from current open window?)
 
+- * Exception when re-starting Chrome because no current window. Test this.
+
+- * Reverting when we have non-open saved tabs fails in RevertModal.renderItem() because tabItem.openState is null.  Need to check for tabItem.open.
 

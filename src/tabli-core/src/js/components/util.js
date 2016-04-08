@@ -22,11 +22,13 @@ export function merge() {
  */
 export function windowCmp(currentWindowId) {
   const cf = (tabWindowA, tabWindowB) => {
-    // focused window very first:
-      if (tabWindowA.open && tabWindowA.openWindowId === currentWindowId)
+    /*
+      We used to sort with focused window very first:
+      if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId)
         return -1;
-      if (tabWindowB.open && tabWindow.B.openWindowId === currentWindowId)
+      if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId)
         return 1;
+    */
 
     // open windows first:
     if (tabWindowA.open !== tabWindowB.open) {
@@ -38,6 +40,8 @@ export function windowCmp(currentWindowId) {
 
     var tA = tabWindowA.title;
     var tB = tabWindowB.title;
-    return tA.localeCompare(tB);
+    const ret = tA.localeCompare(tB, navigator.language, { sensitivity: "base" });
+    return ret;
   }
+  return cf;
 }

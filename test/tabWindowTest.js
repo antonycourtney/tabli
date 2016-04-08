@@ -2,6 +2,7 @@
 import test from 'tape';
 import * as TabWindow from '../src/tabli-core/src/js/tabWindow';
 import difflet from 'difflet';
+import * as testData from './testData';
 
 function dumpDiffs(objA, objB) {
   var s = difflet({indent:2, comment:true}).compare(objA, objB);
@@ -14,68 +15,12 @@ test('basic test', (t) => {
   t.end();
 });
 
-test('makeFolderTabWindow', (t) => {
-  const bookmarkFolder =
-    {
-      children: [
-        {
-          dateAdded: 1395768341441,
-          id: '432',
-          index: 0,
-          parentId: '431',
-          title: 'API Reference · mbostock/d3 Wiki',
-          url: 'https://github.com/mbostock/d3/wiki/API-Reference',
-        },
-        {
-          dateAdded: 1398004320075,
-          id: '534',
-          index: 1,
-          parentId: '431',
-          title: 'D3.js - Data-Driven Documents',
-          url: 'http://d3js.org/',
-        },
-        {
-          dateAdded: 1398004321188,
-          id: '535',
-          index: 2,
-          parentId: '431',
-          title: 'Gallery · mbostock/d3 Wiki',
-          url: 'https://github.com/mbostock/d3/wiki/Gallery',
-        },
-        {
-          dateAdded: 1398004392395,
-          id: '536',
-          index: 3,
-          parentId: '431',
-          title: 'Tutorials · mbostock/d3 Wiki',
-          url: 'https://github.com/mbostock/d3/wiki/Tutorials',
-        },
-        {
-          dateAdded: 1398004621941,
-          id: '537',
-          index: 4,
-          parentId: '431',
-          title: 'Drag + Zoom',
-          url: 'http://bl.ocks.org/mbostock/6123708',
-        },
-        {
-          dateAdded: 1405471223073,
-          id: '613',
-          index: 5,
-          parentId: '431',
-          title: 'Focus+Context via Brushing',
-          url: 'http://bl.ocks.org/mbostock/1667367',
-        },
-      ],
-      dateAdded: 1395768341427,
-      dateGroupModified: 1430260300118,
-      id: '431',
-      index: 4,
-      parentId: '377',
-      title: 'd3 docs',
-    };
 
-  const tabWindow = TabWindow.makeFolderTabWindow(bookmarkFolder);
+
+test('makeFolderTabWindow', (t) => {
+
+
+  const tabWindow = TabWindow.makeFolderTabWindow(testData.d3BookmarkFolder);
   const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()));
 
 /*
@@ -85,380 +30,21 @@ test('makeFolderTabWindow', (t) => {
   console.log(">>>>>>>");
 */
 
-  const expectedTabWindow =
-    {
-      "saved": true,
-      "savedTitle": "d3 docs",
-      "savedFolderId": "431",
-      "open": false,
-      "openWindowId": -1,
-      "windowType": "",
-      "width": 0,
-      "height": 0,
-      "tabItems": [
-        {
-          "saved": true,
-          "savedState": {
-            "bookmarkId": "432",
-            "bookmarkIndex": 0,
-            "title": "API Reference · mbostock/d3 Wiki",
-            "url": "https://github.com/mbostock/d3/wiki/API-Reference"
-          },
-          "open": false,
-          "openState": null
-        },
-        {
-          "saved": true,
-          "savedState": {
-            "bookmarkId": "534",
-            "bookmarkIndex": 1,
-            "title": "D3.js - Data-Driven Documents",
-            "url": "http://d3js.org/"
-          },
-          "open": false,
-          "openState": null
-        },
-        {
-          "saved": true,
-          "savedState": {
-            "bookmarkId": "535",
-            "bookmarkIndex": 2,
-            "title": "Gallery · mbostock/d3 Wiki",
-            "url": "https://github.com/mbostock/d3/wiki/Gallery"
-          },
-          "open": false,
-          "openState": null
-        },
-        {
-          "saved": true,
-          "savedState": {
-            "bookmarkId": "536",
-            "bookmarkIndex": 3,
-            "title": "Tutorials · mbostock/d3 Wiki",
-            "url": "https://github.com/mbostock/d3/wiki/Tutorials"
-          },
-          "open": false,
-          "openState": null
-        },
-        {
-          "saved": true,
-          "savedState": {
-            "bookmarkId": "537",
-            "bookmarkIndex": 4,
-            "title": "Drag + Zoom",
-            "url": "http://bl.ocks.org/mbostock/6123708"
-          },
-          "open": false,
-          "openState": null
-        },
-        {
-          "saved": true,
-          "savedState": {
-            "bookmarkId": "613",
-            "bookmarkIndex": 5,
-            "title": "Focus+Context via Brushing",
-            "url": "http://bl.ocks.org/mbostock/1667367"
-          },
-          "open": false,
-          "openState": null
-        }
-      ]
-    };
-
 
   /*
   console.log('diffs between tabWindowJS and expected:');
-  dumpDiffs(tabWindowJS, expectedTabWindow);
+  dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow);
   */
 
-  t.deepEqual(tabWindowJS, expectedTabWindow, 'makeFolderTabWindow basic functionality');
+  t.deepEqual(tabWindowJS, testData.d3InitialExpectedTabWindow, 'makeFolderTabWindow basic functionality');
 
   t.equal(tabWindow.title, 'd3 docs', 'saved window title matches bookmark folder');
 
   t.end();
 });
 
-const chromeWindowSnap =
-    {
-      alwaysOnTop: false,
-      focused: false,
-      height: 957,
-      id: 442,
-      incognito: false,
-      left: 428,
-      state: 'normal',
-      tabs: [
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 443,
-          incognito: false,
-          index: 0,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Component API | React',
-          url: 'http://facebook.github.io/react/docs/component-api.html',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 445,
-          incognito: false,
-          index: 1,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Tutorial | React',
-          url: 'http://facebook.github.io/react/docs/tutorial.html',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d',
-          height: 862,
-          highlighted: false,
-          id: 447,
-          incognito: false,
-          index: 2,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
-          url: 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          height: 862,
-          highlighted: false,
-          id: 449,
-          incognito: false,
-          index: 3,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Flux | Application Architecture for Building User Interfaces',
-          url: 'http://facebook.github.io/flux/docs/overview.html#content',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://fluxxor.com/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 451,
-          incognito: false,
-          index: 4,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Fluxxor - Home',
-          url: 'http://fluxxor.com/',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png',
-          height: 862,
-          highlighted: false,
-          id: 453,
-          incognito: false,
-          index: 5,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'FixedDataTable',
-          url: 'http://facebook.github.io/fixed-data-table/',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: true,
-          audible: false,
-          favIconUrl: 'https://www.google.com/images/icons/product/chrome-32.png',
-          height: 862,
-          highlighted: true,
-          id: 734,
-          incognito: false,
-          index: 6,
-          muted: false,
-          mutedCause: '',
-          openerTabId: 449,
-          pinned: false,
-          selected: true,
-          status: 'complete',
-          title: 'Declare Permissions - Google Chrome',
-          url: 'https://developer.chrome.com/extensions/declare_permissions',
-          width: 1258,
-          windowId: 442,
-        },
-      ],
-      top: 222,
-      type: 'normal',
-      width: 1258,
-    };
-
-// after closing tab
-const chromeWindowSnap2 =
-    {
-      alwaysOnTop: false,
-      focused: false,
-      height: 957,
-      id: 442,
-      incognito: false,
-      left: 428,
-      state: 'normal',
-      tabs: [
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 443,
-          incognito: false,
-          index: 0,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Component API | React',
-          url: 'http://facebook.github.io/react/docs/component-api.html',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 445,
-          incognito: false,
-          index: 1,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Tutorial | React',
-          url: 'http://facebook.github.io/react/docs/tutorial.html',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d',
-          height: 862,
-          highlighted: false,
-          id: 447,
-          incognito: false,
-          index: 2,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
-          url: 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          height: 862,
-          highlighted: false,
-          id: 449,
-          incognito: false,
-          index: 3,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Flux | Application Architecture for Building User Interfaces',
-          url: 'http://facebook.github.io/flux/docs/overview.html#content',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: true,
-          audible: false,
-          favIconUrl: 'http://fluxxor.com/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 451,
-          incognito: false,
-          index: 4,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Fluxxor - Home',
-          url: 'http://fluxxor.com/',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png',
-          height: 862,
-          highlighted: false,
-          id: 453,
-          incognito: false,
-          index: 5,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'FixedDataTable',
-          url: 'http://facebook.github.io/fixed-data-table/',
-          width: 1258,
-          windowId: 442,
-        },
-      ],
-      top: 222,
-      type: 'normal',
-      width: 1258,
-    };
-
 test('chromeTabWindow', (t) => {
-  const baseTabWindow = TabWindow.makeChromeTabWindow(chromeWindowSnap);
+  const baseTabWindow = TabWindow.makeChromeTabWindow(testData.chromeWindowSnap);
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
 
@@ -589,7 +175,7 @@ test('chromeTabWindow', (t) => {
   t.equal(baseTitle, 'Declare Permissions - Google Chrome', 'title reflects active tab');
 
   // Now let's take state after closing the active tab that gave us our title:
-  const updTabWindow  = TabWindow.updateWindow(baseTabWindow, chromeWindowSnap2);
+  const updTabWindow  = TabWindow.updateWindow(baseTabWindow, testData.chromeWindowSnap2);
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()));
 
   // console.log("Updated tab window: ");
@@ -601,146 +187,19 @@ test('chromeTabWindow', (t) => {
   t.end();
 });
 
-// A window with no active tab
-const chromeWindowSnap3 =
-    {
-      alwaysOnTop: false,
-      focused: false,
-      height: 957,
-      id: 442,
-      incognito: false,
-      left: 428,
-      state: 'normal',
-      tabs: [
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 443,
-          incognito: false,
-          index: 0,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Component API | React',
-          url: 'http://facebook.github.io/react/docs/component-api.html',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/react/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 445,
-          incognito: false,
-          index: 1,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Tutorial | React',
-          url: 'http://facebook.github.io/react/docs/tutorial.html',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d',
-          height: 862,
-          highlighted: false,
-          id: 447,
-          incognito: false,
-          index: 2,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
-          url: 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          height: 862,
-          highlighted: false,
-          id: 449,
-          incognito: false,
-          index: 3,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Flux | Application Architecture for Building User Interfaces',
-          url: 'http://facebook.github.io/flux/docs/overview.html#content',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://fluxxor.com/favicon.ico',
-          height: 862,
-          highlighted: false,
-          id: 451,
-          incognito: false,
-          index: 4,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'Fluxxor - Home',
-          url: 'http://fluxxor.com/',
-          width: 1258,
-          windowId: 442,
-        },
-        {
-          active: false,
-          audible: false,
-          favIconUrl: 'http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png',
-          height: 862,
-          highlighted: false,
-          id: 453,
-          incognito: false,
-          index: 5,
-          muted: false,
-          mutedCause: '',
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          title: 'FixedDataTable',
-          url: 'http://facebook.github.io/fixed-data-table/',
-          width: 1258,
-          windowId: 442,
-        },
-      ],
-      top: 222,
-      type: 'normal',
-      width: 1258,
-    };
+
 
 /*
- * make sure we still get a deterministic title even when no tab active */
+ * make sure we still get a deterministic title even when no tab active 
+ */
 test('noActiveTabTitle', (t) => {
-  const baseTabWindow = TabWindow.makeChromeTabWindow(chromeWindowSnap3);
+  const baseTabWindow = TabWindow.makeChromeTabWindow(testData.chromeWindowSnap3);
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
 
   const baseTitle = baseTabWindow.title;
 
-  t.equal(baseTitle, chromeWindowSnap3.tabs[0].title, 'use first tab title when no active tab');
+  t.equal(baseTitle, testData.chromeWindowSnap3.tabs[0].title, 'use first tab title when no active tab');
   t.end();
 });
 
@@ -851,6 +310,50 @@ test('missingSourceFieldsTests', (t) => {
   const chromeTabWindowTitle = chromeTabWindow.title;
 
   t.equal(chromeTabWindow.title, chromeWindowSnap4.tabs[0].url, 'Fall back to url for tabs with no title');
+
+  t.end();
+});
+
+
+
+test('attachChromeWindow', (t) => {
+
+  // Let's first create the tabWindow for our saved bookmark folder:
+  const tabWindow = TabWindow.makeFolderTabWindow(testData.d3BookmarkFolder);
+  const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()));
+
+/*
+  console.log("makeFolderTabWindow returned:");
+  console.log(">>>>>>>");
+  console.log(JSON.stringify(tabWindowJS,null,2));
+  console.log(">>>>>>>");
+*/
+
+  /*
+  console.log('diffs between tabWindowJS and expected:');
+  dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow);
+  */
+
+  t.deepEqual(tabWindowJS, testData.d3InitialExpectedTabWindow, 'attachChromeWindow basic functionality');
+
+  t.equal(tabWindow.title, 'd3 docs', 'saved window title matches bookmark folder');
+
+  // Now let's do the attach:
+  const updTabWindow = TabWindow.updateWindow(tabWindow, testData.d3OpenedChromeWindow);
+  const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()));
+
+/*
+  console.log("updateTabWindow returned:");
+  console.log(">>>>>>>");
+  console.log(JSON.stringify(updTabWindowJS,null,2));
+  console.log(">>>>>>>");
+*/
+/*
+  console.log("diffs between updTabWindow (actual) and expected:");
+  dumpDiffs(updTabWindowJS, testData.d3AttachedExpectedTabWindow);
+*/
+
+  t.deepEqual(updTabWindowJS, testData.d3AttachedExpectedTabWindow, 'updateWindow -- after attach');
 
   t.end();
 });

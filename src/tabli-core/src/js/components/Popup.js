@@ -26,6 +26,8 @@ const Popup = React.createClass({
     var cmpFn = Util.windowCmp(winStore.currentWindowId);
     var sortedWindows = tabWindows.sort(cmpFn);
 
+    const winTitles = sortedWindows.map(w => w.title);
+
     return {
       winStore,
       sortedWindows

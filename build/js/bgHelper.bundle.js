@@ -192,6 +192,12 @@ webpackJsonp([0],{
 	    // console.log("renderAndSave: updated saved store and HTML");
 	    window.savedStore = winStore;
 	    window.savedHTML = renderedString;
+	
+	    /*
+	    console.warn("**** dumping winStore and chrome windows! (DEV ONLY)");
+	    dumpAll(winStore);
+	    dumpChromeWindows();
+	    */
 	  }
 	
 	  return renderAndSave;
@@ -305,7 +311,7 @@ webpackJsonp([0],{
 	        console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
 	        window.storeRef = new ViewRef(syncedStore);
 	
-	        // dumpAll(winStore);
+	        // dumpAll(syncedStore);
 	        // dumpChromeWindows();
 	
 	        var renderListener = makeRenderListener(window.storeRef);
