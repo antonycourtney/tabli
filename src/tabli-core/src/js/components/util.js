@@ -22,13 +22,11 @@ export function merge() {
  */
 export function windowCmp(currentWindowId) {
   const cf = (tabWindowA, tabWindowB) => {
-    /*
-      We used to sort with focused window very first:
-      if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId)
-        return -1;
-      if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId)
-        return 1;
-    */
+    // current window always very first:
+    if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId)
+      return -1;
+    if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId)
+      return 1;
 
     // open windows first:
     if (tabWindowA.open !== tabWindowB.open) {

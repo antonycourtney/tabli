@@ -484,8 +484,6 @@ export function setActiveTab(tabWindow, tabId) {
   const updActiveTab = tabItem.set('openState',updOpenState);
   const updItems = nonActiveItems.splice(index, 1, updActiveTab);
 
-  console.log("setting active tab at index ", index);
-  console.log("updated tabItems: ", updItems.toJS());
   return tabWindow.set('tabItems',updItems);
 }
 

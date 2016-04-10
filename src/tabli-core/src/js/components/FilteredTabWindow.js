@@ -133,12 +133,6 @@ const FilteredTabWindow = React.createClass({
       onMouseOver: this.handleMouseOver,
       onMouseOut: this.handleMouseOut
     };
-    windowDivProps.ref = (ref) => {
-      this.windowDivRef = ref;
-      if (this.props.focusedRef) { 
-        this.props.focusedRef(ref,this.props.index);
-      }
-    };
     return (
       <div {...windowDivProps} >
         {windowHeader}

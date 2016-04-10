@@ -11,9 +11,14 @@ const WindowListSection = React.createClass({
         </div>
       );
     }
-
+    var sectionDivProps = {
+      style: Styles.windowListSection
+    };
+    if (this.props.focusedRef) {
+      sectionDivProps.ref = this.props.focusedRef;
+    }
     return (
-      <div style={Styles.windowListSection}>
+      <div {...sectionDivProps}>
         {header}
         <div>
           {this.props.children}

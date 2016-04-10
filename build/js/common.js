@@ -748,8 +748,6 @@
 	  var updActiveTab = tabItem.set('openState', updOpenState);
 	  var updItems = nonActiveItems.splice(index, 1, updActiveTab);
 	
-	  console.log("setting active tab at index ", index);
-	  console.log("updated tabItems: ", updItems.toJS());
 	  return tabWindow.set('tabItems', updItems);
 	}
 	
@@ -43173,13 +43171,9 @@
 	 */
 	function windowCmp(currentWindowId) {
 	  var cf = function cf(tabWindowA, tabWindowB) {
-	    /*
-	      We used to sort with focused window very first:
-	      if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId)
-	        return -1;
-	      if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId)
-	        return 1;
-	    */
+	    // current window always very first:
+	    if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId) return -1;
+	    if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId) return 1;
 	
 	    // open windows first:
 	    if (tabWindowA.open !== tabWindowB.open) {
@@ -43765,14 +43759,25 @@
 	  /*
 	   * We have to do some fairly horrible change detection here because
 	   * React only seems to support imperative handling of scroll position and
-	   * kbd focus
+	   * kbd focus.
+	   *
+	   * Code here is also much more involved than it needs to be because we briefly tried
+	   * to reduce flash / jitter by keeping all open windows in alphabetical order by title
+	   * and just scrolling to bring the target window into the viewport.
+	   * This turned out not to really reduce jitter because Chrome window titles are determined
+	   * by tab title, so simply switching tabs resulted in abrupt changes in window sort order.
 	   */
 	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
 	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId || this.state.scrolledToTabId !== this.props.winStore.getActiveTabId();
-	    console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, ", currentWindowId: ", this.props.winStore.currentWindowId);
-	    console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId, ", activeTabId: ", this.props.winStore.getActiveTabId(), ", needScroll: ", needScrollUpdate);
+	    /*                             
+	      console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
+	                  ", currentWindowId: ", this.props.winStore.currentWindowId );
+	      console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
+	                  ", activeTabId: ", this.props.winStore.getActiveTabId(), 
+	                  ", needScroll: ", needScrollUpdate);
+	    */
 	    var isPopup = !this.props.isPopout;
-	    if (windowRef != null && bodyRef != null && needScrollUpdate) {
+	    if (windowRef != null && bodyRef != null && needScrollUpdate && this.props.filteredWindows.length > 0) {
 	      var viewportTop = bodyRef.scrollTop;
 	      var viewportHeight = bodyRef.clientHeight;
 	
@@ -43782,9 +43787,9 @@
 	      // the annoying extra bit:
 	      var offsetTop = bodyRef.offsetTop;
 	
-	      console.log("updateScrollPos: ", { offsetTop: offsetTop, viewportTop: viewportTop, viewportHeight: viewportHeight, windowTop: windowTop, windowHeight: windowHeight });
+	      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
 	      if (windowTop < viewportTop || windowTop + windowHeight > viewportTop + viewportHeight || isPopup) {
-	        console.log("updateScrollPos: setting scroll position");
+	        // console.log("updateScrollPos: setting scroll position");
 	
 	        if (windowHeight > viewportHeight || isPopup) {
 	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -43797,7 +43802,7 @@
 	      }
 	      // Set the selected window and tab to the focused window and its currently active tab:
 	
-	      var selectedWindow = this.props.filteredWindows[this.focusedWindowIndex];
+	      var selectedWindow = this.props.filteredWindows[0];
 	
 	      var selectedTabs = matchingTabs(this.props.searchStr, selectedWindow);
 	
@@ -43807,13 +43812,14 @@
 	      var activeTabIndex = activeEntry ? activeEntry[0] : 0;
 	      var activeTabId = this.props.winStore.getActiveTabId();
 	
-	      var updState = { scrolledToWindowId: this.props.winStore.currentWindowId,
+	      var updState = {
+	        scrolledToWindowId: this.props.winStore.currentWindowId,
 	        scrolledToTabId: activeTabId,
-	        selectedWindowIndex: this.focusedWindowIndex,
+	        selectedWindowIndex: 0,
 	        selectedTabIndex: activeTabIndex
 	      };
 	
-	      console.log("updateScrollPos: udpating State: ", updState);
+	      // console.log("updateScrollPos: udpating State: ", updState);
 	      this.setState(updState);
 	    }
 	  },
@@ -43827,9 +43833,11 @@
 	
 	
 	  // DOM ref for currently focused tab window:
-	  setFocusedTabWindowRef: function setFocusedTabWindowRef(ref, windowIndex) {
+	  setFocusedTabWindowRef: function setFocusedTabWindowRef(ref) {
 	    this.focusedWindowRef = ref;
-	    this.focusedWindowIndex = windowIndex;
+	    this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
+	  },
+	  componentDidUpdate: function componentDidUpdate() {
 	    this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
 	  },
 	  render: function render() {
@@ -44056,7 +44064,6 @@
 	      var isOpen = tabWindow.open;
 	      var isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
 	      var isSelected = i === this.props.selectedWindowIndex;
-	      var focusedRefCb = isFocused ? this.props.setFocusedTabWindowRef : null;
 	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
 	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
 	        storeUpdateHandler: this.props.storeUpdateHandler,
@@ -44066,14 +44073,12 @@
 	        searchRE: this.props.searchRE,
 	        isSelected: isSelected,
 	        isFocused: isFocused,
-	        focusedRef: focusedRefCb,
 	        selectedTabIndex: selectedTabIndex,
 	        appComponent: this.props.appComponent
 	      });
 	      if (isFocused) {
 	        focusedWindowElem = windowElem;
-	      }
-	      if (isOpen) {
+	      } else if (isOpen) {
 	        openWindows.push(windowElem);
 	      } else {
 	        savedWindows.push(windowElem);
@@ -44092,6 +44097,11 @@
 	    return React.createElement(
 	      'div',
 	      null,
+	      React.createElement(
+	        _WindowListSection2.default,
+	        { focusedRef: this.props.setFocusedTabWindowRef, title: 'Current Window' },
+	        focusedWindowElem
+	      ),
 	      React.createElement(
 	        _WindowListSection2.default,
 	        { title: 'Open Windows' },
@@ -44234,8 +44244,6 @@
 	    this.setState({ expanded: expand });
 	  },
 	  render: function render() {
-	    var _this = this;
-	
 	    var filteredTabWindow = this.props.filteredTabWindow;
 	    var tabWindow = filteredTabWindow.tabWindow;
 	    var tabs;
@@ -44278,12 +44286,6 @@
 	      style: windowStyles,
 	      onMouseOver: this.handleMouseOver,
 	      onMouseOut: this.handleMouseOut
-	    };
-	    windowDivProps.ref = function (ref) {
-	      _this.windowDivRef = ref;
-	      if (_this.props.focusedRef) {
-	        _this.props.focusedRef(ref, _this.props.index);
-	      }
 	    };
 	    return React.createElement(
 	      'div',
@@ -44706,10 +44708,15 @@
 	        )
 	      );
 	    }
-	
+	    var sectionDivProps = {
+	      style: _styles2.default.windowListSection
+	    };
+	    if (this.props.focusedRef) {
+	      sectionDivProps.ref = this.props.focusedRef;
+	    }
 	    return React.createElement(
 	      'div',
-	      { style: _styles2.default.windowListSection },
+	      sectionDivProps,
 	      header,
 	      React.createElement(
 	        'div',

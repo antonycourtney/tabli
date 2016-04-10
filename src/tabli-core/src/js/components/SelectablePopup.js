@@ -122,18 +122,26 @@ const SelectablePopup = React.createClass({
   /*
    * We have to do some fairly horrible change detection here because
    * React only seems to support imperative handling of scroll position and
-   * kbd focus
+   * kbd focus.
+   *
+   * Code here is also much more involved than it needs to be because we briefly tried
+   * to reduce flash / jitter by keeping all open windows in alphabetical order by title
+   * and just scrolling to bring the target window into the viewport.
+   * This turned out not to really reduce jitter because Chrome window titles are determined
+   * by tab title, so simply switching tabs resulted in abrupt changes in window sort order.
    */
   updateScrollPos(bodyRef,windowRef) {
     const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId) ||
                              (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId());
+  /*                             
     console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
                 ", currentWindowId: ", this.props.winStore.currentWindowId );
     console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
                 ", activeTabId: ", this.props.winStore.getActiveTabId(), 
                 ", needScroll: ", needScrollUpdate);
+  */
     const isPopup = !(this.props.isPopout);
-    if ((windowRef!=null) && (bodyRef!=null) && needScrollUpdate) {
+    if ((windowRef!=null) && (bodyRef!=null) && needScrollUpdate && this.props.filteredWindows.length > 0) {
       const viewportTop = bodyRef.scrollTop;
       const viewportHeight = bodyRef.clientHeight;
 
@@ -143,11 +151,11 @@ const SelectablePopup = React.createClass({
       // the annoying extra bit:
       const offsetTop = bodyRef.offsetTop;
 
-      console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
+      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
       if ((windowTop < viewportTop) ||
           ((windowTop + windowHeight) > (viewportTop + viewportHeight)) ||
           isPopup) {
-        console.log("updateScrollPos: setting scroll position");
+        // console.log("updateScrollPos: setting scroll position");
 
         if ((windowHeight > viewportHeight) || isPopup) {
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -160,7 +168,7 @@ const SelectablePopup = React.createClass({
       }
       // Set the selected window and tab to the focused window and its currently active tab:
 
-      const selectedWindow = this.props.filteredWindows[this.focusedWindowIndex];
+      const selectedWindow = this.props.filteredWindows[0];
 
       const selectedTabs = matchingTabs(this.props.searchStr,selectedWindow);
 
@@ -168,13 +176,14 @@ const SelectablePopup = React.createClass({
       const activeTabIndex = activeEntry ? activeEntry[0] : 0;
       const activeTabId = this.props.winStore.getActiveTabId();
 
-      const updState = { scrolledToWindowId: this.props.winStore.currentWindowId,
-        scrolledToTabId: activeTabId, 
-        selectedWindowIndex: this.focusedWindowIndex,
+      const updState = {
+        scrolledToWindowId: this.props.winStore.currentWindowId,
+        scrolledToTabId: activeTabId,
+        selectedWindowIndex: 0, 
         selectedTabIndex: activeTabIndex 
       };
 
-      console.log("updateScrollPos: udpating State: ", updState);
+      // console.log("updateScrollPos: udpating State: ", updState);
       this.setState(updState);
     }
   },
@@ -186,12 +195,14 @@ const SelectablePopup = React.createClass({
   },
 
   // DOM ref for currently focused tab window:
-  setFocusedTabWindowRef(ref,windowIndex) {
+  setFocusedTabWindowRef(ref) {
     this.focusedWindowRef = ref;
-    this.focusedWindowIndex = windowIndex;
     this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
   },
 
+  componentDidUpdate() {
+    this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
+  },
 
   render() {
     const winStore = this.props.winStore;
