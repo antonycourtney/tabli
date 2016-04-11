@@ -1,4 +1,4 @@
-webpackJsonp([0],{
+webpackJsonp([4],{
 
 /***/ 0:
 /*!****************************!*\
@@ -8,42 +8,49 @@ webpackJsonp([0],{
 
 	'use strict';
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 1);
+	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 197);
 	
 	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
 	
-	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
+	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 162);
 	
 	var Tabli = _interopRequireWildcard(_index);
 	
-	var _lodash = __webpack_require__(/*! lodash */ 4);
+	var _lodash = __webpack_require__(/*! lodash */ 164);
 	
 	var _ = _interopRequireWildcard(_lodash);
 	
-	var _react = __webpack_require__(/*! react */ 9);
+	var _immutable = __webpack_require__(/*! immutable */ 158);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _react = __webpack_require__(/*! react */ 1);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 195);
+	var _server = __webpack_require__(/*! react-dom/server */ 161);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
-	var _oneref = __webpack_require__(/*! oneref */ 169);
+	var _oneref = __webpack_require__(/*! oneref */ 171);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var TabManagerState = Tabli.TabManagerState; /**
-	                                              * Background helper page.
-	                                              * Gathering bookmark and window state and places in local storage so that
-	                                              * popup rendering will be as fast as possible
-	                                              */
+	/**
+	 * Background helper page.
+	 * Gathering bookmark and window state and places in local storage so that
+	 * popup rendering will be as fast as possible
+	 */
 	
+	
+	var TabManagerState = Tabli.TabManagerState;
 	var TabWindow = Tabli.TabWindow;
 	var Popup = Tabli.components.Popup;
 	var actions = Tabli.actions;
 	var ViewRef = Tabli.ViewRef;
+	var utils = Tabli.utils;
 	
 	var tabmanFolderTitle = 'Tabli Saved Windows';
 	var archiveFolderTitle = '_Archive';
@@ -320,53 +327,165 @@ webpackJsonp([0],{
 	  });
 	}
 	
+	/**
+	 * Heuristic scan to find any open windows that seem to have come from saved windows
+	 * and re-attach them on initial load of the background page. Mainly useful for
+	 * development and for re-starting Tablie.
+	 *
+	 * Heuristics here are imperfect; only way to get this truly right would be with a proper
+	 * session management API.
+	 *
+	 * calls cb with a TabManager state when complete.
+	 *
+	 */
+	function reattachWindows(bmStore, cb) {
+	  var urlIdMap = bmStore.getUrlBookmarkIdMap();
+	
+	  // type constructor for match info:
+	  var MatchInfo = Immutable.Record({ windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0 });
+	
+	  chrome.windows.getAll({ populate: true }, function (windowList) {
+	
+	    function getMatchInfo(w) {
+	      // matches :: Array<Set<BookmarkId>>
+	      var matchSets = w.tabs.map(function (t) {
+	        return urlIdMap.get(t.url, null);
+	      }).filter(function (x) {
+	        return x;
+	      });
+	      // countMaps :: Array<Map<BookmarkId,Num>>
+	      var countMaps = matchSets.map(function (s) {
+	        return s.countBy(function (v) {
+	          return v;
+	        });
+	      });
+	      // Now let's reduce array, merging all maps into a single map, aggregating counts:
+	      var aggMerge = function aggMerge(mA, mB) {
+	        return mA.mergeWith(function (prev, next) {
+	          return prev + next;
+	        }, mB);
+	      };
+	      var matchMap = countMaps.reduce(aggMerge, Immutable.Map());
+	
+	      var bestMatch = utils.bestMatch(matchMap);
+	
+	      return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch: bestMatch, tabCount: w.tabs.length });
+	    }
+	
+	    /**
+	     * We could come up with better heuristics here, but for now we'll be conservative
+	     * and only re-attach when there is an unambiguous best match
+	     */
+	    // Only look at windows that match exactly one bookmark folder
+	    // (Could be improved by sorting entries on number of matches and picking best (if there is one))
+	    var windowMatchInfo = Immutable.Seq(windowList).map(getMatchInfo).filter(function (mi) {
+	      return mi.bestMatch;
+	    });
+	
+	    // console.log("windowMatchInfo: ", windowMatchInfo.toJS());
+	
+	    // Now gather an inverse map of the form:
+	    // Map<BookmarkId,Map<WindowId,Num>>
+	    var bmMatches = windowMatchInfo.groupBy(function (mi) {
+	      return mi.bestMatch;
+	    });
+	
+	    // console.log("bmMatches: ", bmMatches.toJS());
+	
+	    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
+	    var bmMatchMaps = bmMatches.map(function (mis) {
+	      // mis :: Seq<MatchInfo>
+	
+	      // mercifully each mi will have a distinct windowId at this point:
+	      var entries = mis.map(function (mi) {
+	        var matchTabCount = mi.matches.get(mi.bestMatch);
+	        return [mi.windowId, matchTabCount];
+	      });
+	
+	      return Immutable.Map(entries);
+	    });
+	
+	    // console.log("bmMatchSets: ", bmMatchMaps.toJS());
+	
+	    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
+	    var bestBMMatches = bmMatchMaps.map(function (mm) {
+	      return utils.bestMatch(mm);
+	    }).filter(function (ct) {
+	      return ct;
+	    });
+	
+	    // console.log("bestBMMatches: ", bestBMMatches.toJS());
+	
+	    // Form a map from chrome window ids to chrome window snapshots:
+	    var chromeWinMap = _.fromPairs(windowList.map(function (w) {
+	      return [w.id, w];
+	    }));
+	
+	    // And build up our attached state by attaching to each window in bestBMMatches:
+	
+	    var attacher = function attacher(st, windowId, bookmarkId) {
+	      var chromeWindow = chromeWinMap[windowId];
+	      var bmTabWindow = st.bookmarkIdMap.get(bookmarkId);
+	      var nextSt = st.attachChromeWindow(bmTabWindow, chromeWindow);
+	      return nextSt;
+	    };
+	
+	    var attachedStore = bestBMMatches.reduce(attacher, bmStore);
+	
+	    cb(attachedStore);
+	  });
+	}
+	
 	function main() {
-	  initWinStore(function (bmStore) {
-	    // console.log("init: done reading bookmarks: ", bmStore);
-	    // window.winStore = winStore;
-	    chrome.windows.getCurrent(null, function (currentWindow) {
-	      console.log("bgHelper: currentWindow: ", currentWindow);
-	      actions.syncChromeWindows(function (uf) {
-	        console.log('initial sync of chrome windows complete.');
-	        var syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
-	        console.log("window ids in store: ", _.keys(syncedStore.windowIdMap.toJS()));
-	        console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
-	        window.storeRef = new ViewRef(syncedStore);
+	  initWinStore(function (rawBMStore) {
+	    reattachWindows(rawBMStore, function (bmStore) {
+	      console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS());
 	
-	        // dumpAll(syncedStore);
-	        // dumpChromeWindows();
+	      // window.winStore = winStore;
+	      chrome.windows.getCurrent(null, function (currentWindow) {
+	        console.log("bgHelper: currentWindow: ", currentWindow);
+	        actions.syncChromeWindows(function (uf) {
+	          console.log('initial sync of chrome windows complete.');
+	          var syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
+	          console.log("window ids in store: ", _.keys(syncedStore.windowIdMap.toJS()));
+	          console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
+	          window.storeRef = new ViewRef(syncedStore);
 	
-	        var renderListener = makeRenderListener(window.storeRef);
+	          // dumpAll(syncedStore);
+	          // dumpChromeWindows();
 	
-	        // And call it once to get started:
-	        renderListener();
+	          var renderListener = makeRenderListener(window.storeRef);
 	
-	        /*
-	         * The renderListener is just doing a background render to enable us to
-	         * display an initial server-rendered preview of the HTML when opening the popup
-	         * and (hopefully) speed up the actual render since DOM changes should be
-	         * minimized.
-	         *
-	         * Let's throttle this way down to avoid spending too many cycles building
-	         * this non-interactive preview.
-	         */
-	        var throttledRenderListener = _.debounce(renderListener, 2000);
-	        window.storeRef.on('change', throttledRenderListener);
+	          // And call it once to get started:
+	          renderListener();
 	
-	        setupConnectionListener(window.storeRef);
+	          /*
+	           * The renderListener is just doing a background render to enable us to
+	           * display an initial server-rendered preview of the HTML when opening the popup
+	           * and (hopefully) speed up the actual render since DOM changes should be
+	           * minimized.
+	           *
+	           * Let's throttle this way down to avoid spending too many cycles building
+	           * this non-interactive preview.
+	           */
+	          var throttledRenderListener = _.debounce(renderListener, 2000);
+	          window.storeRef.on('change', throttledRenderListener);
 	
-	        var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
-	        registerEventHandlers(storeRefUpdater);
+	          setupConnectionListener(window.storeRef);
 	
-	        /*
-	         * OK, this really shows limits of our refUpdater strategy, which conflates the
-	         * state updater action with the notion of a completion callback.
-	         * We really want to use callback chaining to ensure we don't show the popout
-	         * until after the popout is closed.
-	         */
-	        actions.closePopout(window.storeRef.getValue(), function (uf) {
-	          storeRefUpdater(uf);
-	          actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
+	          var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
+	          registerEventHandlers(storeRefUpdater);
+	
+	          /*
+	           * OK, this really shows limits of our refUpdater strategy, which conflates the
+	           * state updater action with the notion of a completion callback.
+	           * We really want to use callback chaining to ensure we don't show the popout
+	           * until after the popout is closed.
+	           */
+	          actions.closePopout(window.storeRef.getValue(), function (uf) {
+	            storeRefUpdater(uf);
+	            actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
+	          });
 	        });
 	      });
 	    });
@@ -377,7 +496,20 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 1:
+/***/ 161:
+/*!*******************************!*\
+  !*** ./~/react-dom/server.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 148);
+
+
+/***/ },
+
+/***/ 197:
 /*!*********************************!*\
   !*** ./src/js/chromeBrowser.js ***!
   \*********************************/
@@ -405,19 +537,6 @@ webpackJsonp([0],{
 	window.tabliBrowser = chromeBrowser;
 	
 	module.exports = chromeBrowser;
-
-/***/ },
-
-/***/ 195:
-/*!*******************************!*\
-  !*** ./~/react-dom/server.js ***!
-  \*******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 156);
-
 
 /***/ }
 

@@ -6,12 +6,14 @@
 import chromeBrowser from './chromeBrowser';
 import * as Tabli from '../tabli-core/src/js/index';
 import * as _ from 'lodash';
+import * as Immutable from 'immutable';
 
 const TabManagerState = Tabli.TabManagerState;
 const TabWindow = Tabli.TabWindow;
 const Popup = Tabli.components.Popup;
 const actions = Tabli.actions;
 const ViewRef = Tabli.ViewRef;
+const utils = Tabli.utils;
 
 import * as React from 'react';
 
@@ -287,57 +289,148 @@ function registerEventHandlers(uf) {
     });
 }
 
-function main() {
-  initWinStore((bmStore) => {
-    // console.log("init: done reading bookmarks: ", bmStore);
-    // window.winStore = winStore;
-    chrome.windows.getCurrent(null, (currentWindow) => {
-      console.log("bgHelper: currentWindow: ", currentWindow);
-      actions.syncChromeWindows((uf) => {
-        console.log('initial sync of chrome windows complete.');
-        const syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
-        console.log("window ids in store: ", _.keys(syncedStore.windowIdMap.toJS()));
-        console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
-        window.storeRef = new ViewRef(syncedStore);
+/**
+ * Heuristic scan to find any open windows that seem to have come from saved windows
+ * and re-attach them on initial load of the background page. Mainly useful for
+ * development and for re-starting Tablie.
+ *
+ * Heuristics here are imperfect; only way to get this truly right would be with a proper
+ * session management API.
+ *
+ * calls cb with a TabManager state when complete.
+ *
+ */
+function reattachWindows(bmStore,cb) {
+  const urlIdMap = bmStore.getUrlBookmarkIdMap();
 
-        // dumpAll(syncedStore);
-        // dumpChromeWindows();
+  // type constructor for match info:
+  const MatchInfo = Immutable.Record({windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0});
 
-        const renderListener = makeRenderListener(window.storeRef);
+  chrome.windows.getAll({ populate: true }, (windowList) => {
 
-        // And call it once to get started:
-        renderListener();
+    function getMatchInfo(w) {
+      // matches :: Array<Set<BookmarkId>>
+      const matchSets = w.tabs.map(t => urlIdMap.get(t.url,null) ).filter(x => x);
+      // countMaps :: Array<Map<BookmarkId,Num>>
+      const countMaps = matchSets.map(s => s.countBy(v => v));
+      // Now let's reduce array, merging all maps into a single map, aggregating counts:
+      const aggMerge = (mA,mB) => mA.mergeWith((prev,next) => prev + next, mB);
+      const matchMap = countMaps.reduce(aggMerge,Immutable.Map());
 
-        /*
-         * The renderListener is just doing a background render to enable us to
-         * display an initial server-rendered preview of the HTML when opening the popup
-         * and (hopefully) speed up the actual render since DOM changes should be
-         * minimized.
-         *
-         * Let's throttle this way down to avoid spending too many cycles building
-         * this non-interactive preview.
-         */
-        const throttledRenderListener = _.debounce(renderListener, 2000);
-        window.storeRef.on('change', throttledRenderListener);
+      const bestMatch = utils.bestMatch(matchMap);
 
-        setupConnectionListener(window.storeRef);
+      return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length });
+    }
+    
+    /**
+     * We could come up with better heuristics here, but for now we'll be conservative
+     * and only re-attach when there is an unambiguous best match
+     */
+    // Only look at windows that match exactly one bookmark folder
+    // (Could be improved by sorting entries on number of matches and picking best (if there is one))
+    const windowMatchInfo = Immutable.Seq(windowList).map(getMatchInfo).filter(mi => mi.bestMatch);
 
+    // console.log("windowMatchInfo: ", windowMatchInfo.toJS());
 
-        const storeRefUpdater = refUpdater(window.storeRef);
-        registerEventHandlers(storeRefUpdater);
+    // Now gather an inverse map of the form:
+    // Map<BookmarkId,Map<WindowId,Num>>
+    const bmMatches = windowMatchInfo.groupBy((mi) => mi.bestMatch);
 
-        /*
-         * OK, this really shows limits of our refUpdater strategy, which conflates the
-         * state updater action with the notion of a completion callback.
-         * We really want to use callback chaining to ensure we don't show the popout
-         * until after the popout is closed.
-         */
-        actions.closePopout(window.storeRef.getValue(),(uf) => {
-          storeRefUpdater(uf);      
-          actions.showPopout(window.storeRef.getValue(),storeRefUpdater);
-        });
+    // console.log("bmMatches: ", bmMatches.toJS());
+
+    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
+    const bmMatchMaps = bmMatches.map(mis => {
+      // mis :: Seq<MatchInfo>
+
+      // mercifully each mi will have a distinct windowId at this point:
+      const entries = mis.map(mi => {
+        const matchTabCount = mi.matches.get(mi.bestMatch);
+        return [mi.windowId,matchTabCount];
       });
-    });    
+
+      return Immutable.Map(entries);
+    });
+
+    // console.log("bmMatchSets: ", bmMatchMaps.toJS());
+
+    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
+    const bestBMMatches = bmMatchMaps.map(mm => utils.bestMatch(mm)).filter(ct => ct);
+
+    // console.log("bestBMMatches: ", bestBMMatches.toJS());
+
+    // Form a map from chrome window ids to chrome window snapshots:
+    const chromeWinMap = _.fromPairs(windowList.map(w => [w.id,w]));
+
+    // And build up our attached state by attaching to each window in bestBMMatches:
+
+    const attacher = (st,windowId,bookmarkId) => {
+      const chromeWindow = chromeWinMap[windowId];
+      const bmTabWindow = st.bookmarkIdMap.get(bookmarkId);
+      const nextSt = st.attachChromeWindow(bmTabWindow, chromeWindow);
+      return nextSt;
+    }
+
+    const attachedStore = bestBMMatches.reduce(attacher, bmStore);
+
+    cb(attachedStore);
+  });  
+}
+
+
+function main() {
+  initWinStore((rawBMStore) => {
+    reattachWindows(rawBMStore,(bmStore) => {
+      console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS());
+
+      // window.winStore = winStore;
+      chrome.windows.getCurrent(null, (currentWindow) => {
+        console.log("bgHelper: currentWindow: ", currentWindow);
+        actions.syncChromeWindows((uf) => {
+          console.log('initial sync of chrome windows complete.');
+          const syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
+          console.log("window ids in store: ", _.keys(syncedStore.windowIdMap.toJS()));
+          console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
+          window.storeRef = new ViewRef(syncedStore);
+
+          // dumpAll(syncedStore);
+          // dumpChromeWindows();
+
+          const renderListener = makeRenderListener(window.storeRef);
+
+          // And call it once to get started:
+          renderListener();
+
+          /*
+           * The renderListener is just doing a background render to enable us to
+           * display an initial server-rendered preview of the HTML when opening the popup
+           * and (hopefully) speed up the actual render since DOM changes should be
+           * minimized.
+           *
+           * Let's throttle this way down to avoid spending too many cycles building
+           * this non-interactive preview.
+           */
+          const throttledRenderListener = _.debounce(renderListener, 2000);
+          window.storeRef.on('change', throttledRenderListener);
+
+          setupConnectionListener(window.storeRef);
+
+
+          const storeRefUpdater = refUpdater(window.storeRef);
+          registerEventHandlers(storeRefUpdater);
+
+          /*
+           * OK, this really shows limits of our refUpdater strategy, which conflates the
+           * state updater action with the notion of a completion callback.
+           * We really want to use callback chaining to ensure we don't show the popout
+           * until after the popout is closed.
+           */
+          actions.closePopout(window.storeRef.getValue(),(uf) => {
+            storeRefUpdater(uf);      
+            actions.showPopout(window.storeRef.getValue(),storeRefUpdater);
+          });
+        });
+      });    
+    });
   });
 }
 

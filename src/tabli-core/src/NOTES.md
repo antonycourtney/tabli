@@ -112,7 +112,7 @@ X Reset search field on Enter or ESC
 - Format source using 'standard' 
 https://www.npmjs.com/package/standard
 
-- Right now we transfer selection to the active window and active tab when we get a window focus change event.  For consistency we should also transfer when we get an active tab change event.
+X  Right now we transfer selection to the active window and active tab when we get a window focus change event.  For consistency we should also transfer when we get an active tab change event.
 
 X BUG: New Tab doesn't seem to change title / URL. Repro: click on new tab on tab bar, type any URL.
 Conjecture:  Need to handle 'tab replaced' event
@@ -133,6 +133,8 @@ X(?) Getting exceptions in revert modal:
 - * Reverting when we have non-open saved tabs fails in RevertModal.renderItem() because tabItem.openState is null.  Need to check for tabItem.open.
 
 - Opening link from email or external app results in scrolling to wrong window.
+
+
 
 ========
 Attempt to debug leakTest with babel-node and node-inspector:

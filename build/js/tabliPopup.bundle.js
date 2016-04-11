@@ -1,4 +1,4 @@
-webpackJsonp([3],{
+webpackJsonp([2],{
 
 /***/ 0:
 /*!******************************!*\
@@ -8,7 +8,7 @@ webpackJsonp([3],{
 
 	'use strict';
 	
-	var _renderCommon = __webpack_require__(/*! ./renderCommon */ 197);
+	var _renderCommon = __webpack_require__(/*! ./renderCommon */ 196);
 	
 	var RenderCommon = _interopRequireWildcard(_renderCommon);
 	
@@ -34,38 +34,7 @@ webpackJsonp([3],{
 
 /***/ },
 
-/***/ 1:
-/*!*********************************!*\
-  !*** ./src/js/chromeBrowser.js ***!
-  \*********************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	/**
-	 * Implementation of Tabli browser interface for Google Chrome, using extensions API
-	 *
-	 * Only import this module from Chrome!
-	 */
-	var chromeBrowser = {
-	
-	  // make a tab (identified by tab id) the currently focused tab:
-	  activateTab: function activateTab(tabId, callback) {
-	    chrome.tabs.update(tabId, { active: true }, callback);
-	  },
-	
-	  setFocusedWindow: function setFocusedWindow(windowId, callback) {
-	    chrome.windows.update(windowId, { focused: true }, callback);
-	  }
-	};
-	
-	window.tabliBrowser = chromeBrowser;
-	
-	module.exports = chromeBrowser;
-
-/***/ },
-
-/***/ 197:
+/***/ 196:
 /*!********************************!*\
   !*** ./src/js/renderCommon.js ***!
   \********************************/
@@ -78,21 +47,21 @@ webpackJsonp([3],{
 	});
 	exports.getFocusedAndRender = getFocusedAndRender;
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 1);
+	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 197);
 	
 	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
 	
-	var _react = __webpack_require__(/*! react */ 9);
+	var _react = __webpack_require__(/*! react */ 1);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _reactDom = __webpack_require__(/*! react-dom */ 189);
+	var _reactDom = __webpack_require__(/*! react-dom */ 160);
 	
 	var ReactDOM = _interopRequireWildcard(_reactDom);
 	
 	var _utils = __webpack_require__(/*! ./utils */ 198);
 	
-	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
+	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 162);
 	
 	var Tabli = _interopRequireWildcard(_index);
 	
@@ -183,6 +152,37 @@ webpackJsonp([3],{
 	    renderPopup(currentChromeWindow, isPopout);
 	  });
 	}
+
+/***/ },
+
+/***/ 197:
+/*!*********************************!*\
+  !*** ./src/js/chromeBrowser.js ***!
+  \*********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	/**
+	 * Implementation of Tabli browser interface for Google Chrome, using extensions API
+	 *
+	 * Only import this module from Chrome!
+	 */
+	var chromeBrowser = {
+	
+	  // make a tab (identified by tab id) the currently focused tab:
+	  activateTab: function activateTab(tabId, callback) {
+	    chrome.tabs.update(tabId, { active: true }, callback);
+	  },
+	
+	  setFocusedWindow: function setFocusedWindow(windowId, callback) {
+	    chrome.windows.update(windowId, { focused: true }, callback);
+	  }
+	};
+	
+	window.tabliBrowser = chromeBrowser;
+	
+	module.exports = chromeBrowser;
 
 /***/ },
 

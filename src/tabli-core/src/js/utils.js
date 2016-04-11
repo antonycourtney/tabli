@@ -42,7 +42,6 @@ export function parseURL(url) {
 /**
  * chain a sequence of asynchronous actions
  *
-
  */
 export function seqActions(actions, seed, onCompleted) {
   var index = 0;
@@ -62,7 +61,24 @@ export function seqActions(actions, seed, onCompleted) {
   invokeNext(seed);
 }
 
-
+/**
+ * Given an Immutable.Map<K,Num> of candidate matches over a space of key values K,
+ * return the unambiguous best match (if any) otherwise null
+ *
+ */
+export function bestMatch(matchMap) {
+  if (matchMap.size===0)
+    return null;
+  const matchSeq = matchMap.entrySeq().sortBy(([k,count]) => count).cacheResult();
+  if (matchSeq.size===1) {
+    return matchSeq.get(0)[0];
+  }
+  const topMatch = matchSeq.get(matchSeq.size - 1);
+  const runnerUp = matchSeq.get(matchSeq.size - 2);
+  if (topMatch[1] > runnerUp[1])
+    return topMatch[0];
+  return null;
+} 
 
 /*
 var CONTEXT_MENU_ID = 99;

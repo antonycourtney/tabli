@@ -240,4 +240,25 @@ export default class TabManagerState extends Immutable.Record({
   countOpenTabs() {
     return this.windowIdMap.reduce((count, w) => count + w.openTabCount, 0);
   }
+
+  /*
+   * obtain a map from URL to Set<bookmark id> of saved windows, for use on initial
+   * attach.
+   *
+   * returns: Map<URL,Set<BookmarkId>>
+   */
+  getUrlBookmarkIdMap() {
+    const bmEnts = this.bookmarkIdMap.entrySeq();
+
+    // bmEnts ::  Iterator<[BookmarkId,TabWindow]>
+    const getSavedUrls = (tw) => tw.tabItems.map((ti) => ti.url)
+
+
+    const bmUrls = bmEnts.map(([bmid,tw]) => getSavedUrls(tw).map(url => [url,bmid])).flatten(true);
+
+    const groupedIds = bmUrls.groupBy(([url,bmid]) => url).map(vs => Immutable.Set(vs.map(([url,bmid]) => bmid)));
+    // groupedIds :: Seq.Keyed<URL,Set<BookmarkId>>
+
+    return Immutable.Map(groupedIds);
+  }   
 }

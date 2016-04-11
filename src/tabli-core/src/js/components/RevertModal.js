@@ -28,8 +28,9 @@ const RevertModal = React.createClass({
     this.props.onSubmit(this.props.tabWindow);
   },
 
-  renderItem(tabItem) {
-    var fiSrc = tabItem.openState.favIconUrl ? tabItem.openState.favIconUrl : '';
+  renderItem(tabItem,idx) {
+    const favIconUrl = tabItem.open ? tabItem.openState.favIconUrl : null;
+    var fiSrc = favIconUrl ? favIconUrl : '';
 
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {
@@ -40,7 +41,7 @@ const RevertModal = React.createClass({
     const tabOpenStyle = tabItem.open ? null : Styles.closed;
     var tabActiveStyle = tabItem.active ? Styles.activeSpan : null;
     var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
-    const id = 'tabItem-' + tabItem.openState.openTabId;
+    const id = 'tabItem-' + idx;
     return (
         <div key={id} style={Util.merge(Styles.noWrap, Styles.tabItem)} >
           {tabFavIcon}
