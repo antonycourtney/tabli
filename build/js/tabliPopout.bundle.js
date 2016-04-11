@@ -28,6 +28,9 @@ webpackJsonp([2],{
 	  window.onload = function () {
 	    return RenderCommon.getFocusedAndRender(true);
 	  };
+	  window.onfocus = function (e) {
+	    document.getElementById('searchBox').focus();
+	  };
 	}
 	
 	main();

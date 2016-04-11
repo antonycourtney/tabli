@@ -55,6 +55,16 @@ const SearchBar = React.createClass({
         this.props.onSearchEnter(this.refs.searchInput);
       }
     }
+
+    if (e.keyCode === Constants.KEY_ESC) {
+      if (this.props.onSearchExit) {
+        const searchStr = this.refs.searchInput.value;
+        if (!searchStr || searchStr.length === 0) {
+          e.preventDefault();
+          this.props.onSearchExit();
+        }
+      }
+    }
   },
 
   handleHelpClick(e) {
@@ -84,7 +94,7 @@ const SearchBar = React.createClass({
     return (
       <div style={Styles.headerContainer}>
         {popoutButton}
-        <input style={Styles.searchInput} type="text" ref="searchInput" id="searchBox" placeholder="Search..."
+        <input style={Styles.searchInput} type="search" ref="searchInput" id="searchBox" placeholder="Search..."
           onChange={this.handleChange} onKeyDown={this.handleKeyDown}
           title="Search Page Titles and URLs"
         />

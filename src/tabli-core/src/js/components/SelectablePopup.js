@@ -100,6 +100,14 @@ const SelectablePopup = React.createClass({
     this.props.onSearchInput('');
   },
 
+  handleSearchExit() {
+    // transfer focus back to current window (if there is one)
+    const curWindow = this.props.winStore.getCurrentWindow();
+    if (!curWindow)
+      return;
+    actions.openWindow(curWindow,curWindow,this.props.storeUpdateHandler);
+  },
+
   componentWillReceiveProps(nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex;
     var nextFilteredWindows = nextProps.filteredWindows;
@@ -222,6 +230,7 @@ const SelectablePopup = React.createClass({
                      onSearchUp={this.handlePrevSelection}
                      onSearchDown={this.handleNextSelection}
                      onSearchEnter={this.handleSelectionEnter}
+                     onSearchExit={this.handleSearchExit}
           />
         </div>
         <div style={Styles.popupBody} ref={this.setBodyRef}>

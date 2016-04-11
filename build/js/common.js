@@ -633,7 +633,7 @@
 	  var entry = tabWindow.findChromeTabId(tabId);
 	
 	  if (!entry) {
-	    console.warn("closeTab: could not find closed tab id ", tabId);
+	    // console.warn("closeTab: could not find closed tab id ", tabId);
 	    return tabWindow;
 	  }
 	
@@ -767,8 +767,8 @@
 	
 	  var updItems;
 	  if (!tabPos) {
-	    console.warn("updateTabItem: Got update for unknown tab id ", tabId);
-	    console.log("updateTabItem: changeInfo: ", changeInfo);
+	    // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
+	    // console.log("updateTabItem: changeInfo: ", changeInfo);
 	    return tabWindow;
 	  }
 	
@@ -43736,6 +43736,12 @@
 	    inputRef.value = '';
 	    this.props.onSearchInput('');
 	  },
+	  handleSearchExit: function handleSearchExit() {
+	    // transfer focus back to current window (if there is one)
+	    var curWindow = this.props.winStore.getCurrentWindow();
+	    if (!curWindow) return;
+	    actions.openWindow(curWindow, curWindow, this.props.storeUpdateHandler);
+	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    var selectedWindowIndex = this.state.selectedWindowIndex;
 	    var nextFilteredWindows = nextProps.filteredWindows;
@@ -43860,7 +43866,8 @@
 	          onSearchInput: this.props.onSearchInput,
 	          onSearchUp: this.handlePrevSelection,
 	          onSearchDown: this.handleNextSelection,
-	          onSearchEnter: this.handleSelectionEnter
+	          onSearchEnter: this.handleSelectionEnter,
+	          onSearchExit: this.handleSearchExit
 	        })
 	      ),
 	      React.createElement(
@@ -43984,6 +43991,16 @@
 	        this.props.onSearchEnter(this.refs.searchInput);
 	      }
 	    }
+	
+	    if (e.keyCode === Constants.KEY_ESC) {
+	      if (this.props.onSearchExit) {
+	        var searchStr = this.refs.searchInput.value;
+	        if (!searchStr || searchStr.length === 0) {
+	          e.preventDefault();
+	          this.props.onSearchExit();
+	        }
+	      }
+	    }
 	  },
 	  handleHelpClick: function handleHelpClick(e) {
 	    console.log('Help button clicked!');
@@ -44009,7 +44026,7 @@
 	      'div',
 	      { style: _styles2.default.headerContainer },
 	      popoutButton,
-	      React.createElement('input', { style: _styles2.default.searchInput, type: 'text', ref: 'searchInput', id: 'searchBox', placeholder: 'Search...',
+	      React.createElement('input', { style: _styles2.default.searchInput, type: 'search', ref: 'searchInput', id: 'searchBox', placeholder: 'Search...',
 	        onChange: this.handleChange, onKeyDown: this.handleKeyDown,
 	        title: 'Search Page Titles and URLs'
 	      }),

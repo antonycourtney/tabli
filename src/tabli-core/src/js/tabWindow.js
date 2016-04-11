@@ -389,7 +389,7 @@ export function closeTab(tabWindow, tabId) {
   const entry = tabWindow.findChromeTabId(tabId);
 
   if (!entry) {
-    console.warn("closeTab: could not find closed tab id ", tabId);
+    // console.warn("closeTab: could not find closed tab id ", tabId);
     return tabWindow;
   }
   const [index, tabItem] = entry;
@@ -503,8 +503,8 @@ export function updateTabItem(tabWindow,tabId,changeInfo) {
 
   var updItems;
   if (!tabPos) {
-    console.warn("updateTabItem: Got update for unknown tab id ", tabId);
-    console.log("updateTabItem: changeInfo: ", changeInfo);
+    // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
+    // console.log("updateTabItem: changeInfo: ", changeInfo);
     return tabWindow;
   }
   const [index, prevTabItem] = tabPos;
