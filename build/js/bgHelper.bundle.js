@@ -137,6 +137,7 @@ webpackJsonp([4],{
 	      port.onDisconnect.addListener(function () {
 	        storeRef.removeViewListener(listenerId);
 	        console.log("Removed view listener ", listenerId);
+	        console.log("after remove: ", storeRef);
 	      });
 	    });
 	  });
@@ -323,6 +324,13 @@ webpackJsonp([4],{
 	    // handle like tab creation:
 	    chrome.tabs.get(tabId, function (tab) {
 	      return onTabCreated(uf, tab, true);
+	    });
+	  });
+	  chrome.browserAction.onClicked.addListener(function (chromeTab) {
+	    console.log("broswerAction: clicked!");
+	    uf(function (state) {
+	      actions.showPopout(state);
+	      return state;
 	    });
 	  });
 	}

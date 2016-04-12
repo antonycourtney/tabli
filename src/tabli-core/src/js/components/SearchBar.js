@@ -75,7 +75,7 @@ const SearchBar = React.createClass({
 
   handlePopoutClick(e) {
     console.log('Popout button clicked!');
-    actions.showPopout(this.props.winStore, this.props.storeRefUpdater);
+    actions.showPopout(this.props.winStore);
   },
 
   render() {

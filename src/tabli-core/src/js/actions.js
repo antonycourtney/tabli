@@ -262,18 +262,23 @@ export function closePopout(winStore,cb) {
   if (popupTabWindows.length > 0) {
     const ptw = popupTabWindows[0];
     closeWindow(ptw,cb);
+    chrome.browserAction.setPopup({popup: "popup.html" });
   } else {
     cb(state => state);
   }
 }
 
-export function showPopout(winStore,cb) {
+/*
+ * Note: This action does not take a callback / update function argument
+ */
+export function showPopout(winStore) {
   console.log('showPopout: displaying popout....');
 
   const popupTabWindows = winStore.getTabWindowsByType("popup");
   if (popupTabWindows.length > 0) {
     const ptw = popupTabWindows[0];
     tabliBrowser.setFocusedWindow(ptw.openWindowId);
+    chrome.browserAction.setPopup({popup: ""});
   } else {
     chrome.windows.create({ url: "popout.html", 
       type: "detached_panel",

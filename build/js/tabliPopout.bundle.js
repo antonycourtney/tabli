@@ -31,6 +31,9 @@ webpackJsonp([1],{
 	  window.onfocus = function (e) {
 	    document.getElementById('searchBox').focus();
 	  };
+	  window.onunload = function () {
+	    chrome.browserAction.setPopup({ popup: "popup.html" });
+	  };
 	}
 	
 	main();

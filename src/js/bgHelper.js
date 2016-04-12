@@ -105,6 +105,7 @@ function setupConnectionListener(storeRef) {
       port.onDisconnect.addListener(() => {
         storeRef.removeViewListener(listenerId);
         console.log("Removed view listener ", listenerId);
+        console.log("after remove: ", storeRef);
       });
     });
   });
@@ -287,6 +288,13 @@ function registerEventHandlers(uf) {
       // handle like tab creation:
       chrome.tabs.get(tabId,tab => onTabCreated(uf,tab,true));
     });
+    chrome.browserAction.onClicked.addListener((chromeTab) => {
+      console.log("broswerAction: clicked!");
+      uf(state => {
+        actions.showPopout(state);
+        return state;
+      });
+    })
 }
 
 /**

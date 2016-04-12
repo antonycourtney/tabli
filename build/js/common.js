@@ -41780,6 +41780,7 @@
 	  if (popupTabWindows.length > 0) {
 	    var ptw = popupTabWindows[0];
 	    closeWindow(ptw, cb);
+	    chrome.browserAction.setPopup({ popup: "popup.html" });
 	  } else {
 	    cb(function (state) {
 	      return state;
@@ -41787,13 +41788,17 @@
 	  }
 	}
 	
-	function showPopout(winStore, cb) {
+	/*
+	 * Note: This action does not take a callback / update function argument
+	 */
+	function showPopout(winStore) {
 	  console.log('showPopout: displaying popout....');
 	
 	  var popupTabWindows = winStore.getTabWindowsByType("popup");
 	  if (popupTabWindows.length > 0) {
 	    var ptw = popupTabWindows[0];
 	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
+	    chrome.browserAction.setPopup({ popup: "" });
 	  } else {
 	    chrome.windows.create({ url: "popout.html",
 	      type: "detached_panel",
@@ -44104,7 +44109,7 @@
 	  },
 	  handlePopoutClick: function handlePopoutClick(e) {
 	    console.log('Popout button clicked!');
-	    actions.showPopout(this.props.winStore, this.props.storeRefUpdater);
+	    actions.showPopout(this.props.winStore);
 	  },
 	  render: function render() {
 	    var popoutButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.popoutButton),
