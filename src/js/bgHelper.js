@@ -104,8 +104,8 @@ function setupConnectionListener(storeRef) {
       var listenerId = msg.listenerId;
       port.onDisconnect.addListener(() => {
         storeRef.removeViewListener(listenerId);
-        console.log("Removed view listener ", listenerId);
-        console.log("after remove: ", storeRef);
+//        console.log("Removed view listener ", listenerId);
+//        console.log("after remove: ", storeRef);
       });
     });
   });
@@ -146,35 +146,6 @@ function dumpChromeWindows() { // eslint-disable-line no-unused-vars
  * create a TabMan element, render it to HTML and save it for fast loading when
  * opening the popup
  */
-function makeRenderListener(storeRef) {
-  function renderAndSave() {
-    const winStore = storeRef.getValue();
-    // console.log("renderAndSave");
-    if (winStore.equals(window.savedStore)) {
-      // console.log("renderAndSave: current and save store match, skipping render...");
-      return;
-    }
-    /* Let's create a dummy app element to render our current store
-     * React.renderToString() will remount the component, so really want a fresh element here with exactly
-     * the store state we wish to render and save.
-     */
-    const renderAppElement = <Popup storeRef={null} initialWinStore={winStore} noListener />;
-    const renderedString = ReactDOMServer.renderToString(renderAppElement);
-
-    // console.log("renderAndSave: updated saved store and HTML");
-    window.savedStore = winStore;
-    window.savedHTML = renderedString;
-
-    /*
-    console.warn("**** dumping winStore and chrome windows! (DEV ONLY)");
-    dumpAll(winStore);
-    dumpChromeWindows();
-    */
-    
-  }
-
-  return renderAndSave;
-}
 
 function invokeLater(f) {
   window.setTimeout(f, 0);
@@ -309,6 +280,9 @@ function registerEventHandlers(uf) {
  *
  */
 function reattachWindows(bmStore,cb) {
+
+  const MATCH_THRESHOLD = 0.4;
+
   const urlIdMap = bmStore.getUrlBookmarkIdMap();
 
   // type constructor for match info:
@@ -321,11 +295,25 @@ function reattachWindows(bmStore,cb) {
       const matchSets = w.tabs.map(t => urlIdMap.get(t.url,null) ).filter(x => x);
       // countMaps :: Array<Map<BookmarkId,Num>>
       const countMaps = matchSets.map(s => s.countBy(v => v));
+
       // Now let's reduce array, merging all maps into a single map, aggregating counts:
       const aggMerge = (mA,mB) => mA.mergeWith((prev,next) => prev + next, mB);
+      
+      // matchMap :: Map<BookmarkId,Num>
       const matchMap = countMaps.reduce(aggMerge,Immutable.Map());
 
-      const bestMatch = utils.bestMatch(matchMap);
+      // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
+      function aboveMatchThreshold(matchCount,bookmarkId) {
+        const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId);
+        const savedUrlCount = savedTabWindow.tabItems.count();
+        const matchRatio = matchCount / savedUrlCount;
+        // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount);
+        return (matchRatio >= MATCH_THRESHOLD);
+      }
+
+      const threshMap = matchMap.filter(aboveMatchThreshold);
+
+      const bestMatch = utils.bestMatch(threshMap);
 
       return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length });
     }
@@ -344,7 +332,7 @@ function reattachWindows(bmStore,cb) {
     // Map<BookmarkId,Map<WindowId,Num>>
     const bmMatches = windowMatchInfo.groupBy((mi) => mi.bestMatch);
 
-    // console.log("bmMatches: ", bmMatches.toJS());
+    console.log("bmMatches: ", bmMatches.toJS());
 
     // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
     const bmMatchMaps = bmMatches.map(mis => {
@@ -359,12 +347,11 @@ function reattachWindows(bmStore,cb) {
       return Immutable.Map(entries);
     });
 
-    // console.log("bmMatchSets: ", bmMatchMaps.toJS());
+    console.log("bmMatchMaps: ", bmMatchMaps.toJS());
 
     // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
     const bestBMMatches = bmMatchMaps.map(mm => utils.bestMatch(mm)).filter(ct => ct);
-
-    // console.log("bestBMMatches: ", bestBMMatches.toJS());
+    console.log("bestBMMatches: ", bestBMMatches.toJS());
 
     // Form a map from chrome window ids to chrome window snapshots:
     const chromeWinMap = _.fromPairs(windowList.map(w => [w.id,w]));
@@ -403,25 +390,7 @@ function main() {
           // dumpAll(syncedStore);
           // dumpChromeWindows();
 
-          const renderListener = makeRenderListener(window.storeRef);
-
-          // And call it once to get started:
-          renderListener();
-
-          /*
-           * The renderListener is just doing a background render to enable us to
-           * display an initial server-rendered preview of the HTML when opening the popup
-           * and (hopefully) speed up the actual render since DOM changes should be
-           * minimized.
-           *
-           * Let's throttle this way down to avoid spending too many cycles building
-           * this non-interactive preview.
-           */
-          const throttledRenderListener = _.debounce(renderListener, 2000);
-          window.storeRef.on('change', throttledRenderListener);
-
           setupConnectionListener(window.storeRef);
-
 
           const storeRefUpdater = refUpdater(window.storeRef);
           registerEventHandlers(storeRefUpdater);

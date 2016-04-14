@@ -9,6 +9,8 @@ import * as Immutable from 'immutable';
 import * as TabWindow from './tabWindow';
 
 function validChromeWindow(cw,normalOnly) {
+  if (!cw)
+    return false;
   const cwTabs = _.get(cw,'tabs',[]);
   const isNormal = cw.type==='normal' && (cwTabs.length > 0);
   const isPopout = cw.type==='popup' && cwTabs.length > 0 && cwTabs[0].title==="Tabli";

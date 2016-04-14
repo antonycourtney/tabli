@@ -1,4 +1,4 @@
-webpackJsonp([4],{
+webpackJsonp([0],{
 
 /***/ 0:
 /*!****************************!*\
@@ -8,31 +8,31 @@ webpackJsonp([4],{
 
 	'use strict';
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 197);
+	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 1);
 	
 	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
 	
-	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 162);
+	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
 	
 	var Tabli = _interopRequireWildcard(_index);
 	
-	var _lodash = __webpack_require__(/*! lodash */ 164);
+	var _lodash = __webpack_require__(/*! lodash */ 4);
 	
 	var _ = _interopRequireWildcard(_lodash);
 	
-	var _immutable = __webpack_require__(/*! immutable */ 158);
+	var _immutable = __webpack_require__(/*! immutable */ 6);
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	var _react = __webpack_require__(/*! react */ 9);
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 161);
+	var _server = __webpack_require__(/*! react-dom/server */ 195);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
-	var _oneref = __webpack_require__(/*! oneref */ 171);
+	var _oneref = __webpack_require__(/*! oneref */ 169);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -136,8 +136,8 @@ webpackJsonp([4],{
 	      var listenerId = msg.listenerId;
 	      port.onDisconnect.addListener(function () {
 	        storeRef.removeViewListener(listenerId);
-	        console.log("Removed view listener ", listenerId);
-	        console.log("after remove: ", storeRef);
+	        //        console.log("Removed view listener ", listenerId);
+	        //        console.log("after remove: ", storeRef);
 	      });
 	    });
 	  });
@@ -182,34 +182,6 @@ webpackJsonp([4],{
 	 * create a TabMan element, render it to HTML and save it for fast loading when
 	 * opening the popup
 	 */
-	function makeRenderListener(storeRef) {
-	  function renderAndSave() {
-	    var winStore = storeRef.getValue();
-	    // console.log("renderAndSave");
-	    if (winStore.equals(window.savedStore)) {
-	      // console.log("renderAndSave: current and save store match, skipping render...");
-	      return;
-	    }
-	    /* Let's create a dummy app element to render our current store
-	     * React.renderToString() will remount the component, so really want a fresh element here with exactly
-	     * the store state we wish to render and save.
-	     */
-	    var renderAppElement = React.createElement(Popup, { storeRef: null, initialWinStore: winStore, noListener: true });
-	    var renderedString = ReactDOMServer.renderToString(renderAppElement);
-	
-	    // console.log("renderAndSave: updated saved store and HTML");
-	    window.savedStore = winStore;
-	    window.savedHTML = renderedString;
-	
-	    /*
-	    console.warn("**** dumping winStore and chrome windows! (DEV ONLY)");
-	    dumpAll(winStore);
-	    dumpChromeWindows();
-	    */
-	  }
-	
-	  return renderAndSave;
-	}
 	
 	function invokeLater(f) {
 	  window.setTimeout(f, 0);
@@ -347,6 +319,9 @@ webpackJsonp([4],{
 	 *
 	 */
 	function reattachWindows(bmStore, cb) {
+	
+	  var MATCH_THRESHOLD = 0.4;
+	
 	  var urlIdMap = bmStore.getUrlBookmarkIdMap();
 	
 	  // type constructor for match info:
@@ -367,15 +342,29 @@ webpackJsonp([4],{
 	          return v;
 	        });
 	      });
+	
 	      // Now let's reduce array, merging all maps into a single map, aggregating counts:
 	      var aggMerge = function aggMerge(mA, mB) {
 	        return mA.mergeWith(function (prev, next) {
 	          return prev + next;
 	        }, mB);
 	      };
+	
+	      // matchMap :: Map<BookmarkId,Num>
 	      var matchMap = countMaps.reduce(aggMerge, Immutable.Map());
 	
-	      var bestMatch = utils.bestMatch(matchMap);
+	      // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
+	      function aboveMatchThreshold(matchCount, bookmarkId) {
+	        var savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId);
+	        var savedUrlCount = savedTabWindow.tabItems.count();
+	        var matchRatio = matchCount / savedUrlCount;
+	        // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount);
+	        return matchRatio >= MATCH_THRESHOLD;
+	      }
+	
+	      var threshMap = matchMap.filter(aboveMatchThreshold);
+	
+	      var bestMatch = utils.bestMatch(threshMap);
 	
 	      return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch: bestMatch, tabCount: w.tabs.length });
 	    }
@@ -398,7 +387,7 @@ webpackJsonp([4],{
 	      return mi.bestMatch;
 	    });
 	
-	    // console.log("bmMatches: ", bmMatches.toJS());
+	    console.log("bmMatches: ", bmMatches.toJS());
 	
 	    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
 	    var bmMatchMaps = bmMatches.map(function (mis) {
@@ -413,7 +402,7 @@ webpackJsonp([4],{
 	      return Immutable.Map(entries);
 	    });
 	
-	    // console.log("bmMatchSets: ", bmMatchMaps.toJS());
+	    console.log("bmMatchMaps: ", bmMatchMaps.toJS());
 	
 	    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
 	    var bestBMMatches = bmMatchMaps.map(function (mm) {
@@ -421,8 +410,7 @@ webpackJsonp([4],{
 	    }).filter(function (ct) {
 	      return ct;
 	    });
-	
-	    // console.log("bestBMMatches: ", bestBMMatches.toJS());
+	    console.log("bestBMMatches: ", bestBMMatches.toJS());
 	
 	    // Form a map from chrome window ids to chrome window snapshots:
 	    var chromeWinMap = _.fromPairs(windowList.map(function (w) {
@@ -462,23 +450,6 @@ webpackJsonp([4],{
 	          // dumpAll(syncedStore);
 	          // dumpChromeWindows();
 	
-	          var renderListener = makeRenderListener(window.storeRef);
-	
-	          // And call it once to get started:
-	          renderListener();
-	
-	          /*
-	           * The renderListener is just doing a background render to enable us to
-	           * display an initial server-rendered preview of the HTML when opening the popup
-	           * and (hopefully) speed up the actual render since DOM changes should be
-	           * minimized.
-	           *
-	           * Let's throttle this way down to avoid spending too many cycles building
-	           * this non-interactive preview.
-	           */
-	          var throttledRenderListener = _.debounce(renderListener, 2000);
-	          window.storeRef.on('change', throttledRenderListener);
-	
 	          setupConnectionListener(window.storeRef);
 	
 	          var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
@@ -504,20 +475,7 @@ webpackJsonp([4],{
 
 /***/ },
 
-/***/ 161:
-/*!*******************************!*\
-  !*** ./~/react-dom/server.js ***!
-  \*******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 148);
-
-
-/***/ },
-
-/***/ 197:
+/***/ 1:
 /*!*********************************!*\
   !*** ./src/js/chromeBrowser.js ***!
   \*********************************/
@@ -545,6 +503,19 @@ webpackJsonp([4],{
 	window.tabliBrowser = chromeBrowser;
 	
 	module.exports = chromeBrowser;
+
+/***/ },
+
+/***/ 195:
+/*!*******************************!*\
+  !*** ./~/react-dom/server.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 156);
+
 
 /***/ }
 
