@@ -154,9 +154,11 @@ test('search and open test', (t) => {
 
   const searchInput = searchBar.refs.searchInput;
 
+  console.log("About to update searchInput.value");
   searchInput.value = 'git';
-
   ReactTestUtils.Simulate.change(searchInput);
+  console.log("simulated input value update applied.");
+
   const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem);
 
   console.log('search and open test: filtered tab items found: ', filteredTabItems.length);

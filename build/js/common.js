@@ -43818,7 +43818,6 @@
 	
 	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
 	    var selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex);
-	    console.log('opening: ', selectedTabItem.toJS());
 	    actions.activateTab(this.props.winStore.getCurrentWindow(), selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler);
 	    // And reset the search field:
 	    inputRef.value = '';
@@ -43837,14 +43836,15 @@
 	    if (selectedWindowIndex >= nextFilteredWindows.length) {
 	      if (nextFilteredWindows.length === 0) {
 	        this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
-	        console.log('resetting indices');
 	      } else {
 	        var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1];
 	        this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabsCount(this.props.searchStr, lastWindow) - 1 });
 	      }
 	    } else {
+	      var nextSearchStr = nextProps.searchStr;
 	      var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
-	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabsCount(this.props.searchStr, nextSelectedWindow) - 1);
+	      var matchCount = matchingTabsCount(nextSearchStr, nextSelectedWindow);
+	      var nextTabIndex = Math.min(this.state.selectedTabIndex, matchCount - 1);
 	      this.setState({ selectedTabIndex: nextTabIndex });
 	    }
 	  },
@@ -43863,9 +43863,9 @@
 	   */
 	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
 	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId || this.state.scrolledToTabId !== this.props.winStore.getActiveTabId();
-	    /*                             
+	    /*
 	      console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
-	                  ", currentWindowId: ", this.props.winStore.currentWindowId );
+	                  ", currentWindowId: ", this.props.winStore.currentWindowId );    
 	      console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
 	                  ", activeTabId: ", this.props.winStore.getActiveTabId(), 
 	                  ", needScroll: ", needScrollUpdate);
