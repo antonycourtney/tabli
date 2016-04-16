@@ -259,13 +259,6 @@ function registerEventHandlers(uf) {
       // handle like tab creation:
       chrome.tabs.get(tabId,tab => onTabCreated(uf,tab,true));
     });
-    chrome.browserAction.onClicked.addListener((chromeTab) => {
-      console.log("broswerAction: clicked!");
-      uf(state => {
-        actions.showPopout(state);
-        return state;
-      });
-    })
 }
 
 /**

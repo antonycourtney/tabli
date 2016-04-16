@@ -14,7 +14,6 @@ import * as RenderCommon from './renderCommon';
 function main() {
   window.onload = () => RenderCommon.getFocusedAndRender(true);
   window.onfocus = (e) => { document.getElementById('searchBox').focus(); }
-  window.onunload = () => { chrome.browserAction.setPopup({popup: "popup.html" }); }
 }
 
 main();

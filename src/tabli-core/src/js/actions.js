@@ -262,7 +262,6 @@ export function closePopout(winStore,cb) {
   if (popupTabWindows.length > 0) {
     const ptw = popupTabWindows[0];
     closeWindow(ptw,cb);
-    chrome.browserAction.setPopup({popup: "popup.html" });
   } else {
     cb(state => state);
   }
@@ -278,7 +277,6 @@ export function showPopout(winStore) {
   if (popupTabWindows.length > 0) {
     const ptw = popupTabWindows[0];
     tabliBrowser.setFocusedWindow(ptw.openWindowId);
-    chrome.browserAction.setPopup({popup: ""});
   } else {
     chrome.windows.create({ url: "popout.html", 
       type: "detached_panel",
