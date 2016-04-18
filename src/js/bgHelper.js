@@ -82,10 +82,10 @@ function initWinStore(cb) {
 
     // console.log( "otherBookmarksNode: ", otherBookmarksNode );
     ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, (tabManFolder) => {
-      console.log('tab manager folder acquired.');
+      // console.log('tab manager folder acquired.');
       tabmanFolderId = tabManFolder.id;
       ensureChildFolder(tabManFolder, archiveFolderTitle, (archiveFolder) => {
-        console.log('archive folder acquired.');
+        // console.log('archive folder acquired.');
         archiveFolderId = archiveFolder.id;
         chrome.bookmarks.getSubTree(tabManFolder.id, (subTreeNodes) => {
           // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
@@ -152,6 +152,7 @@ function invokeLater(f) {
 }
 
 function onTabCreated(uf,tab,markActive) {
+  // console.log("onTabCreated: ", tab);
   uf(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId);
     if (!tabWindow) {
@@ -232,7 +233,7 @@ function registerEventHandlers(uf) {
       onTabRemoved(uf,removeInfo.windowId,tabId);
     });
     chrome.tabs.onReplaced.addListener((addedTabId,removedTabId) => {
-      // console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
+      console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
       uf(state => {
         const tabWindow = state.getTabWindowByChromeTabId(removedTabId);
         if (!tabWindow) {
@@ -325,7 +326,7 @@ function reattachWindows(bmStore,cb) {
     // Map<BookmarkId,Map<WindowId,Num>>
     const bmMatches = windowMatchInfo.groupBy((mi) => mi.bestMatch);
 
-    console.log("bmMatches: ", bmMatches.toJS());
+    // console.log("bmMatches: ", bmMatches.toJS());
 
     // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
     const bmMatchMaps = bmMatches.map(mis => {
@@ -340,11 +341,11 @@ function reattachWindows(bmStore,cb) {
       return Immutable.Map(entries);
     });
 
-    console.log("bmMatchMaps: ", bmMatchMaps.toJS());
+    // console.log("bmMatchMaps: ", bmMatchMaps.toJS());
 
     // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
     const bestBMMatches = bmMatchMaps.map(mm => utils.bestMatch(mm)).filter(ct => ct);
-    console.log("bestBMMatches: ", bestBMMatches.toJS());
+    // console.log("bestBMMatches: ", bestBMMatches.toJS());
 
     // Form a map from chrome window ids to chrome window snapshots:
     const chromeWinMap = _.fromPairs(windowList.map(w => [w.id,w]));

@@ -102,7 +102,7 @@ export default class TabManagerState extends Immutable.Record({
 
     const attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
 
-    console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
+    // console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
 
     return rmStore.registerTabWindow(attachedTabWindow);
   }

@@ -114,10 +114,10 @@ webpackJsonp([0],{
 	
 	    // console.log( "otherBookmarksNode: ", otherBookmarksNode );
 	    ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, function (tabManFolder) {
-	      console.log('tab manager folder acquired.');
+	      // console.log('tab manager folder acquired.');
 	      tabmanFolderId = tabManFolder.id;
 	      ensureChildFolder(tabManFolder, archiveFolderTitle, function (archiveFolder) {
-	        console.log('archive folder acquired.');
+	        // console.log('archive folder acquired.');
 	        archiveFolderId = archiveFolder.id;
 	        chrome.bookmarks.getSubTree(tabManFolder.id, function (subTreeNodes) {
 	          // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
@@ -188,6 +188,7 @@ webpackJsonp([0],{
 	}
 	
 	function onTabCreated(uf, tab, markActive) {
+	  // console.log("onTabCreated: ", tab);
 	  uf(function (state) {
 	    var tabWindow = state.getTabWindowByChromeId(tab.windowId);
 	    if (!tabWindow) {
@@ -267,7 +268,7 @@ webpackJsonp([0],{
 	    onTabRemoved(uf, removeInfo.windowId, tabId);
 	  });
 	  chrome.tabs.onReplaced.addListener(function (addedTabId, removedTabId) {
-	    // console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
+	    console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeTabId(removedTabId);
 	      if (!tabWindow) {
@@ -380,7 +381,7 @@ webpackJsonp([0],{
 	      return mi.bestMatch;
 	    });
 	
-	    console.log("bmMatches: ", bmMatches.toJS());
+	    // console.log("bmMatches: ", bmMatches.toJS());
 	
 	    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
 	    var bmMatchMaps = bmMatches.map(function (mis) {
@@ -395,7 +396,7 @@ webpackJsonp([0],{
 	      return Immutable.Map(entries);
 	    });
 	
-	    console.log("bmMatchMaps: ", bmMatchMaps.toJS());
+	    // console.log("bmMatchMaps: ", bmMatchMaps.toJS());
 	
 	    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
 	    var bestBMMatches = bmMatchMaps.map(function (mm) {
@@ -403,7 +404,7 @@ webpackJsonp([0],{
 	    }).filter(function (ct) {
 	      return ct;
 	    });
-	    console.log("bestBMMatches: ", bestBMMatches.toJS());
+	    // console.log("bestBMMatches: ", bestBMMatches.toJS());
 	
 	    // Form a map from chrome window ids to chrome window snapshots:
 	    var chromeWinMap = _.fromPairs(windowList.map(function (w) {

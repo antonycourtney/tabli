@@ -59,6 +59,36 @@ export class TabItem extends Immutable.Record({
 }
 
 /**
+ * comparator for sorting tab items
+ *
+ * NOTE (!!): Only used during initial construction of a saved or open window, because
+ * open tab items don't maintain openTabIndex in response to tab events. 
+ */
+export function tabItemCompare(tiA,tiB) {
+  // open items before non-open items:
+  if (tiA.open !== tiB.open) {
+    if (tiA.open) {
+      return -1;
+    }
+    return 1;
+  }
+  if (tiA.open) {
+    // both open, use openTabIndex for comparison:
+    const ret = tiA.openState.openTabIndex - tiB.openState.openTabIndex;
+    if (ret===0) {
+      console.warn("unexpected equal openTabIndex vals: ", tiA.toJS(), tiB.toJS());
+    }
+    return ret;
+  }
+  // both closed and saved, use bookmark index:
+  const sret = tiA.savedState.bookmarkIndex - tiB.savedState.bookmarkIndex;
+  if (sret===0) {
+    console.warn("unexpected equal bookmarkIndex vals:", tiA.toJS(), tiB.toJS());
+  }
+  return sret;
+} 
+
+/**
  * Initialize saved tab state from a bookmark
  */
 function makeSavedTabState(bm) {
@@ -203,6 +233,15 @@ export class TabWindow extends Immutable.Record({
     const tabId = activeTab ? activeTab.openState.openTabId : undefined;
     return tabId;
   }
+
+  /* 
+   * set tabItems.
+   * Used to sort, but openTabIndex from Chrome isn't maintained by tab updates
+   * so we reverted that.
+   */
+  setTabItems(nextItems) {
+    return this.set('tabItems',nextItems);
+  }
 }
 
 /**
@@ -212,7 +251,7 @@ export function removeOpenWindowState(tabWindow) {
   const savedItems = tabWindow.tabItems.filter((ti) => ti.saved);
   const resetSavedItems = savedItems.map(resetSavedItem);
 
-  return tabWindow.remove('open').remove('openWindowId').remove('windowType').remove('width').remove('height').set('tabItems', resetSavedItems);
+  return tabWindow.remove('open').remove('openWindowId').remove('windowType').remove('width').remove('height').setTabItems(resetSavedItems);
 }
 
 /*
@@ -242,7 +281,7 @@ export function makeFolderTabWindow(bookmarkFolder) {
     saved: true,
     savedTitle: _.get(bookmarkFolder, 'title', fallbackTitle),
     savedFolderId: bookmarkFolder.id,
-    tabItems,
+    tabItems: tabItems.sort(tabItemCompare),
   });
 
   return tabWindow;
@@ -260,9 +299,8 @@ export function makeChromeTabWindow(chromeWindow) {
     windowType: chromeWindow.type,
     width: chromeWindow.width,
     height: chromeWindow.height,
-    tabItems: Immutable.Seq(tabItems),
+    tabItems: Immutable.Seq(tabItems).sort(tabItemCompare),
   });
-
   return tabWindow;
 }
 
@@ -275,33 +313,24 @@ export function makeChromeTabWindow(chromeWindow) {
  * @return {Seq<TabItem>}
  */
 function mergeSavedOpenTabs(savedItems,openItems) {
-  // Maps both Seqs by url:
-  const openUrlMap = Immutable.Map(openItems.groupBy((ti) => ti.url));
-  // The entries in savedUrlMap *should* be singletons, but we'll use groupBy to
-  // get a type-compatible Seq so that we can merge with openUrlMap using
-  // mergeWith:
-  const savedUrlMap = Immutable.Map(savedItems.groupBy(ti => ti.url));
+  const openUrlSet = Immutable.Set(openItems.map(ti => ti.url));
+  const savedUrlMap = Immutable.Map(savedItems.map(ti => [ti.savedState.url,ti]));
 
-  // console.log("getOpenTabInfo: savedUrlMap : " + savedUrlMap.toJS());
-  function mergeTabItems(openItemsGroup, mergeSavedItemsGroup) {
-    const savedItem = mergeSavedItemsGroup.get(0);
-    return openItemsGroup.map(openItem => openItem.set('saved', true)
-                                         .set('savedState', savedItem.savedState));
-  }
-  const mergedMap = openUrlMap.mergeWith(mergeTabItems, savedUrlMap);
-
-  // console.log("mergedMap: ", mergedMap.toJS());
-
-  // partition mergedMap into open and closed tabItems:
-  const partitionedMap = mergedMap.toIndexedSeq().flatten(true).groupBy((ti) => ti.open);
-
-  /* 
-   * Could potentially improve on the presentation order (and there was an algorithm for this in
-   * an older version of Tabli)
-   * For now, let's just concat open and closed tabs, in their sorted order.
+  /*
+   * openTabItems for result -- just map over openItems, enriching with saved state if
+   * url present in savedUrlMap.
+   * Note that we by doing a map on openItems sequence, we preserve the ordering of openItems; this
+   * is crucial since openTabIndex isn't maintained in tab update events.
    */
-  const openTabItems = partitionedMap.get(true, Immutable.Seq()).sortBy((ti) => ti.openState.openTabIndex);
-  const closedTabItems = partitionedMap.get(false, Immutable.Seq()).sortBy((ti) => ti.savedState.bookmarkIndex);
+  const openTabItems = openItems.map(openItem => {
+    const savedItem = savedUrlMap.get(openItem.openState.url,null);
+    const mergedItem = savedItem ? openItem.set('saved', true)
+                                         .set('savedState', savedItem.savedState) : openItem;
+    return mergedItem;                                         
+  });
+
+  // now grab those saved items that aren't currently open:
+  const closedTabItems = savedItems.filter(savedItem => !openUrlSet.has(savedItem.savedState.url));     
 
   const mergedTabItems = openTabItems.concat(closedTabItems);
 
@@ -340,10 +369,12 @@ function mergeTabWindowTabItems(tabWindow, optChromeTab) {
   const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
   const baseOpenItems = tabItems.filter(ti => ti.open).map(resetOpenItem);
 
-  const updOpenItems = optChromeTab ? baseOpenItems.toList().push(makeOpenTabItem(optChromeTab)) : baseOpenItems;
+  const updOpenItems = optChromeTab ? 
+    baseOpenItems.toList().insert(optChromeTab.index,makeOpenTabItem(optChromeTab)) :
+    baseOpenItems;
 
   const mergedItems = mergeSavedOpenTabs(baseSavedItems,updOpenItems);
-  const updWindow = tabWindow.set('tabItems',mergedItems);
+  const updWindow = tabWindow.setTabItems(mergedItems);
   return updWindow;
 }
 
@@ -366,10 +397,9 @@ export function createTab(tabWindow, tab) {
  * @return {TabWindow} Updated TabWindow
  */
 export function updateWindow(tabWindow, chromeWindow) {
-  // console.log("updateWindow: ", tabWindow.toJS(), chromeWindow);
   const mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs);
   const updWindow = tabWindow
-                      .set('tabItems', mergedTabItems)
+                      .setTabItems(mergedTabItems)
                       .set('windowType', chromeWindow.type)
                       .set('open', true)
                       .set('openWindowId', chromeWindow.id);
@@ -403,7 +433,7 @@ export function closeTab(tabWindow, tabId) {
     updItems = tabWindow.tabItems.splice(index, 1);
   }
 
-  return tabWindow.set('tabItems', updItems);
+  return tabWindow.setTabItems(updItems);
 }
 
 /**
@@ -425,7 +455,7 @@ export function saveTab(tabWindow, tabItem, tabNode) {
 
   const updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 
-  return tabWindow.set('tabItems', updItems);
+  return tabWindow.setTabItems(updItems);
 }
 
 /**
@@ -448,7 +478,7 @@ export function unsaveTab(tabWindow, tabItem) {
     updItems = tabWindow.tabItems.splice(index, 1);
   }
 
-  return tabWindow.set('tabItems', updItems);
+  return tabWindow.setTabItems(updItems);
 }
 
 /**
@@ -484,7 +514,7 @@ export function setActiveTab(tabWindow, tabId) {
   const updActiveTab = tabItem.set('openState',updOpenState);
   const updItems = nonActiveItems.splice(index, 1, updActiveTab);
 
-  return tabWindow.set('tabItems',updItems);
+  return tabWindow.setTabItems(updItems);
 }
 
 /**
@@ -521,7 +551,7 @@ export function updateTabItem(tabWindow,tabId,changeInfo) {
   // console.log("updateTabItem: ", index, updTabItem.toJS());
   updItems = tabWindow.tabItems.splice(index,1,updTabItem);
   
-  const updWindow = tabWindow.set('tabItems',updItems);  
+  const updWindow = tabWindow.setTabItems(updItems);  
 
   if (_.has(changeInfo,'url')) {
     // May have to split or the updated tabItems -- just re-merge all tabs:
