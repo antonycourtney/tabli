@@ -62,6 +62,9 @@ const styles = {
     borderTop: '1px solid #cacaca',
     borderBottom: '1px solid #cacaca',
   },
+  tabItemDropOver: {
+    borderBottom: '2px solid #333333'
+  },
   text: {
     fontSize: 12,
     marginTop: 'auto',

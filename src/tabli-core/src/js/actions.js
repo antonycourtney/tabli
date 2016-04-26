@@ -287,3 +287,28 @@ export function showPopout(winStore) {
   }
 }
 
+/*
+ * move an open tab (in response to a drag event):
+ */
+export function moveTabItem(targetTabWindow,targetIndex,sourceTabItem,uf) {
+  
+  if (!sourceTabItem.open) {
+    console.log("moveTabItem: source tab not open, ignoring...");
+    return;
+  }
+
+  const tabId = sourceTabItem.openState.openTabId;
+  if (!targetTabWindow.open) {
+    console.log("moveTabItem: target tab window not open, ignoring...");
+    return;
+  }
+  const targetWindowId = targetTabWindow.openWindowId
+  const moveProps = { windowId: targetWindowId, index: targetIndex };
+  chrome.tabs.move(tabId,moveProps,(chromeTab) => {
+    // console.log("moveTabItem: tab move complete: ", chromeTab);
+    // Let's just refresh the whole window:
+    syncChromeWindowById(targetWindowId,uf);
+  });    
+}
+
+

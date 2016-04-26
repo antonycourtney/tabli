@@ -1,15 +1,62 @@
 import * as React from 'react';
+import { PropTypes } from 'react';
 import Styles from './styles';
 import * as Util from './util';
 import * as actions from '../actions';
+import { DragItemTypes } from './constants';
+import { DragSource, DropTarget } from 'react-dnd';
 
 import Hoverable from './Hoverable';
 import HeaderButton from './HeaderButton';
 
+const tabItemSource = {
+  beginDrag(props) {
+    return { sourceTabWindow: props.tabWindow, sourceTab: props.tab };
+  }
+}
+
+// collect for use as drag source:
+function collect(connect, monitor) {
+  return {
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  }
+}
+
+// for use as drop target:
+const tabItemTarget = {
+  drop(props, monitor, component) {
+    const sourceItem = monitor.getItem();
+    actions.moveTabItem(props.tabWindow,props.tabIndex + 1,sourceItem.sourceTab,props.storeUpdateHandler);
+  }
+}
+
+// coleect function for drop target:
+function collectDropTarget(connect, monitor) {
+  return {
+    connectDropTarget: connect.dropTarget(),
+    isOver: monitor.isOver()
+  };
+}
+
 const TabItem = React.createClass({
   mixins: [Hoverable],
 
-  handleClick() {
+  propTypes: {
+    connectDragSource: PropTypes.func.isRequired,
+    connectDropTarget: PropTypes.func.isRequired,
+    isDragging: PropTypes.bool.isRequired,
+    tabWindow: PropTypes.object.isRequired,
+    tab: PropTypes.object.isRequired, 
+    tabIndex: PropTypes.number.isRequired,
+    winStore: PropTypes.object.isRequired,
+    storeUpdateHandler: PropTypes.func.isRequired,
+    isSelected: PropTypes.bool.isRequired,
+    appComponent: PropTypes.object.isRequired,
+    isOver: PropTypes.bool.isRequired
+  },
+
+  handleClick(event) {
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
     var tabIndex = this.props.tabIndex;
@@ -43,6 +90,7 @@ const TabItem = React.createClass({
   },
 
   render() {
+    const { connectDragSource, isDragging, connectDropTarget, isOver } = this.props;
     var tabWindow = this.props.tabWindow;
     var tab = this.props.tab;
 
@@ -102,6 +150,8 @@ const TabItem = React.createClass({
     var hoverStyle = this.state.hovering ? Styles.tabItemHover : null;
     var selectedStyle = this.props.isSelected ? Styles.tabItemSelected : null;
 
+    var dropStyle = isOver ? Styles.tabItemDropOver : null;
+
     const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null;
 
     var closeStyle = Util.merge(Styles.headerButton);
@@ -113,8 +163,9 @@ const TabItem = React.createClass({
          onClick={this.handleClose}
       />);
 
-    return (
-      <div style={Util.merge(Styles.noWrap, Styles.tabItem, hoverStyle, selectedStyle)}
+ 
+    return connectDropTarget(connectDragSource(
+      <div style={Util.merge(Styles.noWrap, Styles.tabItem, hoverStyle, selectedStyle, dropStyle)}
         className="tabItem"
         onMouseOut={this.handleMouseOut}
         onMouseOver={this.handleMouseOver}
@@ -126,9 +177,11 @@ const TabItem = React.createClass({
         <div style={Styles.spacer} />
         {audibleIcon}
         {closeButton}
-      </div>);
+      </div>));
   },
-
 });
 
-export default TabItem;
+const DropWrap = DropTarget(DragItemTypes.TAB_ITEM, tabItemTarget, collectDropTarget);
+const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect);
+
+export default DropWrap(DragWrap(TabItem));

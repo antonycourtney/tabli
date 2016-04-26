@@ -8,6 +8,8 @@ import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import SelectablePopup from './SelectablePopup';
 import * as Util from './util';
+import { DragDropContext } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
 
 /**
  * send message to BGhelper
@@ -181,4 +183,4 @@ const Popup = React.createClass({
 });
 
 
-export default Popup;
+export default DragDropContext(HTML5Backend)(Popup);
