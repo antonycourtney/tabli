@@ -4,12 +4,11 @@ import * as Util from './util';
 import * as actions from '../actions';
 
 import * as PureRenderMixin from 'react-addons-pure-render-mixin';
-import Hoverable from './Hoverable';
 import HeaderButton from './HeaderButton';
 import ExpanderButton from './ExpanderButton';
 
 const WindowHeader = React.createClass({
-  mixins: [Hoverable, PureRenderMixin],
+  mixins: [PureRenderMixin],
 
   handleUnmanageClick(event) {
     console.log('unamange: ', this.props.tabWindow);
@@ -35,8 +34,6 @@ const WindowHeader = React.createClass({
     var managed = tabWindow.saved;
     var windowTitle = tabWindow.title;
 
-    var hoverStyle = this.state.hovering ? Styles.visible : Styles.hidden;
-
     var windowCheckItem;
 
     if (managed) {
@@ -45,9 +42,9 @@ const WindowHeader = React.createClass({
           title="Stop managing this window" onClick={this.handleUnmanageClick}
         />);
     } else {
-      var checkStyle = Util.merge(Styles.headerButton, hoverStyle, Styles.headerCheckBox);
+      var checkStyle = Util.merge(Styles.headerButton,Styles.headerCheckBox);
       windowCheckItem = (
-        <input style={checkStyle} type="checkbox"
+        <input className="windowCheck" style={checkStyle} type="checkbox"
           title="Save all tabs in this window"
           onClick={this.handleManageClick}
           ref="managedCheckbox"
@@ -59,28 +56,24 @@ const WindowHeader = React.createClass({
     var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.windowTitle, openStyle);
     var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
 
-    // We use hovering in the window header (this.state.hovering) to determine
-    // visibility of both the revert button and close button appearing after the window title.
-
     var revertButton = (
       <HeaderButton baseStyle={Util.merge(Styles.headerButton, Styles.revertButton)}
-        // visible={this.state.hovering && managed && tabWindow.open}
         visible={managed && tabWindow.open}
         title="Revert to bookmarked tabs (Close other tabs)"
         onClick={this.props.onRevert}
       />);
 
     var closeButton = (
-      <HeaderButton baseStyle={closeStyle}
-        visible={this.state.hovering && tabWindow.open}
-        hoverStyle={Styles.closeButtonHover} title="Close Window"
+      <HeaderButton className="closeButton" baseStyle={closeStyle}
+        visible={tabWindow.open}
+        title="Close Window"
         onClick={this.props.onClose}
       />);
 
     // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
 
     return (
-      <div style={Util.merge(Styles.windowHeader, Styles.noWrap)}
+      <div className="windowHeader" style={Util.merge(Styles.windowHeader, Styles.noWrap)}
           onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}
           onClick={this.props.onOpen}
       >

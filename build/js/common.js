@@ -27371,11 +27371,6 @@
 	  tabItemSelected: {
 	    backgroundColor: '#dadada'
 	  },
-	  tabItemHover: {
-	    // backgroundColor: '#dadada'
-	    borderTop: '1px solid #cacaca',
-	    borderBottom: '1px solid #cacaca'
-	  },
 	  tabItemDropOver: {
 	    borderBottom: '2px solid #333333'
 	  },
@@ -45969,10 +45964,6 @@
 	
 	var PureRenderMixin = _interopRequireWildcard(_reactAddonsPureRenderMixin);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 58);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
-	
 	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 53);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
@@ -45988,7 +45979,7 @@
 	var WindowHeader = React.createClass({
 	  displayName: 'WindowHeader',
 	
-	  mixins: [_Hoverable2.default, PureRenderMixin],
+	  mixins: [PureRenderMixin],
 	
 	  handleUnmanageClick: function handleUnmanageClick(event) {
 	    console.log('unamange: ', this.props.tabWindow);
@@ -46012,8 +46003,6 @@
 	    var managed = tabWindow.saved;
 	    var windowTitle = tabWindow.title;
 	
-	    var hoverStyle = this.state.hovering ? _styles2.default.visible : _styles2.default.hidden;
-	
 	    var windowCheckItem;
 	
 	    if (managed) {
@@ -46021,8 +46010,8 @@
 	        title: 'Stop managing this window', onClick: this.handleUnmanageClick
 	      });
 	    } else {
-	      var checkStyle = Util.merge(_styles2.default.headerButton, hoverStyle, _styles2.default.headerCheckBox);
-	      windowCheckItem = React.createElement('input', { style: checkStyle, type: 'checkbox',
+	      var checkStyle = Util.merge(_styles2.default.headerButton, _styles2.default.headerCheckBox);
+	      windowCheckItem = React.createElement('input', { className: 'windowCheck', style: checkStyle, type: 'checkbox',
 	        title: 'Save all tabs in this window',
 	        onClick: this.handleManageClick,
 	        ref: 'managedCheckbox',
@@ -46034,19 +46023,15 @@
 	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.windowTitle, openStyle);
 	    var closeStyle = Util.merge(_styles2.default.headerButton, _styles2.default.closeButton);
 	
-	    // We use hovering in the window header (this.state.hovering) to determine
-	    // visibility of both the revert button and close button appearing after the window title.
-	
-	    var revertButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton)
-	      // visible={this.state.hovering && managed && tabWindow.open}
-	      , visible: managed && tabWindow.open,
+	    var revertButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton),
+	      visible: managed && tabWindow.open,
 	      title: 'Revert to bookmarked tabs (Close other tabs)',
 	      onClick: this.props.onRevert
 	    });
 	
-	    var closeButton = React.createElement(_HeaderButton2.default, { baseStyle: closeStyle,
-	      visible: this.state.hovering && tabWindow.open,
-	      hoverStyle: _styles2.default.closeButtonHover, title: 'Close Window',
+	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: closeStyle,
+	      visible: tabWindow.open,
+	      title: 'Close Window',
 	      onClick: this.props.onClose
 	    });
 	
@@ -46054,7 +46039,7 @@
 	
 	    return React.createElement(
 	      'div',
-	      { style: Util.merge(_styles2.default.windowHeader, _styles2.default.noWrap),
+	      { className: 'windowHeader', style: Util.merge(_styles2.default.windowHeader, _styles2.default.noWrap),
 	        onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut,
 	        onClick: this.props.onOpen
 	      },
@@ -46160,10 +46145,6 @@
 	
 	var _reactDnd = __webpack_require__(/*! react-dnd */ 200);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 58);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
-	
 	var _HeaderButton = __webpack_require__(/*! ./HeaderButton */ 53);
 	
 	var _HeaderButton2 = _interopRequireDefault(_HeaderButton);
@@ -46204,8 +46185,6 @@
 	
 	var TabItem = React.createClass({
 	  displayName: 'TabItem',
-	
-	  mixins: [_Hoverable2.default],
 	
 	  propTypes: {
 	    connectDragSource: _react.PropTypes.func.isRequired,
@@ -46309,7 +46288,6 @@
 	
 	    var tabActiveStyle = tab.open && tab.openState.active ? _styles2.default.activeSpan : null;
 	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
-	    var hoverStyle = this.state.hovering ? _styles2.default.tabItemHover : null;
 	    var selectedStyle = this.props.isSelected ? _styles2.default.tabItemSelected : null;
 	
 	    var dropStyle = isOver ? _styles2.default.tabItemDropOver : null;
@@ -46318,7 +46296,6 @@
 	
 	    var closeStyle = Util.merge(_styles2.default.headerButton);
 	
-	    // used to have: hoverStyle={Styles.closeButtonHover}
 	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: closeStyle, visible: tab.open,
 	      title: 'Close Tab',
 	      onClick: this.handleClose
@@ -46326,7 +46303,7 @@
 	
 	    return connectDropTarget(connectDragSource(React.createElement(
 	      'div',
-	      { style: Util.merge(_styles2.default.noWrap, _styles2.default.tabItem, hoverStyle, selectedStyle, dropStyle),
+	      { style: Util.merge(_styles2.default.noWrap, _styles2.default.tabItem, selectedStyle, dropStyle),
 	        className: 'tabItem',
 	        onMouseOut: this.handleMouseOut,
 	        onMouseOver: this.handleMouseOver,

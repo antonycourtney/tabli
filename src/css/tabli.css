@@ -30,6 +30,11 @@ fieldset { padding:0; border:0; }
   font-weight: bold;
 }
 
+.tabItem:hover {
+  border-top: 1px solid #cacaca;
+  border-bottom: 1px solid #cacaca;
+}
+
 .tabItem .tabCheck {
   visibility: hidden;
 }
@@ -43,6 +48,21 @@ fieldset { padding:0; border:0; }
 .tabItem:hover .closeButton {
   visibility: visible;
 }
+
+.windowHeader .windowCheck {
+  visibility: hidden;
+}
+.windowHeader:hover .windowCheck {
+  visibility: visible;
+}
+
+.windowHeader .closeButton {
+  visibility: hidden;
+}
+.windowHeader:hover .closeButton {
+  visibility: visible;
+}
+
 .closeButton {
   -webkit-mask-image: url('../images/interface-77.png');
   background-color: #888888;

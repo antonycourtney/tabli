@@ -437,7 +437,6 @@ webpackJsonp([0],{
 	        actions.syncChromeWindows(function (uf) {
 	          console.log('initial sync of chrome windows complete.');
 	          var syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
-	          console.log("window ids in store: ", _.keys(syncedStore.windowIdMap.toJS()));
 	          console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
 	          window.storeRef = new ViewRef(syncedStore);
 	

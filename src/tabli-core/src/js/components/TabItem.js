@@ -6,7 +6,6 @@ import * as actions from '../actions';
 import { DragItemTypes } from './constants';
 import { DragSource, DropTarget } from 'react-dnd';
 
-import Hoverable from './Hoverable';
 import HeaderButton from './HeaderButton';
 
 const tabItemSource = {
@@ -40,8 +39,6 @@ function collectDropTarget(connect, monitor) {
 }
 
 const TabItem = React.createClass({
-  mixins: [Hoverable],
-
   propTypes: {
     connectDragSource: PropTypes.func.isRequired,
     connectDropTarget: PropTypes.func.isRequired,
@@ -145,7 +142,6 @@ const TabItem = React.createClass({
 
     var tabActiveStyle = (tab.open && tab.openState.active) ? Styles.activeSpan : null;
     var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
-    var hoverStyle = this.state.hovering ? Styles.tabItemHover : null;
     var selectedStyle = this.props.isSelected ? Styles.tabItemSelected : null;
 
     var dropStyle = isOver ? Styles.tabItemDropOver : null;
@@ -154,7 +150,6 @@ const TabItem = React.createClass({
 
     var closeStyle = Util.merge(Styles.headerButton);
     
-    // used to have: hoverStyle={Styles.closeButtonHover}
     var closeButton = (
       <HeaderButton className="closeButton" baseStyle={closeStyle} visible={tab.open}
          title="Close Tab"
@@ -163,7 +158,7 @@ const TabItem = React.createClass({
 
  
     return connectDropTarget(connectDragSource(
-      <div style={Util.merge(Styles.noWrap, Styles.tabItem, hoverStyle, selectedStyle, dropStyle)}
+      <div style={Util.merge(Styles.noWrap, Styles.tabItem,selectedStyle,dropStyle)}
         className="tabItem"
         onMouseOut={this.handleMouseOut}
         onMouseOver={this.handleMouseOver}
