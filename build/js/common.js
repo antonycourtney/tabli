@@ -46274,8 +46274,6 @@
 	        tabOpenStyle = _styles2.default.closed;
 	      }
 	
-	      var hoverVisible = this.state.hovering ? _styles2.default.visible : _styles2.default.hidden;
-	
 	      if (tab.saved) {
 	        tabCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.tabManagedButton),
 	          title: 'Remove bookmark for this tab',
@@ -46286,7 +46284,7 @@
 	      } else {
 	          // We used to include headerCheckbox, but that only set width and height
 	          // to something to 13x13; we want 16x16 from headerButton
-	          tabCheckItem = React.createElement('input', { style: Util.merge(_styles2.default.headerButton, hoverVisible, _styles2.default.tabCheckItem),
+	          tabCheckItem = React.createElement('input', { className: 'tabCheck', style: Util.merge(_styles2.default.headerButton, _styles2.default.tabCheckItem),
 	            type: 'checkbox',
 	            title: 'Bookmark this tab',
 	            onClick: this.handleBookmarkTabItem

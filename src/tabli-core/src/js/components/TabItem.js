@@ -108,8 +108,6 @@ const TabItem = React.createClass({
         tabOpenStyle = Styles.closed;
       }
 
-      var hoverVisible = this.state.hovering ? Styles.visible : Styles.hidden;
-
       if (tab.saved) {
         tabCheckItem = (
           <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton)}
@@ -122,7 +120,7 @@ const TabItem = React.createClass({
         // We used to include headerCheckbox, but that only set width and height
         // to something to 13x13; we want 16x16 from headerButton
         tabCheckItem = (
-          <input style={Util.merge(Styles.headerButton, hoverVisible, Styles.tabCheckItem)}
+          <input className="tabCheck" style={Util.merge(Styles.headerButton,Styles.tabCheckItem)}
             type="checkbox"
             title="Bookmark this tab"
             onClick={this.handleBookmarkTabItem}

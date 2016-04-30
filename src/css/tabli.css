@@ -30,6 +30,13 @@ fieldset { padding:0; border:0; }
   font-weight: bold;
 }
 
+.tabItem .tabCheck {
+  visibility: hidden;
+}
+.tabItem:hover .tabCheck {
+  visibility: visible;
+}
+
 .tabItem .closeButton {
   visibility: hidden;
 }
