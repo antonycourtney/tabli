@@ -120,7 +120,7 @@ export function saveTab(tabWindow, tabItem, cb) {
 }
 
 export function unsaveTab(tabWindow, tabItem, cb) {
-  chrome.bookmarks.remove(tabItem.savedBookmarkId, () => {
+  chrome.bookmarks.remove(tabItem.savedState.bookmarkId, () => {
     cb((state) => state.handleTabUnsaved(tabWindow, tabItem));
   });
 }

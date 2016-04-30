@@ -26308,7 +26308,7 @@
 	}
 	
 	function unsaveTab(tabWindow, tabItem, cb) {
-	  chrome.bookmarks.remove(tabItem.savedBookmarkId, function () {
+	  chrome.bookmarks.remove(tabItem.savedState.bookmarkId, function () {
 	    cb(function (state) {
 	      return state.handleTabUnsaved(tabWindow, tabItem);
 	    });

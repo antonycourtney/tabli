@@ -134,7 +134,8 @@ X(?) Getting exceptions in revert modal:
 
 - Opening link from email or external app results in scrolling to wrong window.
 
-
+- * BUG: When opening a PDF, window has no title.  Revert to URL if possible.
+  ( Not reproducible -- have opened some PDFs w/o issue)
 
 ========
 Attempt to debug leakTest with babel-node and node-inspector:
