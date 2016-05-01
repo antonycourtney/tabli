@@ -23,10 +23,9 @@ export const Dialog = React.createClass({
     var modalDiv = null;
 
     var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.modalTitle, Styles.open);
-    var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
     var closeButton = (
-      <HeaderButton baseStyle={closeStyle} visible
-        hoverStyle={Styles.closeButtonHover} title="Close Window"
+      <HeaderButton className="closeButton" baseStyle={Styles.headerButton} visible
+        title="Close Window"
         onClick={this.handleClose}
       />);
     modalDiv = (

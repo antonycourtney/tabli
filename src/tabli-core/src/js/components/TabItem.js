@@ -147,16 +147,13 @@ const TabItem = React.createClass({
     var dropStyle = isOver ? Styles.tabItemDropOver : null;
 
     const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null;
-
-    var closeStyle = Util.merge(Styles.headerButton);
     
     var closeButton = (
-      <HeaderButton className="closeButton" baseStyle={closeStyle} visible={tab.open}
+      <HeaderButton className="closeButton" baseStyle={Styles.headerButton} visible={tab.open}
          title="Close Tab"
          onClick={this.handleClose}
       />);
 
- 
     return connectDropTarget(connectDragSource(
       <div style={Util.merge(Styles.noWrap, Styles.tabItem,selectedStyle,dropStyle)}
         className="tabItem"

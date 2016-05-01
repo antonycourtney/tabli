@@ -27505,14 +27505,6 @@
 	  helpButton: {
 	    color: '#7472ff'
 	  },
-	  closeButton: {
-	    WebkitMaskImage: mkUrl('images/interface-77.png'),
-	    backgroundColor: '#888888'
-	  },
-	  closeButtonHover: {
-	    WebkitMaskImage: mkUrl('images/interface-74.png'),
-	    backgroundColor: '#000000'
-	  },
 	  tabList: {
 	    marginLeft: 0
 	  },
@@ -28056,9 +28048,8 @@
 	    var modalDiv = null;
 	
 	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.modalTitle, _styles2.default.open);
-	    var closeStyle = Util.merge(_styles2.default.headerButton, _styles2.default.closeButton);
-	    var closeButton = React.createElement(_HeaderButton2.default, { baseStyle: closeStyle, visible: true,
-	      hoverStyle: _styles2.default.closeButtonHover, title: 'Close Window',
+	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: _styles2.default.headerButton, visible: true,
+	      title: 'Close Window',
 	      onClick: this.handleClose
 	    });
 	    modalDiv = React.createElement(
@@ -29055,10 +29046,6 @@
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _Hoverable = __webpack_require__(/*! ./Hoverable */ 58);
-	
-	var _Hoverable2 = _interopRequireDefault(_Hoverable);
-	
 	var _WindowHeader = __webpack_require__(/*! ./WindowHeader */ 197);
 	
 	var _WindowHeader2 = _interopRequireDefault(_WindowHeader);
@@ -29073,9 +29060,6 @@
 	
 	var FilteredTabWindow = React.createClass({
 	  displayName: 'FilteredTabWindow',
-	
-	  mixins: [_Hoverable2.default],
-	
 	  getInitialState: function getInitialState() {
 	    // Note:  We initialize this with null rather than false so that it will follow
 	    // open / closed state of window
@@ -46021,7 +46005,9 @@
 	
 	    var openStyle = tabWindow.open ? _styles2.default.open : _styles2.default.closed;
 	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.windowTitle, openStyle);
-	    var closeStyle = Util.merge(_styles2.default.headerButton, _styles2.default.closeButton);
+	
+	    // We use hovering in the window header (this.state.hovering) to determine
+	    // visibility of both the revert button and close button appearing after the window title.
 	
 	    var revertButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton),
 	      visible: managed && tabWindow.open,
@@ -46029,7 +46015,7 @@
 	      onClick: this.props.onRevert
 	    });
 	
-	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: closeStyle,
+	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: _styles2.default.headerButton,
 	      visible: tabWindow.open,
 	      title: 'Close Window',
 	      onClick: this.props.onClose
@@ -46051,7 +46037,6 @@
 	        windowTitle
 	      ),
 	      revertButton,
-	      React.createElement('div', { style: _styles2.default.spacer }),
 	      closeButton
 	    );
 	  }
@@ -46294,9 +46279,7 @@
 	
 	    var audibleIcon = tab.open && tab.openState.audible ? React.createElement('div', { style: Util.merge(_styles2.default.headerButton, _styles2.default.audibleIcon) }) : null;
 	
-	    var closeStyle = Util.merge(_styles2.default.headerButton);
-	
-	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: closeStyle, visible: tab.open,
+	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: _styles2.default.headerButton, visible: tab.open,
 	      title: 'Close Tab',
 	      onClick: this.handleClose
 	    });

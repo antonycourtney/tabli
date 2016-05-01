@@ -6,14 +6,11 @@ import * as Util from './util';
 
 import * as actions from '../actions';
 
-import Hoverable from './Hoverable';
 import WindowHeader from './WindowHeader';
 import TabItem from './TabItem';
 
 
 const FilteredTabWindow = React.createClass({
-  mixins: [Hoverable],
-
   getInitialState() {
     // Note:  We initialize this with null rather than false so that it will follow
     // open / closed state of window

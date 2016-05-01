@@ -192,14 +192,6 @@ const styles = {
   helpButton: {
     color: '#7472ff'
   },
-  closeButton: {
-    WebkitMaskImage: mkUrl('images/interface-77.png'),
-    backgroundColor: '#888888',
-  },
-  closeButtonHover: {
-    WebkitMaskImage: mkUrl('images/interface-74.png'),
-    backgroundColor: '#000000',
-  },
   tabList: {
     marginLeft: 0,
   },

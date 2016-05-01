@@ -54,7 +54,9 @@ const WindowHeader = React.createClass({
 
     var openStyle = tabWindow.open ? Styles.open : Styles.closed;
     var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.windowTitle, openStyle);
-    var closeStyle = Util.merge(Styles.headerButton, Styles.closeButton);
+
+    // We use hovering in the window header (this.state.hovering) to determine
+    // visibility of both the revert button and close button appearing after the window title.
 
     var revertButton = (
       <HeaderButton baseStyle={Util.merge(Styles.headerButton, Styles.revertButton)}
@@ -64,7 +66,7 @@ const WindowHeader = React.createClass({
       />);
 
     var closeButton = (
-      <HeaderButton className="closeButton" baseStyle={closeStyle}
+      <HeaderButton className="closeButton" baseStyle={Styles.headerButton}
         visible={tabWindow.open}
         title="Close Window"
         onClick={this.props.onClose}
@@ -81,8 +83,7 @@ const WindowHeader = React.createClass({
         <ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
         <span style={titleStyle}>{windowTitle}</span>
         {revertButton}
-        <div style={Styles.spacer} />
-                                                                                                                                                                                                                                                                {closeButton}
+        {closeButton}
       </div>
     );
   },

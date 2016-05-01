@@ -70,4 +70,6 @@ fieldset { padding:0; border:0; }
 .closeButton:hover {
   -webkit-mask-image: url('../images/interface-74.png');
   background-color: #000000;
+  /* -webkit-mask-image: url('../images/Interface-94.png'); */
+  /* background-color: #cb716c; */
 }
