@@ -179,16 +179,6 @@ const styles = {
     backgroundColor: '#7472ff',
     marginRight: '20px',
   },
-  popoutButton: {
-    backgroundImage: mkUrl('images/popout.png'),
-    backgroundColor: 'transparent',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center center',
-    marginRight: 15
-  },
-  popoutButtonHover: {
-    backgroundColor: '#dadada'
-  },
   helpButton: {
     color: '#7472ff'
   },

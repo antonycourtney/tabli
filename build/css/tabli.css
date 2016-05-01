@@ -73,3 +73,15 @@ fieldset { padding:0; border:0; }
   /* -webkit-mask-image: url('../images/Interface-94.png'); */
   /* background-color: #cb716c; */
 }
+
+.popoutButton {
+  background-image: url('../images/popout.png');
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center center;
+  margin-right: 15
+}
+
+.popoutButton:hover {
+  background-color: #dadada;
+}

@@ -137,6 +137,8 @@ X(?) Getting exceptions in revert modal:
 - * BUG: When opening a PDF, window has no title.  Revert to URL if possible.
   ( Not reproducible -- have opened some PDFs w/o issue)
 
+- Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
+
 ========
 Attempt to debug leakTest with babel-node and node-inspector:
 

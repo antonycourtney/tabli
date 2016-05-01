@@ -80,9 +80,8 @@ const SearchBar = React.createClass({
 
   render() {
     const popoutButton = (
-      <HeaderButton baseStyle={Util.merge(Styles.headerButton, Styles.popoutButton)}
+      <HeaderButton className="popoutButton" baseStyle={Styles.headerButton}
         visible={true}
-        hoverStyle={Styles.popoutButtonHover}
         title="Tabli Popout Window"
         onClick={this.handlePopoutClick}
       />);

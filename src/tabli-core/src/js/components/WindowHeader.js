@@ -55,9 +55,6 @@ const WindowHeader = React.createClass({
     var openStyle = tabWindow.open ? Styles.open : Styles.closed;
     var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.windowTitle, openStyle);
 
-    // We use hovering in the window header (this.state.hovering) to determine
-    // visibility of both the revert button and close button appearing after the window title.
-
     var revertButton = (
       <HeaderButton baseStyle={Util.merge(Styles.headerButton, Styles.revertButton)}
         visible={managed && tabWindow.open}

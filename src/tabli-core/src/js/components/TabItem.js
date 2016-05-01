@@ -6,6 +6,8 @@ import * as actions from '../actions';
 import { DragItemTypes } from './constants';
 import { DragSource, DropTarget } from 'react-dnd';
 
+import * as PureRenderMixin from 'react-addons-pure-render-mixin';
+
 import HeaderButton from './HeaderButton';
 
 const tabItemSource = {
@@ -39,6 +41,8 @@ function collectDropTarget(connect, monitor) {
 }
 
 const TabItem = React.createClass({
+  mixins: [PureRenderMixin],
+
   propTypes: {
     connectDragSource: PropTypes.func.isRequired,
     connectDropTarget: PropTypes.func.isRequired,
