@@ -57,7 +57,7 @@ const TabWindowList = React.createClass({
         <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
           {focusedWindowElem}
         </WindowListSection>
-        <WindowListSection title="Open Windows">
+        <WindowListSection title="Other Open Windows">
           {openWindows}
         </WindowListSection>
         {savedSection}
