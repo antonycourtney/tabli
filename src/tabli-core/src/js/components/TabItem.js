@@ -54,7 +54,8 @@ const TabItem = React.createClass({
     storeUpdateHandler: PropTypes.func.isRequired,
     isSelected: PropTypes.bool.isRequired,
     appComponent: PropTypes.object.isRequired,
-    isOver: PropTypes.bool.isRequired
+    isOver: PropTypes.bool.isRequired,
+    onItemSelected: PropTypes.func
   },
 
   handleClick(event) {
@@ -65,6 +66,10 @@ const TabItem = React.createClass({
     // console.log("TabItem: handleClick: tab: ", tab);
 
     actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
+
+    if (this.props.onItemSelected) {
+      this.props.onItemSelected(tab);
+    }
   },
 
   handleClose() {

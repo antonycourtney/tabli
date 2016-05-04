@@ -9,7 +9,7 @@ import HeaderButton from './HeaderButton';
 
 const SearchBar = React.createClass({
   handleChange() {
-    const searchStr = this.refs.searchInput.value;
+    const searchStr = this.searchInputRef.value;
     this.props.onSearchInput(searchStr);
   },
 
@@ -52,13 +52,13 @@ const SearchBar = React.createClass({
     if (e.keyCode === Constants.KEY_ENTER) {
       if (this.props.onSearchEnter) {
         e.preventDefault();
-        this.props.onSearchEnter(this.refs.searchInput);
+        this.props.onSearchEnter(this.searchInputRef);
       }
     }
 
     if (e.keyCode === Constants.KEY_ESC) {
       if (this.props.onSearchExit) {
-        const searchStr = this.refs.searchInput.value;
+        const searchStr = this.searchInputRef.value;
         if (!searchStr || searchStr.length === 0) {
           e.preventDefault();
           this.props.onSearchExit();
@@ -78,6 +78,13 @@ const SearchBar = React.createClass({
     actions.showPopout(this.props.winStore);
   },
 
+  setInputRef(ref) {
+    this.searchInputRef = ref;
+    if (this.props.setInputRef) {
+      this.props.setInputRef(ref);
+    }
+  },
+
   render() {
     const popoutButton = (
       <HeaderButton className="popoutButton" baseStyle={Styles.headerButton}
@@ -93,7 +100,7 @@ const SearchBar = React.createClass({
     return (
       <div style={Styles.headerContainer}>
         {popoutButton}
-        <input style={Styles.searchInput} type="search" ref="searchInput" id="searchBox" placeholder="Search..."
+        <input style={Styles.searchInput} type="search" ref={this.setInputRef} id="searchBox" placeholder="Search..."
           onChange={this.handleChange} onKeyDown={this.handleKeyDown}
           title="Search Page Titles and URLs"
         />

@@ -28672,6 +28672,19 @@
 	  },
 	
 	
+	  // Search input ref:
+	  setSearchInputRef: function setSearchInputRef(ref) {
+	    this.searchInputRef = ref;
+	  },
+	  handleItemSelected: function handleItemSelected(item) {
+	    if (this.searchInputRef) {
+	      // And reset the search field:
+	      this.searchInputRef.value = '';
+	      this.props.onSearchInput('');
+	    }
+	  },
+	
+	
 	  // Scrollable body (container) DOM ref
 	  setBodyRef: function setBodyRef(ref) {
 	    this.bodyRef = ref;
@@ -28708,7 +28721,8 @@
 	          onSearchUp: this.handlePrevSelection,
 	          onSearchDown: this.handleNextSelection,
 	          onSearchEnter: this.handleSelectionEnter,
-	          onSearchExit: this.handleSearchExit
+	          onSearchExit: this.handleSearchExit,
+	          setInputRef: this.setSearchInputRef
 	        })
 	      ),
 	      React.createElement(
@@ -28722,7 +28736,8 @@
 	          searchRE: this.props.searchRE,
 	          selectedWindowIndex: this.state.selectedWindowIndex,
 	          selectedTabIndex: this.state.selectedTabIndex,
-	          setFocusedTabWindowRef: this.setFocusedTabWindowRef
+	          setFocusedTabWindowRef: this.setFocusedTabWindowRef,
+	          onItemSelected: this.handleItemSelected
 	        })
 	      ),
 	      React.createElement(
@@ -28788,7 +28803,7 @@
 	var SearchBar = React.createClass({
 	  displayName: 'SearchBar',
 	  handleChange: function handleChange() {
-	    var searchStr = this.refs.searchInput.value;
+	    var searchStr = this.searchInputRef.value;
 	    this.props.onSearchInput(searchStr);
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
@@ -28829,13 +28844,13 @@
 	    if (e.keyCode === Constants.KEY_ENTER) {
 	      if (this.props.onSearchEnter) {
 	        e.preventDefault();
-	        this.props.onSearchEnter(this.refs.searchInput);
+	        this.props.onSearchEnter(this.searchInputRef);
 	      }
 	    }
 	
 	    if (e.keyCode === Constants.KEY_ESC) {
 	      if (this.props.onSearchExit) {
-	        var searchStr = this.refs.searchInput.value;
+	        var searchStr = this.searchInputRef.value;
 	        if (!searchStr || searchStr.length === 0) {
 	          e.preventDefault();
 	          this.props.onSearchExit();
@@ -28852,6 +28867,12 @@
 	    console.log('Popout button clicked!');
 	    actions.showPopout(this.props.winStore);
 	  },
+	  setInputRef: function setInputRef(ref) {
+	    this.searchInputRef = ref;
+	    if (this.props.setInputRef) {
+	      this.props.setInputRef(ref);
+	    }
+	  },
 	  render: function render() {
 	    var popoutButton = React.createElement(_HeaderButton2.default, { className: 'popoutButton', baseStyle: _styles2.default.headerButton,
 	      visible: true,
@@ -28866,7 +28887,7 @@
 	      'div',
 	      { style: _styles2.default.headerContainer },
 	      popoutButton,
-	      React.createElement('input', { style: _styles2.default.searchInput, type: 'search', ref: 'searchInput', id: 'searchBox', placeholder: 'Search...',
+	      React.createElement('input', { style: _styles2.default.searchInput, type: 'search', ref: this.setInputRef, id: 'searchBox', placeholder: 'Search...',
 	        onChange: this.handleChange, onKeyDown: this.handleKeyDown,
 	        title: 'Search Page Titles and URLs'
 	      }),
@@ -28931,7 +28952,8 @@
 	        isSelected: isSelected,
 	        isFocused: isFocused,
 	        selectedTabIndex: selectedTabIndex,
-	        appComponent: this.props.appComponent
+	        appComponent: this.props.appComponent,
+	        onItemSelected: this.props.onItemSelected
 	      });
 	      if (isFocused) {
 	        focusedWindowElem = windowElem;
@@ -29037,6 +29059,9 @@
 	  },
 	  handleOpen: function handleOpen() {
 	    actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+	    if (this.props.onItemSelected) {
+	      this.props.onItemSelected(this.props.filteredTabWindow.tabWindow);
+	    }
 	  },
 	  handleClose: function handleClose(event) {
 	    // eslint-disable-line no-unused-vars
@@ -29076,7 +29101,8 @@
 	        key: id,
 	        tabIndex: i,
 	        isSelected: isSelected,
-	        appComponent: this.props.appComponent
+	        appComponent: this.props.appComponent,
+	        onItemSelected: this.props.onItemSelected
 	      });
 	      items.push(tabItem);
 	    }
@@ -29125,7 +29151,8 @@
 	      onOpen: this.handleOpen,
 	      onRevert: this.handleRevert,
 	      onClose: this.handleClose,
-	      appComponent: this.props.appComponent
+	      appComponent: this.props.appComponent,
+	      onItemSelected: this.props.onItemSelected
 	    });
 	
 	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
@@ -46147,7 +46174,8 @@
 	    storeUpdateHandler: _react.PropTypes.func.isRequired,
 	    isSelected: _react.PropTypes.bool.isRequired,
 	    appComponent: _react.PropTypes.object.isRequired,
-	    isOver: _react.PropTypes.bool.isRequired
+	    isOver: _react.PropTypes.bool.isRequired,
+	    onItemSelected: _react.PropTypes.func
 	  },
 	
 	  handleClick: function handleClick(event) {
@@ -46158,6 +46186,10 @@
 	    // console.log("TabItem: handleClick: tab: ", tab);
 	
 	    actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
+	
+	    if (this.props.onItemSelected) {
+	      this.props.onItemSelected(tab);
+	    }
 	  },
 	  handleClose: function handleClose() {
 	    if (!this.props.tabWindow.open) {

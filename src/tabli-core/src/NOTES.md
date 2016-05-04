@@ -122,7 +122,7 @@ X(?) Getting exceptions in revert modal:
   
   2ReactCompositeComponent.js:559 Uncaught TypeError: Cannot read property '_currentElement' of null
 
-- Need to clear search field after opening a window or tab
+- Need to clear search field after opening a window or tab.  Current cleared on <Enter> key, but not on mouse click.
 
 - If we switch tabs when a search is active, the window / tab may not be displayed. We'll record that we've scrolled to that window and tab when in fact we haven't.  We should probably force an updateScrollPos() in SelectablePopup when the selection is cleared.
 
@@ -140,8 +140,9 @@ X(?) Getting exceptions in revert modal:
 - Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
 
 =======
-
 *** Critical issue, 2May16:
+
+( Update, 3May16: Conjecture is that this was due to laziness of Immutable.Seq, now replaced by Immutable.List ). We'll see if issue recurs.
 
 Seeing regular performance degradation correlated with an exception with a bunch of calls to Iterator.next() on the stack.
 

@@ -33,6 +33,7 @@ const TabWindowList = React.createClass({
           isFocused={isFocused}
           selectedTabIndex={selectedTabIndex}
           appComponent={this.props.appComponent}
+          onItemSelected={this.props.onItemSelected}
         />);
       if (isFocused) {
         focusedWindowElem = windowElem;

@@ -196,6 +196,19 @@ const SelectablePopup = React.createClass({
     }
   },
 
+  // Search input ref:
+  setSearchInputRef(ref) {
+    this.searchInputRef = ref;
+  },
+
+  handleItemSelected(item) {
+    if (this.searchInputRef) {
+      // And reset the search field:
+      this.searchInputRef.value = '';
+      this.props.onSearchInput('');      
+    }
+  },
+
   // Scrollable body (container) DOM ref
   setBodyRef(ref) {
     this.bodyRef = ref;
@@ -211,6 +224,8 @@ const SelectablePopup = React.createClass({
   componentDidUpdate() {
     this.updateScrollPos(this.bodyRef,this.focusedWindowRef);
   },
+
+
 
   render() {
     const winStore = this.props.winStore;
@@ -231,6 +246,7 @@ const SelectablePopup = React.createClass({
                      onSearchDown={this.handleNextSelection}
                      onSearchEnter={this.handleSelectionEnter}
                      onSearchExit={this.handleSearchExit}
+                     setInputRef={this.setSearchInputRef}
           />
         </div>
         <div style={Styles.popupBody} ref={this.setBodyRef}>
@@ -243,6 +259,7 @@ const SelectablePopup = React.createClass({
                            selectedWindowIndex={this.state.selectedWindowIndex}
                            selectedTabIndex={this.state.selectedTabIndex}
                            setFocusedTabWindowRef={this.setFocusedTabWindowRef}
+                           onItemSelected={this.handleItemSelected}
           />
          </div>
          <div style={Styles.popupFooter}>

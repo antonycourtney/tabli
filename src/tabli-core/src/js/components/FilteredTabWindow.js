@@ -28,6 +28,9 @@ const FilteredTabWindow = React.createClass({
 
   handleOpen() {
     actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
+    if (this.props.onItemSelected) {
+      this.props.onItemSelected(this.props.filteredTabWindow.tabWindow);
+    }
   },
 
   handleClose(event) {  // eslint-disable-line no-unused-vars
@@ -69,6 +72,7 @@ const FilteredTabWindow = React.createClass({
           tabIndex={i}
           isSelected={isSelected}
           appComponent={this.props.appComponent}
+          onItemSelected={this.props.onItemSelected}
         />);
       items.push(tabItem);
     }
@@ -119,6 +123,7 @@ const FilteredTabWindow = React.createClass({
         onRevert={this.handleRevert}
         onClose={this.handleClose}
         appComponent={this.props.appComponent}
+        onItemSelected={this.props.onItemSelected}
       />);
 
     var selectedStyle = this.props.isSelected ? Styles.tabWindowSelected : null;
