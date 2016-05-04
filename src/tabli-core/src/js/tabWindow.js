@@ -185,7 +185,7 @@ export class TabWindow extends Immutable.Record({
   width: 0,
   height: 0,
 
-  tabItems: Immutable.Seq(),  // <TabItem>
+  tabItems: Immutable.List(),  // <TabItem>
 }) {
 
   get title() {
@@ -238,8 +238,16 @@ export class TabWindow extends Immutable.Record({
    * set tabItems.
    * Used to sort, but openTabIndex from Chrome isn't maintained by tab updates
    * so we reverted that.
+   * Then we briefly used .cacheResult() when tabItems was (supposedly) a Seq,
+   * but it turned out that certain code paths (such as inserting a tab) would 
+   * result in nextItems being a List.
+   * Seems to make the most sentence to just make tabItems a List not a Seq 
    */
   setTabItems(nextItems) {
+    /* HACK: debugging only check; get rid of this! */
+    if (!nextItems) {
+      console.error("setTabItems: bad nextItems: ", nextItems);
+    }
     return this.set('tabItems',nextItems);
   }
 }
@@ -268,7 +276,7 @@ export function removeSavedWindowState(tabWindow) {
  */
 export function makeFolderTabWindow(bookmarkFolder) {
   const itemChildren = bookmarkFolder.children.filter((node) => 'url' in node);
-  const tabItems = Immutable.Seq(itemChildren.map(makeBookmarkedTabItem));
+  const tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem));
   var fallbackTitle = '';
   if (bookmarkFolder.title === undefined) {
     console.error('makeFolderTabWindow: malformed bookmarkFolder -- missing title: ', bookmarkFolder);
@@ -299,7 +307,7 @@ export function makeChromeTabWindow(chromeWindow) {
     windowType: chromeWindow.type,
     width: chromeWindow.width,
     height: chromeWindow.height,
-    tabItems: Immutable.Seq(tabItems).sort(tabItemCompare),
+    tabItems: Immutable.List(tabItems).sort(tabItemCompare),
   });
   return tabWindow;
 }
@@ -307,10 +315,10 @@ export function makeChromeTabWindow(chromeWindow) {
 /**
  * merge saved and currently open tab states into tab items by joining on URL
  * 
- * @param {Seq<TabItem>} savedItems 
- * @param {Seq<TabItem>} openItems 
+ * @param {List<TabItem>} savedItems 
+ * @param {List<TabItem>} openItems 
  *
- * @return {Seq<TabItem>}
+ * @return {List<TabItem>}
  */
 function mergeSavedOpenTabs(savedItems,openItems) {
   const openUrlSet = Immutable.Set(openItems.map(ti => ti.url));
@@ -341,14 +349,14 @@ function mergeSavedOpenTabs(savedItems,openItems) {
  * Merge currently open tabs from an open Chrome window with tabItem state of a saved
  * tabWindow
  *
- * @param {Seq<TabItem>} tabItems -- previous TabItem state
+ * @param {List<TabItem>} tabItems -- previous TabItem state
  * @param {[Tab]} openTabs -- currently open tabs from Chrome window
  *
- * @returns {Seq<TabItem>} TabItems reflecting current window state
+ * @returns {List<TabItem>} TabItems reflecting current window state
  */
 function mergeOpenTabs(tabItems, openTabs) {
   const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
-  const chromeOpenTabItems = Immutable.Seq(openTabs.map(makeOpenTabItem));
+  const chromeOpenTabItems = Immutable.List(openTabs.map(makeOpenTabItem));
 
   const mergedTabItems = mergeSavedOpenTabs(baseSavedItems,chromeOpenTabItems);
 

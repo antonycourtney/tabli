@@ -139,6 +139,27 @@ X(?) Getting exceptions in revert modal:
 
 - Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
 
+=======
+
+*** Critical issue, 2May16:
+
+Seeing regular performance degradation correlated with an exception with a bunch of calls to Iterator.next() on the stack.
+
+Last call we can *see* in the stack is:
+actions.js:28, which is in actions.syncChromeWindows:
+    cb((state) => state.syncWindowList(windowList));
+
+This is called from SafeCallbackApply, and other stack trace indicates that this is called from renderPopup() in renderCommon.js.
+
+It's worth noting that those lines calls syncStore.setCurrentWindow(currentChromeWindow) and
+then do a storeRef.setValue(nextStore); with the result....
+
+Hmmmm.....could we be getting an infinite cascade here?
+Or...could we be getting bit by the laziness of Seq?
+
+Also notable that the chrome window logged by getCurrentWindow didn't seem complete:
+
+
 ========
 Attempt to debug leakTest with babel-node and node-inspector:
 

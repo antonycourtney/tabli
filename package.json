@@ -38,6 +38,7 @@
     "eslint": "^2.8.0",
     "eslint-config-airbnb": "7.0.0",
     "eslint-plugin-react": "^4.3.0",
+    "filesize": "^3.3.0",
     "gulp": "^3.9.1",
     "gulp-build-branch": "^0.1.4",
     "gulp-clean": "^0.3.2",
@@ -48,6 +49,7 @@
     "gulp-util": "^3.0.7",
     "jsdom": "^8.4.0",
     "json-loader": "^0.5.4",
+    "memwatch-next": "^0.3.0",
     "react": "^15.0.1",
     "react-addons-perf": "^15.0.1",
     "react-addons-test-utils": "^15.0.1",
@@ -58,6 +60,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "babel-node --presets es2015,react ./test/runAllTests.js | tap-spec"
+    "test": "babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
+    "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec"
   }
 }

@@ -438,11 +438,19 @@
 	     * set tabItems.
 	     * Used to sort, but openTabIndex from Chrome isn't maintained by tab updates
 	     * so we reverted that.
+	     * Then we briefly used .cacheResult() when tabItems was (supposedly) a Seq,
+	     * but it turned out that certain code paths (such as inserting a tab) would 
+	     * result in nextItems being a List.
+	     * Seems to make the most sentence to just make tabItems a List not a Seq 
 	     */
 	
 	  }, {
 	    key: 'setTabItems',
 	    value: function setTabItems(nextItems) {
+	      /* HACK: debugging only check; get rid of this! */
+	      if (!nextItems) {
+	        console.error("setTabItems: bad nextItems: ", nextItems);
+	      }
 	      return this.set('tabItems', nextItems);
 	    }
 	  }, {
@@ -475,7 +483,7 @@
 	  width: 0,
 	  height: 0,
 	
-	  tabItems: Immutable.Seq() }));
+	  tabItems: Immutable.List() }));
 	
 	/**
 	 * reset a window to its base saved state (after window is closed)
@@ -507,7 +515,7 @@
 	  var itemChildren = bookmarkFolder.children.filter(function (node) {
 	    return 'url' in node;
 	  });
-	  var tabItems = Immutable.Seq(itemChildren.map(makeBookmarkedTabItem));
+	  var tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem));
 	  var fallbackTitle = '';
 	  if (bookmarkFolder.title === undefined) {
 	    console.error('makeFolderTabWindow: malformed bookmarkFolder -- missing title: ', bookmarkFolder);
@@ -538,7 +546,7 @@
 	    windowType: chromeWindow.type,
 	    width: chromeWindow.width,
 	    height: chromeWindow.height,
-	    tabItems: Immutable.Seq(tabItems).sort(tabItemCompare)
+	    tabItems: Immutable.List(tabItems).sort(tabItemCompare)
 	  });
 	  return tabWindow;
 	}
@@ -546,10 +554,10 @@
 	/**
 	 * merge saved and currently open tab states into tab items by joining on URL
 	 * 
-	 * @param {Seq<TabItem>} savedItems 
-	 * @param {Seq<TabItem>} openItems 
+	 * @param {List<TabItem>} savedItems 
+	 * @param {List<TabItem>} openItems 
 	 *
-	 * @return {Seq<TabItem>}
+	 * @return {List<TabItem>}
 	 */
 	function mergeSavedOpenTabs(savedItems, openItems) {
 	  var openUrlSet = Immutable.Set(openItems.map(function (ti) {
@@ -585,16 +593,16 @@
 	 * Merge currently open tabs from an open Chrome window with tabItem state of a saved
 	 * tabWindow
 	 *
-	 * @param {Seq<TabItem>} tabItems -- previous TabItem state
+	 * @param {List<TabItem>} tabItems -- previous TabItem state
 	 * @param {[Tab]} openTabs -- currently open tabs from Chrome window
 	 *
-	 * @returns {Seq<TabItem>} TabItems reflecting current window state
+	 * @returns {List<TabItem>} TabItems reflecting current window state
 	 */
 	function mergeOpenTabs(tabItems, openTabs) {
 	  var baseSavedItems = tabItems.filter(function (ti) {
 	    return ti.saved;
 	  }).map(resetSavedItem);
-	  var chromeOpenTabItems = Immutable.Seq(openTabs.map(makeOpenTabItem));
+	  var chromeOpenTabItems = Immutable.List(openTabs.map(makeOpenTabItem));
 	
 	  var mergedTabItems = mergeSavedOpenTabs(baseSavedItems, chromeOpenTabItems);
 	
@@ -27451,6 +27459,9 @@
 	    height: 16,
 	    marginRight: 3
 	  },
+	  favIconClosed: {
+	    WebkitFilter: "grayscale(1)"
+	  },
 	  hidden: {
 	    visibility: 'hidden'
 	  },
@@ -28950,7 +28961,7 @@
 	      ),
 	      React.createElement(
 	        _WindowListSection2.default,
-	        { title: 'Open Windows' },
+	        { title: 'Other Open Windows' },
 	        openWindows
 	      ),
 	      savedSection
@@ -46184,12 +46195,14 @@
 	
 	    // span style depending on whether open or closed window
 	    var tabOpenStyle = null;
+	    var favIconOpenStyle = null;
 	
 	    var tabCheckItem;
 	
 	    if (managed) {
 	      if (!tab.open) {
 	        tabOpenStyle = _styles2.default.closed;
+	        favIconOpenStyle = _styles2.default.favIconClosed;
 	      }
 	
 	      if (tab.saved) {
@@ -46214,7 +46227,8 @@
 	    }
 	
 	    var favIconUrl = tab.open ? tab.openState.favIconUrl : null;
-	    var fiSrc = favIconUrl ? favIconUrl : '';
+	    // var fiSrc = favIconUrl ? favIconUrl : '';
+	    var fiSrc = 'chrome://favicon/size/16/' + tab.url;
 	
 	    // Skip the chrome FAVICONs; they just throw when accessed.
 	    if (fiSrc.indexOf('chrome://theme/') === 0) {
@@ -46223,7 +46237,9 @@
 	
 	    var emptyFavIcon = React.createElement('div', { style: Util.merge(_styles2.default.headerButton, _styles2.default.emptyFavIcon) });
 	
-	    var tabFavIcon = fiSrc.length > 0 ? React.createElement('img', { style: _styles2.default.favIcon, src: fiSrc }) : emptyFavIcon;
+	    var favIconStyle = Util.merge(_styles2.default.favIcon, favIconOpenStyle);
+	
+	    var tabFavIcon = fiSrc.length > 0 ? React.createElement('img', { style: favIconStyle, src: fiSrc }) : emptyFavIcon;
 	
 	    var tabActiveStyle = tab.open && tab.openState.active ? _styles2.default.activeSpan : null;
 	    var tabTitleStyles = Util.merge(_styles2.default.text, _styles2.default.tabTitle, _styles2.default.noWrap, tabOpenStyle, tabActiveStyle);
