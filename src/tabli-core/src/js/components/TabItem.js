@@ -101,12 +101,14 @@ const TabItem = React.createClass({
 
     // span style depending on whether open or closed window
     var tabOpenStyle = null;
+    var favIconOpenStyle = null;
 
     var tabCheckItem;
 
     if (managed) {
       if (!tab.open) {
         tabOpenStyle = Styles.closed;
+        favIconOpenStyle = Styles.favIconClosed;
       }
 
       if (tab.saved) {
@@ -133,7 +135,8 @@ const TabItem = React.createClass({
     }
 
     const favIconUrl = tab.open ? tab.openState.favIconUrl : null;
-    var fiSrc = favIconUrl ? favIconUrl : '';
+    // var fiSrc = favIconUrl ? favIconUrl : '';
+    var fiSrc = 'chrome://favicon/size/16/' + tab.url;
 
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {
@@ -142,7 +145,9 @@ const TabItem = React.createClass({
 
     const emptyFavIcon = <div style={Util.merge(Styles.headerButton, Styles.emptyFavIcon)} />;
 
-    var tabFavIcon = (fiSrc.length > 0) ? <img style={Styles.favIcon} src={fiSrc} /> : emptyFavIcon;
+    const favIconStyle = Util.merge(Styles.favIcon, favIconOpenStyle);
+
+    var tabFavIcon = (fiSrc.length > 0) ? <img style={favIconStyle} src={fiSrc} /> : emptyFavIcon;
 
     var tabActiveStyle = (tab.open && tab.openState.active) ? Styles.activeSpan : null;
     var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle);
