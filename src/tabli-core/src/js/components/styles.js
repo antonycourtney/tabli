@@ -137,6 +137,9 @@ const styles = {
     height: 16,
     marginRight: 3,
   },
+  favIconClosed: {
+    WebkitFilter: "grayscale(1)"
+  },
   hidden: {
     visibility: 'hidden',
   },
