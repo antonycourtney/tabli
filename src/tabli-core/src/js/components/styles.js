@@ -155,6 +155,9 @@ const styles = {
     WebkitMaskImage: mkUrl('images/status-9.png'),
     backgroundColor: '#7472ff',
   },
+  imageButtonClosed: {
+    backgroundColor: '#979ca0'
+  },
   audibleIcon: {
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
     backgroundColor: '#505050',

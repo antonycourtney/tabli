@@ -27476,6 +27476,9 @@
 	    WebkitMaskImage: mkUrl('images/status-9.png'),
 	    backgroundColor: '#7472ff'
 	  },
+	  imageButtonClosed: {
+	    backgroundColor: '#979ca0'
+	  },
 	  audibleIcon: {
 	    WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
 	    backgroundColor: '#505050'
@@ -46230,6 +46233,7 @@
 	    // span style depending on whether open or closed window
 	    var tabOpenStyle = null;
 	    var favIconOpenStyle = null;
+	    var checkOpenStyle = null;
 	
 	    var tabCheckItem;
 	
@@ -46237,10 +46241,11 @@
 	      if (!tab.open) {
 	        tabOpenStyle = _styles2.default.closed;
 	        favIconOpenStyle = _styles2.default.favIconClosed;
+	        checkOpenStyle = _styles2.default.imageButtonClosed;
 	      }
 	
 	      if (tab.saved) {
-	        tabCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.tabManagedButton),
+	        tabCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.tabManagedButton, checkOpenStyle),
 	          title: 'Remove bookmark for this tab',
 	          onClick: this.handleUnbookmarkTabItem
 	        });

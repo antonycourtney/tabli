@@ -109,6 +109,7 @@ const TabItem = React.createClass({
     // span style depending on whether open or closed window
     var tabOpenStyle = null;
     var favIconOpenStyle = null;
+    var checkOpenStyle = null;
 
     var tabCheckItem;
 
@@ -116,11 +117,12 @@ const TabItem = React.createClass({
       if (!tab.open) {
         tabOpenStyle = Styles.closed;
         favIconOpenStyle = Styles.favIconClosed;
+        checkOpenStyle = Styles.imageButtonClosed;
       }
 
       if (tab.saved) {
         tabCheckItem = (
-          <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton)}
+          <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton, checkOpenStyle)}
             title="Remove bookmark for this tab"
             onClick={this.handleUnbookmarkTabItem}
           />);
