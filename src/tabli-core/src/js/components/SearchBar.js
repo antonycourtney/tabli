@@ -21,18 +21,37 @@ const SearchBar = React.createClass({
       actions.showHelp();
     }
 
-    if (e.keyCode === Constants.KEY_UP) {
+    const searchUp = (byPage) => {
       if (this.props.onSearchUp) {
         e.preventDefault();
-        this.props.onSearchUp(e.ctrlKey);
+        this.props.onSearchUp(byPage);
+      }      
+    };
+
+    const searchDown = (byPage) => {
+      if (this.props.onSearchDown) { 
+        e.preventDefault();
+        this.props.onSearchDown(byPage);
       }
+    };
+
+    if ((!e.ctrlKey && e.keyCode === Constants.KEY_UP) || 
+        (e.ctrlKey && !e.shiftKey && e.keyCode === Constants.KEY_P)) {
+      searchUp(false);
+    }
+    if ((e.ctrlKey && e.keyCode === Constants.KEY_UP) || 
+        (e.ctrlKey && e.shiftKey && e.keyCode === Constants.KEY_P)) {
+      searchUp(true);
     }
 
-    if (e.keyCode === Constants.KEY_DOWN) {
-      if (this.props.onSearchDown) {
-        e.preventDefault();
-        this.props.onSearchDown(e.ctrlKey);
-      }
+    if ((!e.ctrlKey && e.keyCode === Constants.KEY_DOWN) ||
+        (e.ctrlKey && !e.shiftKey && e.keyCode === Constants.KEY_N)) {
+      searchDown(false);
+    }
+
+    if ((e.ctrlKey && e.keyCode === Constants.KEY_DOWN) ||
+        (e.ctrlKey && e.shiftKey && e.keyCode === Constants.KEY_N)) {
+      searchDown(true);
     }
 
     if (e.keyCode === Constants.KEY_TAB) {

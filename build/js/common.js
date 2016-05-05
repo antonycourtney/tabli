@@ -27706,6 +27706,8 @@
 	var KEY_ESC = exports.KEY_ESC = 27;
 	var KEY_TAB = exports.KEY_TAB = 9;
 	var KEY_QUESTION = exports.KEY_QUESTION = 191;
+	var KEY_N = exports.KEY_N = 78;
+	var KEY_P = exports.KEY_P = 80;
 	
 	var DragItemTypes = exports.DragItemTypes = {
 	  TAB_ITEM: 'tabItem'
@@ -28810,24 +28812,41 @@
 	    this.props.onSearchInput(searchStr);
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
+	    var _this = this;
+	
 	    // console.log('handleKeyDown: ', _.omit(e, _.isObject));
 	    if (e.keyCode === Constants.KEY_F1 || e.keyCode === Constants.KEY_QUESTION && e.ctrlKey && e.shiftKey) {
 	      e.preventDefault();
 	      actions.showHelp();
 	    }
 	
-	    if (e.keyCode === Constants.KEY_UP) {
-	      if (this.props.onSearchUp) {
+	    var searchUp = function searchUp(byPage) {
+	      if (_this.props.onSearchUp) {
 	        e.preventDefault();
-	        this.props.onSearchUp(e.ctrlKey);
+	        _this.props.onSearchUp(byPage);
 	      }
+	    };
+	
+	    var searchDown = function searchDown(byPage) {
+	      if (_this.props.onSearchDown) {
+	        e.preventDefault();
+	        _this.props.onSearchDown(byPage);
+	      }
+	    };
+	
+	    if (!e.ctrlKey && e.keyCode === Constants.KEY_UP || e.ctrlKey && !e.shiftKey && e.keyCode === Constants.KEY_P) {
+	      searchUp(false);
+	    }
+	    if (e.ctrlKey && e.keyCode === Constants.KEY_UP || e.ctrlKey && e.shiftKey && e.keyCode === Constants.KEY_P) {
+	      searchUp(true);
 	    }
 	
-	    if (e.keyCode === Constants.KEY_DOWN) {
-	      if (this.props.onSearchDown) {
-	        e.preventDefault();
-	        this.props.onSearchDown(e.ctrlKey);
-	      }
+	    if (!e.ctrlKey && e.keyCode === Constants.KEY_DOWN || e.ctrlKey && !e.shiftKey && e.keyCode === Constants.KEY_N) {
+	      searchDown(false);
+	    }
+	
+	    if (e.ctrlKey && e.keyCode === Constants.KEY_DOWN || e.ctrlKey && e.shiftKey && e.keyCode === Constants.KEY_N) {
+	      searchDown(true);
 	    }
 	
 	    if (e.keyCode === Constants.KEY_TAB) {

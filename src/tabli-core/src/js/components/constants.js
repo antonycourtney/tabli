@@ -11,6 +11,8 @@ export const KEY_ENTER = 13;
 export const KEY_ESC = 27;
 export const KEY_TAB = 9;
 export const KEY_QUESTION = 191;
+export const KEY_N = 78;
+export const KEY_P = 80;
 
 export const DragItemTypes = {
   TAB_ITEM: 'tabItem'
