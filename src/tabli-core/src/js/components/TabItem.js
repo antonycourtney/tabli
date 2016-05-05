@@ -104,6 +104,8 @@ const TabItem = React.createClass({
 
     var tabTitle = tab.title;
 
+    const tooltipContent = tabTitle + "\n" + tab.url;
+
     // span style depending on whether open or closed window
     var tabOpenStyle = null;
     var favIconOpenStyle = null;
@@ -177,7 +179,7 @@ const TabItem = React.createClass({
       >
         {tabCheckItem}
         {tabFavIcon}
-        <span style={tabTitleStyles}>{tabTitle}</span>
+        <span style={tabTitleStyles} title={tooltipContent}>{tabTitle}</span>
         <div style={Styles.spacer} />
         {audibleIcon}
         {closeButton}

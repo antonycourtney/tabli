@@ -46225,6 +46225,8 @@
 	
 	    var tabTitle = tab.title;
 	
+	    var tooltipContent = tabTitle + "\n" + tab.url;
+	
 	    // span style depending on whether open or closed window
 	    var tabOpenStyle = null;
 	    var favIconOpenStyle = null;
@@ -46298,7 +46300,7 @@
 	      tabFavIcon,
 	      React.createElement(
 	        'span',
-	        { style: tabTitleStyles },
+	        { style: tabTitleStyles, title: tooltipContent },
 	        tabTitle
 	      ),
 	      React.createElement('div', { style: _styles2.default.spacer }),

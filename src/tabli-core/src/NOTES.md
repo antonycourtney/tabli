@@ -139,6 +139,11 @@ X(?) Getting exceptions in revert modal:
 
 - Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
 
+
+- If a Saved Tab is opened twice (duplicate) and one of those tabs is closed, it will stick around in the grayed out / closed state
+
+- Checkbox on closed, saved tabs should be gray
+
 =======
 *** Critical issue, 2May16:
 
