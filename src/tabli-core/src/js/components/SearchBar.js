@@ -105,12 +105,19 @@ const SearchBar = React.createClass({
   },
 
   render() {
-    const popoutButton = (
-      <HeaderButton className="popoutButton" baseStyle={Styles.headerButton}
-        visible={true}
-        title="Tabli Popout Window"
-        onClick={this.handlePopoutClick}
-      />);
+    var popoutButton=null;
+
+    if (!this.props.isPopout) {
+      popoutButton = (
+        <HeaderButton className="popoutButton" baseStyle={Styles.headerButton}
+          visible={true}
+          title="Tabli Popout Window"
+          onClick={this.handlePopoutClick}
+        />);
+    } else {
+      popoutButton = 
+        <div style={Util.merge(Styles.headerButton,Styles.logoImage)} />;        
+    }
 
     const helpButton = (
       <span className="fa fa-question-circle fa-lg" style={Styles.helpButton}

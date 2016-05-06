@@ -247,6 +247,7 @@ const SelectablePopup = React.createClass({
                      onSearchEnter={this.handleSelectionEnter}
                      onSearchExit={this.handleSearchExit}
                      setInputRef={this.setSearchInputRef}
+                     isPopout={this.props.isPopout}
           />
         </div>
         <div style={Styles.popupBody} ref={this.setBodyRef}>

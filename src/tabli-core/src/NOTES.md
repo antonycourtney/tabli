@@ -122,7 +122,7 @@ X(?) Getting exceptions in revert modal:
   
   2ReactCompositeComponent.js:559 Uncaught TypeError: Cannot read property '_currentElement' of null
 
-- Need to clear search field after opening a window or tab.  Current cleared on <Enter> key, but not on mouse click.
+X Need to clear search field after opening a window or tab.  Current cleared on <Enter> key, but not on mouse click.
 
 - If we switch tabs when a search is active, the window / tab may not be displayed. We'll record that we've scrolled to that window and tab when in fact we haven't.  We should probably force an updateScrollPos() in SelectablePopup when the selection is cleared.
 
@@ -139,10 +139,21 @@ X(?) Getting exceptions in revert modal:
 
 - Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
 
-
 - If a Saved Tab is opened twice (duplicate) and one of those tabs is closed, it will stick around in the grayed out / closed state
 
-- Checkbox on closed, saved tabs should be gray
+X Checkbox on closed, saved tabs should be gray
+
+======
+TODO before 0.9beta:
+
+- Need to persist whether popout is open or closed and use it on a restart.
+
+- Add release notes inline
+
+- Need to deal better with not having a current window (esp. on startup).  Should
+  - pick 0th window (if there is one)
+  - use "sensible" window width / height if no current window available
+  
 
 =======
 *** Critical issue, 2May16:
@@ -162,9 +173,6 @@ then do a storeRef.setValue(nextStore); with the result....
 
 Hmmmm.....could we be getting an infinite cascade here?
 Or...could we be getting bit by the laziness of Seq?
-
-Also notable that the chrome window logged by getCurrentWindow didn't seem complete:
-
 
 ========
 Attempt to debug leakTest with babel-node and node-inspector:

@@ -158,6 +158,13 @@ const styles = {
   imageButtonClosed: {
     backgroundColor: '#979ca0'
   },
+  logoImage: {
+    width: 24,
+    height: 24,
+    WebkitMaskImage: mkUrl('images/popoutLogo.png'),
+    backgroundColor: '#358194',
+    marginRight: 24,    
+  },
   audibleIcon: {
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
     backgroundColor: '#505050',
@@ -333,8 +340,8 @@ const styles = {
     marginTop: 5,
   },
   searchInput: {
-    width: 265,
-    maxWidth: 265,
+    width: 240,
+    maxWidth: 240,
   },
   summarySpan: {
     marginRight: 5,

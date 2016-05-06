@@ -27479,6 +27479,13 @@
 	  imageButtonClosed: {
 	    backgroundColor: '#979ca0'
 	  },
+	  logoImage: {
+	    width: 24,
+	    height: 24,
+	    WebkitMaskImage: mkUrl('images/popoutLogo.png'),
+	    backgroundColor: '#358194',
+	    marginRight: 24
+	  },
 	  audibleIcon: {
 	    WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
 	    backgroundColor: '#505050'
@@ -27654,8 +27661,8 @@
 	    marginTop: 5
 	  },
 	  searchInput: {
-	    width: 265,
-	    maxWidth: 265
+	    width: 240,
+	    maxWidth: 240
 	  },
 	  summarySpan: {
 	    marginRight: 5
@@ -28727,7 +28734,8 @@
 	          onSearchDown: this.handleNextSelection,
 	          onSearchEnter: this.handleSelectionEnter,
 	          onSearchExit: this.handleSearchExit,
-	          setInputRef: this.setSearchInputRef
+	          setInputRef: this.setSearchInputRef,
+	          isPopout: this.props.isPopout
 	        })
 	      ),
 	      React.createElement(
@@ -28896,11 +28904,17 @@
 	    }
 	  },
 	  render: function render() {
-	    var popoutButton = React.createElement(_HeaderButton2.default, { className: 'popoutButton', baseStyle: _styles2.default.headerButton,
-	      visible: true,
-	      title: 'Tabli Popout Window',
-	      onClick: this.handlePopoutClick
-	    });
+	    var popoutButton = null;
+	
+	    if (!this.props.isPopout) {
+	      popoutButton = React.createElement(_HeaderButton2.default, { className: 'popoutButton', baseStyle: _styles2.default.headerButton,
+	        visible: true,
+	        title: 'Tabli Popout Window',
+	        onClick: this.handlePopoutClick
+	      });
+	    } else {
+	      popoutButton = React.createElement('div', { style: Util.merge(_styles2.default.headerButton, _styles2.default.logoImage) });
+	    }
 	
 	    var helpButton = React.createElement('span', { className: 'fa fa-question-circle fa-lg', style: _styles2.default.helpButton,
 	      title: 'Open Tabli Usage Manual', onClick: this.handleHelpClick
