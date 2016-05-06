@@ -161,9 +161,9 @@ const styles = {
   logoImage: {
     width: 24,
     height: 24,
-    WebkitMaskImage: mkUrl('images/popoutLogo.png'),
-    backgroundColor: '#358194',
-    marginRight: 24,    
+    backgroundImage: mkUrl('images/logoImage.png'),
+    /* backgroundColor: '#358194', */
+    marginRight: 8,    
   },
   audibleIcon: {
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
