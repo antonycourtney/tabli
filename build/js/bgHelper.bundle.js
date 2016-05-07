@@ -218,7 +218,14 @@ webpackJsonp([0],{
 	  chrome.windows.onRemoved.addListener(function (windowId) {
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(windowId);
+	      if (tabWindow && tabWindow.windowType === "popup") {
+	        console.log("detected close of popout window...");
+	        chrome.storage.local.set({ 'showPopout': false }, function () {
+	          console.log("persisted: showPopout:false");
+	        });
+	      }
 	      var st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
+	      chrome.storage.local;
 	      return st;
 	    });
 	  });
@@ -448,16 +455,7 @@ webpackJsonp([0],{
 	          var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
 	          registerEventHandlers(storeRefUpdater);
 	
-	          /*
-	           * OK, this really shows limits of our refUpdater strategy, which conflates the
-	           * state updater action with the notion of a completion callback.
-	           * We really want to use callback chaining to ensure we don't show the popout
-	           * until after the popout is closed.
-	           */
-	          actions.closePopout(window.storeRef.getValue(), function (uf) {
-	            storeRefUpdater(uf);
-	            actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
-	          });
+	          actions.restorePopout(window.storeRef.getValue(), storeRefUpdater);
 	        });
 	      });
 	    });

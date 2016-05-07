@@ -22050,8 +22050,13 @@
 	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
 	      var stReg = this.registerTabWindow(tabWindow);
 	
-	      // if window has focus, update current window id:
-	      var st = chromeWindow.focused ? stReg.set('currentWindowId', chromeWindow.id) : stReg;
+	      // if window has focus and is a 'normal' window, update current window id:
+	      var updCurrent = chromeWindow.focused && validChromeWindow(chromeWindow, true);
+	      var st = updCurrent ? stReg.set('currentWindowId', chromeWindow.id) : stReg;
+	
+	      if (updCurrent) {
+	        console.log("syncChromeWindow: updated current window to: ", chromeWindow.id);
+	      }
 	
 	      return st;
 	    }
@@ -22257,6 +22262,15 @@
 	      // groupedIds :: Seq.Keyed<URL,Set<BookmarkId>>
 	
 	      return Immutable.Map(groupedIds);
+	    }
+	  }, {
+	    key: 'getPopoutTabWindow',
+	    value: function getPopoutTabWindow() {
+	      var popupTabWindows = this.getTabWindowsByType("popup");
+	      if (popupTabWindows.length > 0) {
+	        return popupTabWindows[0];
+	      }
+	      return null;
 	    }
 	  }]);
 	
@@ -26170,8 +26184,8 @@
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
 	exports.showHelp = showHelp;
-	exports.closePopout = closePopout;
 	exports.showPopout = showPopout;
+	exports.restorePopout = restorePopout;
 	exports.moveTabItem = moveTabItem;
 	
 	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
@@ -26472,10 +26486,36 @@
 	  chrome.tabs.create({ url: TABLI_HELP_URL });
 	}
 	
+	/*
+	 * Note: This action does not take a callback / update function argument
+	 */
+	function showPopout(winStore) {
+	  console.log('showPopout: displaying popout....');
+	
+	  var ptw = winStore.getPopoutTabWindow();
+	  if (ptw) {
+	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
+	  } else {
+	    chrome.storage.local.set({ 'showPopout': true }, function () {
+	      chrome.windows.create({ url: "popout.html",
+	        type: "detached_panel",
+	        left: 0, top: 0,
+	        width: 350,
+	        height: 625
+	      });
+	    });
+	  }
+	}
+	
+	/*
+	 * Note that the only place we call this from restorePopout(), so
+	 * we don't write to local storage.
+	 * We do that in response to user close event if we detect they
+	 * closed the poopout window.
+	 */
 	function closePopout(winStore, cb) {
-	  var popupTabWindows = winStore.getTabWindowsByType("popup");
-	  if (popupTabWindows.length > 0) {
-	    var ptw = popupTabWindows[0];
+	  var ptw = winStore.getPopoutTabWindow();
+	  if (ptw) {
 	    closeWindow(ptw, cb);
 	  } else {
 	    cb(function (state) {
@@ -26484,24 +26524,27 @@
 	  }
 	}
 	
-	/*
-	 * Note: This action does not take a callback / update function argument
-	 */
-	function showPopout(winStore) {
-	  console.log('showPopout: displaying popout....');
-	
-	  var popupTabWindows = winStore.getTabWindowsByType("popup");
-	  if (popupTabWindows.length > 0) {
-	    var ptw = popupTabWindows[0];
-	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
-	  } else {
-	    chrome.windows.create({ url: "popout.html",
-	      type: "detached_panel",
-	      left: 0, top: 0,
-	      width: 350,
-	      height: 625
+	function restorePopout(winStore, storeRefUpdater) {
+	  /*
+	   * OK, this really shows limits of our refUpdater strategy, which conflates the
+	   * state updater action with the notion of a completion callback.
+	   * We really want to use callback chaining to ensure we don't show the popout
+	   * until after the popout is closed.
+	   */
+	  chrome.storage.local.get({ 'showPopout': false }, function (items) {
+	    console.log("restorePopout read: ", items);
+	    closePopout(winStore, function (uf) {
+	      storeRefUpdater(function (st0) {
+	        var nextSt = uf(st0);
+	        if (items.showPopout) {
+	          showPopout(nextSt, function (uf2) {
+	            storeRefUpdater(uf2);
+	          });
+	        }
+	        return nextSt;
+	      });
 	    });
-	  }
+	  });
 	}
 	
 	/*

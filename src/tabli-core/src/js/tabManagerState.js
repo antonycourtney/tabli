@@ -123,8 +123,13 @@ export default class TabManagerState extends Immutable.Record({
     const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
     const stReg = this.registerTabWindow(tabWindow);
 
-    // if window has focus, update current window id:
-    const st = chromeWindow.focused ? stReg.set('currentWindowId',chromeWindow.id) : stReg;
+    // if window has focus and is a 'normal' window, update current window id:
+    const updCurrent = chromeWindow.focused && validChromeWindow(chromeWindow,true);
+    const st = updCurrent ? stReg.set('currentWindowId',chromeWindow.id) : stReg;
+
+    if (updCurrent) {
+      console.log("syncChromeWindow: updated current window to: ", chromeWindow.id);
+    }
 
     return st;
   }
@@ -162,7 +167,6 @@ export default class TabManagerState extends Immutable.Record({
     const nextSt = validChromeWindow(chromeWindow,true) ? this.setCurrentWindowId(chromeWindow.id) : this;
     return nextSt;
   }
-
 
   getCurrentWindow() {
     return this.getTabWindowByChromeId(this.currentWindowId);
@@ -262,5 +266,13 @@ export default class TabManagerState extends Immutable.Record({
     // groupedIds :: Seq.Keyed<URL,Set<BookmarkId>>
 
     return Immutable.Map(groupedIds);
+  }
+
+  getPopoutTabWindow() {
+    const popupTabWindows = this.getTabWindowsByType("popup");
+    if (popupTabWindows.length > 0) {
+      return popupTabWindows[0];
+    }
+    return null;
   }   
 }

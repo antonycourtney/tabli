@@ -150,10 +150,12 @@ TODO before 0.9beta:
 
 - Add release notes inline
 
-- Need to deal better with not having a current window (esp. on startup).  Should
+X Need to deal better with not having a current window (esp. on startup).  Should
+ (Seems to be better about using sensible default value for sizes now...)
   - pick 0th window (if there is one)
   - use "sensible" window width / height if no current window available
-  
+  Easy repro: Reload in popout window. (Note: If we have a previously saved "current" window,
+  use that instead of updating current) 
 
 =======
 *** Critical issue, 2May16:

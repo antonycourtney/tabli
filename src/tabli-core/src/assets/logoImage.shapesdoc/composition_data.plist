@@ -54,7 +54,7 @@
 					<key>fillType</key>
 					<integer>5</integer>
 					<key>frame</key>
-					<string>{{2, 2}, {7, 7}}</string>
+					<string>{{1, 1}, {7, 7}}</string>
 					<key>hidden</key>
 					<false/>
 					<key>identifier</key>
@@ -159,7 +159,7 @@
 					<key>fillType</key>
 					<integer>0</integer>
 					<key>frame</key>
-					<string>{{4, 4}, {7, 7}}</string>
+					<string>{{3, 3}, {7, 7}}</string>
 					<key>hidden</key>
 					<false/>
 					<key>identifier</key>
@@ -286,7 +286,7 @@
 			<key>scaleImage</key>
 			<true/>
 			<key>scrollCenterPoint</key>
-			<string>{6.0000000000000018, 6}</string>
+			<string>{5.9833333333333307, 6}</string>
 			<key>strokeColor</key>
 			<string>0.000000:0.000000:0.000000:1.000000</string>
 			<key>strokeLineCap</key>
