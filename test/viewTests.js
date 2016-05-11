@@ -9,6 +9,7 @@ import * as ReactTestUtils from 'react-addons-test-utils'
 import ViewRef from '../src/tabli-core/src/js/viewRef';
 import TabManagerState from '../src/tabli-core/src/js/tabManagerState';
 import TabliPopup from '../src/tabli-core/src/js/components/Popup';
+import SelectablePopup from '../src/tabli-core/src/js/components/SelectablePopup';
 import SearchBar from '../src/tabli-core/src/js/components/SearchBar';
 import TabItem from '../src/tabli-core/src/js/components/TabItem';
 import * as sinon from 'sinon';
@@ -103,11 +104,19 @@ test('isearch test', (t) => {
 
   t.equals(baseTabItems.length, 14, 'Initial tab count');
 
+  const selectablePopup = ReactTestUtils.findRenderedComponentWithType(component, SelectablePopup);
+
+  const searchInput = selectablePopup.searchInputRef;
+
+  searchInput.value = 'git';
+
+/*
   const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar);
 
   const searchInput = searchBar.refs.searchInput;
 
   searchInput.value = 'git';
+*/
 
   /*
    * This also works:
@@ -152,7 +161,11 @@ test('search and open test', (t) => {
 
   const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar);
 
-  const searchInput = searchBar.refs.searchInput;
+  const selectablePopup = ReactTestUtils.findRenderedComponentWithType(component, SelectablePopup);
+
+  const searchInput = selectablePopup.searchInputRef;
+
+  searchInput.value = 'git';
 
   console.log("About to update searchInput.value");
   searchInput.value = 'git';

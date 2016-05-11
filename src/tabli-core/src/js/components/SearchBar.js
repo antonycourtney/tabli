@@ -126,7 +126,7 @@ const SearchBar = React.createClass({
     return (
       <div style={Styles.headerContainer}>
         {popoutButton}
-        <input style={Styles.searchInput} type="search" ref={this.setInputRef} id="searchBox" placeholder="Search..."
+        <input className="searchInput" style={Styles.searchInput} type="search" ref={this.setInputRef} id="searchBox" placeholder="Search..."
           onChange={this.handleChange} onKeyDown={this.handleKeyDown}
           title="Search Page Titles and URLs"
         />

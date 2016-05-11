@@ -140,7 +140,8 @@ const SelectablePopup = React.createClass({
    */
   updateScrollPos(bodyRef,windowRef) {
     const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId) ||
-                             (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId());                            
+                             (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId());
+
   /*
     console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
                 ", currentWindowId: ", this.props.winStore.currentWindowId );    
@@ -149,7 +150,11 @@ const SelectablePopup = React.createClass({
                 ", needScroll: ", needScrollUpdate);
   */
     const isPopup = !(this.props.isPopout);
-    if ((windowRef!=null) && (bodyRef!=null) && needScrollUpdate && this.props.filteredWindows.length > 0) {
+    if ((windowRef!=null) && (bodyRef!=null) 
+        && needScrollUpdate 
+        && this.props.filteredWindows.length > 0
+        && !this.props.winStore.showRelNotes ) {
+
       const viewportTop = bodyRef.scrollTop;
       const viewportHeight = bodyRef.clientHeight;
 

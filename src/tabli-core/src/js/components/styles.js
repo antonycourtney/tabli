@@ -19,15 +19,15 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
   },
-  messagePanel: {
+  messageCard: {
     padding: 0,
   },
-  panelHeader: {
+  cardHeader: {
     paddingLeft: 16,
     paddingRight: 16,
     paddingBottom: 8
   },  
-  panelBody: {
+  cardBody: {
     paddingLeft: 16,
     paddingRight: 16,
   },  
@@ -44,8 +44,7 @@ const styles = {
     backgroundColor: 'rgba(0,0,0,0)',
     fontFamily: 'Roboto, sans-serif',
     fontSize: 14,
-    color: '#4285f4',
-    cursor: 'auto'
+    color: '#4285f4'
   },
   tabWindowTile: {
     width: 270,

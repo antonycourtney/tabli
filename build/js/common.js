@@ -22290,7 +22290,9 @@
 	  folderId: -1,
 	  archiveFolderId: -1,
 	  currentWindowId: -1, // chrome window id of window with focus
-	  initializing: true }));
+	  initializing: true, // true until bgHelper initialization completes.
+	  showRelNotes: true
+	}));
 	
 	exports.default = TabManagerState;
 
@@ -26195,6 +26197,7 @@
 	exports.showHelp = showHelp;
 	exports.showPopout = showPopout;
 	exports.moveTabItem = moveTabItem;
+	exports.hideRelNotes = hideRelNotes;
 	
 	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
 	
@@ -26525,6 +26528,15 @@
 	    // console.log("moveTabItem: tab move complete: ", chromeTab);
 	    // Let's just refresh the whole window:
 	    syncChromeWindowById(targetWindowId, uf);
+	  });
+	}
+	
+	function hideRelNotes(winStore, cb) {
+	  var manifest = chrome.runtime.getManifest();
+	  chrome.storage.local.set({ readRelNotesVersion: manifest.version }, function () {
+	    cb(function (st) {
+	      return st.set('showRelNotes', false);
+	    });
 	  });
 	}
 
@@ -27341,15 +27353,15 @@
 	    display: 'flex',
 	    flexDirection: 'column'
 	  },
-	  messagePanel: {
+	  messageCard: {
 	    padding: 0
 	  },
-	  panelHeader: {
+	  cardHeader: {
 	    paddingLeft: 16,
 	    paddingRight: 16,
 	    paddingBottom: 8
 	  },
-	  panelBody: {
+	  cardBody: {
 	    paddingLeft: 16,
 	    paddingRight: 16
 	  },
@@ -27366,8 +27378,7 @@
 	    backgroundColor: 'rgba(0,0,0,0)',
 	    fontFamily: 'Roboto, sans-serif',
 	    fontSize: 14,
-	    color: '#4285f4',
-	    cursor: 'auto'
+	    color: '#4285f4'
 	  },
 	  tabWindowTile: {
 	    width: 270,
@@ -27984,13 +27995,16 @@
 /*!**************************************************!*\
   !*** ./src/tabli-core/src/js/components/util.js ***!
   \**************************************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	
 	exports.merge = merge;
 	exports.windowCmp = windowCmp;
 	/**
@@ -28036,6 +28050,16 @@
 	  };
 	  return cf;
 	}
+	
+	var isNode = exports.isNode = false;
+	if ((typeof process === 'undefined' ? 'undefined' : _typeof(process)) === 'object') {
+	  if (_typeof(process.versions) === 'object') {
+	    if (typeof process.versions.node !== 'undefined') {
+	      exports.isNode = isNode = true;
+	    }
+	  }
+	}
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 11)))
 
 /***/ },
 /* 52 */
@@ -28655,6 +28679,7 @@
 	   */
 	  updateScrollPos: function updateScrollPos(bodyRef, windowRef) {
 	    var needScrollUpdate = this.state.scrolledToWindowId !== this.props.winStore.currentWindowId || this.state.scrolledToTabId !== this.props.winStore.getActiveTabId();
+	
 	    /*
 	      console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
 	                  ", currentWindowId: ", this.props.winStore.currentWindowId );    
@@ -28663,7 +28688,8 @@
 	                  ", needScroll: ", needScrollUpdate);
 	    */
 	    var isPopup = !this.props.isPopout;
-	    if (windowRef != null && bodyRef != null && needScrollUpdate && this.props.filteredWindows.length > 0) {
+	    if (windowRef != null && bodyRef != null && needScrollUpdate && this.props.filteredWindows.length > 0 && !this.props.winStore.showRelNotes) {
+	
 	      var viewportTop = bodyRef.scrollTop;
 	      var viewportHeight = bodyRef.clientHeight;
 	
@@ -28950,7 +28976,7 @@
 	      'div',
 	      { style: _styles2.default.headerContainer },
 	      popoutButton,
-	      React.createElement('input', { style: _styles2.default.searchInput, type: 'search', ref: this.setInputRef, id: 'searchBox', placeholder: 'Search...',
+	      React.createElement('input', { className: 'searchInput', style: _styles2.default.searchInput, type: 'search', ref: this.setInputRef, id: 'searchBox', placeholder: 'Search...',
 	        onChange: this.handleChange, onKeyDown: this.handleKeyDown,
 	        title: 'Search Page Titles and URLs'
 	      }),
@@ -28990,13 +29016,49 @@
 	
 	var _MessageCard2 = _interopRequireDefault(_MessageCard);
 	
+	var _actions = __webpack_require__(/*! ../actions */ 40);
+	
+	var actions = _interopRequireWildcard(_actions);
+	
+	var _util = __webpack_require__(/*! ./util */ 51);
+	
+	var util = _interopRequireWildcard(_util);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
+	var relNotesStr = '';
+	
+	if (!util.isNode) {
+	  // in browser
+	  relNotesStr = __webpack_require__(/*! ../../html/relnotes.html */ 311);
+	}
+	
 	var TabWindowList = React.createClass({
 	  displayName: 'TabWindowList',
+	
+	
+	  /* acknowledge release notes (and hide them) */
+	  ackRelNotes: function ackRelNotes() {
+	    actions.hideRelNotes(this.props.winStore, this.props.storeUpdateHandler);
+	  },
 	  render: function render() {
+	    var showRelNotes = this.props.winStore.showRelNotes;
+	
+	    var relNotesSection = null;
+	    if (showRelNotes) {
+	      relNotesSection = React.createElement(
+	        _WindowListSection2.default,
+	        null,
+	        React.createElement(_MessageCard2.default, {
+	          winStore: this.props.winStore,
+	          storeUpdateHandler: this.props.storeUpdateHandler,
+	          content: relNotesStr,
+	          onClick: this.ackRelNotes })
+	      );
+	    }
+	
 	    var focusedWindowElem = [];
 	    var openWindows = [];
 	    var savedWindows = [];
@@ -29009,8 +29071,8 @@
 	      var isOpen = tabWindow.open;
 	      var isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
 	
-	      // focused property will only be true if isFocused and no message panel to display:
-	      var focusedProp = false;
+	      // focused property will only be true if isFocused and no rel notes to display:
+	      var focusedProp = !showRelNotes && isFocused;
 	
 	      var isSelected = i === this.props.selectedWindowIndex;
 	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
@@ -29047,11 +29109,7 @@
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(
-	        _WindowListSection2.default,
-	        null,
-	        React.createElement(_MessageCard2.default, null)
-	      ),
+	      relNotesSection,
 	      React.createElement(
 	        _WindowListSection2.default,
 	        { focusedRef: this.props.setFocusedTabWindowRef, title: 'Current Window' },
@@ -29117,10 +29175,6 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	var relNotesStr = __webpack_require__(/*! ../../html/relnotes.html */ 311);
-	
-	console.log("relNotesStr: ", relNotesStr);
 	
 	var FilteredTabWindow = React.createClass({
 	  displayName: 'FilteredTabWindow',
@@ -52626,7 +52680,7 @@
   \***********************************************/
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"releaseNotes\">\n  <div class=\"relaseNotes-header\">\n    <h3>Tabli 0.X (7May2016)</h3>\n  </div>\n  <div class=\"releaseNote-body\">\n    <p>\n    New in this release:\n    </p>\n    <ul>\n      <li>Tabli popout window</li>\n      <li>Drag and Drop</li>\n    </ul>\n  </div>\n</div>";
+	module.exports = "<div class=\"card\">\n  <div class=\"card-header\">\n    <div class=\"card-title\">Tabli 0.9.0-beta</div>\n    <div class=\"card-subtitle\">11May2016</div>\n  </div>\n  <div class=\"card-body\">\n    <p>\n    New in this release:\n    </p>\n    <ul>\n      <li><b>Introducing: The Tabli Popout Window - </b> all the functionality of Tabli in a free-standing window that updates as you browse. Activate with popout button in the top left of the Tabli popup.</li>\n      <li>Drag and Drop to move individual tabs between windows or re-order tabs within a window.</li>\n      <li>Tooltips that show the full title and URL of each tab.</li>\n      <li>Numerous bug fixes to address minor visual issues (like lingering close icons after hovering over a tab).</li>\n      <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>\n      <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>\n    </ul>\n  </div>\n</div>";
 
 /***/ },
 /* 312 */
@@ -52739,57 +52793,28 @@
 	 *
 	 * http://www.material-ui.com/#/components/card
 	 */
-	var MessagePanel = React.createClass({
-	  displayName: 'MessagePanel',
+	var MessageCard = React.createClass({
+	  displayName: 'MessageCard',
 	  render: function render() {
 	
-	    var panelStyle = Util.merge(_styles2.default.tabWindow, _styles2.default.tabWindowFocused, _styles2.default.messagePanel);
+	    var cardStyle = Util.merge(_styles2.default.tabWindow, _styles2.default.tabWindowFocused, _styles2.default.messageCard);
+	    var rawMarkup = { __html: this.props.content };
 	
 	    return React.createElement(
 	      'div',
-	      { style: panelStyle },
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.panelHeader },
-	        React.createElement(
-	          'h3',
-	          null,
-	          'Tabli 0.X (7May2016)'
-	        )
-	      ),
-	      React.createElement(
-	        'div',
-	        { style: _styles2.default.panelBody },
-	        React.createElement(
-	          'p',
-	          null,
-	          'New in this release:'
-	        ),
-	        React.createElement(
-	          'ul',
-	          null,
-	          React.createElement(
-	            'li',
-	            null,
-	            'Tabli popout window'
-	          ),
-	          React.createElement(
-	            'li',
-	            null,
-	            'Drag and Drop'
-	          )
-	        )
-	      ),
+	      { style: cardStyle },
+	      React.createElement('div', { className: 'cardContent',
+	        dangerouslySetInnerHTML: rawMarkup }),
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.cardActions },
-	        React.createElement(_FlatButton2.default, { label: 'GOT IT' })
+	        React.createElement(_FlatButton2.default, { label: 'GOT IT', onClick: this.props.onClick })
 	      )
 	    );
 	  }
 	});
 	
-	exports.default = MessagePanel;
+	exports.default = MessageCard;
 
 /***/ },
 /* 314 */
@@ -52829,15 +52854,19 @@
 	
 	  mixins: [PureRenderMixin],
 	  handleClick: function handleClick(event) {
-	    if (this.props.visible) {
+	    console.log("FlatButton.handleClick: ", this.props);
+	    event.stopPropagation();
+	    event.preventDefault();
+	    if (this.props.onClick) {
 	      this.props.onClick(event);
-	      event.stopPropagation();
 	    }
+	    console.log("FlatButton.handleClick: returning false");
+	    return false;
 	  },
 	  render: function render() {
 	    return React.createElement(
 	      'a',
-	      { style: _styles2.default.flatButton, onClick: this.handleClick },
+	      { onClick: this.handleClick, href: 'javascript:;', style: _styles2.default.flatButton },
 	      this.props.label
 	    );
 	  }

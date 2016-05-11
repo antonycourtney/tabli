@@ -81,7 +81,31 @@ fieldset { padding:0; border:0; }
   background-position: center center;
   margin-right: 15
 }
-
 .popoutButton:hover {
   background-color: #dadada;
 }
+.card {
+  font-family: 'Roboto', sans-serif;
+}
+.card-header {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+  padding-top: 8px;
+  font-size: 16px;
+}
+.card-title {
+  font-weight: bold;
+  font-size: 20px;
+  padding-bottom: 8px;
+}
+.card-subtitle {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.541176);
+}
+.card-body {
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 12px;
+}
+

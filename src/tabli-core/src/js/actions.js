@@ -288,4 +288,9 @@ export function moveTabItem(targetTabWindow,targetIndex,sourceTabItem,uf) {
   });    
 }
 
-
+export function hideRelNotes(winStore,cb) {
+  const manifest = chrome.runtime.getManifest();  
+  chrome.storage.local.set({ readRelNotesVersion: manifest.version }, () => {
+    cb(st => st.set('showRelNotes', false));
+  }); 
+}

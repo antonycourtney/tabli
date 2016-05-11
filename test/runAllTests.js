@@ -2,3 +2,4 @@
 
 import './tabWindowTest';
 import './viewTests';
+import './semVerTests';

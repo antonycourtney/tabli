@@ -43,3 +43,12 @@ export function windowCmp(currentWindowId) {
   }
   return cf;
 }
+
+export var isNode = false;    
+if (typeof process === 'object') {
+  if (typeof process.versions === 'object') {
+    if (typeof process.versions.node !== 'undefined') {
+      isNode = true;
+    }
+  }
+}

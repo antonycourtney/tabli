@@ -9,9 +9,6 @@ import * as actions from '../actions';
 import WindowHeader from './WindowHeader';
 import TabItem from './TabItem';
 
-const relNotesStr = require('../../html/relnotes.html');
-
-console.log("relNotesStr: ", relNotesStr);
 
 const FilteredTabWindow = React.createClass({
   getInitialState() {

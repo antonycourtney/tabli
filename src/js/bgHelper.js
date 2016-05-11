@@ -7,6 +7,7 @@ import chromeBrowser from './chromeBrowser';
 import * as Tabli from '../tabli-core/src/js/index';
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
+import * as semver from 'semver';
 
 const TabManagerState = Tabli.TabManagerState;
 const TabWindow = Tabli.TabWindow;
@@ -71,6 +72,20 @@ function ensureChildFolder(parentNode, childFolderName, callback) {
 }
 
 /**
+ *
+ * initialize showRelNotes field of TabManagerState based on comparing 
+ * relNotes version from localStorage with this extension manifest
+ *
+ * @return {TabManagerState} possibly updated TabManagerState
+ */
+function initRelNotes(st,storedVersion) {
+  const manifest = chrome.runtime.getManifest();
+//  console.log("initRelNotes: storedVersion: ", storedVersion, ", manifest: ", manifest.version);
+  const showRelNotes = !semver.valid(storedVersion) || semver.gt(manifest.version, storedVersion);
+  return st.set('showRelNotes', showRelNotes);
+}
+
+/**
  * acquire main folder and archive folder and initialize
  * window store
  */
@@ -92,7 +107,11 @@ function initWinStore(cb) {
           // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
           const baseWinStore = new TabManagerState({ folderId: tabmanFolderId, archiveFolderId });
           const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0]);
-          cb(loadedWinStore);
+
+          chrome.storage.local.get({readRelNotesVersion: ""}, items => {
+            const relNotesStore = initRelNotes(loadedWinStore,items.readRelNotesVersion);
+            cb(relNotesStore);
+          });
         });
       });
     });
@@ -377,11 +396,11 @@ function reattachWindows(bmStore,cb) {
 function main() {
   initWinStore((rawBMStore) => {
     reattachWindows(rawBMStore,(bmStore) => {
-      console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS());
+      // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS());
 
       // window.winStore = winStore;
       chrome.windows.getCurrent(null, (currentWindow) => {
-        console.log("bgHelper: currentWindow: ", currentWindow);
+        // console.log("bgHelper: currentWindow: ", currentWindow);
         actions.syncChromeWindows((uf) => {
           console.log('initial sync of chrome windows complete.');
           const syncedStore = uf(bmStore).setCurrentWindow(currentWindow);

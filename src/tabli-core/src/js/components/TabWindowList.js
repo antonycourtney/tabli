@@ -4,9 +4,41 @@ import FilteredTabWindow from './FilteredTabWindow';
 import WindowListSection from './WindowListSection';
 import MessageCard from './MessageCard';
 
+import * as actions from '../actions';
+
+import * as util from './util';
+
+var relNotesStr = '';
+
+if (!util.isNode) {
+  // in browser
+  relNotesStr = require('../../html/relnotes.html');
+}
+
 const TabWindowList = React.createClass({
 
+  /* acknowledge release notes (and hide them) */
+  ackRelNotes() {
+    actions.hideRelNotes(this.props.winStore,this.props.storeUpdateHandler);
+  },
+
   render() {
+    const showRelNotes = this.props.winStore.showRelNotes;
+
+    var relNotesSection = null;
+    if (showRelNotes) {
+      relNotesSection = (
+        <WindowListSection>
+          <MessageCard 
+            winStore={this.props.winStore}
+            storeUpdateHandler={this.props.storeUpdateHandler} 
+            content={relNotesStr} 
+            onClick={this.ackRelNotes} />
+        </WindowListSection>
+      );
+    }
+
+
     var focusedWindowElem = [];
     var openWindows = [];
     var savedWindows = [];
@@ -19,8 +51,8 @@ const TabWindowList = React.createClass({
       var isOpen = tabWindow.open;
       const isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
 
-      // focused property will only be true if isFocused and no message panel to display:
-      const focusedProp = false;
+      // focused property will only be true if isFocused and no rel notes to display:
+      const focusedProp = !showRelNotes && isFocused;
 
       var isSelected = (i === this.props.selectedWindowIndex);
       const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
@@ -57,9 +89,7 @@ const TabWindowList = React.createClass({
 
     return (
       <div>
-        <WindowListSection>
-          <MessageCard />
-        </WindowListSection>
+        {relNotesSection}
         <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
           {focusedWindowElem}
         </WindowListSection>

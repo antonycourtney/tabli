@@ -24,6 +24,7 @@ export default class TabManagerState extends Immutable.Record({
   archiveFolderId: -1,
   currentWindowId: -1,               // chrome window id of window with focus
   initializing: true,                // true until bgHelper initialization completes.
+  showRelNotes: true,
 }) {
   /**
    * Update store to include the specified window, indexed by

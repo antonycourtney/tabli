@@ -6,15 +6,19 @@ import * as Util from './util';
 var FlatButton = React.createClass({
   mixins: [PureRenderMixin],
   handleClick(event) {
-    if (this.props.visible) {
+    console.log("FlatButton.handleClick: ", this.props);
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.props.onClick) {
       this.props.onClick(event);
-      event.stopPropagation();
     }
+    console.log("FlatButton.handleClick: returning false");
+    return false;
   },
 
   render() {
     return (
-      <a style={Styles.flatButton}  onClick={this.handleClick} >
+      <a onClick={this.handleClick} href="javascript:;" style={Styles.flatButton} >
         {this.props.label}
       </a>
     );

@@ -13,31 +13,22 @@ import FlatButton from './FlatButton';
  *
  * http://www.material-ui.com/#/components/card
  */
-const MessagePanel = React.createClass({
+const MessageCard = React.createClass({
   render() {
 
-    const panelStyle = Util.merge(Styles.tabWindow, Styles.tabWindowFocused, Styles.messagePanel );
+    const cardStyle = Util.merge(Styles.tabWindow, Styles.tabWindowFocused, Styles.messageCard );
+    const rawMarkup = { __html: this.props.content };
 
     return (
-      <div style={panelStyle}>
-        <div style={Styles.panelHeader}>
-          <h3>Tabli 0.X (7May2016)</h3>
-        </div>
-        <div style={Styles.panelBody}>
-          <p>
-          New in this release:
-          </p>
-          <ul>
-            <li>Tabli popout window</li>
-            <li>Drag and Drop</li>
-          </ul>
-        </div>
+      <div style={cardStyle}>
+        <div className="cardContent"
+             dangerouslySetInnerHTML={rawMarkup} />
         <div style={Styles.cardActions}>
-          <FlatButton label="GOT IT" />
+          <FlatButton label="GOT IT" onClick={this.props.onClick} />
         </div>
       </div>
     );        
   }
 });
 
-export default MessagePanel;
+export default MessageCard;
