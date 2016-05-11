@@ -1,5 +1,6 @@
 import * as TabWindow from './tabWindow';
 import * as utils from './utils';
+import * as pact from './pact';
 
 const TABLI_HELP_URL = 'http://antonycourtney.github.io/tabli/tabli-usage.html';
 
@@ -257,63 +258,10 @@ export function showHelp() {
 }
 
 
-/*
- * Note: This action does not take a callback / update function argument
- */
-export function showPopout(winStore) {
+export function showPopout(winStore,cb) {
   console.log('showPopout: displaying popout....');
 
-  const ptw = winStore.getPopoutTabWindow();
-  if (ptw) {
-    tabliBrowser.setFocusedWindow(ptw.openWindowId);
-  } else {
-    chrome.storage.local.set({'showPopout': true}, () => {
-      chrome.windows.create({ url: "popout.html", 
-        type: "detached_panel",
-        left: 0, top: 0, 
-        width: 350,
-        height: 625 
-      });
-    });    
-  }
-}
-
-/*
- * Note that the only place we call this from restorePopout(), so
- * we don't write to local storage.
- * We do that in response to user close event if we detect they
- * closed the poopout window.
- */
-function closePopout(winStore,cb) {
-  const ptw = winStore.getPopoutTabWindow();
-  if (ptw) {    
-    closeWindow(ptw,cb);
-  } else {
-    cb(state => state);
-  }
-}
-
-export function restorePopout(winStore,storeRefUpdater) { 
-  /*
-   * OK, this really shows limits of our refUpdater strategy, which conflates the
-   * state updater action with the notion of a completion callback.
-   * We really want to use callback chaining to ensure we don't show the popout
-   * until after the popout is closed.
-   */
-  chrome.storage.local.get({'showPopout':false},items => {
-    console.log("restorePopout read: ", items);
-    closePopout(winStore,(uf) => {
-      storeRefUpdater(st0 => {
-        const nextSt = uf(st0);
-        if (items.showPopout) {      
-          showPopout(nextSt,(uf2) => {
-            storeRefUpdater(uf2);
-          });
-        }
-        return nextSt;
-      });
-    });
-  });
+  pact.showPopout(winStore).done(cb);
 }
 
 /*

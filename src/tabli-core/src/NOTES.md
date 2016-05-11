@@ -146,9 +146,37 @@ X Checkbox on closed, saved tabs should be gray
 ======
 TODO before 0.9beta:
 
-- Need to persist whether popout is open or closed and use it on a restart.
+X Need to persist whether popout is open or closed and use it on a restart.
 
 - Add release notes inline
+
+- Add command to manifest to open popout
+
+- Need to avoid race condition and not persist anything for close event during reload.
+What we have is something like:
+   action a = a -> ((St -> St) -> ()) -> ()
+
+What we need is:
+   Promise a
+   ST s a = s -> (s,a)
+   PST s a = Promise (ST s a)
+   APST a = PST AppState a
+In pst:
+   PACT a b = a -> APST b
+   someAction a b :: a -> APST b
+
+We should be able compose these serially / sequentially:
+  ser :: Pact a b -> Pact b c -> Pact a c
+
+Let's not bother with a return type in the state transformer:
+   Promise a
+   ST s = s -> s
+   PST s = Promise (ST s)
+   APST = PST AppState
+In pst:
+   PACT a = a -> APST
+   someAction a b :: a -> APST
+
 
 X Need to deal better with not having a current window (esp. on startup).  Should
  (Seems to be better about using sensible default value for sizes now...)

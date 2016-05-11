@@ -2,11 +2,9 @@ import * as React from 'react';
 
 import FilteredTabWindow from './FilteredTabWindow';
 import WindowListSection from './WindowListSection';
+import MessageCard from './MessageCard';
 
 const TabWindowList = React.createClass({
-
-
-
 
   render() {
     var focusedWindowElem = [];
@@ -19,7 +17,11 @@ const TabWindowList = React.createClass({
       var tabWindow = filteredTabWindow.tabWindow;
       var id = 'tabWindow' + i;
       var isOpen = tabWindow.open;
-      var isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
+      const isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
+
+      // focused property will only be true if isFocused and no message panel to display:
+      const focusedProp = false;
+
       var isSelected = (i === this.props.selectedWindowIndex);
       const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
       var windowElem = (
@@ -30,7 +32,7 @@ const TabWindowList = React.createClass({
           searchStr={this.props.searchStr}
           searchRE={this.props.searchRE}
           isSelected={isSelected}
-          isFocused={isFocused}
+          isFocused={focusedProp}
           selectedTabIndex={selectedTabIndex}
           appComponent={this.props.appComponent}
           onItemSelected={this.props.onItemSelected}
@@ -55,6 +57,9 @@ const TabWindowList = React.createClass({
 
     return (
       <div>
+        <WindowListSection>
+          <MessageCard />
+        </WindowListSection>
         <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
           {focusedWindowElem}
         </WindowListSection>

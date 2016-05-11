@@ -19,6 +19,34 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
   },
+  messagePanel: {
+    padding: 0,
+  },
+  panelHeader: {
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 8
+  },  
+  panelBody: {
+    paddingLeft: 16,
+    paddingRight: 16,
+  },  
+  cardActions: {
+    display: 'inline-flex',
+    flexDirection: 'row-reverse',
+    paddingRight: 16,
+    paddingBottom: 16,
+    position: 'relative',
+  },
+  flatButton: {
+    border: '0px',
+    display: 'inline-block',  
+    backgroundColor: 'rgba(0,0,0,0)',
+    fontFamily: 'Roboto, sans-serif',
+    fontSize: 14,
+    color: '#4285f4',
+    cursor: 'auto'
+  },
   tabWindowTile: {
     width: 270,
     maxWidth: 270,

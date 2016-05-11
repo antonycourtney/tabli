@@ -28,7 +28,7 @@ webpackJsonp([0],{
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _server = __webpack_require__(/*! react-dom/server */ 344);
+	var _server = __webpack_require__(/*! react-dom/server */ 347);
 	
 	var ReactDOMServer = _interopRequireWildcard(_server);
 	
@@ -51,6 +51,7 @@ webpackJsonp([0],{
 	var actions = Tabli.actions;
 	var ViewRef = Tabli.ViewRef;
 	var utils = Tabli.utils;
+	var pact = Tabli.pact;
 	
 	var tabmanFolderTitle = 'Tabli Saved Windows';
 	var archiveFolderTitle = '_Archive';
@@ -219,10 +220,9 @@ webpackJsonp([0],{
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(windowId);
 	      if (tabWindow && tabWindow.windowType === "popup") {
-	        console.log("detected close of popout window...");
-	        chrome.storage.local.set({ 'showPopout': false }, function () {
-	          console.log("persisted: showPopout:false");
-	        });
+	        if (!state.initializing) {
+	          chrome.storage.local.set({ 'showPopout': false }, function () {});
+	        };
 	      }
 	      var st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
 	      chrome.storage.local;
@@ -455,7 +455,9 @@ webpackJsonp([0],{
 	          var storeRefUpdater = (0, _oneref.refUpdater)(window.storeRef);
 	          registerEventHandlers(storeRefUpdater);
 	
-	          actions.restorePopout(window.storeRef.getValue(), storeRefUpdater);
+	          pact.restorePopout(window.storeRef).done(function (st) {
+	            window.storeRef.setValue(st.markInitialized());
+	          });
 	        });
 	      });
 	    });
@@ -497,7 +499,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 344:
+/***/ 347:
 /*!*******************************!*\
   !*** ./~/react-dom/server.js ***!
   \*******************************/
@@ -505,12 +507,12 @@ webpackJsonp([0],{
 
 	'use strict';
 	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 345);
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 348);
 
 
 /***/ },
 
-/***/ 345:
+/***/ 348:
 /*!***************************************!*\
   !*** ./~/react/lib/ReactDOMServer.js ***!
   \***************************************/
@@ -530,7 +532,7 @@ webpackJsonp([0],{
 	'use strict';
 	
 	var ReactDefaultInjection = __webpack_require__(/*! ./ReactDefaultInjection */ 68);
-	var ReactServerRendering = __webpack_require__(/*! ./ReactServerRendering */ 346);
+	var ReactServerRendering = __webpack_require__(/*! ./ReactServerRendering */ 349);
 	var ReactVersion = __webpack_require__(/*! ./ReactVersion */ 38);
 	
 	ReactDefaultInjection.inject();
@@ -545,7 +547,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 346:
+/***/ 349:
 /*!*********************************************!*\
   !*** ./~/react/lib/ReactServerRendering.js ***!
   \*********************************************/
@@ -567,8 +569,8 @@ webpackJsonp([0],{
 	var ReactDefaultBatchingStrategy = __webpack_require__(/*! ./ReactDefaultBatchingStrategy */ 158);
 	var ReactElement = __webpack_require__(/*! ./ReactElement */ 16);
 	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 189);
-	var ReactServerBatchingStrategy = __webpack_require__(/*! ./ReactServerBatchingStrategy */ 347);
-	var ReactServerRenderingTransaction = __webpack_require__(/*! ./ReactServerRenderingTransaction */ 348);
+	var ReactServerBatchingStrategy = __webpack_require__(/*! ./ReactServerBatchingStrategy */ 350);
+	var ReactServerRenderingTransaction = __webpack_require__(/*! ./ReactServerRenderingTransaction */ 351);
 	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 85);
 	
 	var emptyObject = __webpack_require__(/*! fbjs/lib/emptyObject */ 28);
@@ -620,7 +622,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 347:
+/***/ 350:
 /*!****************************************************!*\
   !*** ./~/react/lib/ReactServerBatchingStrategy.js ***!
   \****************************************************/
@@ -651,7 +653,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 348:
+/***/ 351:
 /*!********************************************************!*\
   !*** ./~/react/lib/ReactServerRenderingTransaction.js ***!
   \********************************************************/

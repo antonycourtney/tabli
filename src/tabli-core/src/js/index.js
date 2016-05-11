@@ -11,6 +11,7 @@ import Popup from './components/Popup';
 import Styles from './components/styles';
 import * as utils from './utils';
 import * as actions from './actions';
+import * as pact from './pact';
 import ViewRef from './viewRef';
 
-module.exports = { actions, components: { Popup, Styles }, TabWindow, TabManagerState, ViewRef, utils };
+module.exports = { actions, components: { Popup, Styles }, TabWindow, TabManagerState, ViewRef, utils, pact };

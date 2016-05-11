@@ -26,9 +26,9 @@ var HeaderButton = React.createClass({
     // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
     var buttonStyle = this.props.baseStyle;
     return (
-      <button style={buttonStyle} className={this.props.className} title={this.props.title} onClick={this.handleClick}
-        onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}
-      />);
+      <button style={buttonStyle} className={this.props.className} title={this.props.title}
+          onClick={this.handleClick} />
+      );
   },
 });
 

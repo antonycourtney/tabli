@@ -47,6 +47,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-subtree": "^0.1.0",
     "gulp-util": "^3.0.7",
+    "html-loader": "^0.4.3",
     "jsdom": "^8.4.0",
     "json-loader": "^0.5.4",
     "memwatch-next": "^0.3.0",

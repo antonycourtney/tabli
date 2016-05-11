@@ -26,7 +26,8 @@ module.exports = {
                 presets:['es2015','react']
               }
             },
-            { test: /\.(json)$/, loader: "json-loader" }
+            { test: /\.(json)$/, loader: "json-loader" },
+            { test: /\.html$/, loader: "html-loader" }
         ]
     },
     resolve: {

@@ -22,7 +22,8 @@ export default class TabManagerState extends Immutable.Record({
   bookmarkIdMap: Immutable.Map(),   // maps from bookmark id for saved windows
   folderId: -1,
   archiveFolderId: -1,
-  currentWindowId: -1               // chrome window id of window with focus
+  currentWindowId: -1,               // chrome window id of window with focus
+  initializing: true,                // true until bgHelper initialization completes.
 }) {
   /**
    * Update store to include the specified window, indexed by
@@ -274,5 +275,9 @@ export default class TabManagerState extends Immutable.Record({
       return popupTabWindows[0];
     }
     return null;
+  }
+
+  markInitialized() {
+    return this.set('initializing', false);
   }   
 }

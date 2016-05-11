@@ -14,6 +14,7 @@ const Popup = Tabli.components.Popup;
 const actions = Tabli.actions;
 const ViewRef = Tabli.ViewRef;
 const utils = Tabli.utils;
+const pact = Tabli.pact;
 
 import * as React from 'react';
 
@@ -183,10 +184,10 @@ function registerEventHandlers(uf) {
       uf((state) => {
         const tabWindow = state.getTabWindowByChromeId(windowId);
         if (tabWindow && tabWindow.windowType==="popup") {
-          console.log("detected close of popout window...");
-          chrome.storage.local.set({'showPopout': false}, () => {
-            console.log("persisted: showPopout:false");
-          });
+          if (!state.initializing) {
+            chrome.storage.local.set({'showPopout': false}, () => {
+            });
+          };
         }
         const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
         chrome.storage.local
@@ -395,7 +396,9 @@ function main() {
           const storeRefUpdater = refUpdater(window.storeRef);
           registerEventHandlers(storeRefUpdater);
 
-          actions.restorePopout(window.storeRef.getValue(),storeRefUpdater);
+          pact.restorePopout(window.storeRef).done(st => {
+            window.storeRef.setValue(st.markInitialized());
+          });
         });
       });    
     });
