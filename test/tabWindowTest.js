@@ -28,13 +28,10 @@ test('makeFolderTabWindow', (t) => {
   console.log(">>>>>>>");
   console.log(JSON.stringify(tabWindowJS,null,2));
   console.log(">>>>>>>");
-*/
 
-
-  /*
   console.log('diffs between tabWindowJS and expected:');
   dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow);
-  */
+*/
 
   t.deepEqual(tabWindowJS, testData.d3InitialExpectedTabWindow, 'makeFolderTabWindow basic functionality');
 
@@ -47,6 +44,7 @@ test('chromeTabWindow', (t) => {
   const baseTabWindow = TabWindow.makeChromeTabWindow(testData.chromeWindowSnap);
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
+
 
 /*
   console.log("makeChromeTabWindow returned: ");
@@ -77,7 +75,8 @@ test('chromeTabWindow', (t) => {
             "openTabIndex": 0,
             "favIconUrl": "http://facebook.github.io/react/favicon.ico",
             "title": "Component API | React",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         },
         {
@@ -91,7 +90,8 @@ test('chromeTabWindow', (t) => {
             "openTabIndex": 1,
             "favIconUrl": "http://facebook.github.io/react/favicon.ico",
             "title": "Tutorial | React",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         },
         {
@@ -105,7 +105,8 @@ test('chromeTabWindow', (t) => {
             "openTabIndex": 2,
             "favIconUrl": "http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d",
             "title": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         },
         {
@@ -118,7 +119,8 @@ test('chromeTabWindow', (t) => {
             "active": false,
             "openTabIndex": 3,
             "title": "Flux | Application Architecture for Building User Interfaces",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         },
         {
@@ -132,7 +134,8 @@ test('chromeTabWindow', (t) => {
             "openTabIndex": 4,
             "favIconUrl": "http://fluxxor.com/favicon.ico",
             "title": "Fluxxor - Home",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         },
         {
@@ -146,7 +149,8 @@ test('chromeTabWindow', (t) => {
             "openTabIndex": 5,
             "favIconUrl": "http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png",
             "title": "FixedDataTable",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         },
         {
@@ -160,7 +164,8 @@ test('chromeTabWindow', (t) => {
             "openTabIndex": 6,
             "favIconUrl": "https://www.google.com/images/icons/product/chrome-32.png",
             "title": "Declare Permissions - Google Chrome",
-            "audible": false
+            "audible": false,
+            "pinned": false
           }
         }
       ]
@@ -190,7 +195,7 @@ test('chromeTabWindow', (t) => {
 
 
 /*
- * make sure we still get a deterministic title even when no tab active 
+ * make sure we still get a deterministic title even when no tab active
  */
 test('noActiveTabTitle', (t) => {
   const baseTabWindow = TabWindow.makeChromeTabWindow(testData.chromeWindowSnap3);
@@ -341,13 +346,13 @@ test('attachChromeWindow', (t) => {
   // Now let's do the attach:
   const updTabWindow = TabWindow.updateWindow(tabWindow, testData.d3OpenedChromeWindow);
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()));
-
 /*
   console.log("updateTabWindow returned:");
   console.log(">>>>>>>");
   console.log(JSON.stringify(updTabWindowJS,null,2));
   console.log(">>>>>>>");
 */
+
 /*
   console.log("diffs between updTabWindow (actual) and expected:");
   dumpDiffs(updTabWindowJS, testData.d3AttachedExpectedTabWindow);

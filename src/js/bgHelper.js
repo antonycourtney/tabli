@@ -73,7 +73,7 @@ function ensureChildFolder(parentNode, childFolderName, callback) {
 
 /**
  *
- * initialize showRelNotes field of TabManagerState based on comparing 
+ * initialize showRelNotes field of TabManagerState based on comparing
  * relNotes version from localStorage with this extension manifest
  *
  * @return {TabManagerState} possibly updated TabManagerState
@@ -319,7 +319,7 @@ function reattachWindows(bmStore,cb) {
 
       // Now let's reduce array, merging all maps into a single map, aggregating counts:
       const aggMerge = (mA,mB) => mA.mergeWith((prev,next) => prev + next, mB);
-      
+
       // matchMap :: Map<BookmarkId,Num>
       const matchMap = countMaps.reduce(aggMerge,Immutable.Map());
 
@@ -338,7 +338,7 @@ function reattachWindows(bmStore,cb) {
 
       return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length });
     }
-    
+
     /**
      * We could come up with better heuristics here, but for now we'll be conservative
      * and only re-attach when there is an unambiguous best match
@@ -389,7 +389,7 @@ function reattachWindows(bmStore,cb) {
     const attachedStore = bestBMMatches.reduce(attacher, bmStore);
 
     cb(attachedStore);
-  });  
+  });
 }
 
 
@@ -419,7 +419,7 @@ function main() {
             window.storeRef.setValue(st.markInitialized());
           });
         });
-      });    
+      });
     });
   });
 }

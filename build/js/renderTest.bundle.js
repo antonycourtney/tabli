@@ -1,1 +1,422 @@
-webpackJsonp([1],{0:function(e,t,n){"use strict";function r(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t["default"]=e,t}function o(e){var t=e.tabItems.map(function(e){return new w.TabItem(e)}),n=Object.assign({},e,{tabItems:p.Seq(t)}),r=new w.TabWindow(n);return r}function i(e){var t=e.allWindows,n=t.map(o),r=new M,i=chrome.extension.getBackgroundPage(),a=i.renderTestSavedHTML,s=r.registerTabWindows(n);console.log("Created mockWinStore and registered test windows"),console.log("mock winStore: ",s.toJS());var u=performance.now(),c=document.getElementById("windowList-region");if(f&&f.start(),a){console.log("Got saved HTML, setting..."),c.innerHTML=a;var m=performance.now();console.log("time to set initial HTML: ",m-u)}var p=l.createElement("div",{style:S.renderTestContainer},l.createElement(x,{storeRef:null,initialWinStore:s,noListener:!0}));g.render(p,c);var d=performance.now();f&&f.stop(),console.log("initial render complete. render time: (",d-u," ms)"),f&&(console.log("inclusive:"),f.printInclusive(),console.log("exclusive:"),f.printExclusive(),console.log("wasted:"),f.printWasted()),console.log("After rendering, parentNode: ",c);var v=y.renderToString(p);i.renderTestSavedHTML=v}function a(e){var t=new XMLHttpRequest;t.open("GET",I,!0),t.onload=function(){if(t.status>=200&&t.status<400){var n=JSON.parse(t.responseText);e(n)}else console.error("request failed, error: ",t.status,t)},t.send()}function s(){a(i)}function u(){window.onload=s}var c=n(9),l=r(c),m=n(6),p=r(m),d=n(360),f=r(d),v=n(67),g=r(v),h=n(355),y=r(h),_=n(2),T=r(_),M=T.TabManagerState,w=T.TabWindow,x=T.components.Popup,S=T.components.Styles,I="testData/winSnap.json";u()},355:function(e,t,n){"use strict";e.exports=n(356)},356:function(e,t,n){"use strict";var r=n(72),o=n(357),i=n(38);r.inject();var a={renderToString:o.renderToString,renderToStaticMarkup:o.renderToStaticMarkup,version:i};e.exports=a},357:function(e,t,n){"use strict";function r(e,t){var n;try{return p.injection.injectBatchingStrategy(l),n=m.getPooled(t),n.perform(function(){var r=f(e),o=r.mountComponent(n,null,a(),d);return t||(o=c.addChecksumToMarkup(o)),o},null)}finally{m.release(n),p.injection.injectBatchingStrategy(s)}}function o(e){return u.isValidElement(e)?void 0:v(!1),r(e,!1)}function i(e){return u.isValidElement(e)?void 0:v(!1),r(e,!0)}var a=n(190),s=n(163),u=n(15),c=n(192),l=n(358),m=n(359),p=n(89),d=n(28),f=n(150),v=n(14);e.exports={renderToString:o,renderToStaticMarkup:i}},358:function(e,t){"use strict";var n={isBatchingUpdates:!1,batchedUpdates:function(e){}};e.exports=n},359:function(e,t,n){"use strict";function r(e){this.reinitializeTransaction(),this.renderToStaticMarkup=e,this.useCreateElement=!1}var o=n(11),i=n(13),a=n(96),s=[],u={enqueue:function(){}},c={getTransactionWrappers:function(){return s},getReactMountReady:function(){return u},destructor:function(){}};o(r.prototype,a.Mixin,c),i.addPoolingTo(r),e.exports=r},360:function(e,t,n){e.exports=n(361)},361:function(e,t,n){"use strict";function r(e){return Math.floor(100*e)/100}function o(e,t,n){e[t]=(e[t]||0)+n}function i(e){if(l||(l=new WeakMap),l.has(e))return l.get(e);var t=h++;return l.set(e,t),t}function a(e){return e.hasOwnProperty("_rootNodeID")?e._rootNodeID:i(e)}function s(e,t){if("object"!=typeof t||Array.isArray(t)||null==t)return t;var n=Object.getPrototypeOf(t);return n&&n!==Object.prototype?"<not serializable>":t}function u(e){return{__unstable_this_format_will_change:e}}function c(e){return e&&e.__unstable_this_format_will_change||e}var l,m=n(70),p=n(69),d=n(362),f=n(189),v=n(92),g=n(363),h=(n(17),17e3),y=!1,_=!1,T={_allMeasurements:[],_mountStack:[0],_compositeStack:[],_injected:!1,start:function(){T._injected||v.injection.injectMeasure(T.measure),T._allMeasurements.length=0,v.enableMeasure=!0},stop:function(){v.enableMeasure=!1},getLastMeasurements:function(){return u(T._allMeasurements)},printExclusive:function(e){e=c(e||T._allMeasurements);var t=d.getExclusiveSummary(e);console.table(t.map(function(e){return{"Component class name":e.componentName,"Total inclusive time (ms)":r(e.inclusive),"Exclusive mount time (ms)":r(e.exclusive),"Exclusive render time (ms)":r(e.render),"Mount time per instance (ms)":r(e.exclusive/e.count),"Render time per instance (ms)":r(e.render/e.count),Instances:e.count}}))},printInclusive:function(e){e=c(e||T._allMeasurements);var t=d.getInclusiveSummary(e);console.table(t.map(function(e){return{"Owner > component":e.componentName,"Inclusive time (ms)":r(e.time),Instances:e.count}})),console.log("Total time:",d.getTotalTime(e).toFixed(2)+" ms")},getMeasurementsSummaryMap:function(e){return _=!0,T.getWasted(e)},getWasted:function(e){e=c(e);var t=d.getInclusiveSummary(e,!0);return t.map(function(e){return{"Owner > component":e.componentName,"Wasted time (ms)":e.time,Instances:e.count}})},printWasted:function(e){e=c(e||T._allMeasurements),console.table(T.getWasted(e)),console.log("Total time:",d.getTotalTime(e).toFixed(2)+" ms")},printDOM:function(e){return y=!0,T.printOperations(e)},printOperations:function(e){e=c(e||T._allMeasurements);var t=d.getDOMSummary(e);console.table(t.map(function(e){var t={};return t[m.ID_ATTRIBUTE_NAME]=e.id,t.type=e.type,t.args=JSON.stringify(e.args,s),t})),console.log("Total time:",d.getTotalTime(e).toFixed(2)+" ms")},_recordWrite:function(e,t,n,r){var o=T._allMeasurements[T._allMeasurements.length-1],i=o.writes;i[e]=i[e]||[],i[e].push({type:t,time:n,args:r})},measure:function(e,t,n){return function(){for(var r=arguments.length,s=Array(r),u=0;r>u;u++)s[u]=arguments[u];var c,l,m,d=T._allMeasurements[T._allMeasurements.length-1];if("_renderNewRootComponent"===t||"flushBatchedUpdates"===t)return T._allMeasurements.push(d={exclusive:{},inclusive:{},render:{},counts:{},writes:{},displayNames:{},hierarchy:{},totalTime:0,created:{}}),m=g(),l=n.apply(this,s),d.totalTime=g()-m,l;if("_mountImageIntoNode"===t||"ReactDOMIDOperations"===e||"CSSPropertyOperations"===e||"DOMChildrenOperations"===e||"DOMPropertyOperations"===e||"ReactComponentBrowserEnvironment"===e){if(m=g(),l=n.apply(this,s),c=g()-m,"_mountImageIntoNode"===t)T._recordWrite("",t,c,s[0]);else if("dangerouslyProcessChildrenUpdates"===t)s[1].forEach(function(e){var t={};null!==e.fromIndex&&(t.fromIndex=e.fromIndex),null!==e.toIndex&&(t.toIndex=e.toIndex),null!==e.content&&(t.content=e.content),T._recordWrite(s[0]._rootNodeID,e.type,c,t)});else{var v=s[0];"EventPluginHub"===e?v=v._rootNodeID:"replaceNodeWithMarkup"===t?v=p.getInstanceFromNode(s[1].node)._rootNodeID:"replaceDelimitedText"===t?v=a(p.getInstanceFromNode(s[0])):"object"==typeof v&&(v=a(p.getInstanceFromNode(s[0]))),T._recordWrite(v,t,c,Array.prototype.slice.call(s,1))}return l}if("ReactCompositeComponent"!==e||"mountComponent"!==t&&"updateComponent"!==t&&"_renderValidatedComponent"!==t)return"ReactDOMComponent"!==e&&"ReactDOMTextComponent"!==e||"mountComponent"!==t&&"receiveComponent"!==t?n.apply(this,s):(l=n.apply(this,s),d.hierarchy[a(this)]=T._compositeStack.slice(),l);if(this._currentElement.type===f.TopLevelWrapper)return n.apply(this,s);var h=i(this),y="_renderValidatedComponent"===t,_="mountComponent"===t,M=T._mountStack;if(y?o(d.counts,h,1):_&&(d.created[h]=!0,M.push(0)),T._compositeStack.push(h),m=g(),l=n.apply(this,s),c=g()-m,T._compositeStack.pop(),y)o(d.render,h,c);else if(_){var w=M.pop();M[M.length-1]+=c,o(d.exclusive,h,c-w),o(d.inclusive,h,c)}else o(d.inclusive,h,c);return d.displayNames[h]={current:this.getName(),owner:this._currentElement._owner?this._currentElement._owner.getName():"<root>"},l}}};e.exports=T},362:function(e,t,n){"use strict";function r(e){for(var t=0,n=0;n<e.length;n++){var r=e[n];t+=r.totalTime}return t}function o(e){var t=[];return e.forEach(function(e){Object.keys(e.writes).forEach(function(n){e.writes[n].forEach(function(e){t.push({id:n,type:l[e.type]||e.type,args:e.args})})})}),t}function i(e){for(var t,n={},r=0;r<e.length;r++){var o=e[r],i=u({},o.exclusive,o.inclusive);for(var a in i)t=o.displayNames[a].current,n[t]=n[t]||{componentName:t,inclusive:0,exclusive:0,render:0,count:0},o.render[a]&&(n[t].render+=o.render[a]),o.exclusive[a]&&(n[t].exclusive+=o.exclusive[a]),o.inclusive[a]&&(n[t].inclusive+=o.inclusive[a]),o.counts[a]&&(n[t].count+=o.counts[a])}var s=[];for(t in n)n[t].exclusive>=c&&s.push(n[t]);return s.sort(function(e,t){return t.exclusive-e.exclusive}),s}function a(e,t){for(var n,r={},o=0;o<e.length;o++){var i,a=e[o],l=u({},a.exclusive,a.inclusive);t&&(i=s(a));for(var m in l)if(!t||i[m]){var p=a.displayNames[m];n=p.owner+" > "+p.current,r[n]=r[n]||{componentName:n,time:0,count:0},a.inclusive[m]&&(r[n].time+=a.inclusive[m]),a.counts[m]&&(r[n].count+=a.counts[m])}}var d=[];for(n in r)r[n].time>=c&&d.push(r[n]);return d.sort(function(e,t){return t.time-e.time}),d}function s(e){var t={},n=e.writes,r=e.hierarchy,o={};Object.keys(n).forEach(function(e){n[e].forEach(function(t){""!==e&&r.hasOwnProperty(e)&&r[e].forEach(function(e){return o[e]=!0})})});var i=u({},e.exclusive,e.inclusive);for(var a in i){var s=!1;o[a]&&(s=!0),e.created[a]&&(s=!0),!s&&e.counts[a]>0&&(t[a]=!0)}return t}var u=n(11),c=1.2,l={_mountImageIntoNode:"set innerHTML",INSERT_MARKUP:"set innerHTML",MOVE_EXISTING:"move",REMOVE_NODE:"remove",SET_MARKUP:"set innerHTML",TEXT_CONTENT:"set textContent",setValueForProperty:"update attribute",setValueForAttribute:"update attribute",deleteValueForProperty:"remove attribute",setValueForStyles:"update styles",replaceNodeWithMarkup:"replace",replaceDelimitedText:"replace"},m={getExclusiveSummary:i,getInclusiveSummary:a,getDOMSummary:o,getTotalTime:r};e.exports=m},363:function(e,t,n){"use strict";var r,o=n(364);r=o.now?function(){return o.now()}:function(){return Date.now()},e.exports=r},364:function(e,t,n){"use strict";var r,o=n(82);o.canUseDOM&&(r=window.performance||window.msPerformance||window.webkitPerformance),e.exports=r||{}}});
+webpackJsonp([1],{
+
+/***/ 0:
+/*!******************************!*\
+  !*** ./src/js/renderTest.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _react = __webpack_require__(/*! react */ 9);
+	
+	var React = _interopRequireWildcard(_react);
+	
+	var _immutable = __webpack_require__(/*! immutable */ 6);
+	
+	var Immutable = _interopRequireWildcard(_immutable);
+	
+	var _reactAddonsPerf = __webpack_require__(/*! react-addons-perf */ 364);
+	
+	var Perf = _interopRequireWildcard(_reactAddonsPerf);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 67);
+	
+	var ReactDOM = _interopRequireWildcard(_reactDom);
+	
+	var _server = __webpack_require__(/*! react-dom/server */ 359);
+	
+	var ReactDOMServer = _interopRequireWildcard(_server);
+	
+	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
+	
+	var Tabli = _interopRequireWildcard(_index);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var TabManagerState = Tabli.TabManagerState;
+	var TabWindow = Tabli.TabWindow;
+	var Popup = Tabli.components.Popup;
+	var Styles = Tabli.components.Styles;
+	
+	// make a TabWindow from its JSON
+	function makeTabWindow(jsWin) {
+	  var decItems = jsWin.tabItems.map(function (tiFields) {
+	    return new TabWindow.TabItem(tiFields);
+	  });
+	
+	  var itemWin = Object.assign({}, jsWin, { tabItems: Immutable.Seq(decItems) });
+	
+	  var decWin = new TabWindow.TabWindow(itemWin);
+	  return decWin;
+	}
+	
+	function renderPage(testData) {
+	  var allWindows = testData.allWindows;
+	
+	  var tabWindows = allWindows.map(makeTabWindow);
+	
+	  var emptyWinStore = new TabManagerState();
+	
+	  var bgPage = chrome.extension.getBackgroundPage();
+	
+	  var renderTestSavedHTML = bgPage.renderTestSavedHTML;
+	
+	  /*
+	    const savedNode = bgPage.savedNode;
+	    console.log("Saved node from bg page: ", savedNode);
+	  */
+	
+	  var mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
+	  console.log('Created mockWinStore and registered test windows');
+	  console.log('mock winStore: ', mockWinStore.toJS());
+	
+	  var t_preRender = performance.now();
+	  var parentNode = document.getElementById('windowList-region');
+	
+	  if (Perf) {
+	    Perf.start();
+	  }
+	
+	  /*
+	  if (savedNode) {
+	    var newNode = document.importNode(savedNode, true);
+	    if (parentNode.firstChild===null) {
+	      parentNode.appendChild(newNode);
+	    } else {
+	      parentNode.replaceChild(newNode,parentNode.firstChild);
+	    }
+	  }
+	  */
+	  if (renderTestSavedHTML) {
+	    console.log('Got saved HTML, setting...');
+	    parentNode.innerHTML = renderTestSavedHTML;
+	    var t_postSet = performance.now();
+	    console.log('time to set initial HTML: ', t_postSet - t_preRender);
+	  }
+	  /*
+	   * Use setTimeout so we have a chance to finish the initial render
+	   */
+	
+	  // pass noListener since we don't want to receive updates from the store.
+	  // There won't be any such updates (since we created the store) but the listener mechanism
+	  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
+	  // that connection.
+	
+	  var appElement = React.createElement(
+	    'div',
+	    { style: Styles.renderTestContainer },
+	    React.createElement(Popup, { storeRef: null, initialWinStore: mockWinStore, noListener: true })
+	  );
+	  ReactDOM.render(appElement, parentNode);
+	
+	  var t_postRender = performance.now();
+	  if (Perf) {
+	    Perf.stop();
+	  }
+	  console.log('initial render complete. render time: (', t_postRender - t_preRender, ' ms)');
+	  if (Perf) {
+	    console.log('inclusive:');
+	    Perf.printInclusive();
+	    console.log('exclusive:');
+	    Perf.printExclusive();
+	    console.log('wasted:');
+	    Perf.printWasted();
+	  }
+	
+	  console.log('After rendering, parentNode: ', parentNode);
+	
+	  var renderedString = ReactDOMServer.renderToString(appElement);
+	
+	  // console.log("rendered string: ", renderedString);
+	  // bgPage.savedNode = parentNode.firstChild;
+	  bgPage.renderTestSavedHTML = renderedString;
+	}
+	
+	var testStateUrl = 'testData/winSnap.json';
+	
+	function loadTestData(callback) {
+	  var request = new XMLHttpRequest();
+	  request.open('GET', testStateUrl, true);
+	  request.onload = function () {
+	    if (request.status >= 200 && request.status < 400) {
+	      var data = JSON.parse(request.responseText);
+	      callback(data);
+	    } else {
+	      // We reached our target server, but it returned an error
+	      console.error('request failed, error: ', request.status, request);
+	    }
+	  };
+	
+	  request.send();
+	}
+	
+	/**
+	 * Main entry point to rendering the popup window
+	 */
+	function renderTest() {
+	  loadTestData(renderPage);
+	}
+	
+	/*
+	 * Perform our React rendering *after* the load event for the popup
+	 * (rather than the more traditional ondocumentready event)
+	 * because we observe that Chrome's http cache will not attempt to
+	 * re-validate cached resources accessed after the load event, and this
+	 * is essential for reasonable performance when loading favicons.
+	 *
+	 * See https://code.google.com/p/chromium/issues/detail?id=511699
+	 *
+	 */
+	function main() {
+	  window.onload = renderTest;
+	}
+	
+	main();
+
+/***/ },
+
+/***/ 359:
+/*!*******************************!*\
+  !*** ./~/react-dom/server.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 360);
+
+
+/***/ },
+
+/***/ 360:
+/*!***************************************!*\
+  !*** ./~/react/lib/ReactDOMServer.js ***!
+  \***************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactDOMServer
+	 */
+	
+	'use strict';
+	
+	var ReactDefaultInjection = __webpack_require__(/*! ./ReactDefaultInjection */ 72);
+	var ReactServerRendering = __webpack_require__(/*! ./ReactServerRendering */ 361);
+	var ReactVersion = __webpack_require__(/*! ./ReactVersion */ 39);
+	
+	ReactDefaultInjection.inject();
+	
+	var ReactDOMServer = {
+	  renderToString: ReactServerRendering.renderToString,
+	  renderToStaticMarkup: ReactServerRendering.renderToStaticMarkup,
+	  version: ReactVersion
+	};
+	
+	module.exports = ReactDOMServer;
+
+/***/ },
+
+/***/ 361:
+/*!*********************************************!*\
+  !*** ./~/react/lib/ReactServerRendering.js ***!
+  \*********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactServerRendering
+	 */
+	'use strict';
+	
+	var ReactDOMContainerInfo = __webpack_require__(/*! ./ReactDOMContainerInfo */ 192);
+	var ReactDefaultBatchingStrategy = __webpack_require__(/*! ./ReactDefaultBatchingStrategy */ 163);
+	var ReactElement = __webpack_require__(/*! ./ReactElement */ 16);
+	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 194);
+	var ReactServerBatchingStrategy = __webpack_require__(/*! ./ReactServerBatchingStrategy */ 362);
+	var ReactServerRenderingTransaction = __webpack_require__(/*! ./ReactServerRenderingTransaction */ 363);
+	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 89);
+	
+	var emptyObject = __webpack_require__(/*! fbjs/lib/emptyObject */ 29);
+	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 150);
+	var invariant = __webpack_require__(/*! fbjs/lib/invariant */ 15);
+	
+	/**
+	 * @param {ReactElement} element
+	 * @return {string} the HTML markup
+	 */
+	function renderToStringImpl(element, makeStaticMarkup) {
+	  var transaction;
+	  try {
+	    ReactUpdates.injection.injectBatchingStrategy(ReactServerBatchingStrategy);
+	
+	    transaction = ReactServerRenderingTransaction.getPooled(makeStaticMarkup);
+	
+	    return transaction.perform(function () {
+	      var componentInstance = instantiateReactComponent(element);
+	      var markup = componentInstance.mountComponent(transaction, null, ReactDOMContainerInfo(), emptyObject);
+	      if (!makeStaticMarkup) {
+	        markup = ReactMarkupChecksum.addChecksumToMarkup(markup);
+	      }
+	      return markup;
+	    }, null);
+	  } finally {
+	    ReactServerRenderingTransaction.release(transaction);
+	    // Revert to the DOM batching strategy since these two renderers
+	    // currently share these stateful modules.
+	    ReactUpdates.injection.injectBatchingStrategy(ReactDefaultBatchingStrategy);
+	  }
+	}
+	
+	function renderToString(element) {
+	  !ReactElement.isValidElement(element) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'renderToString(): You must pass a valid ReactElement.') : invariant(false) : void 0;
+	  return renderToStringImpl(element, false);
+	}
+	
+	function renderToStaticMarkup(element) {
+	  !ReactElement.isValidElement(element) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'renderToStaticMarkup(): You must pass a valid ReactElement.') : invariant(false) : void 0;
+	  return renderToStringImpl(element, true);
+	}
+	
+	module.exports = {
+	  renderToString: renderToString,
+	  renderToStaticMarkup: renderToStaticMarkup
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 11)))
+
+/***/ },
+
+/***/ 362:
+/*!****************************************************!*\
+  !*** ./~/react/lib/ReactServerBatchingStrategy.js ***!
+  \****************************************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2014-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactServerBatchingStrategy
+	 */
+	
+	'use strict';
+	
+	var ReactServerBatchingStrategy = {
+	  isBatchingUpdates: false,
+	  batchedUpdates: function (callback) {
+	    // Don't do anything here. During the server rendering we don't want to
+	    // schedule any updates. We will simply ignore them.
+	  }
+	};
+	
+	module.exports = ReactServerBatchingStrategy;
+
+/***/ },
+
+/***/ 363:
+/*!********************************************************!*\
+  !*** ./~/react/lib/ReactServerRenderingTransaction.js ***!
+  \********************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2014-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactServerRenderingTransaction
+	 */
+	
+	'use strict';
+	
+	var _assign = __webpack_require__(/*! object-assign */ 12);
+	
+	var PooledClass = __webpack_require__(/*! ./PooledClass */ 14);
+	var Transaction = __webpack_require__(/*! ./Transaction */ 96);
+	
+	/**
+	 * Executed within the scope of the `Transaction` instance. Consider these as
+	 * being member methods, but with an implied ordering while being isolated from
+	 * each other.
+	 */
+	var TRANSACTION_WRAPPERS = [];
+	
+	var noopCallbackQueue = {
+	  enqueue: function () {}
+	};
+	
+	/**
+	 * @class ReactServerRenderingTransaction
+	 * @param {boolean} renderToStaticMarkup
+	 */
+	function ReactServerRenderingTransaction(renderToStaticMarkup) {
+	  this.reinitializeTransaction();
+	  this.renderToStaticMarkup = renderToStaticMarkup;
+	  this.useCreateElement = false;
+	}
+	
+	var Mixin = {
+	  /**
+	   * @see Transaction
+	   * @abstract
+	   * @final
+	   * @return {array} Empty list of operation wrap procedures.
+	   */
+	  getTransactionWrappers: function () {
+	    return TRANSACTION_WRAPPERS;
+	  },
+	
+	  /**
+	   * @return {object} The queue to collect `onDOMReady` callbacks with.
+	   */
+	  getReactMountReady: function () {
+	    return noopCallbackQueue;
+	  },
+	
+	  /**
+	   * `PooledClass` looks for this, and will invoke this before allowing this
+	   * instance to be reused.
+	   */
+	  destructor: function () {}
+	};
+	
+	_assign(ReactServerRenderingTransaction.prototype, Transaction.Mixin, Mixin);
+	
+	PooledClass.addPoolingTo(ReactServerRenderingTransaction);
+	
+	module.exports = ReactServerRenderingTransaction;
+
+/***/ },
+
+/***/ 364:
+/*!**************************************!*\
+  !*** ./~/react-addons-perf/index.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(/*! react/lib/ReactDefaultPerf */ 189);
+
+/***/ }
+
+});
+//# sourceMappingURL=renderTest.bundle.js.map
