@@ -11,7 +11,7 @@
   "background": {
     "scripts": ["js/common.js","js/bgHelper.bundle.js"],
     "persistent": true
-  },  
+  },
   "permissions": [
     "downloads", "storage", "tabs", "bookmarks", "chrome://favicon/*"
   ],
@@ -25,6 +25,14 @@
       "suggested_key": {
         "default": "Ctrl+Period",
         "mac": "MacCtrl+Period"
+      }
+    },
+    "show_popout": {
+      "description": "Show the Tabli popout window",
+      "global": true,
+      "suggested_key": {
+        "default": "Ctrl+Comma",
+        "mac": "MacCtrl+Comma"
       }
     }
   }

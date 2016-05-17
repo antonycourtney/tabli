@@ -418,6 +418,12 @@ function main() {
           pact.restorePopout(window.storeRef).done(st => {
             window.storeRef.setValue(st.markInitialized());
           });
+
+          chrome.commands.onCommand.addListener(command => {
+            if (command === "show_popout") {
+              actions.showPopout(window.storeRef.getValue(),storeRefUpdater);
+            }
+          });
         });
       });
     });

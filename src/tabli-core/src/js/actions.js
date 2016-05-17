@@ -262,8 +262,6 @@ export function showHelp() {
 
 
 export function showPopout(winStore,cb) {
-  console.log('showPopout: displaying popout....');
-
   pact.showPopout(winStore).done(cb);
 }
 

@@ -22500,8 +22500,8 @@
 	    key: 'getPopoutTabWindow',
 	    value: function getPopoutTabWindow() {
 	      var popupTabWindows = this.getTabWindowsByType("popup");
-	      if (popupTabWindows.length > 0) {
-	        return popupTabWindows[0];
+	      if (popupTabWindows.count() > 0) {
+	        return popupTabWindows.get(0);
 	      }
 	      return null;
 	    }
@@ -26813,8 +26813,6 @@
 	}
 	
 	function showPopout(winStore, cb) {
-	  console.log('showPopout: displaying popout....');
-	
 	  pact.showPopout(winStore).done(cb);
 	}
 	

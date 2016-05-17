@@ -275,8 +275,8 @@ export default class TabManagerState extends Immutable.Record({
 
   getPopoutTabWindow() {
     const popupTabWindows = this.getTabWindowsByType("popup");
-    if (popupTabWindows.length > 0) {
-      return popupTabWindows[0];
+    if (popupTabWindows.count() > 0) {
+      return popupTabWindows.get(0);
     }
     return null;
   }

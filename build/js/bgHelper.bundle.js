@@ -478,6 +478,12 @@ webpackJsonp([0],{
 	          pact.restorePopout(window.storeRef).done(function (st) {
 	            window.storeRef.setValue(st.markInitialized());
 	          });
+	
+	          chrome.commands.onCommand.addListener(function (command) {
+	            if (command === "show_popout") {
+	              actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
+	            }
+	          });
 	        });
 	      });
 	    });
