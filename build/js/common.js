@@ -26706,32 +26706,56 @@
 	}
 	
 	function revertWindow(tabWindow, cb) {
-	  var currentTabIds = tabWindow.tabItems.filter(function (ti) {
-	    return ti.open;
+	  /*
+	   * We used to reload saved tabs, but this is slow, could lose tab state, and doesn't deal gracefully with
+	   * pinned tabs.
+	   * Instead we'll try just removing the unsaved tabs and re-opening any saved, closed tabs.
+	   * This has the downside of not removing duplicates of any saved tabs.
+	   */
+	  var unsavedOpenTabIds = tabWindow.tabItems.filter(function (ti) {
+	    return ti.open && !ti.saved;
 	  }).map(function (ti) {
 	    return ti.openState.openTabId;
 	  }).toArray();
-	
-	  var revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
-	
-	  // re-open saved URLs:
-	  // We need to do this before removing current tab ids or window will close
-	  var savedUrls = revertedTabWindow.tabItems.filter(function (ti) {
-	    return ti.saved;
+	  var savedClosedUrls = tabWindow.tabItems.filter(function (ti) {
+	    return !ti.open && ti.saved;
 	  }).map(function (ti) {
 	    return ti.savedState.url;
 	  }).toArray();
 	
-	  for (var i = 0; i < savedUrls.length; i++) {
+	  // re-open saved URLs:
+	  // We need to do this before removing tab ids or window could close if all unsaved
+	  for (var i = 0; i < savedClosedUrls.length; i++) {
 	    // need to open it:
-	    var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
+	    var tabInfo = { windowId: tabWindow.openWindowId, url: savedClosedUrls[i] };
 	    chrome.tabs.create(tabInfo);
 	  }
 	
-	  // blow away all the existing tabs:
-	  chrome.tabs.remove(currentTabIds, function () {
+	  // blow away all the unsaved open tabs:
+	  chrome.tabs.remove(unsavedOpenTabIds, function () {
 	    syncChromeWindowById(tabWindow.openWindowId, cb);
 	  });
+	
+	  /*
+	    const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openState.openTabId).toArray();
+	  
+	    const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
+	  
+	    // re-open saved URLs:
+	    // We need to do this before removing current tab ids or window will close
+	    var savedUrls = revertedTabWindow.tabItems.filter((ti) => ti.saved).map((ti) => ti.savedState.url).toArray();
+	  
+	    for (var i = 0; i < savedClosedUrls.length; i++) {
+	      // need to open it:
+	      var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
+	      chrome.tabs.create(tabInfo);
+	    }
+	  
+	    // blow away all the existing tabs:
+	    chrome.tabs.remove(currentTabIds, () => {
+	      syncChromeWindowById(tabWindow.openWindowId, cb);
+	    });
+	  */
 	}
 	
 	/*

@@ -74,7 +74,7 @@ function restoreBookmarkWindow(lastFocusedTabWindow, tabWindow, cb) {
       } else {
         // HACK. Would be better to use dimensions of some arbitrary open window
         createData.width = 1024;
-        createData.height = 768;    
+        createData.height = 768;
       }
       chrome.windows.create(createData, cf);
     }
@@ -175,6 +175,29 @@ export function activateTab(lastFocusedTabWindow,targetTabWindow, tab, tabIndex,
 }
 
 export function revertWindow(tabWindow, cb) {
+  /*
+   * We used to reload saved tabs, but this is slow, could lose tab state, and doesn't deal gracefully with
+   * pinned tabs.
+   * Instead we'll try just removing the unsaved tabs and re-opening any saved, closed tabs.
+   * This has the downside of not removing duplicates of any saved tabs.
+   */
+  const unsavedOpenTabIds = tabWindow.tabItems.filter((ti) => ti.open && !ti.saved).map((ti) => ti.openState.openTabId).toArray();
+  const savedClosedUrls = tabWindow.tabItems.filter((ti) => !ti.open && ti.saved).map((ti) => ti.savedState.url).toArray();
+
+  // re-open saved URLs:
+  // We need to do this before removing tab ids or window could close if all unsaved
+  for (var i = 0; i < savedClosedUrls.length; i++) {
+    // need to open it:
+    var tabInfo = { windowId: tabWindow.openWindowId, url: savedClosedUrls[i] };
+    chrome.tabs.create(tabInfo);
+  }
+
+  // blow away all the unsaved open tabs:
+  chrome.tabs.remove(unsavedOpenTabIds, () => {
+    syncChromeWindowById(tabWindow.openWindowId, cb);
+  });
+
+/*
   const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openState.openTabId).toArray();
 
   const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
@@ -183,7 +206,7 @@ export function revertWindow(tabWindow, cb) {
   // We need to do this before removing current tab ids or window will close
   var savedUrls = revertedTabWindow.tabItems.filter((ti) => ti.saved).map((ti) => ti.savedState.url).toArray();
 
-  for (var i = 0; i < savedUrls.length; i++) {
+  for (var i = 0; i < savedClosedUrls.length; i++) {
     // need to open it:
     var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
     chrome.tabs.create(tabInfo);
@@ -193,6 +216,7 @@ export function revertWindow(tabWindow, cb) {
   chrome.tabs.remove(currentTabIds, () => {
     syncChromeWindowById(tabWindow.openWindowId, cb);
   });
+*/
 }
 
 /*
@@ -268,7 +292,7 @@ export function showPopout(winStore,cb) {
  * move an open tab (in response to a drag event):
  */
 export function moveTabItem(targetTabWindow,targetIndex,sourceTabItem,uf) {
-  
+
   if (!sourceTabItem.open) {
     console.log("moveTabItem: source tab not open, ignoring...");
     return;
@@ -285,12 +309,12 @@ export function moveTabItem(targetTabWindow,targetIndex,sourceTabItem,uf) {
     // console.log("moveTabItem: tab move complete: ", chromeTab);
     // Let's just refresh the whole window:
     syncChromeWindowById(targetWindowId,uf);
-  });    
+  });
 }
 
 export function hideRelNotes(winStore,cb) {
-  const manifest = chrome.runtime.getManifest();  
+  const manifest = chrome.runtime.getManifest();
   chrome.storage.local.set({ readRelNotesVersion: manifest.version }, () => {
     cb(st => st.set('showRelNotes', false));
-  }); 
+  });
 }
