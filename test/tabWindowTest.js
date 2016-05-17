@@ -346,6 +346,7 @@ test('attachChromeWindow', (t) => {
   // Now let's do the attach:
   const updTabWindow = TabWindow.updateWindow(tabWindow, testData.d3OpenedChromeWindow);
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()));
+
 /*
   console.log("updateTabWindow returned:");
   console.log(">>>>>>>");
@@ -359,6 +360,27 @@ test('attachChromeWindow', (t) => {
 */
 
   t.deepEqual(updTabWindowJS, testData.d3AttachedExpectedTabWindow, 'updateWindow -- after attach');
+
+  const tabCount = updTabWindow.tabItems.count();
+  const openCount = updTabWindow.tabItems.count(t => t.open);
+  const savedCount = updTabWindow.tabItems.count(t => t.saved);
+
+  console.log("attachChromeWindow: " + tabCount + " total tabs, " + openCount + " open, " + savedCount + " saved");
+  t.equals(tabCount, 7, 'total tab count');
+  t.equals(openCount, 6, 'open tab count');
+  t.equals(savedCount, 6, 'saved tab count');
+
+  // Now revert the window to saved state:
+  const revTabWindow = TabWindow.removeOpenWindowState(updTabWindow);
+
+  const revTabCount = revTabWindow.tabItems.count();
+  const revOpenCount = revTabWindow.tabItems.count(t => t.open);
+  const revSavedCount = revTabWindow.tabItems.count(t => t.saved);
+
+  console.log("attachChromeWindow after revert: " + revTabCount + " total tabs, " + revOpenCount + " open, " + revSavedCount + " saved");
+  t.equals(revTabCount, 6, 'total tab count');
+  t.equals(revOpenCount, 0, 'open tab count');
+  t.equals(revSavedCount, 6, 'saved tab count');
 
   t.end();
 });
