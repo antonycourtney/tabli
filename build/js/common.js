@@ -22310,10 +22310,10 @@
 	      var chromeIds = _.map(chromeWindowList, 'id');
 	      var chromeIdSet = new Set(chromeIds);
 	
-	      var closedWindows = _.filter(tabWindows, function (tw) {
+	      var closedWindows = tabWindows.filter(function (tw) {
 	        return !chromeIdSet.has(tw.openWindowId);
 	      });
-	      var closedWinStore = _.reduce(closedWindows, function (acc, tw) {
+	      var closedWinStore = closedWindows.reduce(function (acc, tw) {
 	        return acc.handleTabWindowClosed(tw);
 	      }, this);
 	
@@ -22385,13 +22385,18 @@
 	  }, {
 	    key: 'getOpen',
 	    value: function getOpen() {
-	      var openWindows = this.windowIdMap.toIndexedSeq().toArray();
+	      var openWindows = this.windowIdMap.toIndexedSeq();
 	      return openWindows;
 	    }
+	
+	    /**
+	     * N.B. returns a JavaScript Array, not an Immutable Seq
+	     */
+	
 	  }, {
 	    key: 'getAll',
 	    value: function getAll() {
-	      var openWindows = this.getOpen();
+	      var openWindows = this.getOpen().toArray();
 	      var closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter(function (w) {
 	        return !w.open;
 	      }).toArray();
@@ -22401,7 +22406,7 @@
 	    key: 'getTabWindowsByType',
 	    value: function getTabWindowsByType(windowType) {
 	      var openWindows = this.getOpen();
-	      return _.filter(openWindows, function (w) {
+	      return openWindows.filter(function (w) {
 	        return w.windowType === windowType;
 	      });
 	    }
@@ -22428,7 +22433,7 @@
 	  }, {
 	    key: 'countOpenWindows',
 	    value: function countOpenWindows() {
-	      return this.windowIdMap.count();
+	      return this.getTabWindowsByType('normal').count();
 	    }
 	  }, {
 	    key: 'countSavedWindows',
@@ -22438,7 +22443,7 @@
 	  }, {
 	    key: 'countOpenTabs',
 	    value: function countOpenTabs() {
-	      return this.windowIdMap.reduce(function (count, w) {
+	      return this.getTabWindowsByType('normal').reduce(function (count, w) {
 	        return count + w.openTabCount;
 	      }, 0);
 	    }

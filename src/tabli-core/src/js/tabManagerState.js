@@ -82,12 +82,12 @@ export default class TabManagerState extends Immutable.Record({
 
   handleTabCreated(tabWindow, tab) {
     const updWindow = TabWindow.createTab(tabWindow, tab);
-    return this.registerTabWindow(updWindow);    
+    return this.registerTabWindow(updWindow);
   }
 
   handleTabUpdated(tabWindow, tabId, changeInfo) {
     const updWindow = TabWindow.updateTabItem(tabWindow, tabId, changeInfo);
-    return this.registerTabWindow(updWindow);    
+    return this.registerTabWindow(updWindow);
   }
 
   /**
@@ -141,8 +141,8 @@ export default class TabManagerState extends Immutable.Record({
    * internal map of open windows
    */
   syncWindowList(rawChromeWindowList) {
-   
-    // restrict our management to normal chrome windows that have at least 1 tab: 
+
+    // restrict our management to normal chrome windows that have at least 1 tab:
     const chromeWindowList = _.filter(rawChromeWindowList,cw => validChromeWindow(cw,false));
 
     var tabWindows = this.getOpen();
@@ -152,8 +152,8 @@ export default class TabManagerState extends Immutable.Record({
     var chromeIds = _.map(chromeWindowList, 'id');
     var chromeIdSet = new Set(chromeIds);
 
-    var closedWindows = _.filter(tabWindows, (tw) => !chromeIdSet.has(tw.openWindowId));
-    var closedWinStore = _.reduce(closedWindows, (acc, tw) => acc.handleTabWindowClosed(tw), this);
+    var closedWindows = tabWindows.filter(tw => !chromeIdSet.has(tw.openWindowId));
+    var closedWinStore = closedWindows.reduce((acc, tw) => acc.handleTabWindowClosed(tw), this);
 
     // Now update all open windows:
     const nextSt = _.reduce(chromeWindowList, (acc, cw) => acc.syncChromeWindow(cw), closedWinStore);
@@ -209,19 +209,22 @@ export default class TabManagerState extends Immutable.Record({
    * get the currently open tab windows
    */
   getOpen() {
-    const openWindows = this.windowIdMap.toIndexedSeq().toArray();
+    const openWindows = this.windowIdMap.toIndexedSeq();
     return openWindows;
   }
 
+  /**
+   * N.B. returns a JavaScript Array, not an Immutable Seq
+   */
   getAll() {
-    const openWindows = this.getOpen();
+    const openWindows = this.getOpen().toArray();
     const closedSavedWindows = this.bookmarkIdMap.toIndexedSeq().filter((w) => !(w.open)).toArray();
     return openWindows.concat(closedSavedWindows);
   }
 
   getTabWindowsByType(windowType) {
     const openWindows = this.getOpen();
-    return _.filter(openWindows, w => w.windowType === windowType);
+    return openWindows.filter(w => w.windowType === windowType);
   }
 
   // returns a tabWindow or undefined
@@ -238,7 +241,7 @@ export default class TabManagerState extends Immutable.Record({
 
 
   countOpenWindows() {
-    return this.windowIdMap.count();
+    return this.getTabWindowsByType('normal').count();
   }
 
   countSavedWindows() {
@@ -246,7 +249,7 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   countOpenTabs() {
-    return this.windowIdMap.reduce((count, w) => count + w.openTabCount, 0);
+    return this.getTabWindowsByType('normal').reduce((count, w) => count + w.openTabCount, 0);
   }
 
   /*
@@ -280,5 +283,5 @@ export default class TabManagerState extends Immutable.Record({
 
   markInitialized() {
     return this.set('initializing', false);
-  }   
+  }
 }
