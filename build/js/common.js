@@ -26735,27 +26735,6 @@
 	  chrome.tabs.remove(unsavedOpenTabIds, function () {
 	    syncChromeWindowById(tabWindow.openWindowId, cb);
 	  });
-	
-	  /*
-	    const currentTabIds = tabWindow.tabItems.filter((ti) => ti.open).map((ti) => ti.openState.openTabId).toArray();
-	  
-	    const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow);
-	  
-	    // re-open saved URLs:
-	    // We need to do this before removing current tab ids or window will close
-	    var savedUrls = revertedTabWindow.tabItems.filter((ti) => ti.saved).map((ti) => ti.savedState.url).toArray();
-	  
-	    for (var i = 0; i < savedClosedUrls.length; i++) {
-	      // need to open it:
-	      var tabInfo = { windowId: tabWindow.openWindowId, url: savedUrls[i] };
-	      chrome.tabs.create(tabInfo);
-	    }
-	  
-	    // blow away all the existing tabs:
-	    chrome.tabs.remove(currentTabIds, () => {
-	      syncChromeWindowById(tabWindow.openWindowId, cb);
-	    });
-	  */
 	}
 	
 	/*
