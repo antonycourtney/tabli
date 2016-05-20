@@ -25,21 +25,21 @@ const SearchBar = React.createClass({
       if (this.props.onSearchUp) {
         e.preventDefault();
         this.props.onSearchUp(byPage);
-      }      
+      }
     };
 
     const searchDown = (byPage) => {
-      if (this.props.onSearchDown) { 
+      if (this.props.onSearchDown) {
         e.preventDefault();
         this.props.onSearchDown(byPage);
       }
     };
 
-    if ((!e.ctrlKey && e.keyCode === Constants.KEY_UP) || 
+    if ((!e.ctrlKey && e.keyCode === Constants.KEY_UP) ||
         (e.ctrlKey && !e.shiftKey && e.keyCode === Constants.KEY_P)) {
       searchUp(false);
     }
-    if ((e.ctrlKey && e.keyCode === Constants.KEY_UP) || 
+    if ((e.ctrlKey && e.keyCode === Constants.KEY_UP) ||
         (e.ctrlKey && e.shiftKey && e.keyCode === Constants.KEY_P)) {
       searchUp(true);
     }
@@ -115,8 +115,8 @@ const SearchBar = React.createClass({
           onClick={this.handlePopoutClick}
         />);
     } else {
-      popoutButton = 
-        <div style={Util.merge(Styles.headerButton,Styles.logoImage)} />;        
+      popoutButton =
+        <div style={Util.merge(Styles.headerButton,Styles.logoImage)} />;
     }
 
     const helpButton = (
@@ -126,6 +126,10 @@ const SearchBar = React.createClass({
     return (
       <div style={Styles.headerContainer}>
         {popoutButton}
+        <i className="toggle on icon"></i>
+        <button className="ui icon button mini">
+          <i className="cloud icon"></i>
+        </button>
         <input className="searchInput" style={Styles.searchInput} type="search" ref={this.setInputRef} id="searchBox" placeholder="Search..."
           onChange={this.handleChange} onKeyDown={this.handleKeyDown}
           title="Search Page Titles and URLs"

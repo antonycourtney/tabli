@@ -1,4 +1,4 @@
-var gulp = require('gulp'); 
+var gulp = require('gulp');
 
 //For cleaning out the build dir
 var clean = require('gulp-clean');
@@ -83,6 +83,13 @@ gulp.task('build_testData', function() {
         .pipe(gulp.dest('build/testData'));
 });
 
+gulp.task('build_semantic', function() {
+    gutil.log("copy semantic-ui js files to build");
+
+    return gulp.src(['semantic/dist/**/*'])
+        .pipe(gulp.dest('build/semantic'));
+});
+
 // Copy all jquery files to dist:
 gulp.task('build_jquery', function() {
     gutil.log("copy jquery/dist from node_modules to build");
@@ -109,7 +116,8 @@ gulp.task('build_fa', function() {
 });
 
 
-gulp.task('build_assets',['build_jquery','build_bootstrap','build_fa','build_html','build_images','build_testData']);
+gulp.task('build_assets',['build_jquery','build_bootstrap','build_fa',
+              'build_html','build_images','build_testData','build_semantic']);
 
 // Build and watch cycle (another option for development)
 // Advantage: No server required, can run app from filesystem
