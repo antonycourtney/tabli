@@ -22,15 +22,15 @@ const styles = {
   messageCard: {
     padding: 0,
   },
-  cardHeader: {
+  card: {
     paddingLeft: 16,
     paddingRight: 16,
     paddingBottom: 8
-  },  
+  },
   cardBody: {
     paddingLeft: 16,
     paddingRight: 16,
-  },  
+  },
   cardActions: {
     display: 'inline-flex',
     flexDirection: 'row-reverse',
@@ -40,7 +40,7 @@ const styles = {
   },
   flatButton: {
     border: '0px',
-    display: 'inline-block',  
+    display: 'inline-block',
     backgroundColor: 'rgba(0,0,0,0)',
     fontFamily: 'Roboto, sans-serif',
     fontSize: 14,
@@ -190,7 +190,7 @@ const styles = {
     height: 24,
     backgroundImage: mkUrl('images/logoImage.png'),
     /* backgroundColor: '#358194', */
-    marginRight: 8,    
+    marginRight: 8,
   },
   audibleIcon: {
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
@@ -317,29 +317,19 @@ const styles = {
     background: '#ffffff',
     zIndex: 1,
     borderBottom: '1px solid #bababa',
-    paddingLeft: 10,
-    paddingRight: 16,
-    paddingTop: 4,
-    paddingBottom: 4,
+    padding: 0
   },
   popupContainer: {
     // We use absolute positioning at (0,0) so that header/footer will be relative to this
     position: 'absolute',
     top: 0,
-    left: 0,  
+    left: 0,
     width: 352,
     maxWidth: 352,
     height: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
     maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
     /* adding this border is useful for debugging styling issues:
     /* border: '1px solid #bababa' */
-  },
-  headerContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 5,
-    marginBottom: 5
   },
   popupBody: {
     marginTop: Constants.POPUP_HEADER_HEIGHT,
@@ -365,10 +355,6 @@ const styles = {
     justifyContent: 'flex-end',
     alignItems: 'center',
     marginTop: 5,
-  },
-  searchInput: {
-    width: 240,
-    maxWidth: 240,
   },
   summarySpan: {
     marginRight: 5,

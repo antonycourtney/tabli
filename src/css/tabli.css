@@ -7,19 +7,23 @@ body {  background: white;
       /* overflow-x: hidden; */
       font-size:12px;
       cursor: default;
+      overflow: hidden;
+      width: 350px;
+      margin: 0px;
+      height: 700px;
    }
 h1, h2, h3 {font-family: sans-serif;}
 h1 { font-size: 16px; }
-h2 {   font-size: 16px; 
+h2 {   font-size: 16px;
       margin-top: 12px;
       margin-bottom: 2px;
       /* text-decoration: underline; */
   }
-h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px } 
+h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px }
 hr {margin-top: 0in; padding: 0px}
 ul {margin-top: .05in; padding-left: 20px;}
 p {margin-top: 4px; margin-bottom: 4px; }
-A:link {text-decoration: none; color: black } 
+A:link {text-decoration: none; color: black }
 A:visited {text-decoration: none; color: black }
 A:hover {text-decoration: none; color: black }
 // For dialogs:
@@ -74,16 +78,40 @@ fieldset { padding:0; border:0; }
   /* background-color: #cb716c; */
 }
 
-.popoutButton {
+.toolbar-btn-square {
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+}
+
+.toolbar-btn {
+  height: 20px;
+  padding: 2px;
+}
+
+.tabli-logo-icon {
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
+  background-image: url('../images/logoImage.png');
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.popout-icon {
+  width: 16px;
+  height: 16px;
   background-image: url('../images/popout.png');
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: center center;
-  margin-right: 15
 }
+/*
 .popoutButton:hover {
   background-color: #dadada;
 }
+*/
 .card {
   font-family: 'Roboto', sans-serif;
 }
@@ -108,4 +136,35 @@ fieldset { padding:0; border:0; }
   padding-right: 16px;
   font-size: 12px;
 }
-
+.tabli-dialog-button {
+  margin: 8px;
+  vertical-align: center;
+}
+.inline-flex {
+  display:inline-flex;
+  align-items: center;
+}
+.inline-block {
+  display: inline-block;
+}
+.no-top-border {
+  border-bottom: 4px;
+}
+.header-container {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+.header-toolbar {
+  display: flex;
+  justify-content: space-around;
+  width: 340px;
+}
+.search-input {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  width: 220px;
+  max-width: 220px;
+}

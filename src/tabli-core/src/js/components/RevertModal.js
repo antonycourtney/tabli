@@ -84,6 +84,9 @@ const RevertModal = React.createClass({
         );
     }
 
+/*             style={Util.merge(Styles.dialogButton, Styles.primaryButton)}
+style={Styles.dialogButton}
+*/
     return (
       <Modal.Dialog title="Revert Saved Window?" onClose={this.props.onClose} >
         <Modal.Body>
@@ -97,20 +100,15 @@ const RevertModal = React.createClass({
             <p>This action can not be undone.</p>
           </div>
           <div style={Util.merge(Styles.alignRight)}>
-            <div style={Util.merge(Styles.dialogButton, Styles.primaryButton)}
+            <button type="button"
+              className="btn btn-primary btn-sm tabli-dialog-button"
               onClick={this.handleSubmit}
               ref="okButton"
               tabIndex={0}
-              onKeyDown={this.handleKeyDown}
-            >
-              OK
-            </div>
-            <div style={Styles.dialogButton}
+              onKeyDown={this.handleKeyDown}>OK</button>
+            <button type="button" className="btn btn-default btn-sm tabli-dialog-button"
               onClick={this.props.onClose}
-              tabIndex={0}
-            >
-              Cancel
-            </div>
+              tabIndex={0}>Cancel</button>
           </div>
         </Modal.Body>
       </Modal.Dialog>
