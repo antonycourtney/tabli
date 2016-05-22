@@ -78,7 +78,7 @@ test('basic event test', (t) => {
       <TabliPopup storeRef={null} initialWinStore={winStore} noListener={true} />
     );
 
-  const helpButton = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'fa-question-circle');
+  const helpButton = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'help-button');
 
   ReactTestUtils.Simulate.click(helpButton);
 

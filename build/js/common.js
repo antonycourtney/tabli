@@ -26503,9 +26503,13 @@
 	exports.manageWindow = manageWindow;
 	exports.unmanageWindow = unmanageWindow;
 	exports.showHelp = showHelp;
+	exports.showAbout = showAbout;
+	exports.showReview = showReview;
 	exports.showPopout = showPopout;
+	exports.hidePopout = hidePopout;
 	exports.moveTabItem = moveTabItem;
 	exports.hideRelNotes = hideRelNotes;
+	exports.showRelNotes = showRelNotes;
 	
 	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 3);
 	
@@ -26521,8 +26525,9 @@
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var TABLI_HELP_URL = 'http://antonycourtney.github.io/tabli/tabli-usage.html';
-	
+	var TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
+	var TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
+	var TABLI_REVIEW_URL = 'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews';
 	/**
 	 * sync a single Chrome window by its Chrome window id
 	 *
@@ -26808,12 +26813,22 @@
 	}
 	
 	function showHelp() {
-	  console.log('showHelp: opening manual');
 	  chrome.tabs.create({ url: TABLI_HELP_URL });
+	}
+	
+	function showAbout() {
+	  chrome.tabs.create({ url: TABLI_ABOUT_URL });
+	}
+	function showReview(winStore) {
+	  chrome.tabs.create({ url: TABLI_REVIEW_URL });
 	}
 	
 	function showPopout(winStore, cb) {
 	  pact.showPopout(winStore).done(cb);
+	}
+	
+	function hidePopout(winStore, cb) {
+	  pact.hidePopout(winStore).done(cb);
 	}
 	
 	/*
@@ -26846,6 +26861,12 @@
 	    cb(function (st) {
 	      return st.set('showRelNotes', false);
 	    });
+	  });
+	}
+	
+	function showRelNotes(winStore, cb) {
+	  cb(function (st) {
+	    return st.set('showRelNotes', true);
 	  });
 	}
 
@@ -26985,6 +27006,7 @@
 	});
 	exports.closeWindow = closeWindow;
 	exports.showPopout = showPopout;
+	exports.hidePopout = hidePopout;
 	exports.run = run;
 	exports.bind_ = bind_;
 	exports.restorePopout = restorePopout;
@@ -27039,6 +27061,7 @@
 	/**
 	 * close popout window (if open)
 	 *
+	 * N.B. not exported
 	 * returns: APST
 	 */
 	function closePopout(winStore) {
@@ -27050,6 +27073,8 @@
 	}
 	
 	/*
+	 * show popout window (and update local storage)
+	 *
 	 * returns: APST
 	 */
 	function showPopout(winStore) {
@@ -27072,6 +27097,20 @@
 	  });
 	
 	  return deferred.promise;
+	}
+	
+	/*
+	 * hide popout window (and update local storage)
+	 *
+	 * returns: APST
+	 */
+	function hidePopout(winStore) {
+	  var cp = closePopout(winStore);
+	
+	  return cp.then(function () {
+	    chrome.storage.local.set({ 'showPopout': false });
+	    return idst;
+	  });
 	}
 	
 	/*
@@ -31542,16 +31581,27 @@
 	    }
 	  },
 	  handleHelpClick: function handleHelpClick(e) {
-	    console.log('Help button clicked!');
 	    e.preventDefault();
 	    actions.showHelp();
 	  },
-	  handlePopoutClick: function handlePopoutClick(e) {
-	    console.log('Popout button clicked!');
-	    actions.showPopout(this.props.winStore);
+	  handleAboutClick: function handleAboutClick(e) {
+	    e.preventDefault();
+	    actions.showAbout();
 	  },
-	  handleLogoClick: function handleLogoClick(e) {
-	    console.log("Logo was clicked!");
+	  handlePopoutClick: function handlePopoutClick(e) {
+	    if (this.props.isPopout) {
+	      actions.hidePopout(this.props.winStore, this.props.storeUpdateHandler);
+	    } else {
+	      actions.showPopout(this.props.winStore, this.props.storeUpdateHandler);
+	    }
+	  },
+	  handleReviewClick: function handleReviewClick(e) {
+	    e.preventDefault();
+	    actions.showReview(this.props.winStore);
+	  },
+	  handleRelNotesClick: function handleRelNotesClick(e) {
+	    e.preventDefault();
+	    actions.showRelNotes(this.props.winStore, this.props.storeUpdateHandler);
 	  },
 	  setInputRef: function setInputRef(ref) {
 	    this.searchInputRef = ref;
@@ -31560,22 +31610,6 @@
 	    }
 	  },
 	  render: function render() {
-	    /* <span className="caret"></span> */
-	    /*
-	        const menuButton = (
-	          <button type="button"
-	            className="btn btn-default btn-sm dropdown-toggle"
-	            data-toggle="dropdown"
-	            aria-haspopup="true"
-	            aria-expanded="false"
-	            title="Open Tabli Menu"
-	            onClick={this.handleLogoClick}>
-	            <div className="inline-block tabli-logo-icon"></div>
-	            <span className="caret"></span>
-	          </button>
-	        );
-	    */
-	
 	    var menuButton = React.createElement(
 	      'button',
 	      { type: 'button',
@@ -31588,21 +31622,23 @@
 	      React.createElement('span', { className: 'glyphicon glyphicon-menu-hamburger', 'aria-hidden': 'true' })
 	    );
 	
-	    /*           <div className="popout-icon"></div> */
+	    // We'll rotate 270 degrees to point upper left for popout,
+	    // 90 degrees to point lower right for pop-in:
+	    var popImgName = this.props.isPopout ? "popin" : "popout";
+	    var popImgPath = "../images/" + popImgName + ".png";
+	
+	    var popVerb = this.props.isPopout ? "Hide" : "Show";
+	    var popDesc = popVerb + " Tabli Popout Window";
 	
 	    var popoutButton = React.createElement(
 	      'button',
-	      { type: 'button', className: 'btn btn-default btn-xs',
-	        title: 'Open Tabli Popout Window',
+	      { type: 'button',
+	        className: 'btn btn-default btn-xs',
+	        title: popDesc,
 	        onClick: this.handlePopoutClick },
-	      React.createElement('i', { className: 'fa fa-external-link fa-rotate-270', 'aria-hidden': 'true' })
+	      React.createElement('img', { className: 'popout-img', src: popImgPath })
 	    );
 	
-	    if (!this.props.isPopout) {}
-	    // TODO...choose popout or pop-back button here
-	
-	
-	    /*       <img src="../images/triangle-small-4-01.png" /> */
 	    var expandAllButton = React.createElement(
 	      'button',
 	      { type: 'button', className: 'btn btn-default btn-xs',
@@ -31610,8 +31646,6 @@
 	        onClick: this.handleExpandToggleClick },
 	      React.createElement('span', { className: 'glyphicon glyphicon-collapse-down', 'aria-hidden': 'true' })
 	    );
-	
-	    /* <span className="glyphicon glyphicon-copy" aria-hidden="true"></span> */
 	
 	    var copyButton = React.createElement(
 	      'button',
@@ -31621,13 +31655,6 @@
 	      React.createElement('i', { className: 'fa fa-clipboard', 'aria-hidden': 'true' })
 	    );
 	
-	    /*
-	     TODO: replace with menu / dropdown item
-	        const helpButton = (
-	          <span className="fa fa-question-circle fa-lg" style={Styles.helpButton}
-	            title="Open Tabli Usage Manual" onClick={this.handleHelpClick}
-	          ></span>);
-	    */
 	    var dropdownMenu = React.createElement(
 	      'ul',
 	      { className: 'dropdown-menu' },
@@ -31636,7 +31663,17 @@
 	        null,
 	        React.createElement(
 	          'a',
-	          { href: '#' },
+	          { className: 'help-button', href: '#', onClick: this.handleHelpClick },
+	          'Help (Manual)'
+	        )
+	      ),
+	      React.createElement('li', { role: 'separator', className: 'divider' }),
+	      React.createElement(
+	        'li',
+	        null,
+	        React.createElement(
+	          'a',
+	          { href: '#', onClick: this.handleAboutClick },
 	          'About Tabli'
 	        )
 	      ),
@@ -31645,17 +31682,18 @@
 	        null,
 	        React.createElement(
 	          'a',
-	          { href: '#' },
-	          'Help'
+	          { href: '#', onClick: this.handleRelNotesClick },
+	          'Release Notes'
 	        )
 	      ),
+	      React.createElement('li', { role: 'separator', className: 'divider' }),
 	      React.createElement(
 	        'li',
 	        null,
 	        React.createElement(
 	          'a',
-	          { href: '#' },
-	          'Leave Feedback'
+	          { href: '#', onClick: this.handleReviewClick },
+	          'Review Tabli'
 	        )
 	      )
 	    );
@@ -31663,27 +31701,19 @@
 	    return React.createElement(
 	      'div',
 	      { className: 'header-container' },
-	      menuButton,
 	      React.createElement(
 	        'div',
 	        { className: 'header-toolbar' },
-	        React.createElement(
-	          'div',
-	          { className: 'btn-group', role: 'group' },
-	          popoutButton
-	        ),
+	        menuButton,
+	        popoutButton,
+	        dropdownMenu,
 	        React.createElement('input', { className: 'search-input', type: 'search', ref: this.setInputRef, id: 'searchBox', placeholder: 'Search...',
 	          onChange: this.handleChange, onKeyDown: this.handleKeyDown,
 	          title: 'Search Page Titles and URLs'
 	        }),
-	        React.createElement(
-	          'div',
-	          { className: 'btn-group', role: 'group' },
-	          expandAllButton,
-	          copyButton
-	        )
-	      ),
-	      dropdownMenu
+	        expandAllButton,
+	        copyButton
+	      )
 	    );
 	  }
 	});

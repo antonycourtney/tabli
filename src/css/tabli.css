@@ -107,13 +107,19 @@ fieldset { padding:0; border:0; }
   background-repeat: no-repeat;
   background-position: center center;
 }
+
+.popout-img {
+  width: 14px;
+  height: 14px;
+}
+
 /*
 .popoutButton:hover {
   background-color: #dadada;
 }
 */
 .card {
-  font-family: 'Roboto', sans-serif;
+  font-family: sans-serif;
 }
 .card-header {
   padding-left: 16px;
@@ -153,7 +159,6 @@ fieldset { padding:0; border:0; }
 .header-container {
   display: flex;
   align-items: center;
-  margin-left: 4px;
   margin-top: 8px;
   margin-bottom: 0;
 }
@@ -165,6 +170,12 @@ fieldset { padding:0; border:0; }
 .search-input {
   border: 1px solid #ccc;
   border-radius: 3px;
-  width: 220px;
-  max-width: 220px;
+  width: 200px;
+  max-width: 200px;
+  margin-left: 8px;
+  margin-right: 12px;
+}
+/* GRRRRRR. @#!@#$ CSS */
+.popout-button {
+  line-height: 1.0;
 }

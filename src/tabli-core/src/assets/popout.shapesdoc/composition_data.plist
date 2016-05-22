@@ -13,7 +13,7 @@
 			<array>
 				<dict>
 					<key>adjustmentRatioX</key>
-					<real>0.25</real>
+					<real>0.1600195312499999</real>
 					<key>adjustmentRatioY</key>
 					<real>0.0</real>
 					<key>className</key>
@@ -54,11 +54,11 @@
 					<key>fillType</key>
 					<integer>5</integer>
 					<key>frame</key>
-					<string>{{2, 2}, {5, 5}}</string>
+					<string>{{2, 2}, {4, 4}}</string>
 					<key>hidden</key>
 					<false/>
 					<key>identifier</key>
-					<string>B7A50591-FD97-4381-8394-830E76AC75B2</string>
+					<string>32BCD44F-BABA-47D3-B48F-F872715D5F57</string>
 					<key>imageAnchorRatio</key>
 					<string>{0.5, 0.5}</string>
 					<key>imageType</key>
@@ -74,7 +74,7 @@
 					<key>scaleImage</key>
 					<true/>
 					<key>strokeColor</key>
-					<string>0.600000:0.600000:0.600000:1.000000</string>
+					<string>0.500000:0.500000:0.500000:1.000000</string>
 					<key>strokeLineCap</key>
 					<integer>0</integer>
 					<key>strokeLineJoin</key>
@@ -167,7 +167,7 @@
 					<key>flipped</key>
 					<false/>
 					<key>frame</key>
-					<string>{{0, 0}, {4, 4}}</string>
+					<string>{{1, 1}, {3, 3}}</string>
 					<key>hidden</key>
 					<false/>
 					<key>identifier</key>
@@ -189,7 +189,7 @@
 					<key>scaleImage</key>
 					<true/>
 					<key>strokeColor</key>
-					<string>0.200000:0.200000:0.200000:1.000000</string>
+					<string>0.000000:0.000000:0.000000:1.000000</string>
 					<key>strokeLineCap</key>
 					<integer>1</integer>
 					<key>strokeLineJoin</key>
@@ -282,7 +282,7 @@
 					<key>flipped</key>
 					<false/>
 					<key>frame</key>
-					<string>{{0, 0}, {3, 0}}</string>
+					<string>{{1, 1}, {2, 0}}</string>
 					<key>hidden</key>
 					<false/>
 					<key>identifier</key>
@@ -304,7 +304,7 @@
 					<key>scaleImage</key>
 					<true/>
 					<key>strokeColor</key>
-					<string>0.200000:0.200000:0.200000:1.000000</string>
+					<string>0.000000:0.000000:0.000000:1.000000</string>
 					<key>strokeLineCap</key>
 					<integer>1</integer>
 					<key>strokeLineJoin</key>
@@ -397,7 +397,7 @@
 					<key>flipped</key>
 					<false/>
 					<key>frame</key>
-					<string>{{0, 0}, {0, 3}}</string>
+					<string>{{1, 1}, {0, 2}}</string>
 					<key>hidden</key>
 					<false/>
 					<key>identifier</key>
@@ -419,7 +419,7 @@
 					<key>scaleImage</key>
 					<true/>
 					<key>strokeColor</key>
-					<string>0.200000:0.200000:0.200000:1.000000</string>
+					<string>0.000000:0.000000:0.000000:1.000000</string>
 					<key>strokeLineCap</key>
 					<integer>1</integer>
 					<key>strokeLineJoin</key>
@@ -489,7 +489,7 @@
 			<key>fillType</key>
 			<integer>0</integer>
 			<key>frame</key>
-			<string>{{0, 0}, {8, 8}}</string>
+			<string>{{0, 0}, {7, 7}}</string>
 			<key>gridTolerance</key>
 			<real>10</real>
 			<key>hidden</key>
@@ -509,13 +509,13 @@
 				<key>group</key>
 				<integer>0</integer>
 				<key>height</key>
-				<real>8</real>
+				<real>7</real>
 				<key>name</key>
 				<string>Custom</string>
 				<key>unitType</key>
 				<integer>0</integer>
 				<key>width</key>
-				<real>8</real>
+				<real>7</real>
 			</dict>
 			<key>opacity</key>
 			<real>1</real>
@@ -526,7 +526,7 @@
 			<key>scaleImage</key>
 			<true/>
 			<key>scrollCenterPoint</key>
-			<string>{4, 4}</string>
+			<string>{3.5, 3.5}</string>
 			<key>strokeColor</key>
 			<string>0.000000:0.000000:0.000000:1.000000</string>
 			<key>strokeLineCap</key>
@@ -572,7 +572,7 @@
 			<key>userSetTitle</key>
 			<false/>
 			<key>zoomScaleIndex</key>
-			<integer>30</integer>
+			<integer>50</integer>
 		</dict>
 	</array>
 	<key>image_ref_counts</key>

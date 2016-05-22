@@ -32,6 +32,7 @@ export function closeWindow(tabWindow) {
 /**
  * close popout window (if open)
  *
+ * N.B. not exported
  * returns: APST
  */
 function closePopout(winStore) {
@@ -43,6 +44,8 @@ function closePopout(winStore) {
 }
 
 /*
+ * show popout window (and update local storage)
+ *
  * returns: APST
  */
 export function showPopout(winStore) {
@@ -54,17 +57,31 @@ export function showPopout(winStore) {
   var deferred = Q.defer();
 
   chrome.storage.local.set({'showPopout': true}, () => {
-    chrome.windows.create({ url: "popout.html", 
+    chrome.windows.create({ url: "popout.html",
       type: "detached_panel",
-      left: 0, top: 0, 
+      left: 0, top: 0,
       width: 350,
-      height: 625 
+      height: 625
     },() => {
       deferred.resolve(idst);
     });
   });
 
-  return deferred.promise;    
+  return deferred.promise;
+}
+
+/*
+ * hide popout window (and update local storage)
+ *
+ * returns: APST
+ */
+export function hidePopout(winStore) {
+  const cp = closePopout(winStore);
+
+  return cp.then(() => {
+    chrome.storage.local.set({'showPopout': false});
+    return idst;
+  });
 }
 
 
@@ -81,7 +98,7 @@ export function run(stRef,pf) {
     const nextSt = stf(st0);
     stRef.setValue(nextSt);
     return nextSt;
-  });  
+  });
 }
 
 /*
@@ -120,5 +137,5 @@ export function restorePopout(stRef) {
       deferred.resolve(finalState);
     });
   });
-  return deferred.promise;    
+  return deferred.promise;
 }

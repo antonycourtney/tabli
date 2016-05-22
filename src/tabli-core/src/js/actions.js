@@ -2,8 +2,9 @@ import * as TabWindow from './tabWindow';
 import * as utils from './utils';
 import * as pact from './pact';
 
-const TABLI_HELP_URL = 'http://antonycourtney.github.io/tabli/tabli-usage.html';
-
+const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
+const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
+const TABLI_REVIEW_URL = 'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews';
 /**
  * sync a single Chrome window by its Chrome window id
  *
@@ -256,13 +257,22 @@ export function unmanageWindow(archiveFolderId, tabWindow, cb) {
 }
 
 export function showHelp() {
-  console.log('showHelp: opening manual');
   chrome.tabs.create({ url: TABLI_HELP_URL });
 }
 
+export function showAbout() {
+  chrome.tabs.create({ url: TABLI_ABOUT_URL });
+}
+export function showReview(winStore) {
+  chrome.tabs.create({ url: TABLI_REVIEW_URL });
+}
 
 export function showPopout(winStore,cb) {
   pact.showPopout(winStore).done(cb);
+}
+
+export function hidePopout(winStore,cb) {
+  pact.hidePopout(winStore).done(cb);
 }
 
 /*
@@ -294,4 +304,8 @@ export function hideRelNotes(winStore,cb) {
   chrome.storage.local.set({ readRelNotesVersion: manifest.version }, () => {
     cb(st => st.set('showRelNotes', false));
   });
+}
+
+export function showRelNotes(winStore,cb) {
+  cb(st => st.set('showRelNotes', true));
 }

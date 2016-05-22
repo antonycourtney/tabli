@@ -87,18 +87,31 @@ const SearchBar = React.createClass({
   },
 
   handleHelpClick(e) {
-    console.log('Help button clicked!');
     e.preventDefault();
     actions.showHelp();
   },
 
-  handlePopoutClick(e) {
-    console.log('Popout button clicked!');
-    actions.showPopout(this.props.winStore);
+  handleAboutClick(e) {
+    e.preventDefault();
+    actions.showAbout();
   },
 
-  handleLogoClick(e) {
-    console.log("Logo was clicked!");
+  handlePopoutClick(e) {
+    if (this.props.isPopout) {
+      actions.hidePopout(this.props.winStore,this.props.storeUpdateHandler);
+    } else {
+      actions.showPopout(this.props.winStore,this.props.storeUpdateHandler);
+    }
+  },
+
+  handleReviewClick(e) {
+    e.preventDefault();
+    actions.showReview(this.props.winStore);
+  },
+
+  handleRelNotesClick(e) {
+    e.preventDefault();
+    actions.showRelNotes(this.props.winStore,this.props.storeUpdateHandler);
   },
 
   setInputRef(ref) {
@@ -109,22 +122,6 @@ const SearchBar = React.createClass({
   },
 
   render() {
-    /* <span className="caret"></span> */
-/*
-    const menuButton = (
-      <button type="button"
-        className="btn btn-default btn-sm dropdown-toggle"
-        data-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-        title="Open Tabli Menu"
-        onClick={this.handleLogoClick}>
-        <div className="inline-block tabli-logo-icon"></div>
-        <span className="caret"></span>
-      </button>
-    );
-*/
-
     const menuButton = (
       <button type="button"
         className="btn btn-default btn-xs dropdown-toggle"
@@ -137,21 +134,23 @@ const SearchBar = React.createClass({
       </button>
     );
 
-/*           <div className="popout-icon"></div> */
+    // We'll rotate 270 degrees to point upper left for popout,
+    // 90 degrees to point lower right for pop-in:
+    const popImgName = this.props.isPopout ? "popin" : "popout";
+    const popImgPath = "../images/" + popImgName + ".png";
+
+    const popVerb = this.props.isPopout ? "Hide" : "Show";
+    const popDesc = popVerb + " Tabli Popout Window";
 
     const popoutButton = (
-        <button type="button" className="btn btn-default btn-xs"
-          title="Open Tabli Popout Window"
+        <button type="button"
+          className="btn btn-default btn-xs"
+          title={popDesc}
           onClick={this.handlePopoutClick}>
-          <i className="fa fa-external-link fa-rotate-270" aria-hidden="true"></i>
+          <img className="popout-img" src={popImgPath} />
         </button>
       );
 
-    if (!this.props.isPopout) {
-      // TODO...choose popout or pop-back button here
-    }
-
-/*       <img src="../images/triangle-small-4-01.png" /> */
     const expandAllButton = (
       <button type="button" className="btn btn-default btn-xs"
         title="Expand/Collapse All Window Summaries"
@@ -159,8 +158,6 @@ const SearchBar = React.createClass({
         <span className="glyphicon glyphicon-collapse-down" aria-hidden="true"></span>
       </button>
     );
-
-/* <span className="glyphicon glyphicon-copy" aria-hidden="true"></span> */
 
     const copyButton = (
       <button type="button" className="btn btn-default btn-xs"
@@ -170,40 +167,31 @@ const SearchBar = React.createClass({
       </button>
     );
 
-
-/*
- TODO: replace with menu / dropdown item
-    const helpButton = (
-      <span className="fa fa-question-circle fa-lg" style={Styles.helpButton}
-        title="Open Tabli Usage Manual" onClick={this.handleHelpClick}
-      ></span>);
-*/
     const dropdownMenu = (
       <ul className="dropdown-menu">
-        <li><a href="#">About Tabli</a></li>
-        <li><a href="#">Help</a></li>
-        <li><a href="#">Leave Feedback</a></li>
+        <li><a className="help-button" href="#" onClick={this.handleHelpClick}>Help (Manual)</a></li>
+        <li role="separator" className="divider"></li>
+        <li><a href="#" onClick={this.handleAboutClick}>About Tabli</a></li>
+        <li><a href="#" onClick={this.handleRelNotesClick}>Release Notes</a></li>
+        <li role="separator" className="divider"></li>
+        <li><a href="#" onClick={this.handleReviewClick}>Review Tabli</a></li>
       </ul>
     )
 
 
     return (
       <div className="header-container">
-        {menuButton}
         <div className="header-toolbar">
-          <div className="btn-group" role="group">
+            {menuButton}
             {popoutButton}
-          </div>
+            {dropdownMenu}
           <input className="search-input" type="search" ref={this.setInputRef} id="searchBox" placeholder="Search..."
             onChange={this.handleChange} onKeyDown={this.handleKeyDown}
             title="Search Page Titles and URLs"
           />
-          <div className="btn-group" role="group">
-            {expandAllButton}
-            {copyButton}
-          </div>
+          {expandAllButton}
+          {copyButton}
         </div>
-        {dropdownMenu}
       </div>
     );
   },
