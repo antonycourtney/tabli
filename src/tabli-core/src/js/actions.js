@@ -275,6 +275,10 @@ export function hidePopout(winStore,cb) {
   pact.hidePopout(winStore).done(cb);
 }
 
+export function toggleExpandAll(winStore,cb) {
+  cb(st => st.set('expandAll', !st.expandAll));
+}
+
 /*
  * move an open tab (in response to a drag event):
  */

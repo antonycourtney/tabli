@@ -24,6 +24,11 @@ const FilteredTabWindow = React.createClass({
           this.windowDivRef.scrollIntoViewIfNeeded();
         }
      }
+     if (nextProps.expandAll !== this.props.expandAll) {
+       if (this.state.expanded !== null) {
+         this.setState({ expanded: null });
+       }
+     }
    },
 
   handleOpen() {
@@ -48,7 +53,7 @@ const FilteredTabWindow = React.createClass({
    */
   getExpandedState() {
     if (this.state.expanded === null) {
-      return this.props.filteredTabWindow.tabWindow.open;
+      return (this.props.expandAll && this.props.filteredTabWindow.tabWindow.open);
     }
     return this.state.expanded;
   },

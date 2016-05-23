@@ -25,6 +25,7 @@ export default class TabManagerState extends Immutable.Record({
   currentWindowId: -1,               // chrome window id of window with focus
   initializing: true,                // true until bgHelper initialization completes.
   showRelNotes: true,
+  expandAll: true,                   // state of global collapse / expand toggle button
 }) {
   /**
    * Update store to include the specified window, indexed by

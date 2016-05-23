@@ -114,6 +114,10 @@ const SearchBar = React.createClass({
     actions.showRelNotes(this.props.winStore,this.props.storeUpdateHandler);
   },
 
+  handleExpandToggleClick() {
+    actions.toggleExpandAll(this.props.winStore,this.props.storeUpdateHandler);
+  },
+
   setInputRef(ref) {
     this.searchInputRef = ref;
     if (this.props.setInputRef) {

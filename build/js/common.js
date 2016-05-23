@@ -22520,8 +22520,8 @@
 	  archiveFolderId: -1,
 	  currentWindowId: -1, // chrome window id of window with focus
 	  initializing: true, // true until bgHelper initialization completes.
-	  showRelNotes: true
-	}));
+	  showRelNotes: true,
+	  expandAll: true }));
 	
 	exports.default = TabManagerState;
 
@@ -26507,6 +26507,7 @@
 	exports.showReview = showReview;
 	exports.showPopout = showPopout;
 	exports.hidePopout = hidePopout;
+	exports.toggleExpandAll = toggleExpandAll;
 	exports.moveTabItem = moveTabItem;
 	exports.hideRelNotes = hideRelNotes;
 	exports.showRelNotes = showRelNotes;
@@ -26829,6 +26830,12 @@
 	
 	function hidePopout(winStore, cb) {
 	  pact.hidePopout(winStore).done(cb);
+	}
+	
+	function toggleExpandAll(winStore, cb) {
+	  cb(function (st) {
+	    return st.set('expandAll', !st.expandAll);
+	  });
 	}
 	
 	/*
@@ -31603,6 +31610,9 @@
 	    e.preventDefault();
 	    actions.showRelNotes(this.props.winStore, this.props.storeUpdateHandler);
 	  },
+	  handleExpandToggleClick: function handleExpandToggleClick() {
+	    actions.toggleExpandAll(this.props.winStore, this.props.storeUpdateHandler);
+	  },
 	  setInputRef: function setInputRef(ref) {
 	    this.searchInputRef = ref;
 	    if (this.props.setInputRef) {
@@ -31819,7 +31829,8 @@
 	        isFocused: focusedProp,
 	        selectedTabIndex: selectedTabIndex,
 	        appComponent: this.props.appComponent,
-	        onItemSelected: this.props.onItemSelected
+	        onItemSelected: this.props.onItemSelected,
+	        expandAll: this.props.winStore.expandAll
 	      });
 	      if (isFocused) {
 	        focusedWindowElem = windowElem;
@@ -31923,6 +31934,11 @@
 	        this.windowDivRef.scrollIntoViewIfNeeded();
 	      }
 	    }
+	    if (nextProps.expandAll !== this.props.expandAll) {
+	      if (this.state.expanded !== null) {
+	        this.setState({ expanded: null });
+	      }
+	    }
 	  },
 	  handleOpen: function handleOpen() {
 	    actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
@@ -31947,7 +31963,7 @@
 	   */
 	  getExpandedState: function getExpandedState() {
 	    if (this.state.expanded === null) {
-	      return this.props.filteredTabWindow.tabWindow.open;
+	      return this.props.expandAll && this.props.filteredTabWindow.tabWindow.open;
 	    }
 	    return this.state.expanded;
 	  },

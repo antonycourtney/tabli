@@ -29,10 +29,10 @@ const TabWindowList = React.createClass({
     if (showRelNotes) {
       relNotesSection = (
         <WindowListSection>
-          <MessageCard 
+          <MessageCard
             winStore={this.props.winStore}
-            storeUpdateHandler={this.props.storeUpdateHandler} 
-            content={relNotesStr} 
+            storeUpdateHandler={this.props.storeUpdateHandler}
+            content={relNotesStr}
             onClick={this.ackRelNotes} />
         </WindowListSection>
       );
@@ -68,6 +68,7 @@ const TabWindowList = React.createClass({
           selectedTabIndex={selectedTabIndex}
           appComponent={this.props.appComponent}
           onItemSelected={this.props.onItemSelected}
+          expandAll={this.props.winStore.expandAll}
         />);
       if (isFocused) {
         focusedWindowElem = windowElem;
