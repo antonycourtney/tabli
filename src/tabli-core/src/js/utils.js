@@ -78,7 +78,9 @@ export function bestMatch(matchMap) {
   if (topMatch[1] > runnerUp[1])
     return topMatch[0];
   return null;
-} 
+}
+
+
 
 /*
 var CONTEXT_MENU_ID = 99;

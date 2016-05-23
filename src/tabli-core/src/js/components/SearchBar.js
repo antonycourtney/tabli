@@ -7,6 +7,18 @@ import * as _ from 'lodash';
 import * as Util from './util';
 import HeaderButton from './HeaderButton';
 
+// The dreaded routine copied from SO
+// http://stackoverflow.com/a/18455088/3272482
+function copyTextToClipboard(text) {
+  var copyFrom = document.createElement("textarea");
+  copyFrom.textContent = text;
+  var body = document.getElementsByTagName('body')[0];
+  body.appendChild(copyFrom);
+  copyFrom.select();
+  document.execCommand('copy');
+  body.removeChild(copyFrom);
+}
+
 const SearchBar = React.createClass({
   handleChange() {
     const searchStr = this.searchInputRef.value;
@@ -116,6 +128,14 @@ const SearchBar = React.createClass({
 
   handleExpandToggleClick() {
     actions.toggleExpandAll(this.props.winStore,this.props.storeUpdateHandler);
+  },
+
+  handleCopyClick() {
+    const openWindows = this.props.winStore.getTabWindowsByType('normal');
+
+    const s = openWindows.reduce((rs,tw) => rs + "\n\n" + tw.exportStr() )
+
+    copyTextToClipboard(s);
   },
 
   setInputRef(ref) {

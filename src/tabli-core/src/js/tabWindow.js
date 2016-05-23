@@ -3,7 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as Immutable from 'immutable';
-
+import * as utils from './utils';
 /**
  * Tab state that is persisted as a bookmark
  */
@@ -167,6 +167,18 @@ function resetOpenItem(ti) {
 }
 
 /**
+ * escape table cell for use in Github-Flavored Markdown
+ * Since just used on a page title, just rewrite pipes to -s; GFM actually
+ * buggy here: https://github.com/gitlabhq/gitlabhq/issues/1238
+ */
+function escapeTableCell(s) {
+    if (s.indexOf('|') >= 0) {
+      return s.replace(/\|/g,'-');
+    }
+    return s;
+}
+
+/**
  * A TabWindow
  *
  * Tab windows have a title and a set of tab items.
@@ -252,7 +264,24 @@ export class TabWindow extends Immutable.Record({
     }
     return this.set('tabItems',nextItems);
   }
+
+  exportStr() {
+    const fmtTabItem = ti => {
+      const ret = escapeTableCell(ti.title) + " | " + ti.url + "\n";
+      return ret;
+    };
+    const titleStr = "### " + this.title;
+    const headerStr = `
+Title                                  | URL
+---------------------------------------|-----------
+`
+    const s0 = titleStr + "\n" + headerStr;
+    const s = this.tabItems.reduce((rs,ti) => rs + fmtTabItem(ti), s0 );
+    return s;
+  }
+
 }
+
 
 /**
  * reset a window to its base saved state (after window is closed)
