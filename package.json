@@ -39,6 +39,7 @@
     "eslint": "^2.9.0",
     "eslint-config-airbnb": "9.0.1",
     "eslint-plugin-react": "^5.1.1",
+    "file-loader": "^0.8.5",
     "filesize": "^3.3.0",
     "gulp": "^3.9.1",
     "gulp-build-branch": "^0.1.4",
@@ -59,6 +60,7 @@
     "sinon": "^1.17.4",
     "tap-spec": "^4.1.1",
     "tape": "^4.5.1",
+    "url-loader": "^0.5.7",
     "webpack": "^1.13.0"
   },
   "scripts": {

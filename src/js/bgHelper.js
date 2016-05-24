@@ -209,7 +209,6 @@ function registerEventHandlers(uf) {
           };
         }
         const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
-        chrome.storage.local
         return st;
       });
     });

@@ -5,6 +5,7 @@ import * as pact from './pact';
 const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
 const TABLI_REVIEW_URL = 'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews';
+const TABLI_FEEDBACK_URL = 'mailto:tabli-feedback@antonycourtney.com';
 /**
  * sync a single Chrome window by its Chrome window id
  *
@@ -256,15 +257,18 @@ export function unmanageWindow(archiveFolderId, tabWindow, cb) {
   });
 }
 
-export function showHelp() {
+export function showHelp(winStore,cb) {
   chrome.tabs.create({ url: TABLI_HELP_URL });
 }
 
-export function showAbout() {
+export function showAbout(winStore,cb) {
   chrome.tabs.create({ url: TABLI_ABOUT_URL });
 }
-export function showReview(winStore) {
+export function showReview(winStore,cb) {
   chrome.tabs.create({ url: TABLI_REVIEW_URL });
+}
+export function sendFeedback(winStore,cb) {
+  chrome.tabs.create({ url: TABLI_FEEDBACK_URL });
 }
 
 export function showPopout(winStore,cb) {

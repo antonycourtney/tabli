@@ -14,14 +14,11 @@ const actions = Tabli.actions;
 /**
  * Main entry point to rendering the popup window
  */
-function renderPopup(currentChromeWindow,isPopout) {
+export function renderPopup(storeRef,currentChromeWindow,isPopout,doSync) {
 
   console.log("renderPopup: isPopout: ", isPopout);
 
   var t_preRender = performance.now();
-  var bgPage = chrome.extension.getBackgroundPage();
-
-  var storeRef = bgPage.storeRef;
 
   var parentNode = document.getElementById('windowList-region');
 
@@ -32,29 +29,33 @@ function renderPopup(currentChromeWindow,isPopout) {
 
 
   // And sync our window state, which may update the UI...
-  actions.syncChromeWindows(logWrap((uf) => {
-    console.log("postLoadRender: window sync complete");
-    const savedStore = storeRef.getValue();
-    const syncStore = uf(savedStore);
+  if (doSync) {
+    actions.syncChromeWindows(logWrap((uf) => {
+      console.log("postLoadRender: window sync complete");
+      const savedStore = storeRef.getValue();
+      const syncStore = uf(savedStore);
 
-    // And set current focused window:
-    console.log("renderPopup: setting current window to ", currentChromeWindow);      
-    const nextStore = syncStore.setCurrentWindow(currentChromeWindow);
-    if (!(nextStore.equals(savedStore))) {
-      storeRef.setValue(nextStore);
-    } else {
-      console.log("doRender: nextStore.equals(savedStore) -- skipping setValue")
-    }
+      // And set current focused window:
+      console.log("renderPopup: setting current window to ", currentChromeWindow);
+      const nextStore = syncStore.setCurrentWindow(currentChromeWindow);
+      if (!(nextStore.equals(savedStore))) {
+        storeRef.setValue(nextStore);
+      } else {
+        console.log("doRender: nextStore.equals(savedStore) -- skipping setValue")
+      }
 
-    // logHTML("Updated savedHTML", renderedString);
-    var t_postSyncUpdate = performance.now();
-    console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
-    document.getElementById('searchBox').focus();
-  }));
+      // logHTML("Updated savedHTML", renderedString);
+      var t_postSyncUpdate = performance.now();
+      console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
+      document.getElementById('searchBox').focus();
+    }));
+  }
 }
 
 export function getFocusedAndRender(isPopout) {
+  var bgPage = chrome.extension.getBackgroundPage();
+  var storeRef = bgPage.storeRef;
   chrome.windows.getCurrent(null, (currentChromeWindow) => {
-    renderPopup(currentChromeWindow,isPopout);
+    renderPopup(storeRef,currentChromeWindow,isPopout,true);
   });
 }

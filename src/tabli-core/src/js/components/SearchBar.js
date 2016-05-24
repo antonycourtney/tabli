@@ -118,7 +118,12 @@ const SearchBar = React.createClass({
 
   handleReviewClick(e) {
     e.preventDefault();
-    actions.showReview(this.props.winStore);
+    actions.showReview(this.props.winStore,this.props.storeUpdateHandler);
+  },
+
+  handleFeedbackClick(e) {
+    e.preventDefault();
+    actions.sendFeedback(this.props.winStore,this.props.storeUpdateHandler);
   },
 
   handleRelNotesClick(e) {
@@ -199,6 +204,7 @@ const SearchBar = React.createClass({
         <li><a href="#" onClick={this.handleRelNotesClick}>Release Notes</a></li>
         <li role="separator" className="divider"></li>
         <li><a href="#" onClick={this.handleReviewClick}>Review Tabli</a></li>
+        <li><a href="#" onClick={this.handleFeedbackClick}>Send Feedback</a></li>
       </ul>
     )
 

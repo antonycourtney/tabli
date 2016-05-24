@@ -5,11 +5,13 @@ import * as ReactDOM from 'react-dom';
 import * as ReactDOMServer from 'react-dom/server';
 
 import * as Tabli from '../tabli-core/src/js/index';
+import * as RenderCommon from './renderCommon';
 
 const TabManagerState = Tabli.TabManagerState;
 const TabWindow = Tabli.TabWindow;
 const Popup = Tabli.components.Popup;
 const Styles = Tabli.components.Styles;
+const ViewRef = Tabli.ViewRef;
 
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin) {
@@ -22,61 +24,29 @@ function makeTabWindow(jsWin) {
 }
 
 function renderPage(testData) {
-  const allWindows = testData.allWindows;
+  const testChromeWindows = testData.chromeWindows;
 
-  const tabWindows = allWindows.map(makeTabWindow);
+  console.log("renderPage: testData: ", testData);
 
-  var emptyWinStore = new TabManagerState();
 
-  var bgPage = chrome.extension.getBackgroundPage();
+  const emptyWinStore = new TabManagerState();
+  const mockWinStore = emptyWinStore.syncWindowList(testChromeWindows).set('showRelNotes',false);
 
-  var renderTestSavedHTML = bgPage.renderTestSavedHTML;
-
-  /*
-    const savedNode = bgPage.savedNode;
-    console.log("Saved node from bg page: ", savedNode);
-*/
-
-  const mockWinStore = emptyWinStore.registerTabWindows(tabWindows);
   console.log('Created mockWinStore and registered test windows');
   console.log('mock winStore: ', mockWinStore.toJS());
+  const storeRef = new ViewRef(mockWinStore);
 
-  var t_preRender = performance.now();
-  var parentNode = document.getElementById('windowList-region');
+
+  const currentChromeWindow = testChromeWindows[0];
 
   if (Perf) {
     Perf.start();
   }
 
-  /*
-  if (savedNode) {
-    var newNode = document.importNode(savedNode, true);
-    if (parentNode.firstChild===null) {
-      parentNode.appendChild(newNode);
-    } else {
-      parentNode.replaceChild(newNode,parentNode.firstChild);
-    }
-  }
-  */
-  if (renderTestSavedHTML) {
-    console.log('Got saved HTML, setting...');
-    parentNode.innerHTML = renderTestSavedHTML;
-    var t_postSet = performance.now();
-    console.log('time to set initial HTML: ', t_postSet - t_preRender);
-  }
-  /*
-   * Use setTimeout so we have a chance to finish the initial render
-   */
+  var t_preRender = performance.now();
 
-  // pass noListener since we don't want to receive updates from the store.
-  // There won't be any such updates (since we created the store) but the listener mechanism
-  // uses chrome messages to bg page as workaround for lack of window close event on popup, and we don't want
-  // that connection.
-
-  const appElement = <div style={Styles.renderTestContainer}>
-    <Popup storeRef={null} initialWinStore={mockWinStore} noListener />
-  </div>;
-  ReactDOM.render(appElement, parentNode);
+  // N.B. false last arg to prevent sync'ing current chrome windows
+  RenderCommon.renderPopup(storeRef,currentChromeWindow,false,false);
 
   var t_postRender = performance.now();
   if (Perf) {
@@ -91,17 +61,9 @@ function renderPage(testData) {
     console.log('wasted:');
     Perf.printWasted();
   }
-
-  console.log('After rendering, parentNode: ', parentNode);
-
-  var renderedString = ReactDOMServer.renderToString(appElement);
-
-  // console.log("rendered string: ", renderedString);
-  // bgPage.savedNode = parentNode.firstChild;
-  bgPage.renderTestSavedHTML = renderedString;
 }
 
-var testStateUrl = 'testData/winSnap.json';
+var testStateUrl = 'testData/renderTest-chromeWindowSnap.json';
 
 function loadTestData(callback) {
   var request = new XMLHttpRequest();
