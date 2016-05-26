@@ -30459,7 +30459,7 @@
 	var POPUP_BODY_HEIGHT = exports.POPUP_BODY_HEIGHT = 537;
 	var POPUP_FOOTER_HEIGHT = exports.POPUP_FOOTER_HEIGHT = 25;
 	var FOCUS_SCROLL_BASE = exports.FOCUS_SCROLL_BASE = 10;
-	var MODAL_BODY_MAX_HEIGHT = exports.MODAL_BODY_MAX_HEIGHT = 400;
+	var MODAL_BODY_MAX_HEIGHT = exports.MODAL_BODY_MAX_HEIGHT = 500;
 	
 	var KEY_F1 = exports.KEY_F1 = 112;
 	var KEY_UP = exports.KEY_UP = 38;
@@ -30856,9 +30856,6 @@
 	      )
 	    );
 	    return modalDiv;
-	  },
-	  componentDidMount: function componentDidMount() {
-	    console.log('Modal: componentDidMount');
 	  }
 	});
 	
@@ -30868,6 +30865,7 @@
 	    return React.createElement(
 	      'div',
 	      { style: _styles2.default.dialogInfo },
+	      '                                                                                                                                                                                                                                                              ',
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.dialogInfoContents },

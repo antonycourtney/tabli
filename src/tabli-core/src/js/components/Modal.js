@@ -41,17 +41,12 @@ export const Dialog = React.createClass({
       </div>);
     return modalDiv;
   },
-
-  componentDidMount() {
-    console.log('Modal: componentDidMount');
-  },
 });
 
 export const Info = React.createClass({
   render() {
     return (
-      <div style={Styles.dialogInfo}>
-                                                                                                                                                                                                                                                                <div style={Styles.dialogInfoContents}>
+      <div style={Styles.dialogInfo}>                                                                                                                                                                                                                                                              <div style={Styles.dialogInfoContents}>
           {this.props.children}
         </div>
       </div>
@@ -62,7 +57,7 @@ export const Info = React.createClass({
 export const Body = React.createClass({
   render() {
     return (
-      <div style={Styles.modalBodyContainer}>
+      <div style={Styles.modalBodyContainer} >
         {this.props.children}
       </div>
     );
