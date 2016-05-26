@@ -30209,7 +30209,10 @@
 	  primaryButton: {
 	    backgroundColor: '#1678c2',
 	    color: '#fff'
-	
+	  },
+	  dialogButtonRow: {
+	    flexShrink: 0,
+	    marginRight: 22
 	  },
 	  spacer: {
 	    // backgroundColor: 'red', // for debugging
@@ -30325,6 +30328,13 @@
 	    display: 'flex',
 	    flexDirection: 'column'
 	  },
+	  modalBodyContainer: {
+	    display: 'flex',
+	    minHeight: 50,
+	    maxHeight: Constants.MODAL_BODY_MAX_HEIGHT,
+	    overflow: 'auto',
+	    flexDirection: 'column'
+	  },
 	  simpleTabContainer: {
 	    width: 250,
 	    marginLeft: 8,
@@ -30336,11 +30346,6 @@
 	    border: '1px solid #bababa',
 	    borderRadius: 3
 	  },
-	  modalBodyContainer: {
-	    display: 'flex',
-	    minHeight: 50,
-	    flexDirection: 'column'
-	  },
 	  centerContents: {
 	    margin: 'auto'
 	  },
@@ -30351,7 +30356,7 @@
 	  dialogInfoContents: {
 	    marginLeft: 10,
 	    marginTop: 4,
-	    marginBottom: 10
+	    marginBottom: 0
 	  },
 	  windowListSection: {
 	    borderBottom: '1px solid #bababa',
@@ -30417,7 +30422,8 @@
 	  },
 	  alignRight: {
 	    display: 'flex',
-	    justifyContent: 'flex-end'
+	    justifyContent: 'flex-end',
+	    alignItems: 'center'
 	  },
 	  tabTileContainer: {
 	    display: 'flex',
@@ -30453,6 +30459,7 @@
 	var POPUP_BODY_HEIGHT = exports.POPUP_BODY_HEIGHT = 537;
 	var POPUP_FOOTER_HEIGHT = exports.POPUP_FOOTER_HEIGHT = 25;
 	var FOCUS_SCROLL_BASE = exports.FOCUS_SCROLL_BASE = 10;
+	var MODAL_BODY_MAX_HEIGHT = exports.MODAL_BODY_MAX_HEIGHT = 400;
 	
 	var KEY_F1 = exports.KEY_F1 = 112;
 	var KEY_UP = exports.KEY_UP = 38;
@@ -30668,7 +30675,7 @@
 	        ),
 	        React.createElement(
 	          'div',
-	          { style: Util.merge(_styles2.default.alignRight) },
+	          { style: Util.merge(_styles2.default.alignRight, _styles2.default.dialogButtonRow) },
 	          React.createElement(
 	            'button',
 	            { type: 'button',
@@ -31699,7 +31706,7 @@
 	
 	    var s = openWindows.reduce(function (rs, tw) {
 	      return rs + "\n\n" + tw.exportStr();
-	    });
+	    }, "");
 	
 	    copyTextToClipboard(s);
 	  },
@@ -31749,8 +31756,8 @@
 	
 	    var copyButton = React.createElement(
 	      'button',
-	      { type: 'button', className: 'btn btn-default btn-xs',
-	        title: 'Copy all windows to clipboard',
+	      { id: 'copyButton', type: 'button', className: 'btn btn-default btn-xs',
+	        title: 'Copied!',
 	        onClick: this.handleCopyClick },
 	      React.createElement('i', { className: 'fa fa-clipboard', 'aria-hidden': 'true' })
 	    );
@@ -55952,7 +55959,7 @@
   \***********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<div class=\"card\">\n  <div class=\"card-header\">\n    <div class=\"card-title\">Tabli 0.9.1 (Beta)</div>\n    <div class=\"card-subtitle\">May 23, 2016</div>\n  </div>\n  <div class=\"card-body\">\n    <ul>\n      <li><b>Introducing: The Tabli Popout Window</b>&#8212;all the functionality of the Tabli popup in\n        an independent window that updates as you browse.\n        Activate by clicking the\n        popout button (<img src=\"" + __webpack_require__(/*! ../assets/popout.png */ 326) + "\"></img>) in the Tabli popup.\n      <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>\n      <li>Tooltips that show the full title and URL of each tab.</li>\n      <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>\n      <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>\n      <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>\n      <li>A cleaned up toolbar.\n    </ul>\n  </div>\n</div>\n";
+	module.exports = "<div class=\"card\">\n  <div class=\"card-header\">\n    <div class=\"card-title\">Tabli 0.9.1 (Beta)</div>\n    <div class=\"card-subtitle\">May 23, 2016</div>\n  </div>\n  <div class=\"card-body\">\n    <ul>\n      <li><b>Introducing: The Tabli Popout Window</b>&#8212; an independent Tabli window that\n        updates as you browse. This provides a convenient, always-available view of all your\n        browser windows and tabs, especially useful on large, high resolution monitors.\n        Activate by clicking the\n        popout<br/>\n        <span style=\"white-space:nowrap\">button (<img src=\"" + __webpack_require__(/*! ../assets/popout.png */ 326) + "\"></img>)</span> in the Tabli popup.\n      <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>\n      <li>Tooltips that show the full title and URL of each tab.</li>\n      <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>\n      <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>\n      <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>\n      <li>A cleaned up toolbar.\n    </ul>\n  </div>\n</div>\n";
 
 /***/ },
 /* 326 */

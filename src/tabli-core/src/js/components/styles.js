@@ -152,7 +152,10 @@ const styles = {
   primaryButton: {
     backgroundColor: '#1678c2',
     color: '#fff',
-
+  },
+  dialogButtonRow: {
+    flexShrink: 0,
+    marginRight: 22
   },
   spacer: {
     // backgroundColor: 'red', // for debugging
@@ -269,6 +272,13 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
   },
+  modalBodyContainer: {
+    display: 'flex',
+    minHeight: 50,
+    maxHeight: Constants.MODAL_BODY_MAX_HEIGHT,
+    overflow: 'auto',
+    flexDirection: 'column',
+  },
   simpleTabContainer: {
     width: 250,
     marginLeft: 8,
@@ -280,11 +290,6 @@ const styles = {
     border: '1px solid #bababa',
     borderRadius: 3,
   },
-  modalBodyContainer: {
-    display: 'flex',
-    minHeight: 50,
-    flexDirection: 'column',
-  },
   centerContents: {
     margin: 'auto',
   },
@@ -295,7 +300,7 @@ const styles = {
   dialogInfoContents: {
     marginLeft: 10,
     marginTop: 4,
-    marginBottom: 10,
+    marginBottom: 0,
   },
   windowListSection: {
     borderBottom: '1px solid #bababa',
@@ -362,6 +367,7 @@ const styles = {
   alignRight: {
     display: 'flex',
     justifyContent: 'flex-end',
+    alignItems: 'center'
   },
   tabTileContainer: {
     display: 'flex',

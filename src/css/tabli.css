@@ -144,7 +144,7 @@ fieldset { padding:0; border:0; }
 }
 .tabli-dialog-button {
   margin: 8px;
-  vertical-align: center;
+  min-width: 60px;
 }
 .inline-flex {
   display:inline-flex;

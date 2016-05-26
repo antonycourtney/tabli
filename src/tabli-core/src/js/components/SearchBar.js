@@ -138,7 +138,7 @@ const SearchBar = React.createClass({
   handleCopyClick() {
     const openWindows = this.props.winStore.getTabWindowsByType('normal');
 
-    const s = openWindows.reduce((rs,tw) => rs + "\n\n" + tw.exportStr() )
+    const s = openWindows.reduce((rs,tw) => rs + "\n\n" + tw.exportStr(),"");
 
     copyTextToClipboard(s);
   },
@@ -189,8 +189,8 @@ const SearchBar = React.createClass({
     );
 
     const copyButton = (
-      <button type="button" className="btn btn-default btn-xs"
-        title="Copy all windows to clipboard"
+      <button id="copyButton" type="button" className="btn btn-default btn-xs"
+        title="Copied!"
         onClick={this.handleCopyClick}>
         <i className="fa fa-clipboard" aria-hidden="true"></i>
       </button>
@@ -207,7 +207,6 @@ const SearchBar = React.createClass({
         <li><a href="#" onClick={this.handleFeedbackClick}>Send Feedback</a></li>
       </ul>
     )
-
 
     return (
       <div className="header-container">

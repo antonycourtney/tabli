@@ -99,7 +99,7 @@ style={Styles.dialogButton}
             <br/>
             <p>This action can not be undone.</p>
           </div>
-          <div style={Util.merge(Styles.alignRight)}>
+          <div style={Util.merge(Styles.alignRight,Styles.dialogButtonRow)}>
             <button type="button"
               className="btn btn-primary btn-sm tabli-dialog-button"
               onClick={this.handleSubmit}
