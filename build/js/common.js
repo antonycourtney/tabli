@@ -164,7 +164,7 @@
 	
 	var pact = _interopRequireWildcard(_pact);
 	
-	var _viewRef = __webpack_require__(/*! ./viewRef */ 358);
+	var _viewRef = __webpack_require__(/*! ./viewRef */ 359);
 	
 	var _viewRef2 = _interopRequireDefault(_viewRef);
 	
@@ -22756,7 +22756,7 @@
 	
 	var _reactDnd = __webpack_require__(/*! react-dnd */ 204);
 	
-	var _reactDndHtml5Backend = __webpack_require__(/*! react-dnd-html5-backend */ 327);
+	var _reactDndHtml5Backend = __webpack_require__(/*! react-dnd-html5-backend */ 328);
 	
 	var _reactDndHtml5Backend2 = _interopRequireDefault(_reactDndHtml5Backend);
 	
@@ -31876,7 +31876,6 @@
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	var relNotesStr = '';
-	
 	if (!util.isNode) {
 	  // in browser
 	  relNotesStr = __webpack_require__(/*! ../../html/relnotes.html */ 325);
@@ -31945,6 +31944,15 @@
 	      }
 	    }
 	
+	    var otherOpenSection = null;
+	    if (openWindows.length > 0) {
+	      otherOpenSection = React.createElement(
+	        _WindowListSection2.default,
+	        { title: 'Other Open Windows' },
+	        openWindows
+	      );
+	    }
+	
 	    var savedSection = null;
 	    if (savedWindows.length > 0) {
 	      savedSection = React.createElement(
@@ -31963,11 +31971,7 @@
 	        { focusedRef: this.props.setFocusedTabWindowRef, title: 'Current Window' },
 	        focusedWindowElem
 	      ),
-	      React.createElement(
-	        _WindowListSection2.default,
-	        { title: 'Other Open Windows' },
-	        openWindows
-	      ),
+	      otherOpenSection,
 	      savedSection
 	    );
 	  }
@@ -55969,7 +55973,8 @@
 	module.exports = "data:image/png;base64,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"
 
 /***/ },
-/* 327 */
+/* 327 */,
+/* 328 */
 /*!************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/index.js ***!
   \************************************************/
@@ -55984,15 +55989,15 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _HTML5Backend = __webpack_require__(/*! ./HTML5Backend */ 328);
+	var _HTML5Backend = __webpack_require__(/*! ./HTML5Backend */ 329);
 	
 	var _HTML5Backend2 = _interopRequireDefault(_HTML5Backend);
 	
-	var _getEmptyImage = __webpack_require__(/*! ./getEmptyImage */ 357);
+	var _getEmptyImage = __webpack_require__(/*! ./getEmptyImage */ 358);
 	
 	var _getEmptyImage2 = _interopRequireDefault(_getEmptyImage);
 	
-	var _NativeTypes = __webpack_require__(/*! ./NativeTypes */ 356);
+	var _NativeTypes = __webpack_require__(/*! ./NativeTypes */ 357);
 	
 	var NativeTypes = _interopRequireWildcard(_NativeTypes);
 	
@@ -56004,7 +56009,7 @@
 	}
 
 /***/ },
-/* 328 */
+/* 329 */
 /*!*******************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/HTML5Backend.js ***!
   \*******************************************************/
@@ -56020,25 +56025,25 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var _lodashDefaults = __webpack_require__(/*! lodash/defaults */ 329);
+	var _lodashDefaults = __webpack_require__(/*! lodash/defaults */ 330);
 	
 	var _lodashDefaults2 = _interopRequireDefault(_lodashDefaults);
 	
-	var _shallowEqual = __webpack_require__(/*! ./shallowEqual */ 346);
+	var _shallowEqual = __webpack_require__(/*! ./shallowEqual */ 347);
 	
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 	
-	var _EnterLeaveCounter = __webpack_require__(/*! ./EnterLeaveCounter */ 347);
+	var _EnterLeaveCounter = __webpack_require__(/*! ./EnterLeaveCounter */ 348);
 	
 	var _EnterLeaveCounter2 = _interopRequireDefault(_EnterLeaveCounter);
 	
-	var _BrowserDetector = __webpack_require__(/*! ./BrowserDetector */ 351);
+	var _BrowserDetector = __webpack_require__(/*! ./BrowserDetector */ 352);
 	
-	var _OffsetUtils = __webpack_require__(/*! ./OffsetUtils */ 353);
+	var _OffsetUtils = __webpack_require__(/*! ./OffsetUtils */ 354);
 	
-	var _NativeDragSources = __webpack_require__(/*! ./NativeDragSources */ 355);
+	var _NativeDragSources = __webpack_require__(/*! ./NativeDragSources */ 356);
 	
-	var _NativeTypes = __webpack_require__(/*! ./NativeTypes */ 356);
+	var _NativeTypes = __webpack_require__(/*! ./NativeTypes */ 357);
 	
 	var NativeTypes = _interopRequireWildcard(_NativeTypes);
 	
@@ -56588,15 +56593,15 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 329 */
+/* 330 */
 /*!******************************!*\
   !*** ./~/lodash/defaults.js ***!
   \******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var apply = __webpack_require__(/*! ./_apply */ 270),
-	    assignInDefaults = __webpack_require__(/*! ./_assignInDefaults */ 330),
-	    assignInWith = __webpack_require__(/*! ./assignInWith */ 331),
+	    assignInDefaults = __webpack_require__(/*! ./_assignInDefaults */ 331),
+	    assignInWith = __webpack_require__(/*! ./assignInWith */ 332),
 	    rest = __webpack_require__(/*! ./rest */ 269);
 	
 	/**
@@ -56629,7 +56634,7 @@
 
 
 /***/ },
-/* 330 */
+/* 331 */
 /*!***************************************!*\
   !*** ./~/lodash/_assignInDefaults.js ***!
   \***************************************/
@@ -56665,15 +56670,15 @@
 
 
 /***/ },
-/* 331 */
+/* 332 */
 /*!**********************************!*\
   !*** ./~/lodash/assignInWith.js ***!
   \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var copyObject = __webpack_require__(/*! ./_copyObject */ 332),
-	    createAssigner = __webpack_require__(/*! ./_createAssigner */ 334),
-	    keysIn = __webpack_require__(/*! ./keysIn */ 337);
+	var copyObject = __webpack_require__(/*! ./_copyObject */ 333),
+	    createAssigner = __webpack_require__(/*! ./_createAssigner */ 335),
+	    keysIn = __webpack_require__(/*! ./keysIn */ 338);
 	
 	/**
 	 * This method is like `_.assignIn` except that it accepts `customizer`
@@ -56712,13 +56717,13 @@
 
 
 /***/ },
-/* 332 */
+/* 333 */
 /*!*********************************!*\
   !*** ./~/lodash/_copyObject.js ***!
   \*********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var assignValue = __webpack_require__(/*! ./_assignValue */ 333);
+	var assignValue = __webpack_require__(/*! ./_assignValue */ 334);
 	
 	/**
 	 * Copies properties of `source` to `object`.
@@ -56752,7 +56757,7 @@
 
 
 /***/ },
-/* 333 */
+/* 334 */
 /*!**********************************!*\
   !*** ./~/lodash/_assignValue.js ***!
   \**********************************/
@@ -56788,13 +56793,13 @@
 
 
 /***/ },
-/* 334 */
+/* 335 */
 /*!*************************************!*\
   !*** ./~/lodash/_createAssigner.js ***!
   \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isIterateeCall = __webpack_require__(/*! ./_isIterateeCall */ 335),
+	var isIterateeCall = __webpack_require__(/*! ./_isIterateeCall */ 336),
 	    rest = __webpack_require__(/*! ./rest */ 269);
 	
 	/**
@@ -56834,7 +56839,7 @@
 
 
 /***/ },
-/* 335 */
+/* 336 */
 /*!*************************************!*\
   !*** ./~/lodash/_isIterateeCall.js ***!
   \*************************************/
@@ -56842,7 +56847,7 @@
 
 	var eq = __webpack_require__(/*! ./eq */ 242),
 	    isArrayLike = __webpack_require__(/*! ./isArrayLike */ 265),
-	    isIndex = __webpack_require__(/*! ./_isIndex */ 336),
+	    isIndex = __webpack_require__(/*! ./_isIndex */ 337),
 	    isObject = __webpack_require__(/*! ./isObject */ 219);
 	
 	/**
@@ -56873,7 +56878,7 @@
 
 
 /***/ },
-/* 336 */
+/* 337 */
 /*!******************************!*\
   !*** ./~/lodash/_isIndex.js ***!
   \******************************/
@@ -56904,16 +56909,16 @@
 
 
 /***/ },
-/* 337 */
+/* 338 */
 /*!****************************!*\
   !*** ./~/lodash/keysIn.js ***!
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseKeysIn = __webpack_require__(/*! ./_baseKeysIn */ 338),
-	    indexKeys = __webpack_require__(/*! ./_indexKeys */ 341),
-	    isIndex = __webpack_require__(/*! ./_isIndex */ 336),
-	    isPrototype = __webpack_require__(/*! ./_isPrototype */ 345);
+	var baseKeysIn = __webpack_require__(/*! ./_baseKeysIn */ 339),
+	    indexKeys = __webpack_require__(/*! ./_indexKeys */ 342),
+	    isIndex = __webpack_require__(/*! ./_isIndex */ 337),
+	    isPrototype = __webpack_require__(/*! ./_isPrototype */ 346);
 	
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -56968,14 +56973,14 @@
 
 
 /***/ },
-/* 338 */
+/* 339 */
 /*!*********************************!*\
   !*** ./~/lodash/_baseKeysIn.js ***!
   \*********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var Reflect = __webpack_require__(/*! ./_Reflect */ 339),
-	    iteratorToArray = __webpack_require__(/*! ./_iteratorToArray */ 340);
+	var Reflect = __webpack_require__(/*! ./_Reflect */ 340),
+	    iteratorToArray = __webpack_require__(/*! ./_iteratorToArray */ 341);
 	
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -57013,7 +57018,7 @@
 
 
 /***/ },
-/* 339 */
+/* 340 */
 /*!******************************!*\
   !*** ./~/lodash/_Reflect.js ***!
   \******************************/
@@ -57028,7 +57033,7 @@
 
 
 /***/ },
-/* 340 */
+/* 341 */
 /*!**************************************!*\
   !*** ./~/lodash/_iteratorToArray.js ***!
   \**************************************/
@@ -57055,17 +57060,17 @@
 
 
 /***/ },
-/* 341 */
+/* 342 */
 /*!********************************!*\
   !*** ./~/lodash/_indexKeys.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseTimes = __webpack_require__(/*! ./_baseTimes */ 342),
-	    isArguments = __webpack_require__(/*! ./isArguments */ 343),
+	var baseTimes = __webpack_require__(/*! ./_baseTimes */ 343),
+	    isArguments = __webpack_require__(/*! ./isArguments */ 344),
 	    isArray = __webpack_require__(/*! ./isArray */ 217),
 	    isLength = __webpack_require__(/*! ./isLength */ 268),
-	    isString = __webpack_require__(/*! ./isString */ 344);
+	    isString = __webpack_require__(/*! ./isString */ 345);
 	
 	/**
 	 * Creates an array of index keys for `object` values of arrays,
@@ -57088,7 +57093,7 @@
 
 
 /***/ },
-/* 342 */
+/* 343 */
 /*!********************************!*\
   !*** ./~/lodash/_baseTimes.js ***!
   \********************************/
@@ -57117,7 +57122,7 @@
 
 
 /***/ },
-/* 343 */
+/* 344 */
 /*!*********************************!*\
   !*** ./~/lodash/isArguments.js ***!
   \*********************************/
@@ -57172,7 +57177,7 @@
 
 
 /***/ },
-/* 344 */
+/* 345 */
 /*!******************************!*\
   !*** ./~/lodash/isString.js ***!
   \******************************/
@@ -57221,7 +57226,7 @@
 
 
 /***/ },
-/* 345 */
+/* 346 */
 /*!**********************************!*\
   !*** ./~/lodash/_isPrototype.js ***!
   \**********************************/
@@ -57248,7 +57253,7 @@
 
 
 /***/ },
-/* 346 */
+/* 347 */
 /*!*******************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/shallowEqual.js ***!
   \*******************************************************/
@@ -57292,7 +57297,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 347 */
+/* 348 */
 /*!************************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/EnterLeaveCounter.js ***!
   \************************************************************/
@@ -57306,7 +57311,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var _lodashUnion = __webpack_require__(/*! lodash/union */ 348);
+	var _lodashUnion = __webpack_require__(/*! lodash/union */ 349);
 	
 	var _lodashUnion2 = _interopRequireDefault(_lodashUnion);
 	
@@ -57352,13 +57357,13 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 348 */
+/* 349 */
 /*!***************************!*\
   !*** ./~/lodash/union.js ***!
   \***************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFlatten = __webpack_require__(/*! ./_baseFlatten */ 349),
+	var baseFlatten = __webpack_require__(/*! ./_baseFlatten */ 350),
 	    baseUniq = __webpack_require__(/*! ./_baseUniq */ 281),
 	    isArrayLikeObject = __webpack_require__(/*! ./isArrayLikeObject */ 264),
 	    rest = __webpack_require__(/*! ./rest */ 269);
@@ -57387,14 +57392,14 @@
 
 
 /***/ },
-/* 349 */
+/* 350 */
 /*!**********************************!*\
   !*** ./~/lodash/_baseFlatten.js ***!
   \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var arrayPush = __webpack_require__(/*! ./_arrayPush */ 280),
-	    isFlattenable = __webpack_require__(/*! ./_isFlattenable */ 350);
+	    isFlattenable = __webpack_require__(/*! ./_isFlattenable */ 351);
 	
 	/**
 	 * The base implementation of `_.flatten` with support for restricting flattening.
@@ -57434,13 +57439,13 @@
 
 
 /***/ },
-/* 350 */
+/* 351 */
 /*!************************************!*\
   !*** ./~/lodash/_isFlattenable.js ***!
   \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(/*! ./isArguments */ 343),
+	var isArguments = __webpack_require__(/*! ./isArguments */ 344),
 	    isArray = __webpack_require__(/*! ./isArray */ 217);
 	
 	/**
@@ -57458,7 +57463,7 @@
 
 
 /***/ },
-/* 351 */
+/* 352 */
 /*!**********************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/BrowserDetector.js ***!
   \**********************************************************/
@@ -57470,7 +57475,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _lodashMemoize = __webpack_require__(/*! lodash/memoize */ 352);
+	var _lodashMemoize = __webpack_require__(/*! lodash/memoize */ 353);
 	
 	var _lodashMemoize2 = _interopRequireDefault(_lodashMemoize);
 	
@@ -57486,7 +57491,7 @@
 	exports.isSafari = isSafari;
 
 /***/ },
-/* 352 */
+/* 353 */
 /*!*****************************!*\
   !*** ./~/lodash/memoize.js ***!
   \*****************************/
@@ -57568,7 +57573,7 @@
 
 
 /***/ },
-/* 353 */
+/* 354 */
 /*!******************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/OffsetUtils.js ***!
   \******************************************************/
@@ -57583,9 +57588,9 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _BrowserDetector = __webpack_require__(/*! ./BrowserDetector */ 351);
+	var _BrowserDetector = __webpack_require__(/*! ./BrowserDetector */ 352);
 	
-	var _MonotonicInterpolant = __webpack_require__(/*! ./MonotonicInterpolant */ 354);
+	var _MonotonicInterpolant = __webpack_require__(/*! ./MonotonicInterpolant */ 355);
 	
 	var _MonotonicInterpolant2 = _interopRequireDefault(_MonotonicInterpolant);
 	
@@ -57671,7 +57676,7 @@
 	}
 
 /***/ },
-/* 354 */
+/* 355 */
 /*!***************************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/MonotonicInterpolant.js ***!
   \***************************************************************/
@@ -57791,7 +57796,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 355 */
+/* 356 */
 /*!************************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/NativeDragSources.js ***!
   \************************************************************/
@@ -57812,7 +57817,7 @@
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	var _NativeTypes = __webpack_require__(/*! ./NativeTypes */ 356);
+	var _NativeTypes = __webpack_require__(/*! ./NativeTypes */ 357);
 	
 	var NativeTypes = _interopRequireWildcard(_NativeTypes);
 	
@@ -57902,7 +57907,7 @@
 	}
 
 /***/ },
-/* 356 */
+/* 357 */
 /*!******************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/NativeTypes.js ***!
   \******************************************************/
@@ -57919,7 +57924,7 @@
 	exports.TEXT = TEXT;
 
 /***/ },
-/* 357 */
+/* 358 */
 /*!********************************************************!*\
   !*** ./~/react-dnd-html5-backend/lib/getEmptyImage.js ***!
   \********************************************************/
@@ -57943,7 +57948,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 358 */
+/* 359 */
 /*!******************************************!*\
   !*** ./src/tabli-core/src/js/viewRef.js ***!
   \******************************************/

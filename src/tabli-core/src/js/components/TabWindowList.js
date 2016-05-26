@@ -9,7 +9,6 @@ import * as actions from '../actions';
 import * as util from './util';
 
 var relNotesStr = '';
-
 if (!util.isNode) {
   // in browser
   relNotesStr = require('../../html/relnotes.html');
@@ -79,6 +78,15 @@ const TabWindowList = React.createClass({
       }
     }
 
+    var otherOpenSection = null;
+    if (openWindows.length > 0) {
+      otherOpenSection = (
+        <WindowListSection title="Other Open Windows">
+          {openWindows}
+        </WindowListSection>
+      );
+    }
+
     var savedSection = null;
     if (savedWindows.length > 0) {
       savedSection = (
@@ -94,9 +102,7 @@ const TabWindowList = React.createClass({
         <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
           {focusedWindowElem}
         </WindowListSection>
-        <WindowListSection title="Other Open Windows">
-          {openWindows}
-        </WindowListSection>
+        {otherOpenSection}
         {savedSection}
       </div>
     );
