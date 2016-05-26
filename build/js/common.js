@@ -31702,7 +31702,10 @@
 	  handleCopyClick: function handleCopyClick() {
 	    var openWindows = this.props.winStore.getTabWindowsByType('normal');
 	
-	    var s = openWindows.reduce(function (rs, tw) {
+	    var cmpFn = Util.windowCmp(this.props.winStore.currentWindowId);
+	    var sortedWindows = openWindows.sort(cmpFn);
+	
+	    var s = sortedWindows.reduce(function (rs, tw) {
 	      return rs + "\n\n" + tw.exportStr();
 	    }, "");
 	
@@ -55961,7 +55964,7 @@
   \***********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<div class=\"card\">\n  <div class=\"card-header\">\n    <div class=\"card-title\">Tabli 0.9.1 (Beta)</div>\n    <div class=\"card-subtitle\">May 23, 2016</div>\n  </div>\n  <div class=\"card-body\">\n    <ul>\n      <li><b>Introducing: The Tabli Popout Window</b>&#8212; an independent Tabli window that\n        updates as you browse. This provides a convenient, always-available view of all your\n        browser windows and tabs, especially useful on large, high resolution monitors.\n        Activate by clicking the\n        popout<br/>\n        <span style=\"white-space:nowrap\">button (<img src=\"" + __webpack_require__(/*! ../assets/popout.png */ 326) + "\"></img>)</span> in the Tabli popup.\n      <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>\n      <li>Tooltips that show the full title and URL of each tab.</li>\n      <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>\n      <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>\n      <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>\n      <li>A cleaned up toolbar.\n    </ul>\n  </div>\n</div>\n";
+	module.exports = "<div class=\"card\">\n  <div class=\"card-header\">\n    <div class=\"card-title\">Tabli 0.9.1 (Beta)</div>\n    <div class=\"card-subtitle\">May 26, 2016</div>\n  </div>\n  <div class=\"card-body\">\n    <ul>\n      <li><b>Introducing: The Tabli Popout Window</b>&#8212; an independent Tabli window that\n        updates as you browse. This provides a convenient, always-available view of all your\n        browser windows and tabs, especially useful on large, high resolution monitors.\n        Activate by clicking the\n        popout<br/>\n        <span style=\"white-space:nowrap\">button (<img src=\"" + __webpack_require__(/*! ../assets/popout.png */ 326) + "\"></img>)</span> in the Tabli popup.\n      <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>\n      <li>Tooltips that show the full title and URL of each tab.</li>\n      <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>\n      <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>\n      <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>\n      <li>A cleaned up toolbar.\n    </ul>\n  </div>\n</div>\n";
 
 /***/ },
 /* 326 */

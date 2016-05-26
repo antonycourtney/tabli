@@ -138,7 +138,10 @@ const SearchBar = React.createClass({
   handleCopyClick() {
     const openWindows = this.props.winStore.getTabWindowsByType('normal');
 
-    const s = openWindows.reduce((rs,tw) => rs + "\n\n" + tw.exportStr(),"");
+    var cmpFn = Util.windowCmp(this.props.winStore.currentWindowId);
+    var sortedWindows = openWindows.sort(cmpFn);
+
+    const s = sortedWindows.reduce((rs,tw) => rs + "\n\n" + tw.exportStr(),"");
 
     copyTextToClipboard(s);
   },
