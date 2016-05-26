@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Tabli Beta",
   "description": "A simple, powerful tab manager",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "browser_action": {
     "default_icon": "images/glyphicons_154_more_windows.png",
     "default_popup": "popup.html",
