@@ -193,7 +193,7 @@ const SearchBar = React.createClass({
 
     const copyButton = (
       <button id="copyButton" type="button" className="btn btn-default btn-xs"
-        title="Copied!"
+        title="Copy All to Clipboard"
         onClick={this.handleCopyClick}>
         <i className="fa fa-clipboard" aria-hidden="true"></i>
       </button>
