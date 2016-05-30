@@ -1,4 +1,4 @@
-var gulp = require('gulp'); 
+var gulp = require('gulp');
 
 //For cleaning out the build dir
 var clean = require('gulp-clean');
@@ -30,7 +30,7 @@ gulp.task('build_lightbox_js', function() {
         .pipe(gulp.dest('dist/js'));
 });
 
-gulp.task('build_lightbox', [ 'build_lightbox_css', 'build_lightbox_js'] ); 
+gulp.task('build_lightbox', [ 'build_lightbox_css', 'build_lightbox_js'] );
 
 gulp.task('build_assets', function() {
     gutil.log("copy assets from mock to dist");
