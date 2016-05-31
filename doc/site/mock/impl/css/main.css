@@ -1,6 +1,6 @@
 html{
 	-webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth; 
+    scroll-behavior: smooth;
     overflow-x: scroll;
 }
 body{
@@ -87,6 +87,27 @@ p strong{
 a{
 	outline:none !important;
 	color:#358194;
+}
+.relnotes-header {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+  padding-top: 8px;
+  font-size: 16px;
+}
+.relnotes-title {
+  font-weight: bold;
+  font-size: 20px;
+  padding-bottom: 8px;
+}
+.relnotes-subtitle {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.541176);
+}
+.relnotes-body {
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 12px;
 }
 .btn{
 	font-size:18px;

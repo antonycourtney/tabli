@@ -32,13 +32,24 @@ gulp.task('build_lightbox_js', function() {
 
 gulp.task('build_lightbox', [ 'build_lightbox_css', 'build_lightbox_js'] );
 
-gulp.task('build_assets', function() {
+gulp.task('build_mock_assets', function() {
     gutil.log("copy assets from mock to dist");
 
     return gulp.src(['mock/impl/css/*','mock/impl/fonts/*','mock/impl/images/*','mock/impl/js/*'],
                     {base: 'mock/impl/'})
         .pipe(gulp.dest('dist'));
 });
+
+gulp.task('build_app_assets', function() {
+    gutil.log("copy assets from mock to dist");
+
+    return gulp.src(['../../src/tabli-core/src/html/*','../../src/tabli-core/src/assets/*'],
+                    {base: '../../src/tabli-core/src/'})
+        .pipe(gulp.dest('dist'));
+});
+
+
+gulp.task('build_assets', ['build_mock_assets','build_app_assets']);
 
 gulp.task('build_favicon', function() {
   gutil.log("copy favicon dir to dist");

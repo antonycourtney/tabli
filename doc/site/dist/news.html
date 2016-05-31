@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>About Tabli</title>
+    <title>News</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -79,29 +79,45 @@
 
     <div class="sub-header inner-page">
       <div class="container">
-        <h2 class="text-center">About</h2>
-        <p class="text-center">
-        Tabli was developed by <a href="http://www.antonycourtney.com">Antony Courtney</a> as a side project.
-        <br>
-        I'm an independent Computer Scientist and Software Developer based in San Francisco.
-        <br>
-        You can find me on the web at <a href="http://www.antonycourtney.com">antonycourtney.com</a>, or on Twitter as <a href="https://twitter.com/@antonycourtney">@antonycourtney</a>.
-        </p>
-      </div>
-    </div>
-    <div class="sub-header inner-page">
-      <div class="container">
-        <h2 class="text-center">Contact</h2>
-        <p class="text-center">
-        I welcome your feedback on Tabli!
-        <br>Please send feedback, questions, suggestions, and bug reports to
-        </p>
-        <h5 class="text-center">
-          <a href="mailto:tabli-feedback@antonycourtney.com">tabli-feedback@antonycourtney.com</a>
-        </h5>
-        <p class="text-center">
-If you are a developer, please feel free to also <a href="https://github.com/antonycourtney/tabli">browse the source and follow the project on github</a>.
-        </p>
+        <h2 class="text-center">Changelog</h2>
+        <!-- TODO: Should really have a common source for release notes text instead of copying it here, but too much
+             surgery required to make that happen right now. -->
+         <div class="relnotes-header" id="relnotes_v0_9_1">
+           <div class="relnotes-title">Tabli 0.9.1</div>
+           <div class="relnotes-subtitle">May 30, 2016</div>
+         </div>
+         <div class="relnotes-body">
+           <h5>New Features:</h5>
+           <ul>
+             <li><b>Introducing: The Tabli Popout Window</b>&#8212; an independent Tabli window that
+               updates as you browse. This provides a convenient, always-available view of all your
+               browser windows and tabs, especially useful on large, high resolution monitors.
+               Activate by clicking the
+               popout<br/>
+               <span style="white-space:nowrap">button (<img src="assets/popout.png"></img>)</span> in the Tabli popup.
+             <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>
+             <li>Tooltips that show the full title and URL of each tab.</li>
+             <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>
+             <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>
+             <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>
+             <li>A cleaned up toolbar.
+           </ul>
+           <h5>Permissions Warning and Privacy:</h5>
+           <P>Unfortunately, existing users of the previous version of Tabli were greeted with this somewhat alarming
+             dialog from Google Chrome after Tabli was automatically updated from the Chrome web store:
+           <P>
+             <img src="images/tabli-update-dialog.png"></img>
+           <P>This dialog is rather misleading in that the only <em>new</em> permission added to Tabli between the previous
+             version (0.8.8) and the latest version (0.9.1) is the ability for Tabli to read Chrome's store
+             of FavIcons &dash; the small icons that appear on the tab for each web site.
+           <P>Tabli requests the permissions shown in the above dialog in order to perform its essential function.
+              However: <strong>Tabli does not make any outbound data connections, and does not send any data whatsoever
+              to any external application, extension or cloud service.</strong>
+           </P>
+           <P>More detailed discussion may be found in the
+           <a href="https://github.com/antonycourtney/tabli/issues/74">corresponding github issue</a>.
+           </P>
+         </div>
       </div>
     </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
