@@ -68,11 +68,11 @@ fieldset { padding:0; border:0; }
 }
 
 .closeButton {
-  -webkit-mask-image: url('../images/interface-77.png');
+  -webkit-mask-image: url('../images/Interface-77.png');
   background-color: #888888;
 }
 .closeButton:hover {
-  -webkit-mask-image: url('../images/interface-74.png');
+  -webkit-mask-image: url('../images/Interface-74.png');
   background-color: #000000;
   /* -webkit-mask-image: url('../images/Interface-94.png'); */
   /* background-color: #cb716c; */
