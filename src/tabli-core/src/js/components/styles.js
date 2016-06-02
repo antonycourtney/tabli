@@ -182,7 +182,7 @@ const styles = {
     color: '#979ca0',
   },
   tabManagedButton: {
-    WebkitMaskImage: mkUrl('images/status-9.png'),
+    WebkitMaskImage: mkUrl('images/Status-9.png'),
     backgroundColor: '#7472ff',
   },
   imageButtonClosed: {
