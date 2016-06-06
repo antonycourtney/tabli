@@ -12,8 +12,7 @@ import * as RenderCommon from './renderCommon'
  */
 function main () {
   window.onload = () => RenderCommon.getFocusedAndRender(true)
-  window.onfocus = (e) => {
-    document.getElementById('searchBox').focus();}
+  window.onfocus = (e) => { document.getElementById('searchBox').focus() }
 }
 
 main()

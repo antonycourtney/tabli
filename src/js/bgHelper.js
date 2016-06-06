@@ -3,7 +3,8 @@
  * Gathering bookmark and window state and places in local storage so that
  * popup rendering will be as fast as possible
  */
-import chromeBrowser from './chromeBrowser'
+/* global Blob, URL */
+
 import * as Tabli from '../tabli-core/src/js/index'
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
@@ -11,15 +12,11 @@ import * as semver from 'semver'
 
 const TabManagerState = Tabli.TabManagerState
 const TabWindow = Tabli.TabWindow
-const Popup = Tabli.components.Popup
 const actions = Tabli.actions
 const ViewRef = Tabli.ViewRef
 const utils = Tabli.utils
 const pact = Tabli.pact
 
-import * as React from 'react'
-
-import * as ReactDOMServer from 'react-dom/server'
 import { refUpdater } from 'oneref'
 
 const tabmanFolderTitle = 'Tabli Saved Windows'
@@ -105,7 +102,7 @@ function initWinStore (cb) {
         archiveFolderId = archiveFolder.id
         chrome.bookmarks.getSubTree(tabManFolder.id, (subTreeNodes) => {
           // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
-          const baseWinStore = new TabManagerState({ folderId: tabmanFolderId, archiveFolderId})
+          const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId})
           const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
 
           chrome.storage.local.get({readRelNotesVersion: ''}, items => {
@@ -138,7 +135,7 @@ function downloadJSON (dumpObj, filename) {
   const dumpStr = JSON.stringify(dumpObj, null, 2)
   const winBlob = new Blob([dumpStr], { type: 'application/json' })
   const url = URL.createObjectURL(winBlob)
-  chrome.downloads.download({ url, filename})
+  chrome.downloads.download({ url, filename })
 }
 
 /**
@@ -158,7 +155,7 @@ function dumpAll (winStore) { // eslint-disable-line no-unused-vars
 
 function dumpChromeWindows () { // eslint-disable-line no-unused-vars
   chrome.windows.getAll({ populate: true }, (chromeWindows) => {
-    downloadJSON({ chromeWindows}, 'chromeWindowSnap.json')
+    downloadJSON({ chromeWindows }, 'chromeWindowSnap.json')
   })
 }
 
@@ -166,11 +163,6 @@ function dumpChromeWindows () { // eslint-disable-line no-unused-vars
  * create a TabMan element, render it to HTML and save it for fast loading when
  * opening the popup
  */
-
-function invokeLater (f) {
-  window.setTimeout(f, 0)
-}
-
 function onTabCreated (uf, tab, markActive) {
   // console.log("onTabCreated: ", tab)
   uf(state => {
@@ -218,8 +210,9 @@ function registerEventHandlers (uf) {
     })
   })
   chrome.windows.onFocusChanged.addListener(windowId => {
-    if (windowId === chrome.windows.WINDOW_ID_NONE)
+    if (windowId === chrome.windows.WINDOW_ID_NONE) {
       return
+    }
     uf((state) => {
       return state.setCurrentWindowId(windowId)
     })
@@ -308,7 +301,6 @@ function reattachWindows (bmStore, cb) {
   const MatchInfo = Immutable.Record({windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0})
 
   chrome.windows.getAll({ populate: true }, (windowList) => {
-
     function getMatchInfo (w) {
       // matches :: Array<Set<BookmarkId>>
       const matchSets = w.tabs.map(t => urlIdMap.get(t.url, null)).filter(x => x)

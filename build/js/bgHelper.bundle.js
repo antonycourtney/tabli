@@ -8,10 +8,6 @@ webpackJsonp([0],{
 
 	'use strict';
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 1);
-	
-	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
-	
 	var _index = __webpack_require__(/*! ../tabli-core/src/js/index */ 2);
 	
 	var Tabli = _interopRequireWildcard(_index);
@@ -28,28 +24,19 @@ webpackJsonp([0],{
 	
 	var semver = _interopRequireWildcard(_semver);
 	
-	var _react = __webpack_require__(/*! react */ 10);
-	
-	var React = _interopRequireWildcard(_react);
-	
-	var _server = __webpack_require__(/*! react-dom/server */ 360);
-	
-	var ReactDOMServer = _interopRequireWildcard(_server);
-	
 	var _oneref = __webpack_require__(/*! oneref */ 47);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	/**
+	 * Background helper page.
+	 * Gathering bookmark and window state and places in local storage so that
+	 * popup rendering will be as fast as possible
+	 */
+	/* global Blob, URL */
 	
-	var TabManagerState = Tabli.TabManagerState; /**
-	                                              * Background helper page.
-	                                              * Gathering bookmark and window state and places in local storage so that
-	                                              * popup rendering will be as fast as possible
-	                                              */
-	
+	var TabManagerState = Tabli.TabManagerState;
 	var TabWindow = Tabli.TabWindow;
-	var Popup = Tabli.components.Popup;
 	var actions = Tabli.actions;
 	var ViewRef = Tabli.ViewRef;
 	var utils = Tabli.utils;
@@ -203,11 +190,6 @@ webpackJsonp([0],{
 	 * create a TabMan element, render it to HTML and save it for fast loading when
 	 * opening the popup
 	 */
-	
-	function invokeLater(f) {
-	  window.setTimeout(f, 0);
-	}
-	
 	function onTabCreated(uf, tab, markActive) {
 	  // console.log("onTabCreated: ", tab)
 	  uf(function (state) {
@@ -254,7 +236,9 @@ webpackJsonp([0],{
 	    });
 	  });
 	  chrome.windows.onFocusChanged.addListener(function (windowId) {
-	    if (windowId === chrome.windows.WINDOW_ID_NONE) return;
+	    if (windowId === chrome.windows.WINDOW_ID_NONE) {
+	      return;
+	    }
 	    uf(function (state) {
 	      return state.setCurrentWindowId(windowId);
 	    });
@@ -347,7 +331,6 @@ webpackJsonp([0],{
 	  var MatchInfo = Immutable.Record({ windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0 });
 	
 	  chrome.windows.getAll({ populate: true }, function (windowList) {
-	
 	    function getMatchInfo(w) {
 	      // matches :: Array<Set<BookmarkId>>
 	      var matchSets = w.tabs.map(function (t) {
@@ -1688,238 +1671,6 @@ webpackJsonp([0],{
 	}
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 12)))
-
-/***/ },
-
-/***/ 360:
-/*!*******************************!*\
-  !*** ./~/react-dom/server.js ***!
-  \*******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	module.exports = __webpack_require__(/*! react/lib/ReactDOMServer */ 361);
-
-
-/***/ },
-
-/***/ 361:
-/*!***************************************!*\
-  !*** ./~/react/lib/ReactDOMServer.js ***!
-  \***************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactDOMServer
-	 */
-	
-	'use strict';
-	
-	var ReactDefaultInjection = __webpack_require__(/*! ./ReactDefaultInjection */ 72);
-	var ReactServerRendering = __webpack_require__(/*! ./ReactServerRendering */ 362);
-	var ReactVersion = __webpack_require__(/*! ./ReactVersion */ 40);
-	
-	ReactDefaultInjection.inject();
-	
-	var ReactDOMServer = {
-	  renderToString: ReactServerRendering.renderToString,
-	  renderToStaticMarkup: ReactServerRendering.renderToStaticMarkup,
-	  version: ReactVersion
-	};
-	
-	module.exports = ReactDOMServer;
-
-/***/ },
-
-/***/ 362:
-/*!*********************************************!*\
-  !*** ./~/react/lib/ReactServerRendering.js ***!
-  \*********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactServerRendering
-	 */
-	'use strict';
-	
-	var ReactDOMContainerInfo = __webpack_require__(/*! ./ReactDOMContainerInfo */ 192);
-	var ReactDefaultBatchingStrategy = __webpack_require__(/*! ./ReactDefaultBatchingStrategy */ 163);
-	var ReactElement = __webpack_require__(/*! ./ReactElement */ 17);
-	var ReactMarkupChecksum = __webpack_require__(/*! ./ReactMarkupChecksum */ 194);
-	var ReactServerBatchingStrategy = __webpack_require__(/*! ./ReactServerBatchingStrategy */ 363);
-	var ReactServerRenderingTransaction = __webpack_require__(/*! ./ReactServerRenderingTransaction */ 364);
-	var ReactUpdates = __webpack_require__(/*! ./ReactUpdates */ 89);
-	
-	var emptyObject = __webpack_require__(/*! fbjs/lib/emptyObject */ 30);
-	var instantiateReactComponent = __webpack_require__(/*! ./instantiateReactComponent */ 150);
-	var invariant = __webpack_require__(/*! fbjs/lib/invariant */ 16);
-	
-	/**
-	 * @param {ReactElement} element
-	 * @return {string} the HTML markup
-	 */
-	function renderToStringImpl(element, makeStaticMarkup) {
-	  var transaction;
-	  try {
-	    ReactUpdates.injection.injectBatchingStrategy(ReactServerBatchingStrategy);
-	
-	    transaction = ReactServerRenderingTransaction.getPooled(makeStaticMarkup);
-	
-	    return transaction.perform(function () {
-	      var componentInstance = instantiateReactComponent(element);
-	      var markup = componentInstance.mountComponent(transaction, null, ReactDOMContainerInfo(), emptyObject);
-	      if (!makeStaticMarkup) {
-	        markup = ReactMarkupChecksum.addChecksumToMarkup(markup);
-	      }
-	      return markup;
-	    }, null);
-	  } finally {
-	    ReactServerRenderingTransaction.release(transaction);
-	    // Revert to the DOM batching strategy since these two renderers
-	    // currently share these stateful modules.
-	    ReactUpdates.injection.injectBatchingStrategy(ReactDefaultBatchingStrategy);
-	  }
-	}
-	
-	function renderToString(element) {
-	  !ReactElement.isValidElement(element) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'renderToString(): You must pass a valid ReactElement.') : invariant(false) : void 0;
-	  return renderToStringImpl(element, false);
-	}
-	
-	function renderToStaticMarkup(element) {
-	  !ReactElement.isValidElement(element) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'renderToStaticMarkup(): You must pass a valid ReactElement.') : invariant(false) : void 0;
-	  return renderToStringImpl(element, true);
-	}
-	
-	module.exports = {
-	  renderToString: renderToString,
-	  renderToStaticMarkup: renderToStaticMarkup
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 12)))
-
-/***/ },
-
-/***/ 363:
-/*!****************************************************!*\
-  !*** ./~/react/lib/ReactServerBatchingStrategy.js ***!
-  \****************************************************/
-/***/ function(module, exports) {
-
-	/**
-	 * Copyright 2014-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactServerBatchingStrategy
-	 */
-	
-	'use strict';
-	
-	var ReactServerBatchingStrategy = {
-	  isBatchingUpdates: false,
-	  batchedUpdates: function (callback) {
-	    // Don't do anything here. During the server rendering we don't want to
-	    // schedule any updates. We will simply ignore them.
-	  }
-	};
-	
-	module.exports = ReactServerBatchingStrategy;
-
-/***/ },
-
-/***/ 364:
-/*!********************************************************!*\
-  !*** ./~/react/lib/ReactServerRenderingTransaction.js ***!
-  \********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2014-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactServerRenderingTransaction
-	 */
-	
-	'use strict';
-	
-	var _assign = __webpack_require__(/*! object-assign */ 13);
-	
-	var PooledClass = __webpack_require__(/*! ./PooledClass */ 15);
-	var Transaction = __webpack_require__(/*! ./Transaction */ 96);
-	
-	/**
-	 * Executed within the scope of the `Transaction` instance. Consider these as
-	 * being member methods, but with an implied ordering while being isolated from
-	 * each other.
-	 */
-	var TRANSACTION_WRAPPERS = [];
-	
-	var noopCallbackQueue = {
-	  enqueue: function () {}
-	};
-	
-	/**
-	 * @class ReactServerRenderingTransaction
-	 * @param {boolean} renderToStaticMarkup
-	 */
-	function ReactServerRenderingTransaction(renderToStaticMarkup) {
-	  this.reinitializeTransaction();
-	  this.renderToStaticMarkup = renderToStaticMarkup;
-	  this.useCreateElement = false;
-	}
-	
-	var Mixin = {
-	  /**
-	   * @see Transaction
-	   * @abstract
-	   * @final
-	   * @return {array} Empty list of operation wrap procedures.
-	   */
-	  getTransactionWrappers: function () {
-	    return TRANSACTION_WRAPPERS;
-	  },
-	
-	  /**
-	   * @return {object} The queue to collect `onDOMReady` callbacks with.
-	   */
-	  getReactMountReady: function () {
-	    return noopCallbackQueue;
-	  },
-	
-	  /**
-	   * `PooledClass` looks for this, and will invoke this before allowing this
-	   * instance to be reused.
-	   */
-	  destructor: function () {}
-	};
-	
-	_assign(ReactServerRenderingTransaction.prototype, Transaction.Mixin, Mixin);
-	
-	PooledClass.addPoolingTo(ReactServerRenderingTransaction);
-	
-	module.exports = ReactServerRenderingTransaction;
 
 /***/ }
 

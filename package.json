@@ -70,6 +70,6 @@
     "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec"
   },
   "standard": {
-    "globals": [ "chrome" ]
+    "globals": [ "chrome", "performance" ]
   }
 }

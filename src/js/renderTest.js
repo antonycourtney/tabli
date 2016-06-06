@@ -1,20 +1,16 @@
-import * as React from 'react'
+/* globals XMLHttpRequest */
+
 import * as Immutable from 'immutable'
 import * as Perf from 'react-addons-perf'
-import * as ReactDOM from 'react-dom'
-import * as ReactDOMServer from 'react-dom/server'
-
 import * as Tabli from '../tabli-core/src/js/index'
 import * as RenderCommon from './renderCommon'
 
 const TabManagerState = Tabli.TabManagerState
 const TabWindow = Tabli.TabWindow
-const Popup = Tabli.components.Popup
-const Styles = Tabli.components.Styles
 const ViewRef = Tabli.ViewRef
 
 // make a TabWindow from its JSON
-function makeTabWindow (jsWin) {
+function makeTabWindow (jsWin) {  // eslint-disable-line no-unused-vars
   const decItems = jsWin.tabItems.map((tiFields) => new TabWindow.TabItem(tiFields))
 
   const itemWin = Object.assign({}, jsWin, { tabItems: Immutable.Seq(decItems) })
@@ -41,16 +37,16 @@ function renderPage (testData) {
     Perf.start()
   }
 
-  var t_preRender = performance.now()
+  var tPreRender = performance.now()
 
   // N.B. false last arg to prevent sync'ing current chrome windows
   RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false)
 
-  var t_postRender = performance.now()
+  var tPostRender = performance.now()
   if (Perf) {
     Perf.stop()
   }
-  console.log('initial render complete. render time: (', t_postRender - t_preRender, ' ms)')
+  console.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
   if (Perf) {
     console.log('inclusive:')
     Perf.printInclusive()

@@ -1,7 +1,6 @@
 /**
  * common rendering entry point for popup and popout
  */
-import chromeBrowser from './chromeBrowser'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { logWrap } from './utils'
@@ -17,14 +16,14 @@ const actions = Tabli.actions
 export function renderPopup (storeRef, currentChromeWindow, isPopout, doSync) {
   console.log('renderPopup: isPopout: ', isPopout)
 
-  var t_preRender = performance.now()
+  var tPreRender = performance.now()
 
   var parentNode = document.getElementById('windowList-region')
 
   var appElement = <Popup storeRef={storeRef} initialWinStore={storeRef.getValue()} isPopout={isPopout} />
-  var appComponent = ReactDOM.render(appElement, parentNode); // eslint-disable-line no-unused-vars
-  var t_postRender = performance.now()
-  console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)')
+  var appComponent = ReactDOM.render(appElement, parentNode) // eslint-disable-line no-unused-vars
+  var tPostRender = performance.now()
+  console.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)')
 
   // And sync our window state, which may update the UI...
   if (doSync) {
@@ -43,8 +42,8 @@ export function renderPopup (storeRef, currentChromeWindow, isPopout, doSync) {
       }
 
       // logHTML("Updated savedHTML", renderedString)
-      var t_postSyncUpdate = performance.now()
-      console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms')
+      var tPostSyncUpdate = performance.now()
+      console.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms')
       document.getElementById('searchBox').focus()
     }))
   }

@@ -51,10 +51,6 @@ webpackJsonp([2],{
 	exports.renderPopup = renderPopup;
 	exports.getFocusedAndRender = getFocusedAndRender;
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 1);
-	
-	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
-	
 	var _react = __webpack_require__(/*! react */ 10);
 	
 	var React = _interopRequireWildcard(_react);
@@ -71,12 +67,12 @@ webpackJsonp([2],{
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	/**
+	 * common rendering entry point for popup and popout
+	 */
 	
-	var Popup = Tabli.components.Popup; /**
-	                                     * common rendering entry point for popup and popout
-	                                     */
 	
+	var Popup = Tabli.components.Popup;
 	var actions = Tabli.actions;
 	
 	/**
@@ -85,14 +81,14 @@ webpackJsonp([2],{
 	function renderPopup(storeRef, currentChromeWindow, isPopout, doSync) {
 	  console.log('renderPopup: isPopout: ', isPopout);
 	
-	  var t_preRender = performance.now();
+	  var tPreRender = performance.now();
 	
 	  var parentNode = document.getElementById('windowList-region');
 	
 	  var appElement = React.createElement(Popup, { storeRef: storeRef, initialWinStore: storeRef.getValue(), isPopout: isPopout });
 	  var appComponent = ReactDOM.render(appElement, parentNode); // eslint-disable-line no-unused-vars
-	  var t_postRender = performance.now();
-	  console.log('full render complete. render time: (', t_postRender - t_preRender, ' ms)');
+	  var tPostRender = performance.now();
+	  console.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)');
 	
 	  // And sync our window state, which may update the UI...
 	  if (doSync) {
@@ -111,8 +107,8 @@ webpackJsonp([2],{
 	      }
 	
 	      // logHTML("Updated savedHTML", renderedString)
-	      var t_postSyncUpdate = performance.now();
-	      console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
+	      var tPostSyncUpdate = performance.now();
+	      console.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms');
 	      document.getElementById('searchBox').focus();
 	    }));
 	  }
