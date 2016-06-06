@@ -1,16 +1,16 @@
-import * as React from 'react';
-import * as PureRenderMixin from 'react-addons-pure-render-mixin';
-import Styles from './styles';
-import * as Util from './util';
+import * as React from 'react'
+import * as PureRenderMixin from 'react-addons-pure-render-mixin'
+import Styles from './styles'
+import * as Util from './util'
 
-const buttonSpacer = <div style={Styles.headerButton} />;
+const buttonSpacer = <div style={Styles.headerButton} />
 
 var HeaderButton = React.createClass({
   mixins: [PureRenderMixin],
   handleClick(event) {
     if (this.props.visible) {
-      this.props.onClick(event);
-      event.stopPropagation();
+      this.props.onClick(event)
+      event.stopPropagation()
     }
   },
 
@@ -20,16 +20,19 @@ var HeaderButton = React.createClass({
      * a simple spacer
      */
     if (!this.props.visible) {
-      return buttonSpacer;
+      return buttonSpacer
     }
 
-    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
-    var buttonStyle = this.props.baseStyle;
+    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden
+    var buttonStyle = this.props.baseStyle
     return (
-      <button style={buttonStyle} className={this.props.className} title={this.props.title}
-          onClick={this.handleClick} />
-      );
-  },
-});
+    <button
+      style={buttonStyle}
+      className={this.props.className}
+      title={this.props.title}
+      onClick={this.handleClick} />
+    )
+  }
+})
 
-export default HeaderButton;
+export default HeaderButton

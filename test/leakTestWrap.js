@@ -5,6 +5,6 @@
  * we can do heap analysis
  */
 require('babel-register')({
-  presets: ['es2015','react']
-});
-require('./leakTest.js');
+  presets: ['es2015', 'react']
+})
+require('./leakTest.js')

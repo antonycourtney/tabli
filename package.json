@@ -58,6 +58,7 @@
     "react-addons-perf": "^15.0.2",
     "react-addons-test-utils": "^15.0.2",
     "sinon": "^1.17.4",
+    "standard": "^7.1.2",
     "tap-spec": "^4.1.1",
     "tape": "^4.5.1",
     "url-loader": "^0.5.7",
@@ -67,5 +68,8 @@
     "lint": "eslint .",
     "test": "babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
     "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec"
+  },
+  "standard": {
+    "globals": [ "chrome" ]
   }
 }

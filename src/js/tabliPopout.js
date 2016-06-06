@@ -1,5 +1,4 @@
-import * as RenderCommon from './renderCommon';
-
+import * as RenderCommon from './renderCommon'
 
 /*
  * Perform our React rendering *after* the load event for the popup
@@ -11,9 +10,10 @@ import * as RenderCommon from './renderCommon';
  * See https://code.google.com/p/chromium/issues/detail?id=511699
  *
  */
-function main() {
-  window.onload = () => RenderCommon.getFocusedAndRender(true);
-  window.onfocus = (e) => { document.getElementById('searchBox').focus(); }
+function main () {
+  window.onload = () => RenderCommon.getFocusedAndRender(true)
+  window.onfocus = (e) => {
+    document.getElementById('searchBox').focus();}
 }
 
-main();
+main()

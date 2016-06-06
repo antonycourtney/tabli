@@ -1,30 +1,30 @@
-import * as React from 'react';
+import * as React from 'react'
 
-import FilteredTabWindow from './FilteredTabWindow';
-import WindowListSection from './WindowListSection';
-import MessageCard from './MessageCard';
+import FilteredTabWindow from './FilteredTabWindow'
+import WindowListSection from './WindowListSection'
+import MessageCard from './MessageCard'
 
-import * as actions from '../actions';
+import * as actions from '../actions'
 
-import * as util from './util';
+import * as util from './util'
 
-var relNotesStr = '';
+var relNotesStr = ''
 if (!util.isNode) {
   // in browser
-  relNotesStr = require('../../html/relnotes.html');
+  relNotesStr = require('../../html/relnotes.html')
 }
 
 const TabWindowList = React.createClass({
 
   /* acknowledge release notes (and hide them) */
   ackRelNotes() {
-    actions.hideRelNotes(this.props.winStore,this.props.storeUpdateHandler);
+    actions.hideRelNotes(this.props.winStore, this.props.storeUpdateHandler)
   },
 
   render() {
-    const showRelNotes = this.props.winStore.showRelNotes;
+    const showRelNotes = this.props.winStore.showRelNotes
 
-    var relNotesSection = null;
+    var relNotesSection = null
     if (showRelNotes) {
       relNotesSection = (
         <WindowListSection>
@@ -34,79 +34,79 @@ const TabWindowList = React.createClass({
             content={relNotesStr}
             onClick={this.ackRelNotes} />
         </WindowListSection>
-      );
+      )
     }
 
+    var focusedWindowElem = []
+    var openWindows = []
+    var savedWindows = []
 
-    var focusedWindowElem = [];
-    var openWindows = [];
-    var savedWindows = [];
-
-    var filteredWindows = this.props.filteredWindows;
+    var filteredWindows = this.props.filteredWindows
     for (var i = 0; i < filteredWindows.length; i++) {
-      var filteredTabWindow = filteredWindows[i];
-      var tabWindow = filteredTabWindow.tabWindow;
-      var id = 'tabWindow' + i;
-      var isOpen = tabWindow.open;
-      const isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId;
+      var filteredTabWindow = filteredWindows[i]
+      var tabWindow = filteredTabWindow.tabWindow
+      var id = 'tabWindow' + i
+      var isOpen = tabWindow.open
+      const isFocused = isOpen && this.props.winStore.currentWindowId === tabWindow.openWindowId
 
       // focused property will only be true if isFocused and no rel notes to display:
-      const focusedProp = !showRelNotes && isFocused;
+      const focusedProp = !showRelNotes && isFocused
 
-      var isSelected = (i === this.props.selectedWindowIndex);
-      const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
+      var isSelected = (i === this.props.selectedWindowIndex)
+      const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1
       var windowElem = (
-        <FilteredTabWindow winStore={this.props.winStore}
-          storeUpdateHandler={this.props.storeUpdateHandler}
-          filteredTabWindow={filteredTabWindow} key={id}
-          index={i}
-          searchStr={this.props.searchStr}
-          searchRE={this.props.searchRE}
-          isSelected={isSelected}
-          isFocused={focusedProp}
-          selectedTabIndex={selectedTabIndex}
-          appComponent={this.props.appComponent}
-          onItemSelected={this.props.onItemSelected}
-          expandAll={this.props.winStore.expandAll}
-        />);
+      <FilteredTabWindow
+        winStore={this.props.winStore}
+        storeUpdateHandler={this.props.storeUpdateHandler}
+        filteredTabWindow={filteredTabWindow}
+        key={id}
+        index={i}
+        searchStr={this.props.searchStr}
+        searchRE={this.props.searchRE}
+        isSelected={isSelected}
+        isFocused={focusedProp}
+        selectedTabIndex={selectedTabIndex}
+        appComponent={this.props.appComponent}
+        onItemSelected={this.props.onItemSelected}
+        expandAll={this.props.winStore.expandAll} />)
       if (isFocused) {
-        focusedWindowElem = windowElem;
+        focusedWindowElem = windowElem
       } else if (isOpen) {
-        openWindows.push(windowElem);
+        openWindows.push(windowElem)
       } else {
-        savedWindows.push(windowElem);
+        savedWindows.push(windowElem)
       }
     }
 
-    var otherOpenSection = null;
+    var otherOpenSection = null
     if (openWindows.length > 0) {
       otherOpenSection = (
         <WindowListSection title="Other Open Windows">
           {openWindows}
         </WindowListSection>
-      );
+      )
     }
 
-    var savedSection = null;
+    var savedSection = null
     if (savedWindows.length > 0) {
       savedSection = (
         <WindowListSection title="Saved Closed Windows">
           {savedWindows}
         </WindowListSection>
-      );
+      )
     }
 
     return (
-      <div>
-        {relNotesSection}
-        <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
-          {focusedWindowElem}
-        </WindowListSection>
-        {otherOpenSection}
-        {savedSection}
-      </div>
-    );
-  },
-});
+    <div>
+      {relNotesSection}
+      <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
+        {focusedWindowElem}
+      </WindowListSection>
+      {otherOpenSection}
+      {savedSection}
+    </div>
+    )
+  }
+})
 
-export default TabWindowList;
+export default TabWindowList

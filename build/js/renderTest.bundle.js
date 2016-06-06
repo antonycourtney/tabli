@@ -59,7 +59,7 @@ webpackJsonp([1],{
 	function renderPage(testData) {
 	  var testChromeWindows = testData.chromeWindows;
 	
-	  console.log("renderPage: testData: ", testData);
+	  console.log('renderPage: testData: ', testData);
 	
 	  var emptyWinStore = new TabManagerState();
 	  var mockWinStore = emptyWinStore.syncWindowList(testChromeWindows).set('showRelNotes', false);
@@ -425,8 +425,7 @@ webpackJsonp([1],{
 	 * Main entry point to rendering the popup window
 	 */
 	function renderPopup(storeRef, currentChromeWindow, isPopout, doSync) {
-	
-	  console.log("renderPopup: isPopout: ", isPopout);
+	  console.log('renderPopup: isPopout: ', isPopout);
 	
 	  var t_preRender = performance.now();
 	
@@ -440,20 +439,20 @@ webpackJsonp([1],{
 	  // And sync our window state, which may update the UI...
 	  if (doSync) {
 	    actions.syncChromeWindows((0, _utils.logWrap)(function (uf) {
-	      console.log("postLoadRender: window sync complete");
+	      console.log('postLoadRender: window sync complete');
 	      var savedStore = storeRef.getValue();
 	      var syncStore = uf(savedStore);
 	
 	      // And set current focused window:
-	      console.log("renderPopup: setting current window to ", currentChromeWindow);
+	      console.log('renderPopup: setting current window to ', currentChromeWindow);
 	      var nextStore = syncStore.setCurrentWindow(currentChromeWindow);
 	      if (!nextStore.equals(savedStore)) {
 	        storeRef.setValue(nextStore);
 	      } else {
-	        console.log("doRender: nextStore.equals(savedStore) -- skipping setValue");
+	        console.log('doRender: nextStore.equals(savedStore) -- skipping setValue');
 	      }
 	
-	      // logHTML("Updated savedHTML", renderedString);
+	      // logHTML("Updated savedHTML", renderedString)
 	      var t_postSyncUpdate = performance.now();
 	      console.log('syncChromeWindows and update complete: ', t_postSyncUpdate - t_preRender, ' ms');
 	      document.getElementById('searchBox').focus();

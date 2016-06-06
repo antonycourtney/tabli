@@ -90,7 +90,7 @@ webpackJsonp([0],{
 	      var childFolder = parentNode.children[i];
 	      if (childFolder.title.toLowerCase() === childFolderName.toLowerCase()) {
 	        // exists
-	        // console.log( "found target child folder: ", childFolderName );
+	        // console.log( "found target child folder: ", childFolderName )
 	        callback(childFolder);
 	        return true;
 	      }
@@ -113,7 +113,7 @@ webpackJsonp([0],{
 	 */
 	function initRelNotes(st, storedVersion) {
 	  var manifest = chrome.runtime.getManifest();
-	  //  console.log("initRelNotes: storedVersion: ", storedVersion, ", manifest: ", manifest.version);
+	  //  console.log("initRelNotes: storedVersion: ", storedVersion, ", manifest: ", manifest.version)
 	  var showRelNotes = !semver.valid(storedVersion) || semver.gt(manifest.version, storedVersion);
 	  return st.set('showRelNotes', showRelNotes);
 	}
@@ -129,19 +129,19 @@ webpackJsonp([0],{
 	  chrome.bookmarks.getTree(function (tree) {
 	    var otherBookmarksNode = tree[0].children[1];
 	
-	    // console.log( "otherBookmarksNode: ", otherBookmarksNode );
+	    // console.log( "otherBookmarksNode: ", otherBookmarksNode )
 	    ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, function (tabManFolder) {
-	      // console.log('tab manager folder acquired.');
+	      // console.log('tab manager folder acquired.')
 	      tabmanFolderId = tabManFolder.id;
 	      ensureChildFolder(tabManFolder, archiveFolderTitle, function (archiveFolder) {
-	        // console.log('archive folder acquired.');
+	        // console.log('archive folder acquired.')
 	        archiveFolderId = archiveFolder.id;
 	        chrome.bookmarks.getSubTree(tabManFolder.id, function (subTreeNodes) {
-	          // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes);
+	          // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
 	          var baseWinStore = new TabManagerState({ folderId: tabmanFolderId, archiveFolderId: archiveFolderId });
 	          var loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0]);
 	
-	          chrome.storage.local.get({ readRelNotesVersion: "" }, function (items) {
+	          chrome.storage.local.get({ readRelNotesVersion: '' }, function (items) {
 	            var relNotesStore = initRelNotes(loadedWinStore, items.readRelNotesVersion);
 	            cb(relNotesStore);
 	          });
@@ -157,8 +157,8 @@ webpackJsonp([0],{
 	      var listenerId = msg.listenerId;
 	      port.onDisconnect.addListener(function () {
 	        storeRef.removeViewListener(listenerId);
-	        //        console.log("Removed view listener ", listenerId);
-	        //        console.log("after remove: ", storeRef);
+	        //        console.log("Removed view listener ", listenerId)
+	        //        console.log("after remove: ", storeRef)
 	      });
 	    });
 	  });
@@ -209,11 +209,11 @@ webpackJsonp([0],{
 	}
 	
 	function onTabCreated(uf, tab, markActive) {
-	  // console.log("onTabCreated: ", tab);
+	  // console.log("onTabCreated: ", tab)
 	  uf(function (state) {
 	    var tabWindow = state.getTabWindowByChromeId(tab.windowId);
 	    if (!tabWindow) {
-	      console.warn("tabs.onCreated: window id not found: ", tab.windowId);
+	      console.warn('tabs.onCreated: window id not found: ', tab.windowId);
 	      return state;
 	    }
 	    var st = state.handleTabCreated(tabWindow, tab);
@@ -227,7 +227,7 @@ webpackJsonp([0],{
 	  uf(function (state) {
 	    var tabWindow = state.getTabWindowByChromeId(windowId);
 	    if (!tabWindow) {
-	      console.warn("tabs.onTabRemoved: window id not found: ", windowId);
+	      console.warn('tabs.onTabRemoved: window id not found: ', windowId);
 	      return state;
 	    }
 	    return state.handleTabClosed(tabWindow, tabId);
@@ -239,10 +239,10 @@ webpackJsonp([0],{
 	  chrome.windows.onRemoved.addListener(function (windowId) {
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(windowId);
-	      if (tabWindow && tabWindow.windowType === "popup") {
+	      if (tabWindow && tabWindow.windowType === 'popup') {
 	        if (!state.initializing) {
 	          chrome.storage.local.set({ 'showPopout': false }, function () {});
-	        };
+	        }
 	      }
 	      var st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
 	      return st;
@@ -268,18 +268,18 @@ webpackJsonp([0],{
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(tab.windowId);
 	      if (!tabWindow) {
-	        console.warn("tabs.onUpdated: window id not found: ", tab.windowId);
+	        console.warn('tabs.onUpdated: window id not found: ', tab.windowId);
 	        return state;
 	      }
 	      return state.handleTabUpdated(tabWindow, tabId, changeInfo);
 	    });
 	  });
 	  chrome.tabs.onActivated.addListener(function (activeInfo) {
-	    // console.log("tabs.onActivated: ", activeInfo);
+	    // console.log("tabs.onActivated: ", activeInfo)
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
 	      if (!tabWindow) {
-	        console.warn("tabs.onActivated: window id not found: ", activeInfo.windowId, activeInfo);
+	        console.warn('tabs.onActivated: window id not found: ', activeInfo.windowId, activeInfo);
 	        return state;
 	      }
 	      var st = tabWindow ? state.handleTabActivated(tabWindow, activeInfo.tabId) : state;
@@ -294,11 +294,11 @@ webpackJsonp([0],{
 	    onTabRemoved(uf, removeInfo.windowId, tabId);
 	  });
 	  chrome.tabs.onReplaced.addListener(function (addedTabId, removedTabId) {
-	    console.log("tabs.onReplaced: added: ", addedTabId, ", removed: ", removedTabId);
+	    console.log('tabs.onReplaced: added: ', addedTabId, ', removed: ', removedTabId);
 	    uf(function (state) {
 	      var tabWindow = state.getTabWindowByChromeTabId(removedTabId);
 	      if (!tabWindow) {
-	        console.warn("tabs.onReplaced: could not find window for removed tab: ", removedTabId);
+	        console.warn('tabs.onReplaced: could not find window for removed tab: ', removedTabId);
 	        return state;
 	      }
 	      var nextSt = state.handleTabClosed(tabWindow, removedTabId);
@@ -311,7 +311,7 @@ webpackJsonp([0],{
 	    });
 	  });
 	  chrome.tabs.onMoved.addListener(function (tabId, moveInfo) {
-	    // console.log("tab.onMoved: ", tabId, moveInfo);
+	    // console.log("tab.onMoved: ", tabId, moveInfo)
 	    // Let's just refresh the whole window:
 	    actions.syncChromeWindowById(moveInfo.windowId, uf);
 	  });
@@ -339,7 +339,6 @@ webpackJsonp([0],{
 	 *
 	 */
 	function reattachWindows(bmStore, cb) {
-	
 	  var MATCH_THRESHOLD = 0.4;
 	
 	  var urlIdMap = bmStore.getUrlBookmarkIdMap();
@@ -378,7 +377,7 @@ webpackJsonp([0],{
 	        var savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId);
 	        var savedUrlCount = savedTabWindow.tabItems.count();
 	        var matchRatio = matchCount / savedUrlCount;
-	        // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount);
+	        // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
 	        return matchRatio >= MATCH_THRESHOLD;
 	      }
 	
@@ -399,7 +398,7 @@ webpackJsonp([0],{
 	      return mi.bestMatch;
 	    });
 	
-	    // console.log("windowMatchInfo: ", windowMatchInfo.toJS());
+	    // console.log("windowMatchInfo: ", windowMatchInfo.toJS())
 	
 	    // Now gather an inverse map of the form:
 	    // Map<BookmarkId,Map<WindowId,Num>>
@@ -407,7 +406,7 @@ webpackJsonp([0],{
 	      return mi.bestMatch;
 	    });
 	
-	    // console.log("bmMatches: ", bmMatches.toJS());
+	    // console.log("bmMatches: ", bmMatches.toJS())
 	
 	    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
 	    var bmMatchMaps = bmMatches.map(function (mis) {
@@ -422,15 +421,15 @@ webpackJsonp([0],{
 	      return Immutable.Map(entries);
 	    });
 	
-	    // console.log("bmMatchMaps: ", bmMatchMaps.toJS());
+	    // console.log("bmMatchMaps: ", bmMatchMaps.toJS())
 	
-	    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>;
+	    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>
 	    var bestBMMatches = bmMatchMaps.map(function (mm) {
 	      return utils.bestMatch(mm);
 	    }).filter(function (ct) {
 	      return ct;
 	    });
-	    // console.log("bestBMMatches: ", bestBMMatches.toJS());
+	    // console.log("bestBMMatches: ", bestBMMatches.toJS())
 	
 	    // Form a map from chrome window ids to chrome window snapshots:
 	    var chromeWinMap = _.fromPairs(windowList.map(function (w) {
@@ -455,19 +454,19 @@ webpackJsonp([0],{
 	function main() {
 	  initWinStore(function (rawBMStore) {
 	    reattachWindows(rawBMStore, function (bmStore) {
-	      // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS());
+	      // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
 	
-	      // window.winStore = winStore;
+	      // window.winStore = winStore
 	      chrome.windows.getCurrent(null, function (currentWindow) {
-	        // console.log("bgHelper: currentWindow: ", currentWindow);
+	        // console.log("bgHelper: currentWindow: ", currentWindow)
 	        actions.syncChromeWindows(function (uf) {
 	          console.log('initial sync of chrome windows complete.');
 	          var syncedStore = uf(bmStore).setCurrentWindow(currentWindow);
-	          console.log("current window after initial sync: ", syncedStore.currentWindowId, syncedStore.getCurrentWindow());
+	          console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow());
 	          window.storeRef = new ViewRef(syncedStore);
 	
-	          // dumpAll(syncedStore);
-	          // dumpChromeWindows();
+	          // dumpAll(syncedStore)
+	          // dumpChromeWindows()
 	
 	          setupConnectionListener(window.storeRef);
 	
@@ -479,7 +478,7 @@ webpackJsonp([0],{
 	          });
 	
 	          chrome.commands.onCommand.addListener(function (command) {
-	            if (command === "show_popout") {
+	            if (command === 'show_popout') {
 	              actions.showPopout(window.storeRef.getValue(), storeRefUpdater);
 	            }
 	          });

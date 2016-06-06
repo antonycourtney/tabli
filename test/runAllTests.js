@@ -1,5 +1,5 @@
-'use strict';
+'use strict'
 
-import './tabWindowTest';
-import './viewTests';
-import './semVerTests';
+import './tabWindowTest'
+import './viewTests'
+import './semVerTests'

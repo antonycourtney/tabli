@@ -1,5 +1,4 @@
-import * as RenderCommon from './renderCommon';
-
+import * as RenderCommon from './renderCommon'
 
 /*
  * Perform our React rendering *after* the load event for the popup
@@ -11,8 +10,8 @@ import * as RenderCommon from './renderCommon';
  * See https://code.google.com/p/chromium/issues/detail?id=511699
  *
  */
-function main() {
-  window.onload = () => RenderCommon.getFocusedAndRender(false);
+function main () {
+  window.onload = () => RenderCommon.getFocusedAndRender(false)
 }
 
-main();
+main()

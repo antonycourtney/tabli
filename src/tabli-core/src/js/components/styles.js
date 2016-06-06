@@ -1,5 +1,5 @@
-import * as Constants from './constants';
-import * as BC from './browserConstants';
+import * as Constants from './constants'
+import * as BC from './browserConstants'
 
 const mkUrl = relPath => 'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")'
 
@@ -7,7 +7,7 @@ const styles = {
   noWrap: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    whiteSpace: 'nowrap'
   },
   // This is the container for a single tabWindow, consisting of its
   // header and tabs:
@@ -17,10 +17,10 @@ const styles = {
     marginBottom: 8,
     maxWidth: 345,
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column'
   },
   messageCard: {
-    padding: 0,
+    padding: 0
   },
   card: {
     paddingLeft: 16,
@@ -29,14 +29,14 @@ const styles = {
   },
   cardBody: {
     paddingLeft: 16,
-    paddingRight: 16,
+    paddingRight: 16
   },
   cardActions: {
     display: 'inline-flex',
     flexDirection: 'row-reverse',
     paddingRight: 16,
     paddingBottom: 16,
-    position: 'relative',
+    position: 'relative'
   },
   flatButton: {
     border: '0px',
@@ -71,7 +71,7 @@ const styles = {
     display: 'inline-flex',
 
     // justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   tabItem: {
     height: 20,
@@ -79,10 +79,10 @@ const styles = {
     paddingLeft: 3,
     paddingRight: 3,
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   tabItemSelected: {
-    backgroundColor: '#dadada',
+    backgroundColor: '#dadada'
   },
   tabItemDropOver: {
     borderBottom: '2px solid #333333'
@@ -91,31 +91,31 @@ const styles = {
     fontSize: 12,
     marginTop: 'auto',
     marginBottom: 'auto',
-    marginLeft: 3,
+    marginLeft: 3
   },
   tabTitle: {
     width: 275,
-    maxWidth: 275,
+    maxWidth: 275
   },
   expandablePanel: {
     width: '100%',
     position: 'relative',
     minHeight: Constants.WINDOW_HEADER_HEIGHT,
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   expandablePanelContentClosed: {
-    marginTop: '-999px',
+    marginTop: '-999px'
   },
   expandablePanelContentOpen: {
-    marginTop: 0,
+    marginTop: 0
   },
   windowExpand: {
     WebkitMaskImage: mkUrl('images/triangle-small-4-01.png'),
-    backgroundColor: '#606060',
+    backgroundColor: '#606060'
   },
   windowCollapse: {
     WebkitMaskImage: mkUrl('images/triangle-small-1-01.png'),
-    backgroundColor: '#606060',
+    backgroundColor: '#606060'
   },
 
   // Hmmm, we use this as a common base for both
@@ -127,7 +127,7 @@ const styles = {
     width: 16,
     height: 16,
     marginLeft: 1,
-    marginRight: 1,
+    marginRight: 1
   },
   dialogButton: {
     outline: 'none',
@@ -147,11 +147,11 @@ const styles = {
     fontSize: 12,
     textAlign: 'center',
     backgroundColor: '#e0e1e2',
-    color: 'rgba(0,0,0,.6)',
+    color: 'rgba(0,0,0,.6)'
   },
   primaryButton: {
     backgroundColor: '#1678c2',
-    color: '#fff',
+    color: '#fff'
   },
   dialogButtonRow: {
     flexShrink: 0,
@@ -160,30 +160,30 @@ const styles = {
   spacer: {
     // backgroundColor: 'red', // for debugging
     // height: 8, // for debugging
-    flex: 1,
+    flex: 1
   },
   favIcon: {
     width: 16,
     height: 16,
-    marginRight: 3,
+    marginRight: 3
   },
   favIconClosed: {
-    WebkitFilter: "grayscale(1)"
+    WebkitFilter: 'grayscale(1)'
   },
   hidden: {
-    visibility: 'hidden',
+    visibility: 'hidden'
   },
   visible: {
-    visibility: 'visible',
+    visibility: 'visible'
   },
   open: {
   },
   closed: {
-    color: '#979ca0',
+    color: '#979ca0'
   },
   tabManagedButton: {
     WebkitMaskImage: mkUrl('images/Status-9.png'),
-    backgroundColor: '#7472ff',
+    backgroundColor: '#7472ff'
   },
   imageButtonClosed: {
     backgroundColor: '#979ca0'
@@ -193,17 +193,17 @@ const styles = {
     height: 24,
     backgroundImage: mkUrl('images/logoImage.png'),
     /* backgroundColor: '#358194', */
-    marginRight: 8,
+    marginRight: 8
   },
   audibleIcon: {
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
-    backgroundColor: '#505050',
+    backgroundColor: '#505050'
   },
   emptyFavIcon: {
     width: 18,
     marginRight: 3,
     WebkitMaskImage: mkUrl('images/Files-26.png'),
-    backgroundColor: '#969696',
+    backgroundColor: '#969696'
   },
   /* checkboxes seems to obey width and height, but ignore padding
    * so we'll hack margin instead.
@@ -211,45 +211,45 @@ const styles = {
   tabCheckItem: {
     width: 13,
     height: 13,
-    margin: '3px 3px 3px 3px',
+    margin: '3px 3px 3px 3px'
   },
   windowManagedButton: {
     WebkitMaskImage: mkUrl('images/Status-9.png'),
-    backgroundColor: '#7472ff',
+    backgroundColor: '#7472ff'
   },
   revertButton: {
     WebkitMaskImage: mkUrl('images/chevron-double-mix-1-01.png'),
     backgroundColor: '#7472ff',
-    marginRight: '20px',
+    marginRight: '20px'
   },
   helpButton: {
     color: '#7472ff'
   },
   tabList: {
-    marginLeft: 0,
+    marginLeft: 0
   },
   tileTabContainer: {
     overflow: 'auto'
   },
   spanClosed: {
-    color: '#979ca0',
+    color: '#979ca0'
   },
   activeSpan: {
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   windowTitle: {
     fontWeight: 'bold',
     width: 243,
-    maxWidth: 243,
+    maxWidth: 243
   },
   modalTitle: {
     fontWeight: 'bold',
     paddingLeft: 7,
-    maxWidth: 243,
+    maxWidth: 243
   },
   headerCheckBox: {
     width: 13,
-    height: 13,
+    height: 13
   },
   modalOverlay: {
     position: 'fixed',
@@ -259,7 +259,7 @@ const styles = {
     zIndex: 5,
     width: '100%',
     height: '100%',
-    display: 'flex',
+    display: 'flex'
   },
   modalContainer: {
     width: 300,
@@ -270,14 +270,14 @@ const styles = {
     margin: 'auto',
     border: '1px solid #bababa',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column'
   },
   modalBodyContainer: {
     display: 'flex',
     minHeight: 50,
     maxHeight: Constants.MODAL_BODY_MAX_HEIGHT,
     overflow: 'auto',
-    flexDirection: 'column',
+    flexDirection: 'column'
   },
   simpleTabContainer: {
     width: 250,
@@ -288,30 +288,30 @@ const styles = {
     paddingTop: 4,
     paddingBottom: 4,
     border: '1px solid #bababa',
-    borderRadius: 3,
+    borderRadius: 3
   },
   centerContents: {
-    margin: 'auto',
+    margin: 'auto'
   },
   dialogInfo: {
     borderBottom: '1px solid #bababa',
-    paddingLeft: 3,
+    paddingLeft: 3
   },
   dialogInfoContents: {
     marginLeft: 10,
     marginTop: 4,
-    marginBottom: 0,
+    marginBottom: 0
   },
   windowListSection: {
     borderBottom: '1px solid #bababa',
     paddingLeft: 10,
     paddingRight: 16,
     paddingTop: 10,
-    paddingBottom: 4,
+    paddingBottom: 4
   },
   windowListSectionHeader: {
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 5
   },
   popupHeader: {
     width: 350,
@@ -333,14 +333,14 @@ const styles = {
     maxWidth: 352,
     height: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
     maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
-    /* adding this border is useful for debugging styling issues:
-    /* border: '1px solid #bababa' */
+  /* adding this border is useful for debugging styling issues:
+  /* border: '1px solid #bababa' */
   },
   popupBody: {
     marginTop: Constants.POPUP_HEADER_HEIGHT,
     marginBottom: Constants.POPUP_FOOTER_HEIGHT,
     maxHeight: Constants.POPUP_BODY_HEIGHT,
-    overflow: 'auto',
+    overflow: 'auto'
   },
   popupFooter: {
     width: 350,
@@ -359,10 +359,10 @@ const styles = {
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: 5
   },
   summarySpan: {
-    marginRight: 5,
+    marginRight: 5
   },
   alignRight: {
     display: 'flex',
@@ -382,6 +382,6 @@ const styles = {
     height: 700,
     border: '1px solid #ff0000'
   }
-};
+}
 
-export default styles;
+export default styles

@@ -316,14 +316,14 @@
 	    // both open, use openTabIndex for comparison:
 	    var ret = tiA.openState.openTabIndex - tiB.openState.openTabIndex;
 	    if (ret === 0) {
-	      console.warn("unexpected equal openTabIndex vals: ", tiA.toJS(), tiB.toJS());
+	      console.warn('unexpected equal openTabIndex vals: ', tiA.toJS(), tiB.toJS());
 	    }
 	    return ret;
 	  }
 	  // both closed and saved, use bookmark index:
 	  var sret = tiA.savedState.bookmarkIndex - tiB.savedState.bookmarkIndex;
 	  if (sret === 0) {
-	    console.warn("unexpected equal bookmarkIndex vals:", tiA.toJS(), tiB.toJS());
+	    console.warn('unexpected equal bookmarkIndex vals:', tiA.toJS(), tiB.toJS());
 	  }
 	  return sret;
 	}
@@ -355,8 +355,7 @@
 	
 	  var tabItem = new TabItem({
 	    saved: true,
-	    savedState: savedState
-	  });
+	    savedState: savedState });
 	  return tabItem;
 	}
 	
@@ -386,8 +385,7 @@
 	
 	  var tabItem = new TabItem({
 	    open: true,
-	    openState: openState
-	  });
+	    openState: openState });
 	  return tabItem;
 	}
 	
@@ -500,7 +498,7 @@
 	    value: function setTabItems(nextItems) {
 	      /* HACK: debugging only check; get rid of this! */
 	      if (!nextItems) {
-	        console.error("setTabItems: bad nextItems: ", nextItems);
+	        console.error('setTabItems: bad nextItems: ', nextItems);
 	      }
 	      return this.set('tabItems', nextItems);
 	    }
@@ -508,12 +506,12 @@
 	    key: 'exportStr',
 	    value: function exportStr() {
 	      var fmtTabItem = function fmtTabItem(ti) {
-	        var ret = escapeTableCell(ti.title) + " | " + ti.url + "\n";
+	        var ret = escapeTableCell(ti.title) + ' | ' + ti.url + '\n';
 	        return ret;
 	      };
-	      var titleStr = "### " + this.title;
+	      var titleStr = '### ' + this.title;
 	      var headerStr = '\nTitle                                  | URL\n---------------------------------------|-----------\n';
-	      var s0 = titleStr + "\n" + headerStr;
+	      var s0 = titleStr + '\n' + headerStr;
 	      var s = this.tabItems.reduce(function (rs, ti) {
 	        return rs + fmtTabItem(ti);
 	      }, s0);
@@ -733,11 +731,11 @@
 	 * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
 	 */
 	function closeTab(tabWindow, tabId) {
-	  // console.log("closeTab: ", tabWindow, tabId);
+	  // console.log("closeTab: ", tabWindow, tabId)
 	  var entry = tabWindow.findChromeTabId(tabId);
 	
 	  if (!entry) {
-	    // console.warn("closeTab: could not find closed tab id ", tabId);
+	    // console.warn("closeTab: could not find closed tab id ", tabId)
 	    return tabWindow;
 	  }
 	
@@ -827,7 +825,7 @@
 	  var tabPos = tabWindow.findChromeTabId(tabId);
 	
 	  if (!tabPos) {
-	    console.log("setActiveTab -- tab id not found: ", tabId);
+	    console.log('setActiveTab -- tab id not found: ', tabId);
 	    return tabWindow;
 	  }
 	
@@ -837,7 +835,7 @@
 	  var tabItem = _tabPos[1];
 	
 	  if (tabItem.active) {
-	    console.log("setActiveTab: tab was already active, igoring");
+	    console.log('setActiveTab: tab was already active, igoring');
 	    return tabWindow;
 	  }
 	
@@ -871,8 +869,8 @@
 	
 	  var updItems;
 	  if (!tabPos) {
-	    // console.warn("updateTabItem: Got update for unknown tab id ", tabId);
-	    // console.log("updateTabItem: changeInfo: ", changeInfo);
+	    // console.warn("updateTabItem: Got update for unknown tab id ", tabId)
+	    // console.log("updateTabItem: changeInfo: ", changeInfo)
 	    return tabWindow;
 	  }
 	
@@ -892,7 +890,7 @@
 	
 	  var updTabItem = updKeys.length > 0 ? prevTabItem.set('openState', updOpenState) : prevTabItem;
 	
-	  // console.log("updateTabItem: ", index, updTabItem.toJS());
+	  // console.log("updateTabItem: ", index, updTabItem.toJS())
 	  updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 	
 	  var updWindow = tabWindow.setTabItems(updItems);
@@ -22269,18 +22267,18 @@
 	}
 	
 	/*
-	var CONTEXT_MENU_ID = 99;
-	var contextMenuCreated = false;
+	var CONTEXT_MENU_ID = 99
+	var contextMenuCreated = false
 
 	function initContextMenu() {
 	  var sendToMenuItem = { type: "normal",
 	                     id: CONTEXT_MENU_ID,
 	                     title: "Open Link in Existing Window",
 	                     contexts: [ "link" ]
-	                    };
+	                    }
 	  chrome.contextMenus.create( sendToMenuItem, function() {
-	    contextMenuCreated = true;
-	  });
+	    contextMenuCreated = true
+	  })
 	}
 	*/
 
@@ -22331,7 +22329,7 @@
 	  if (!cw) return false;
 	  var cwTabs = _.get(cw, 'tabs', []);
 	  var isNormal = cw.type === 'normal' && cwTabs.length > 0;
-	  var isPopout = cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === "Tabli";
+	  var isPopout = cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === 'Tabli';
 	  return isNormal || !normalOnly && isPopout;
 	}
 	
@@ -22370,7 +22368,7 @@
 	  }, {
 	    key: 'handleTabWindowClosed',
 	    value: function handleTabWindowClosed(tabWindow) {
-	      // console.log("handleTabWindowClosed: ", tabWindow.toJS());
+	      // console.log("handleTabWindowClosed: ", tabWindow.toJS())
 	      /*
 	       * We only remove window from map of open windows (windowIdMap) but then we re-register
 	       * reverted window to ensure that a reverted version of saved window stays in
@@ -22426,7 +22424,7 @@
 	  }, {
 	    key: 'attachChromeWindow',
 	    value: function attachChromeWindow(tabWindow, chromeWindow) {
-	      // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow);
+	      // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow)
 	
 	      // Was this Chrome window id previously associated with some other tab window?
 	      var oldTabWindow = this.windowIdMap.get(chromeWindow.id);
@@ -22436,7 +22434,7 @@
 	
 	      var attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow);
 	
-	      // console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS());
+	      // console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS())
 	
 	      return rmStore.registerTabWindow(attachedTabWindow);
 	    }
@@ -22454,7 +22452,7 @@
 	      var prevTabWindow = this.windowIdMap.get(chromeWindow.id);
 	      /*
 	      if (!prevTabWindow) {
-	        console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow);
+	        console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow)
 	      }
 	      */
 	      var tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow);
@@ -22465,7 +22463,7 @@
 	      var st = updCurrent ? stReg.set('currentWindowId', chromeWindow.id) : stReg;
 	
 	      if (updCurrent) {
-	        console.log("syncChromeWindow: updated current window to: ", chromeWindow.id);
+	        console.log('syncChromeWindow: updated current window to: ', chromeWindow.id);
 	      }
 	
 	      return st;
@@ -22681,7 +22679,7 @@
 	  }, {
 	    key: 'getPopoutTabWindow',
 	    value: function getPopoutTabWindow() {
-	      var popupTabWindows = this.getTabWindowsByType("popup");
+	      var popupTabWindows = this.getTabWindowsByType('popup');
 	      if (popupTabWindows.count() > 0) {
 	        return popupTabWindows.get(0);
 	      }
@@ -22788,8 +22786,7 @@
 	
 	    return {
 	      winStore: winStore,
-	      sortedWindows: sortedWindows
-	    };
+	      sortedWindows: sortedWindows };
 	  },
 	  getInitialState: function getInitialState() {
 	    var st = this.storeAsState(this.props.initialWinStore, true);
@@ -22846,12 +22843,12 @@
 	  renderSaveModal: function renderSaveModal() {
 	    var modal = null;
 	    if (this.state.saveModalIsOpen) {
-	      modal = React.createElement(_SaveModal2.default, { initialTitle: this.state.saveInitialTitle,
+	      modal = React.createElement(_SaveModal2.default, {
+	        initialTitle: this.state.saveInitialTitle,
 	        tabWindow: this.state.saveTabWindow,
 	        onClose: this.closeSaveModal,
 	        onSubmit: this.doSave,
-	        appComponent: this
-	      });
+	        appComponent: this });
 	    }
 	
 	    return modal;
@@ -22866,8 +22863,7 @@
 	        tabWindow: this.state.revertTabWindow,
 	        onClose: this.closeRevertModal,
 	        onSubmit: this.doRevert,
-	        appComponent: this
-	      });
+	        appComponent: this });
 	    }
 	
 	    return modal;
@@ -22889,8 +22885,7 @@
 	          appComponent: this,
 	          searchStr: this.state.searchStr,
 	          searchRE: this.state.searchRE,
-	          isPopout: this.props.isPopout
-	        }),
+	          isPopout: this.props.isPopout }),
 	        saveModal,
 	        revertModal
 	      );
@@ -22915,20 +22910,20 @@
 	     * in response to a state change.
 	     */
 	    var viewStateListener = function viewStateListener() {
-	      // console.log('TabliPopup: viewListener: updating popup state from storeRef');
+	      // console.log('TabliPopup: viewListener: updating popup state from storeRef')
 	      var t_preSet = performance.now();
 	
 	      var nextStore = storeRef.getValue();
 	      _this.setState(_this.storeAsState(nextStore));
 	      var t_postSet = performance.now();
-	      // console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms");
+	      // console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms")
 	    };
 	
 	    var throttledListener = _.debounce(viewStateListener, 200);
 	
 	    var listenerId = storeRef.addViewListener(throttledListener);
 	
-	    console.log("componentWillMount: added view listener: ", listenerId);
+	    console.log('componentWillMount: added view listener: ', listenerId);
 	    sendHelperMessage({ listenerId: listenerId });
 	  }
 	});
@@ -26765,7 +26760,7 @@
 	    }
 	
 	    if (currentChromeWindow.tabs.length === 1 && currentChromeWindow.tabs[0].url === 'chrome://newtab/') {
-	      // console.log("found new window -- replacing contents");
+	      // console.log("found new window -- replacing contents")
 	      var origTabId = currentChromeWindow.tabs[0].id;
 	
 	      // new window -- replace contents with urls:
@@ -26798,7 +26793,6 @@
 	}
 	
 	function openWindow(lastFocusedTabWindow, targetTabWindow, cb) {
-	
 	  if (targetTabWindow.open) {
 	    // existing, open window -- just transfer focus
 	    chrome.windows.update(targetTabWindow.openWindowId, { focused: true });
@@ -26822,9 +26816,9 @@
 	       * We'd like to do a full chrome.windows.get here so that we get the currently active tab
 	       * but amazingly we still see the closed tab when we do that!
 	      chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
-	        console.log("closeTab: got window state: ", chromeWindow);
-	        winStore.syncChromeWindow(chromeWindow);
-	      });
+	        console.log("closeTab: got window state: ", chromeWindow)
+	        winStore.syncChromeWindow(chromeWindow)
+	      })
 	      */
 	      cb(function (state) {
 	        return state.handleTabClosed(tabWindow, tabId);
@@ -26865,18 +26859,18 @@
 	
 	// activate a specific tab:
 	function activateTab(lastFocusedTabWindow, targetTabWindow, tab, tabIndex, cb) {
-	  // console.log("activateTab: ", tabWindow, tab );
+	  // console.log("activateTab: ", tabWindow, tab )
 	
 	  if (targetTabWindow.open) {
 	    // OK, so we know this window is open.  What about the specific tab?
 	    if (tab.open) {
 	      // Tab is already open, just make it active:
-	      // console.log("making tab active");
+	      // console.log("making tab active")
 	      /*
 	            chrome.tabs.update(tab.openTabId, { active: true }, () => {
-	              // console.log("making tab's window active");
-	              chrome.windows.update(tabWindow.openWindowId, { focused: true });
-	            });
+	              // console.log("making tab's window active")
+	              chrome.windows.update(tabWindow.openWindowId, { focused: true })
+	            })
 	      */
 	      tabliBrowser.activateTab(tab.openState.openTabId, function () {
 	        tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId);
@@ -26894,7 +26888,7 @@
 	      chrome.tabs.create(createOpts, function () {});
 	    }
 	  } else {
-	    // console.log("activateTab: opening non-open window");
+	    // console.log("activateTab: opening non-open window")
 	    // TODO: insert our own callback so we can activate chosen tab after opening window!
 	    openWindow(lastFocusedTabWindow, targetTabWindow, cb);
 	  }
@@ -26942,11 +26936,10 @@
 	  }
 	
 	  var windowFolder = { parentId: tabliFolderId,
-	    title: title
-	  };
+	    title: title };
 	  chrome.bookmarks.create(windowFolder, function (windowFolderNode) {
-	    // console.log( "succesfully created bookmarks folder ", windowFolderNode );
-	    // console.log( "for window: ", tabWindow );
+	    // console.log( "succesfully created bookmarks folder ", windowFolderNode )
+	    // console.log( "for window: ", tabWindow )
 	
 	    // We'll groupBy and then take the first item of each element of the sequence:
 	    var uniqTabItems = tabWindow.tabItems.groupBy(function (ti) {
@@ -26982,7 +26975,7 @@
 	
 	/* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
 	function unmanageWindow(archiveFolderId, tabWindow, cb) {
-	  // console.log("unmanageWindow: ", tabWindow.toJS());
+	  // console.log("unmanageWindow: ", tabWindow.toJS())
 	  if (!archiveFolderId) {
 	    alert('could not move managed window folder to archive -- no archive folder');
 	    return;
@@ -26990,7 +26983,7 @@
 	
 	  // Could potentially disambiguate names in archive folder...
 	  chrome.bookmarks.move(tabWindow.savedFolderId, { parentId: archiveFolderId }, function () {
-	    // console.log("unmanageWindow: bookmark folder moved to archive folder");
+	    // console.log("unmanageWindow: bookmark folder moved to archive folder")
 	    cb(function (state) {
 	      return state.unmanageWindow(tabWindow);
 	    });
@@ -27029,21 +27022,20 @@
 	 * move an open tab (in response to a drag event):
 	 */
 	function moveTabItem(targetTabWindow, targetIndex, sourceTabItem, uf) {
-	
 	  if (!sourceTabItem.open) {
-	    console.log("moveTabItem: source tab not open, ignoring...");
+	    console.log('moveTabItem: source tab not open, ignoring...');
 	    return;
 	  }
 	
 	  var tabId = sourceTabItem.openState.openTabId;
 	  if (!targetTabWindow.open) {
-	    console.log("moveTabItem: target tab window not open, ignoring...");
+	    console.log('moveTabItem: target tab window not open, ignoring...');
 	    return;
 	  }
 	  var targetWindowId = targetTabWindow.openWindowId;
 	  var moveProps = { windowId: targetWindowId, index: targetIndex };
 	  chrome.tabs.move(tabId, moveProps, function (chromeTab) {
-	    // console.log("moveTabItem: tab move complete: ", chromeTab);
+	    // console.log("moveTabItem: tab move complete: ", chromeTab)
 	    // Let's just refresh the whole window:
 	    syncChromeWindowById(targetWindowId, uf);
 	  });
@@ -27154,12 +27146,12 @@
 	  if (ptw) {
 	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
 	    return (0, _q2.default)(idst);
-	  };
+	  }
 	  var deferred = _q2.default.defer();
 	
 	  chrome.storage.local.set({ 'showPopout': true }, function () {
-	    chrome.windows.create({ url: "popout.html",
-	      type: "detached_panel",
+	    chrome.windows.create({ url: 'popout.html',
+	      type: 'detached_panel',
 	      left: 0, top: 0,
 	      width: 350,
 	      height: 625
@@ -29493,7 +29485,7 @@
 	
 	  // And restrict to windows with "normal" windowType:
 	  res = _.filter(res, function (fw) {
-	    return !fw.tabWindow.open || fw.tabWindow.windowType === "normal";
+	    return !fw.tabWindow.open || fw.tabWindow.windowType === 'normal';
 	  });
 	
 	  return res;
@@ -30225,7 +30217,7 @@
 	    marginRight: 3
 	  },
 	  favIconClosed: {
-	    WebkitFilter: "grayscale(1)"
+	    WebkitFilter: 'grayscale(1)'
 	  },
 	  hidden: {
 	    visibility: 'hidden'
@@ -30678,7 +30670,8 @@
 	          { style: Util.merge(_styles2.default.alignRight, _styles2.default.dialogButtonRow) },
 	          React.createElement(
 	            'button',
-	            { type: 'button',
+	            {
+	              type: 'button',
 	              className: 'btn btn-primary btn-sm tabli-dialog-button',
 	              onClick: this.handleSubmit,
 	              ref: 'okButton',
@@ -30688,7 +30681,9 @@
 	          ),
 	          React.createElement(
 	            'button',
-	            { type: 'button', className: 'btn btn-default btn-sm tabli-dialog-button',
+	            {
+	              type: 'button',
+	              className: 'btn btn-default btn-sm tabli-dialog-button',
 	              onClick: this.props.onClose,
 	              tabIndex: 0 },
 	            'Cancel'
@@ -30763,7 +30758,7 @@
 	
 	    var tA = tabWindowA.title;
 	    var tB = tabWindowB.title;
-	    var ret = tA.localeCompare(tB, navigator.language, { sensitivity: "base" });
+	    var ret = tA.localeCompare(tB, navigator.language, { sensitivity: 'base' });
 	    return ret;
 	  };
 	  return cf;
@@ -30831,10 +30826,12 @@
 	    var modalDiv = null;
 	
 	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.modalTitle, _styles2.default.open);
-	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: _styles2.default.headerButton, visible: true,
+	    var closeButton = React.createElement(_HeaderButton2.default, {
+	      className: 'closeButton',
+	      baseStyle: _styles2.default.headerButton,
+	      visible: true,
 	      title: 'Close Window',
-	      onClick: this.handleClose
-	    });
+	      onClick: this.handleClose });
 	    modalDiv = React.createElement(
 	      'div',
 	      { style: _styles2.default.modalOverlay },
@@ -30865,7 +30862,6 @@
 	    return React.createElement(
 	      'div',
 	      { style: _styles2.default.dialogInfo },
-	      '                                                                                                                                                                                                                                                              ',
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.dialogInfoContents },
@@ -30940,9 +30936,12 @@
 	      return buttonSpacer;
 	    }
 	
-	    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden;
+	    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden
 	    var buttonStyle = this.props.baseStyle;
-	    return React.createElement('button', { style: buttonStyle, className: this.props.className, title: this.props.title,
+	    return React.createElement('button', {
+	      style: buttonStyle,
+	      className: this.props.className,
+	      title: this.props.title,
 	      onClick: this.handleClick });
 	  }
 	});
@@ -31196,11 +31195,14 @@
 	                { htmlFor: 'title' },
 	                'Window Title'
 	              ),
-	              React.createElement('input', { type: 'text', name: 'title', id: 'title', ref: 'titleInput',
+	              React.createElement('input', {
+	                type: 'text',
+	                name: 'title',
+	                id: 'title',
+	                ref: 'titleInput',
 	                autoFocus: true,
 	                defaultValue: this.props.initialTitle,
-	                onKeyDown: this.handleKeyDown
-	              })
+	                onKeyDown: this.handleKeyDown })
 	            )
 	          )
 	        )
@@ -31308,7 +31310,7 @@
 	    }
 	    var selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex];
 	
-	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count();
+	    // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count()
 	
 	    if (selectedWindow.tabWindow.open && this.state.selectedTabIndex > 0 && !byPage) {
 	      this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 });
@@ -31401,11 +31403,10 @@
 	                  ", currentWindowId: ", this.props.winStore.currentWindowId );    
 	      console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
 	                  ", activeTabId: ", this.props.winStore.getActiveTabId(), 
-	                  ", needScroll: ", needScrollUpdate);
+	                  ", needScroll: ", needScrollUpdate)
 	    */
 	    var isPopup = !this.props.isPopout;
 	    if (windowRef != null && bodyRef != null && needScrollUpdate && this.props.filteredWindows.length > 0 && !this.props.winStore.showRelNotes) {
-	
 	      var viewportTop = bodyRef.scrollTop;
 	      var viewportHeight = bodyRef.clientHeight;
 	
@@ -31415,9 +31416,9 @@
 	      // the annoying extra bit:
 	      var offsetTop = bodyRef.offsetTop;
 	
-	      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } );
+	      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } )
 	      if (windowTop < viewportTop || windowTop + windowHeight > viewportTop + viewportHeight || isPopup) {
-	        // console.log("updateScrollPos: setting scroll position");
+	        // console.log("updateScrollPos: setting scroll position")
 	
 	        if (windowHeight > viewportHeight || isPopup) {
 	          bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE;
@@ -31447,7 +31448,7 @@
 	        selectedTabIndex: activeTabIndex
 	      };
 	
-	      // console.log("updateScrollPos: udpating State: ", updState);
+	      // console.log("updateScrollPos: udpating State: ", updState)
 	      this.setState(updState);
 	    }
 	  },
@@ -31496,7 +31497,8 @@
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.popupHeader },
-	        React.createElement(_SearchBar2.default, { winStore: this.props.winStore,
+	        React.createElement(_SearchBar2.default, {
+	          winStore: this.props.winStore,
 	          storeUpdateHandler: this.props.storeUpdateHandler,
 	          onSearchInput: this.props.onSearchInput,
 	          onSearchUp: this.handlePrevSelection,
@@ -31504,13 +31506,13 @@
 	          onSearchEnter: this.handleSelectionEnter,
 	          onSearchExit: this.handleSearchExit,
 	          setInputRef: this.setSearchInputRef,
-	          isPopout: this.props.isPopout
-	        })
+	          isPopout: this.props.isPopout })
 	      ),
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.popupBody, ref: this.setBodyRef },
-	        React.createElement(_TabWindowList2.default, { winStore: this.props.winStore,
+	        React.createElement(_TabWindowList2.default, {
+	          winStore: this.props.winStore,
 	          storeUpdateHandler: this.props.storeUpdateHandler,
 	          filteredWindows: this.props.filteredWindows,
 	          appComponent: this.props.appComponent,
@@ -31519,8 +31521,7 @@
 	          selectedWindowIndex: this.state.selectedWindowIndex,
 	          selectedTabIndex: this.state.selectedTabIndex,
 	          setFocusedTabWindowRef: this.setFocusedTabWindowRef,
-	          onItemSelected: this.handleItemSelected
-	        })
+	          onItemSelected: this.handleItemSelected })
 	      ),
 	      React.createElement(
 	        'div',
@@ -31585,7 +31586,7 @@
 	// The dreaded routine copied from SO
 	// http://stackoverflow.com/a/18455088/3272482
 	function copyTextToClipboard(text) {
-	  var copyFrom = document.createElement("textarea");
+	  var copyFrom = document.createElement('textarea');
 	  copyFrom.textContent = text;
 	  var body = document.getElementsByTagName('body')[0];
 	  body.appendChild(copyFrom);
@@ -31603,7 +31604,7 @@
 	  handleKeyDown: function handleKeyDown(e) {
 	    var _this = this;
 	
-	    // console.log('handleKeyDown: ', _.omit(e, _.isObject));
+	    // console.log('handleKeyDown: ', _.omit(e, _.isObject))
 	    if (e.keyCode === Constants.KEY_F1 || e.keyCode === Constants.KEY_QUESTION && e.ctrlKey && e.shiftKey) {
 	      e.preventDefault();
 	      actions.showHelp();
@@ -31706,8 +31707,8 @@
 	    var sortedWindows = openWindows.sort(cmpFn);
 	
 	    var s = sortedWindows.reduce(function (rs, tw) {
-	      return rs + "\n\n" + tw.exportStr();
-	    }, "");
+	      return rs + '\n\n' + tw.exportStr();
+	    }, '');
 	
 	    copyTextToClipboard(s);
 	  },
@@ -31720,7 +31721,8 @@
 	  render: function render() {
 	    var menuButton = React.createElement(
 	      'button',
-	      { type: 'button',
+	      {
+	        type: 'button',
 	        className: 'btn btn-default btn-xs dropdown-toggle',
 	        'data-toggle': 'dropdown',
 	        'aria-haspopup': 'true',
@@ -31732,15 +31734,16 @@
 	
 	    // We'll rotate 270 degrees to point upper left for popout,
 	    // 90 degrees to point lower right for pop-in:
-	    var popImgName = this.props.isPopout ? "popin" : "popout";
-	    var popImgPath = "../images/" + popImgName + ".png";
+	    var popImgName = this.props.isPopout ? 'popin' : 'popout';
+	    var popImgPath = '../images/' + popImgName + '.png';
 	
-	    var popVerb = this.props.isPopout ? "Hide" : "Show";
-	    var popDesc = popVerb + " Tabli Popout Window";
+	    var popVerb = this.props.isPopout ? 'Hide' : 'Show';
+	    var popDesc = popVerb + ' Tabli Popout Window';
 	
 	    var popoutButton = React.createElement(
 	      'button',
-	      { type: 'button',
+	      {
+	        type: 'button',
 	        className: 'btn btn-default btn-xs',
 	        title: popDesc,
 	        onClick: this.handlePopoutClick },
@@ -31749,7 +31752,9 @@
 	
 	    var expandAllButton = React.createElement(
 	      'button',
-	      { type: 'button', className: 'btn btn-default btn-xs',
+	      {
+	        type: 'button',
+	        className: 'btn btn-default btn-xs',
 	        title: 'Expand/Collapse All Window Summaries',
 	        onClick: this.handleExpandToggleClick },
 	      React.createElement('span', { className: 'glyphicon glyphicon-collapse-down', 'aria-hidden': 'true' })
@@ -31757,7 +31762,10 @@
 	
 	    var copyButton = React.createElement(
 	      'button',
-	      { id: 'copyButton', type: 'button', className: 'btn btn-default btn-xs',
+	      {
+	        id: 'copyButton',
+	        type: 'button',
+	        className: 'btn btn-default btn-xs',
 	        title: 'Copy All to Clipboard',
 	        onClick: this.handleCopyClick },
 	      React.createElement('i', { className: 'fa fa-clipboard', 'aria-hidden': 'true' })
@@ -31824,10 +31832,15 @@
 	        menuButton,
 	        popoutButton,
 	        dropdownMenu,
-	        React.createElement('input', { className: 'search-input', type: 'search', ref: this.setInputRef, id: 'searchBox', placeholder: 'Search...',
-	          onChange: this.handleChange, onKeyDown: this.handleKeyDown,
-	          title: 'Search Page Titles and URLs'
-	        }),
+	        React.createElement('input', {
+	          className: 'search-input',
+	          type: 'search',
+	          ref: this.setInputRef,
+	          id: 'searchBox',
+	          placeholder: 'Search...',
+	          onChange: this.handleChange,
+	          onKeyDown: this.handleKeyDown,
+	          title: 'Search Page Titles and URLs' }),
 	        expandAllButton,
 	        copyButton
 	      )
@@ -31925,9 +31938,11 @@
 	
 	      var isSelected = i === this.props.selectedWindowIndex;
 	      var selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1;
-	      var windowElem = React.createElement(_FilteredTabWindow2.default, { winStore: this.props.winStore,
+	      var windowElem = React.createElement(_FilteredTabWindow2.default, {
+	        winStore: this.props.winStore,
 	        storeUpdateHandler: this.props.storeUpdateHandler,
-	        filteredTabWindow: filteredTabWindow, key: id,
+	        filteredTabWindow: filteredTabWindow,
+	        key: id,
 	        index: i,
 	        searchStr: this.props.searchStr,
 	        searchRE: this.props.searchRE,
@@ -31936,8 +31951,7 @@
 	        selectedTabIndex: selectedTabIndex,
 	        appComponent: this.props.appComponent,
 	        onItemSelected: this.props.onItemSelected,
-	        expandAll: this.props.winStore.expandAll
-	      });
+	        expandAll: this.props.winStore.expandAll });
 	      if (isFocused) {
 	        focusedWindowElem = windowElem;
 	      } else if (isOpen) {
@@ -32059,7 +32073,7 @@
 	  },
 	  handleClose: function handleClose(event) {
 	    // eslint-disable-line no-unused-vars
-	    // console.log("handleClose");
+	    // console.log("handleClose")
 	    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler);
 	  },
 	  handleRevert: function handleRevert(event) {
@@ -32088,7 +32102,8 @@
 	    for (var i = 0; i < tabs.count(); i++) {
 	      var id = 'tabItem-' + i;
 	      var isSelected = i === this.props.selectedTabIndex;
-	      var tabItem = React.createElement(_TabItem2.default, { winStore: this.props.winStore,
+	      var tabItem = React.createElement(_TabItem2.default, {
+	        winStore: this.props.winStore,
 	        storeUpdateHandler: this.props.storeUpdateHandler,
 	        tabWindow: tabWindow,
 	        tab: tabs.get(i),
@@ -32096,8 +32111,7 @@
 	        tabIndex: i,
 	        isSelected: isSelected,
 	        appComponent: this.props.appComponent,
-	        onItemSelected: this.props.onItemSelected
-	      });
+	        onItemSelected: this.props.onItemSelected });
 	      items.push(tabItem);
 	    }
 	
@@ -32137,7 +32151,8 @@
 	      tabItems = this.renderTabItems(tabWindow, Immutable.Seq());
 	    }
 	
-	    var windowHeader = React.createElement(_WindowHeader2.default, { winStore: this.props.winStore,
+	    var windowHeader = React.createElement(_WindowHeader2.default, {
+	      winStore: this.props.winStore,
 	      storeUpdateHandler: this.props.storeUpdateHandler,
 	      tabWindow: tabWindow,
 	      expanded: expanded,
@@ -32146,8 +32161,7 @@
 	      onRevert: this.handleRevert,
 	      onClose: this.handleClose,
 	      appComponent: this.props.appComponent,
-	      onItemSelected: this.props.onItemSelected
-	    });
+	      onItemSelected: this.props.onItemSelected });
 	
 	    var selectedStyle = this.props.isSelected ? _styles2.default.tabWindowSelected : null;
 	    var focusedStyle = this.props.isFocused ? _styles2.default.tabWindowFocused : null;
@@ -49033,42 +49047,45 @@
 	    var windowCheckItem;
 	
 	    if (managed) {
-	      windowCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.windowManagedButton),
-	        title: 'Stop managing this window', onClick: this.handleUnmanageClick
-	      });
+	      windowCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.windowManagedButton), title: 'Stop managing this window', onClick: this.handleUnmanageClick });
 	    } else {
 	      var checkStyle = Util.merge(_styles2.default.headerButton, _styles2.default.headerCheckBox);
-	      windowCheckItem = React.createElement('input', { className: 'windowCheck', style: checkStyle, type: 'checkbox',
+	      windowCheckItem = React.createElement('input', {
+	        className: 'windowCheck',
+	        style: checkStyle,
+	        type: 'checkbox',
 	        title: 'Save all tabs in this window',
 	        onClick: this.handleManageClick,
 	        ref: 'managedCheckbox',
-	        value: false
-	      });
+	        value: false });
 	    }
 	
 	    var openStyle = tabWindow.open ? _styles2.default.open : _styles2.default.closed;
 	    var titleStyle = Util.merge(_styles2.default.text, _styles2.default.noWrap, _styles2.default.windowTitle, openStyle);
 	
-	    var revertButton = React.createElement(_HeaderButton2.default, { baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton),
+	    var revertButton = React.createElement(_HeaderButton2.default, {
+	      baseStyle: Util.merge(_styles2.default.headerButton, _styles2.default.revertButton),
 	      visible: managed && tabWindow.open,
 	      title: 'Revert to bookmarked tabs (Close other tabs)',
-	      onClick: this.props.onRevert
-	    });
+	      onClick: this.props.onRevert });
 	
-	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: _styles2.default.headerButton,
+	    var closeButton = React.createElement(_HeaderButton2.default, {
+	      className: 'closeButton',
+	      baseStyle: _styles2.default.headerButton,
 	      visible: tabWindow.open,
 	      title: 'Close Window',
-	      onClick: this.props.onClose
-	    });
+	      onClick: this.props.onClose });
 	
-	    // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded);
+	    // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded)
 	
 	    return React.createElement(
 	      'div',
-	      { className: 'windowHeader', style: Util.merge(_styles2.default.windowHeader, _styles2.default.noWrap),
-	        onMouseOver: this.handleMouseOver, onMouseOut: this.handleMouseOut,
-	        onClick: this.props.onOpen
-	      },
+	      {
+	        className: 'windowHeader',
+	        style: Util.merge(_styles2.default.windowHeader, _styles2.default.noWrap),
+	        onMouseOver: this.handleMouseOver,
+	        onMouseOut: this.handleMouseOut,
+	        onClick: this.props.onOpen },
 	      windowCheckItem,
 	      React.createElement(_ExpanderButton2.default, { winStore: this.props.winStore, expanded: this.props.expanded, onClick: this.props.onExpand }),
 	      React.createElement(
@@ -49237,7 +49254,7 @@
 	    var tab = this.props.tab;
 	    var tabIndex = this.props.tabIndex;
 	
-	    // console.log("TabItem: handleClick: tab: ", tab);
+	    // console.log("TabItem: handleClick: tab: ", tab)
 	
 	    actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeUpdateHandler);
 	
@@ -49279,7 +49296,7 @@
 	
 	    var tabTitle = tab.title;
 	
-	    var tooltipContent = tabTitle + "\n" + tab.url;
+	    var tooltipContent = tabTitle + '\n' + tab.url;
 	
 	    // span style depending on whether open or closed window
 	    var tabOpenStyle = null;
@@ -49296,20 +49313,18 @@
 	      }
 	
 	      if (tab.saved) {
-	        tabCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.tabManagedButton, checkOpenStyle),
-	          title: 'Remove bookmark for this tab',
-	          onClick: this.handleUnbookmarkTabItem
-	        });
+	        tabCheckItem = React.createElement('button', { style: Util.merge(_styles2.default.headerButton, _styles2.default.tabManagedButton, checkOpenStyle), title: 'Remove bookmark for this tab', onClick: this.handleUnbookmarkTabItem });
 	
 	        // TODO: callback
 	      } else {
 	          // We used to include headerCheckbox, but that only set width and height
 	          // to something to 13x13; we want 16x16 from headerButton
-	          tabCheckItem = React.createElement('input', { className: 'tabCheck', style: Util.merge(_styles2.default.headerButton, _styles2.default.tabCheckItem),
+	          tabCheckItem = React.createElement('input', {
+	            className: 'tabCheck',
+	            style: Util.merge(_styles2.default.headerButton, _styles2.default.tabCheckItem),
 	            type: 'checkbox',
 	            title: 'Bookmark this tab',
-	            onClick: this.handleBookmarkTabItem
-	          });
+	            onClick: this.handleBookmarkTabItem });
 	        }
 	    } else {
 	      // insert a spacer:
@@ -49317,7 +49332,7 @@
 	    }
 	
 	    var favIconUrl = tab.open ? tab.openState.favIconUrl : null;
-	    // var fiSrc = favIconUrl ? favIconUrl : '';
+	    // var fiSrc = favIconUrl ? favIconUrl : ''
 	    var fiSrc = 'chrome://favicon/size/16/' + tab.url;
 	
 	    // Skip the chrome FAVICONs; they just throw when accessed.
@@ -49339,19 +49354,21 @@
 	
 	    var audibleIcon = tab.open && tab.openState.audible ? React.createElement('div', { style: Util.merge(_styles2.default.headerButton, _styles2.default.audibleIcon) }) : null;
 	
-	    var closeButton = React.createElement(_HeaderButton2.default, { className: 'closeButton', baseStyle: _styles2.default.headerButton, visible: tab.open,
+	    var closeButton = React.createElement(_HeaderButton2.default, {
+	      className: 'closeButton',
+	      baseStyle: _styles2.default.headerButton,
+	      visible: tab.open,
 	      title: 'Close Tab',
-	      onClick: this.handleClose
-	    });
+	      onClick: this.handleClose });
 	
 	    return connectDropTarget(connectDragSource(React.createElement(
 	      'div',
-	      { style: Util.merge(_styles2.default.noWrap, _styles2.default.tabItem, selectedStyle, dropStyle),
+	      {
+	        style: Util.merge(_styles2.default.noWrap, _styles2.default.tabItem, selectedStyle, dropStyle),
 	        className: 'tabItem',
 	        onMouseOut: this.handleMouseOut,
 	        onMouseOver: this.handleMouseOver,
-	        onClick: this.handleClick
-	      },
+	        onClick: this.handleClick },
 	      tabCheckItem,
 	      tabFavIcon,
 	      React.createElement(
@@ -55879,15 +55896,13 @@
 	var MessageCard = React.createClass({
 	  displayName: 'MessageCard',
 	  render: function render() {
-	
 	    var cardStyle = Util.merge(_styles2.default.tabWindow, _styles2.default.tabWindowFocused, _styles2.default.messageCard);
 	    var rawMarkup = { __html: this.props.content };
 	
 	    return React.createElement(
 	      'div',
 	      { style: cardStyle },
-	      React.createElement('div', { className: 'cardContent',
-	        dangerouslySetInnerHTML: rawMarkup }),
+	      React.createElement('div', { className: 'cardContent', dangerouslySetInnerHTML: rawMarkup }),
 	      React.createElement(
 	        'div',
 	        { style: _styles2.default.cardActions },
@@ -55937,13 +55952,13 @@
 	
 	  mixins: [PureRenderMixin],
 	  handleClick: function handleClick(event) {
-	    console.log("FlatButton.handleClick: ", this.props);
+	    console.log('FlatButton.handleClick: ', this.props);
 	    event.stopPropagation();
 	    event.preventDefault();
 	    if (this.props.onClick) {
 	      this.props.onClick(event);
 	    }
-	    console.log("FlatButton.handleClick: returning false");
+	    console.log('FlatButton.handleClick: returning false');
 	    return false;
 	  },
 	  render: function render() {
@@ -58026,7 +58041,7 @@
 	  }, {
 	    key: 'removeViewListener',
 	    value: function removeViewListener(id) {
-	      // console.log("removeViewListener: removing listener id ", id);
+	      // console.log("removeViewListener: removing listener id ", id)
 	      var listener = this.viewListeners[id];
 	      if (listener) {
 	        this.removeListener('change', listener);
