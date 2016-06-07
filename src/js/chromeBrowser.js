@@ -15,6 +15,4 @@ const chromeBrowser = {
   }
 }
 
-window.tabliBrowser = chromeBrowser
-
 module.exports = chromeBrowser

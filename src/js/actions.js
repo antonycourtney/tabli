@@ -1,6 +1,7 @@
 import * as TabWindow from './tabWindow'
 import * as utils from './utils'
 import * as pact from './pact'
+import tabliBrowser from './chromeBrowser'
 
 const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html'
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html'

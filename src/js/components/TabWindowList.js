@@ -17,11 +17,11 @@ if (!util.isNode) {
 const TabWindowList = React.createClass({
 
   /* acknowledge release notes (and hide them) */
-  ackRelNotes() {
+  ackRelNotes () {
     actions.hideRelNotes(this.props.winStore, this.props.storeUpdateHandler)
   },
 
-  render() {
+  render () {
     const showRelNotes = this.props.winStore.showRelNotes
 
     var relNotesSection = null
@@ -55,20 +55,20 @@ const TabWindowList = React.createClass({
       var isSelected = (i === this.props.selectedWindowIndex)
       const selectedTabIndex = isSelected ? this.props.selectedTabIndex : -1
       var windowElem = (
-      <FilteredTabWindow
-        winStore={this.props.winStore}
-        storeUpdateHandler={this.props.storeUpdateHandler}
-        filteredTabWindow={filteredTabWindow}
-        key={id}
-        index={i}
-        searchStr={this.props.searchStr}
-        searchRE={this.props.searchRE}
-        isSelected={isSelected}
-        isFocused={focusedProp}
-        selectedTabIndex={selectedTabIndex}
-        appComponent={this.props.appComponent}
-        onItemSelected={this.props.onItemSelected}
-        expandAll={this.props.winStore.expandAll} />)
+        <FilteredTabWindow
+          winStore={this.props.winStore}
+          storeUpdateHandler={this.props.storeUpdateHandler}
+          filteredTabWindow={filteredTabWindow}
+          key={id}
+          index={i}
+          searchStr={this.props.searchStr}
+          searchRE={this.props.searchRE}
+          isSelected={isSelected}
+          isFocused={focusedProp}
+          selectedTabIndex={selectedTabIndex}
+          appComponent={this.props.appComponent}
+          onItemSelected={this.props.onItemSelected}
+          expandAll={this.props.winStore.expandAll} />)
       if (isFocused) {
         focusedWindowElem = windowElem
       } else if (isOpen) {
@@ -81,7 +81,7 @@ const TabWindowList = React.createClass({
     var otherOpenSection = null
     if (openWindows.length > 0) {
       otherOpenSection = (
-        <WindowListSection title="Other Open Windows">
+        <WindowListSection title='Other Open Windows'>
           {openWindows}
         </WindowListSection>
       )
@@ -90,21 +90,21 @@ const TabWindowList = React.createClass({
     var savedSection = null
     if (savedWindows.length > 0) {
       savedSection = (
-        <WindowListSection title="Saved Closed Windows">
+        <WindowListSection title='Saved Closed Windows'>
           {savedWindows}
         </WindowListSection>
       )
     }
 
     return (
-    <div>
-      {relNotesSection}
-      <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title="Current Window">
-        {focusedWindowElem}
-      </WindowListSection>
-      {otherOpenSection}
-      {savedSection}
-    </div>
+      <div>
+        {relNotesSection}
+        <WindowListSection focusedRef={this.props.setFocusedTabWindowRef} title='Current Window'>
+          {focusedWindowElem}
+        </WindowListSection>
+        {otherOpenSection}
+        {savedSection}
+      </div>
     )
   }
 })

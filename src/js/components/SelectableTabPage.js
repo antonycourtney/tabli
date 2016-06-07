@@ -5,7 +5,6 @@ import * as Util from './util'
 import * as actions from '../actions'
 import SearchBar from './SearchBar'
 import TabTileList from './TabTileList'
-import WindowListSection from './WindowListSection'
 
 function matchingTabCount (searchStr, filteredTabWindow) {
   var ret = (searchStr.length > 0) ? filteredTabWindow.itemMatches.count() : filteredTabWindow.tabWindow.tabItems.count()
@@ -30,14 +29,14 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
  * filtered windows that we receive from above
  */
 const SelectableTabPage = React.createClass({
-  getInitialState() {
+  getInitialState () {
     return {
       selectedWindowIndex: 0,
       selectedTabIndex: 0
     }
   },
 
-  handlePrevSelection(byPage) {
+  handlePrevSelection (byPage) {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -59,7 +58,7 @@ const SelectableTabPage = React.createClass({
     }
   },
 
-  handleNextSelection(byPage) {
+  handleNextSelection (byPage) {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -78,7 +77,7 @@ const SelectableTabPage = React.createClass({
     }
   },
 
-  handleSelectionEnter() {
+  handleSelectionEnter () {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -91,7 +90,7 @@ const SelectableTabPage = React.createClass({
     actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler)
   },
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps (nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex
     var nextFilteredWindows = nextProps.filteredWindows
 
@@ -110,7 +109,7 @@ const SelectableTabPage = React.createClass({
     }
   },
 
-  render() {
+  render () {
     const winStore = this.props.winStore
     const openTabCount = winStore.countOpenTabs()
     const openWinCount = winStore.countOpenWindows()
@@ -120,35 +119,35 @@ const SelectableTabPage = React.createClass({
     const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.'
 
     return (
-    <div>
-      <div className="container">
-        <div className="row">
-          <div className="com-sm-1"></div>
-          <div className="col-sm-10">
-            <img src="../images/popout-icon-1.png" />
-            <SearchBar
-              onSearchInput={this.props.onSearchInput}
-              onSearchUp={this.handlePrevSelection}
-              onSearchDown={this.handleNextSelection}
-              onSearchEnter={this.handleSelectionEnter} />
+      <div>
+        <div className='container'>
+          <div className='row'>
+            <div className='com-sm-1'></div>
+            <div className='col-sm-10'>
+              <img src='../images/popout-icon-1.png' />
+              <SearchBar
+                onSearchInput={this.props.onSearchInput}
+                onSearchUp={this.handlePrevSelection}
+                onSearchDown={this.handleNextSelection}
+                onSearchEnter={this.handleSelectionEnter} />
+            </div>
+          </div>
+          <div className='container-fluid'>
+            <TabTileList
+              winStore={this.props.winStore}
+              storeUpdateHandler={this.props.storeUpdateHandler}
+              filteredWindows={this.props.filteredWindows}
+              appComponent={this.props.appComponent}
+              searchStr={this.props.searchStr}
+              searchRE={this.props.searchRE}
+              selectedWindowIndex={this.state.selectedWindowIndex}
+              selectedTabIndex={this.state.selectedTabIndex} />
           </div>
         </div>
-        <div className="container-fluid">
-          <TabTileList
-            winStore={this.props.winStore}
-            storeUpdateHandler={this.props.storeUpdateHandler}
-            filteredWindows={this.props.filteredWindows}
-            appComponent={this.props.appComponent}
-            searchStr={this.props.searchStr}
-            searchRE={this.props.searchRE}
-            selectedWindowIndex={this.state.selectedWindowIndex}
-            selectedTabIndex={this.state.selectedTabIndex} />
+        <div style={Styles.tabPageFooter}>
+          <span style={Util.merge(Styles.closed, Styles.summarySpan)}>{summarySentence}</span>
         </div>
       </div>
-      <div style={Styles.tabPageFooter}>
-        <span style={Util.merge(Styles.closed, Styles.summarySpan)}>{summarySentence}</span>
-      </div>
-    </div>
     )
   }
 })

@@ -23,10 +23,12 @@ export function merge () {
 export function windowCmp (currentWindowId) {
   const cf = (tabWindowA, tabWindowB) => {
     // current window always very first:
-    if (tabWindowA.open && tabWindowA.openWindowId == currentWindowId)
+    if (tabWindowA.open && tabWindowA.openWindowId === currentWindowId) {
       return -1
-    if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId)
+    }
+    if (tabWindowB.open && tabWindowB.openWindowId === currentWindowId) {
       return 1
+    }
 
     // open windows first:
     if (tabWindowA.open !== tabWindowB.open) {

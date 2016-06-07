@@ -1,4 +1,4 @@
-import * as TabWindow from '../src/tabli-core/src/js/tabWindow'
+import * as TabWindow from '../src/js/tabWindow'
 import difflet from 'difflet'
 import * as testData from './testData'
 import test from 'tape'

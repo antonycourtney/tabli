@@ -5,10 +5,8 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { logWrap } from './utils'
 
-import * as Tabli from '../tabli-core/src/js/index'
-
-const Popup = Tabli.components.Popup
-const actions = Tabli.actions
+import Popup from './components/Popup'
+import * as actions from './actions'
 
 /**
  * Main entry point to rendering the popup window

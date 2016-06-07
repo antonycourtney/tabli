@@ -1,11 +1,8 @@
 import * as React from 'react'
-import Styles from './styles'
 
 import * as Constants from './constants'
 import * as actions from '../actions'
-import * as _ from 'lodash'
 import * as Util from './util'
-import HeaderButton from './HeaderButton'
 
 // The dreaded routine copied from SO
 // http://stackoverflow.com/a/18455088/3272482
@@ -20,12 +17,12 @@ function copyTextToClipboard (text) {
 }
 
 const SearchBar = React.createClass({
-  handleChange() {
+  handleChange () {
     const searchStr = this.searchInputRef.value
     this.props.onSearchInput(searchStr)
   },
 
-  handleKeyDown(e) {
+  handleKeyDown (e) {
     // console.log('handleKeyDown: ', _.omit(e, _.isObject))
     if ((e.keyCode === Constants.KEY_F1) ||
       (e.keyCode === Constants.KEY_QUESTION && e.ctrlKey && e.shiftKey)) {
@@ -98,17 +95,17 @@ const SearchBar = React.createClass({
     }
   },
 
-  handleHelpClick(e) {
+  handleHelpClick (e) {
     e.preventDefault()
     actions.showHelp()
   },
 
-  handleAboutClick(e) {
+  handleAboutClick (e) {
     e.preventDefault()
     actions.showAbout()
   },
 
-  handlePopoutClick(e) {
+  handlePopoutClick (e) {
     if (this.props.isPopout) {
       actions.hidePopout(this.props.winStore, this.props.storeUpdateHandler)
     } else {
@@ -116,26 +113,26 @@ const SearchBar = React.createClass({
     }
   },
 
-  handleReviewClick(e) {
+  handleReviewClick (e) {
     e.preventDefault()
     actions.showReview(this.props.winStore, this.props.storeUpdateHandler)
   },
 
-  handleFeedbackClick(e) {
+  handleFeedbackClick (e) {
     e.preventDefault()
     actions.sendFeedback(this.props.winStore, this.props.storeUpdateHandler)
   },
 
-  handleRelNotesClick(e) {
+  handleRelNotesClick (e) {
     e.preventDefault()
     actions.showRelNotes(this.props.winStore, this.props.storeUpdateHandler)
   },
 
-  handleExpandToggleClick() {
+  handleExpandToggleClick () {
     actions.toggleExpandAll(this.props.winStore, this.props.storeUpdateHandler)
   },
 
-  handleCopyClick() {
+  handleCopyClick () {
     const openWindows = this.props.winStore.getTabWindowsByType('normal')
 
     var cmpFn = Util.windowCmp(this.props.winStore.currentWindowId)
@@ -146,25 +143,25 @@ const SearchBar = React.createClass({
     copyTextToClipboard(s)
   },
 
-  setInputRef(ref) {
+  setInputRef (ref) {
     this.searchInputRef = ref
     if (this.props.setInputRef) {
       this.props.setInputRef(ref)
     }
   },
 
-  render() {
+  render () {
     const menuButton = (
-    <button
-      type="button"
-      className="btn btn-default btn-xs dropdown-toggle"
-      data-toggle="dropdown"
-      aria-haspopup="true"
-      aria-expanded="false"
-      title="Open Tabli Menu"
-      onClick={this.handleLogoClick}>
-      <span className="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
-    </button>
+      <button
+        type='button'
+        className='btn btn-default btn-xs dropdown-toggle'
+        data-toggle='dropdown'
+        aria-haspopup='true'
+        aria-expanded='false'
+        title='Open Tabli Menu'
+        onClick={this.handleLogoClick}>
+        <span className='glyphicon glyphicon-menu-hamburger' aria-hidden='true'></span>
+      </button>
     )
 
     // We'll rotate 270 degrees to point upper left for popout,
@@ -176,77 +173,77 @@ const SearchBar = React.createClass({
     const popDesc = popVerb + ' Tabli Popout Window'
 
     const popoutButton = (
-    <button
-      type="button"
-      className="btn btn-default btn-xs"
-      title={popDesc}
-      onClick={this.handlePopoutClick}>
-      <img className="popout-img" src={popImgPath} />
-    </button>
+      <button
+        type='button'
+        className='btn btn-default btn-xs'
+        title={popDesc}
+        onClick={this.handlePopoutClick}>
+        <img className='popout-img' src={popImgPath} />
+      </button>
     )
 
     const expandAllButton = (
-    <button
-      type="button"
-      className="btn btn-default btn-xs"
-      title="Expand/Collapse All Window Summaries"
-      onClick={this.handleExpandToggleClick}>
-      <span className="glyphicon glyphicon-collapse-down" aria-hidden="true"></span>
-    </button>
+      <button
+        type='button'
+        className='btn btn-default btn-xs'
+        title='Expand/Collapse All Window Summaries'
+        onClick={this.handleExpandToggleClick}>
+        <span className='glyphicon glyphicon-collapse-down' aria-hidden='true'></span>
+      </button>
     )
 
     const copyButton = (
-    <button
-      id="copyButton"
-      type="button"
-      className="btn btn-default btn-xs"
-      title="Copy All to Clipboard"
-      onClick={this.handleCopyClick}>
-      <i className="fa fa-clipboard" aria-hidden="true"></i>
-    </button>
+      <button
+        id='copyButton'
+        type='button'
+        className='btn btn-default btn-xs'
+        title='Copy All to Clipboard'
+        onClick={this.handleCopyClick}>
+        <i className='fa fa-clipboard' aria-hidden='true'></i>
+      </button>
     )
 
     const dropdownMenu = (
-    <ul className="dropdown-menu">
-      <li>
-        <a className="help-button" href="#" onClick={this.handleHelpClick}>Help (Manual)</a>
-      </li>
-      <li role="separator" className="divider"></li>
-      <li>
-        <a href="#" onClick={this.handleAboutClick}>About Tabli</a>
-      </li>
-      <li>
-        <a href="#" onClick={this.handleRelNotesClick}>Release Notes</a>
-      </li>
-      <li role="separator" className="divider"></li>
-      <li>
-        <a href="#" onClick={this.handleReviewClick}>Review Tabli</a>
-      </li>
-      <li>
-        <a href="#" onClick={this.handleFeedbackClick}>Send Feedback</a>
-      </li>
-    </ul>
+      <ul className='dropdown-menu'>
+        <li>
+          <a className='help-button' href='#' onClick={this.handleHelpClick}>Help (Manual)</a>
+        </li>
+        <li role='separator' className='divider'></li>
+        <li>
+          <a href='#' onClick={this.handleAboutClick}>About Tabli</a>
+        </li>
+        <li>
+          <a href='#' onClick={this.handleRelNotesClick}>Release Notes</a>
+        </li>
+        <li role='separator' className='divider'></li>
+        <li>
+          <a href='#' onClick={this.handleReviewClick}>Review Tabli</a>
+        </li>
+        <li>
+          <a href='#' onClick={this.handleFeedbackClick}>Send Feedback</a>
+        </li>
+      </ul>
     )
 
     return (
-    <div className="header-container">
-      <div className="header-toolbar">
-        {menuButton}
-        {popoutButton}
-        {dropdownMenu}
-        <input
-          className="search-input"
-          type="search"
-          ref={this.setInputRef}
-          id="searchBox"
-          placeholder="Search..."
-          onChange={this.handleChange}
-          onKeyDown={this.handleKeyDown}
-          title="Search Page Titles and URLs" />
-        {expandAllButton}
-        {copyButton}
+      <div className='header-container'>
+        <div className='header-toolbar'>
+          {menuButton}
+          {popoutButton}
+          {dropdownMenu}
+          <input
+            className='search-input'
+            type='search'
+            ref={this.setInputRef}
+            id='searchBox'
+            placeholder='Search...'
+            onChange={this.handleChange}
+            onKeyDown={this.handleKeyDown}
+            title='Search Page Titles and URLs' />
+          {expandAllButton}
+          {copyButton}
+        </div>
       </div>
-    </div>
     )
   }
 })

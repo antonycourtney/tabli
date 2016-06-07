@@ -38,6 +38,8 @@
     "ekko-lightbox": "^4.0.1",
     "eslint": "^2.9.0",
     "eslint-config-airbnb": "9.0.1",
+    "eslint-config-standard": "^5.3.1",
+    "eslint-plugin-import": "^1.8.1",
     "eslint-plugin-react": "^5.1.1",
     "file-loader": "^0.8.5",
     "filesize": "^3.3.0",
@@ -70,6 +72,13 @@
     "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec"
   },
   "standard": {
-    "globals": [ "chrome", "performance" ]
+    "globals": [
+      "chrome",
+      "performance"
+    ],
+    "ignore": [
+      "gulpfile.js",
+      "webpack.config.js"
+    ]
   }
 }

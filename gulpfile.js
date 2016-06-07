@@ -1,4 +1,4 @@
-var gulp = require('gulp'); 
+var gulp = require('gulp');
 
 //For cleaning out the build dir
 var clean = require('gulp-clean');
@@ -72,7 +72,7 @@ gulp.task('build_html', ['build_css'], function() {
 gulp.task('build_images', function() {
     gutil.log("copy images to build");
 
-    return gulp.src(['src/tabli-core/images/*','src/tabli-core/src/assets/*.png'])
+    return gulp.src(['src/images/*','src/assets/*.png'])
         .pipe(gulp.dest('build/images'));
 });
 

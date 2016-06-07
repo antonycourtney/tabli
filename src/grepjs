@@ -1,2 +1,0 @@
-#!/bin/bash
-grep -r $* js/* tabli-core/src/js/* 

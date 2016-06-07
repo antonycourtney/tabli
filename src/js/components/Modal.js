@@ -12,23 +12,23 @@ import HeaderButton from './HeaderButton'
 /* eslint react/no-multi-comp:0 */
 
 export const Dialog = React.createClass({
-  handleClose(event) {
+  handleClose (event) {
     console.log('Modal.handleClose: ', event, arguments)
     event.preventDefault()
     this.props.onClose(event)
   },
 
-  render() {
+  render () {
     var modalDiv = null
 
     var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.modalTitle, Styles.open)
     var closeButton = (
-    <HeaderButton
-      className="closeButton"
-      baseStyle={Styles.headerButton}
-      visible
-      title="Close Window"
-      onClick={this.handleClose} />)
+      <HeaderButton
+        className='closeButton'
+        baseStyle={Styles.headerButton}
+        visible
+        title='Close Window'
+        onClick={this.handleClose} />)
     modalDiv = (
       <div style={Styles.modalOverlay}>
         <div style={Styles.modalContainer}>
@@ -45,23 +45,23 @@ export const Dialog = React.createClass({
 })
 
 export const Info = React.createClass({
-  render() {
+  render () {
     return (
-    <div style={Styles.dialogInfo}>
-      <div style={Styles.dialogInfoContents}>
-        {this.props.children}
+      <div style={Styles.dialogInfo}>
+        <div style={Styles.dialogInfoContents}>
+          {this.props.children}
+        </div>
       </div>
-    </div>
     )
   }
 })
 
 export const Body = React.createClass({
-  render() {
+  render () {
     return (
-    <div style={Styles.modalBodyContainer}>
-      {this.props.children}
-    </div>
+      <div style={Styles.modalBodyContainer}>
+        {this.props.children}
+      </div>
     )
   }
 })

@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { PropTypes } from 'react'
 import Styles from './styles'
 import * as Util from './util'
 import * as actions from '../actions'
@@ -10,8 +9,10 @@ import * as PureRenderMixin from 'react-addons-pure-render-mixin'
 
 import HeaderButton from './HeaderButton'
 
+const PropTypes = React.PropTypes
+
 const tabItemSource = {
-  beginDrag(props) {
+  beginDrag (props) {
     return { sourceTabWindow: props.tabWindow, sourceTab: props.tab }
   }
 }
@@ -26,7 +27,7 @@ function collect (connect, monitor) {
 
 // for use as drop target:
 const tabItemTarget = {
-  drop(props, monitor, component) {
+  drop (props, monitor, component) {
     const sourceItem = monitor.getItem()
     actions.moveTabItem(props.tabWindow, props.tabIndex + 1, sourceItem.sourceTab, props.storeUpdateHandler)
   }
@@ -58,7 +59,7 @@ const TabItem = React.createClass({
     onItemSelected: PropTypes.func
   },
 
-  handleClick(event) {
+  handleClick (event) {
     var tabWindow = this.props.tabWindow
     var tab = this.props.tab
     var tabIndex = this.props.tabIndex
@@ -72,7 +73,7 @@ const TabItem = React.createClass({
     }
   },
 
-  handleClose() {
+  handleClose () {
     if (!this.props.tabWindow.open) {
       return
     }
@@ -83,20 +84,20 @@ const TabItem = React.createClass({
     actions.closeTab(this.props.tabWindow, tabId, this.props.storeUpdateHandler)
   },
 
-  handleBookmarkTabItem(event) {
+  handleBookmarkTabItem (event) {
     event.stopPropagation()
     console.log('bookmark tab: ', this.props.tab.toJS())
     actions.saveTab(this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler)
   },
 
-  handleUnbookmarkTabItem(event) {
+  handleUnbookmarkTabItem (event) {
     event.stopPropagation()
     console.log('unbookmark tab: ', this.props.tab.toJS())
     actions.unsaveTab(this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler)
   },
 
-  render() {
-    const { connectDragSource, isDragging, connectDropTarget, isOver } = this.props
+  render () {
+    const { connectDragSource, connectDropTarget, isOver } = this.props
     var tabWindow = this.props.tabWindow
     var tab = this.props.tab
 
@@ -122,7 +123,7 @@ const TabItem = React.createClass({
 
       if (tab.saved) {
         tabCheckItem = (
-          <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton, checkOpenStyle)} title="Remove bookmark for this tab" onClick={this.handleUnbookmarkTabItem} />)
+          <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton, checkOpenStyle)} title='Remove bookmark for this tab' onClick={this.handleUnbookmarkTabItem} />)
 
       // TODO: callback
       } else {
@@ -130,10 +131,10 @@ const TabItem = React.createClass({
         // to something to 13x13; we want 16x16 from headerButton
         tabCheckItem = (
           <input
-            className="tabCheck"
+            className='tabCheck'
             style={Util.merge(Styles.headerButton, Styles.tabCheckItem)}
-            type="checkbox"
-            title="Bookmark this tab"
+            type='checkbox'
+            title='Bookmark this tab'
             onClick={this.handleBookmarkTabItem} />)
       }
     } else {
@@ -141,7 +142,7 @@ const TabItem = React.createClass({
       tabCheckItem = <div style={Styles.headerButton} />
     }
 
-    const favIconUrl = tab.open ? tab.openState.favIconUrl : null
+    // const favIconUrl = tab.open ? tab.openState.favIconUrl : null
     // var fiSrc = favIconUrl ? favIconUrl : ''
     var fiSrc = 'chrome://favicon/size/16/' + tab.url
 
@@ -165,17 +166,17 @@ const TabItem = React.createClass({
     const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null
 
     var closeButton = (
-    <HeaderButton
-      className="closeButton"
-      baseStyle={Styles.headerButton}
-      visible={tab.open}
-      title="Close Tab"
-      onClick={this.handleClose} />)
+      <HeaderButton
+        className='closeButton'
+        baseStyle={Styles.headerButton}
+        visible={tab.open}
+        title='Close Tab'
+        onClick={this.handleClose} />)
 
     return connectDropTarget(connectDragSource(
       <div
         style={Util.merge(Styles.noWrap, Styles.tabItem, selectedStyle, dropStyle)}
-        className="tabItem"
+        className='tabItem'
         onMouseOut={this.handleMouseOut}
         onMouseOver={this.handleMouseOver}
         onClick={this.handleClick}>

@@ -7,17 +7,17 @@ import * as Util from './util'
 const ExpanderButton = React.createClass({
   mixins: [PureRenderMixin],
 
-  handleClicked(event) {
+  handleClicked (event) {
     var nextState = !this.props.expanded
     this.props.onClick(nextState)
     event.stopPropagation()
   },
 
-  render() {
+  render () {
     var expandStyle = this.props.expanded ? Styles.windowCollapse : Styles.windowExpand
     var buttonStyle = Util.merge(Styles.headerButton, expandStyle)
     return (
-    <button style={buttonStyle} onClick={this.handleClicked} />
+      <button style={buttonStyle} onClick={this.handleClicked} />
     )
   }
 })

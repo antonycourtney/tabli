@@ -2,12 +2,11 @@
 
 import * as Immutable from 'immutable'
 import * as Perf from 'react-addons-perf'
-import * as Tabli from '../tabli-core/src/js/index'
 import * as RenderCommon from './renderCommon'
 
-const TabManagerState = Tabli.TabManagerState
-const TabWindow = Tabli.TabWindow
-const ViewRef = Tabli.ViewRef
+import * as TabWindow from './tabWindow'
+import TabManagerState from './tabManagerState'
+import ViewRef from './viewRef'
 
 // make a TabWindow from its JSON
 function makeTabWindow (jsWin) {  // eslint-disable-line no-unused-vars

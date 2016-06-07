@@ -1,3 +1,4 @@
+/* globals chrome */
 import * as React from 'react'
 import * as actions from '../actions'
 import * as searchOps from '../searchOps'
@@ -10,6 +11,7 @@ import SelectablePopup from './SelectablePopup'
 import * as Util from './util'
 import { DragDropContext } from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
+import * as _ from 'lodash'
 
 /**
  * send message to BGhelper
@@ -23,19 +25,17 @@ function sendHelperMessage (msg) {
 }
 
 const Popup = React.createClass({
-  storeAsState(winStore) {
+  storeAsState (winStore) {
     var tabWindows = winStore.getAll()
     var cmpFn = Util.windowCmp(winStore.currentWindowId)
     var sortedWindows = tabWindows.sort(cmpFn)
 
-    const winTitles = sortedWindows.map(w => w.title)
-
     return {
       winStore,
-    sortedWindows}
+      sortedWindows}
   },
 
-  getInitialState() {
+  getInitialState () {
     var st = this.storeAsState(this.props.initialWinStore, true)
 
     st.saveModalIsOpen = false
@@ -46,7 +46,7 @@ const Popup = React.createClass({
     return st
   },
 
-  handleSearchInput(rawSearchStr) {
+  handleSearchInput (rawSearchStr) {
     const searchStr = rawSearchStr.trim()
 
     var searchRE = null
@@ -54,28 +54,28 @@ const Popup = React.createClass({
       searchRE = new RegExp(searchStr, 'i')
     }
 
-    this.setState({ searchStr, searchRE})
+    this.setState({ searchStr, searchRE })
   },
 
-  openSaveModal(tabWindow) {
+  openSaveModal (tabWindow) {
     const initialTitle = tabWindow.title
     this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow })
   },
 
-  closeSaveModal() {
+  closeSaveModal () {
     this.setState({ saveModalIsOpen: false })
   },
 
-  openRevertModal(filteredTabWindow) {
+  openRevertModal (filteredTabWindow) {
     this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow })
   },
 
-  closeRevertModal() {
+  closeRevertModal () {
     this.setState({ revertModalIsOpen: false, revertTabWindow: null })
   },
 
   /* handler for save modal */
-  doSave(titleStr) {
+  doSave (titleStr) {
     const storeRef = this.props.storeRef
     const storeState = storeRef.getValue()
     const tabliFolderId = storeState.folderId
@@ -83,14 +83,14 @@ const Popup = React.createClass({
     this.closeSaveModal()
   },
 
-  doRevert(tabWindow) { // eslint-disable-line no-unused-vars
+  doRevert (tabWindow) { // eslint-disable-line no-unused-vars
     const updateHandler = refUpdater(this.props.storeRef)
     actions.revertWindow(this.state.revertTabWindow, updateHandler)
     this.closeRevertModal()
   },
 
   /* render save modal (or not) based on this.state.saveModalIsOpen */
-  renderSaveModal() {
+  renderSaveModal () {
     var modal = null
     if (this.state.saveModalIsOpen) {
       modal = (
@@ -106,7 +106,7 @@ const Popup = React.createClass({
   },
 
   /* render revert modal (or not) based on this.state.revertModalIsOpen */
-  renderRevertModal() {
+  renderRevertModal () {
     var modal = null
     if (this.state.revertModalIsOpen) {
       modal = (
@@ -120,7 +120,7 @@ const Popup = React.createClass({
     return modal
   },
 
-  render() {
+  render () {
     var ret
     try {
       const saveModal = this.renderSaveModal()
@@ -150,7 +150,7 @@ const Popup = React.createClass({
     return ret
   },
 
-  componentWillMount() {
+  componentWillMount () {
     if (this.props.noListener) {
       return
     }
@@ -161,13 +161,8 @@ const Popup = React.createClass({
      * in response to a state change.
      */
     const viewStateListener = () => {
-      // console.log('TabliPopup: viewListener: updating popup state from storeRef')
-      const t_preSet = performance.now()
-
       const nextStore = storeRef.getValue()
       this.setState(this.storeAsState(nextStore))
-      const t_postSet = performance.now()
-    // console.log('TabliPopup: setState took ', t_postSet - t_preSet, " ms")
     }
 
     const throttledListener = _.debounce(viewStateListener, 200)
@@ -175,7 +170,7 @@ const Popup = React.createClass({
     var listenerId = storeRef.addViewListener(throttledListener)
 
     console.log('componentWillMount: added view listener: ', listenerId)
-    sendHelperMessage({ listenerId})
+    sendHelperMessage({ listenerId })
   }
 })
 

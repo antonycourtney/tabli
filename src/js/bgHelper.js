@@ -5,17 +5,16 @@
  */
 /* global Blob, URL */
 
-import * as Tabli from '../tabli-core/src/js/index'
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
 import * as semver from 'semver'
 
-const TabManagerState = Tabli.TabManagerState
-const TabWindow = Tabli.TabWindow
-const actions = Tabli.actions
-const ViewRef = Tabli.ViewRef
-const utils = Tabli.utils
-const pact = Tabli.pact
+import * as TabWindow from './tabWindow'
+import TabManagerState from './tabManagerState'
+import * as utils from './utils'
+import * as actions from './actions'
+import * as pact from './pact'
+import ViewRef from './viewRef'
 
 import { refUpdater } from 'oneref'
 

@@ -34,7 +34,7 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
  * filtered windows that we receive from above
  */
 const SelectablePopup = React.createClass({
-  getInitialState() {
+  getInitialState () {
     return {
       selectedWindowIndex: 0,
       selectedTabIndex: 0,
@@ -43,7 +43,7 @@ const SelectablePopup = React.createClass({
     }
   },
 
-  handlePrevSelection(byPage) {
+  handlePrevSelection (byPage) {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -65,7 +65,7 @@ const SelectablePopup = React.createClass({
     }
   },
 
-  handleNextSelection(byPage) {
+  handleNextSelection (byPage) {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -84,7 +84,7 @@ const SelectablePopup = React.createClass({
     }
   },
 
-  handleSelectionEnter(inputRef) {
+  handleSelectionEnter (inputRef) {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -99,15 +99,16 @@ const SelectablePopup = React.createClass({
     this.props.onSearchInput('')
   },
 
-  handleSearchExit() {
+  handleSearchExit () {
     // transfer focus back to current window (if there is one)
     const curWindow = this.props.winStore.getCurrentWindow()
-    if (!curWindow)
+    if (!curWindow) {
       return
+    }
     actions.openWindow(curWindow, curWindow, this.props.storeUpdateHandler)
   },
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps (nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex
     var nextFilteredWindows = nextProps.filteredWindows
 
@@ -138,30 +139,27 @@ const SelectablePopup = React.createClass({
    * This turned out not to really reduce jitter because Chrome window titles are determined
    * by tab title, so simply switching tabs resulted in abrupt changes in window sort order.
    */
-  updateScrollPos(bodyRef, windowRef) {
+  updateScrollPos (bodyRef, windowRef) {
     const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId) ||
       (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId())
 
     /*
-      console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId, 
-                  ", currentWindowId: ", this.props.winStore.currentWindowId );    
+      console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId,
+                  ", currentWindowId: ", this.props.winStore.currentWindowId );
       console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
-                  ", activeTabId: ", this.props.winStore.getActiveTabId(), 
+                  ", activeTabId: ", this.props.winStore.getActiveTabId(),
                   ", needScroll: ", needScrollUpdate)
     */
     const isPopup = !(this.props.isPopout)
-    if ((windowRef != null) && (bodyRef != null)
-      && needScrollUpdate
-      && this.props.filteredWindows.length > 0
-      && !this.props.winStore.showRelNotes) {
+    if ((windowRef != null) && (bodyRef != null) &&
+      needScrollUpdate &&
+      this.props.filteredWindows.length > 0 &&
+      !this.props.winStore.showRelNotes) {
       const viewportTop = bodyRef.scrollTop
       const viewportHeight = bodyRef.clientHeight
 
       const windowTop = windowRef.offsetTop
       const windowHeight = windowRef.scrollHeight
-
-      // the annoying extra bit:
-      const offsetTop = bodyRef.offsetTop
 
       // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } )
       if ((windowTop < viewportTop) ||
@@ -172,7 +170,7 @@ const SelectablePopup = React.createClass({
         if ((windowHeight > viewportHeight) || isPopup) {
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE
         } else {
-          // since we know only scroll if 
+          // since we know only scroll if
           // set padding to center taget window in viewport:
           const viewportPad = (viewportHeight - windowHeight) / 2
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - viewportPad - Constants.FOCUS_SCROLL_BASE
@@ -201,11 +199,11 @@ const SelectablePopup = React.createClass({
   },
 
   // Search input ref:
-  setSearchInputRef(ref) {
+  setSearchInputRef (ref) {
     this.searchInputRef = ref
   },
 
-  handleItemSelected(item) {
+  handleItemSelected (item) {
     if (this.searchInputRef) {
       // And reset the search field:
       this.searchInputRef.value = ''
@@ -214,22 +212,22 @@ const SelectablePopup = React.createClass({
   },
 
   // Scrollable body (container) DOM ref
-  setBodyRef(ref) {
+  setBodyRef (ref) {
     this.bodyRef = ref
     this.updateScrollPos(this.bodyRef, this.focusedWindowRef)
   },
 
   // DOM ref for currently focused tab window:
-  setFocusedTabWindowRef(ref) {
+  setFocusedTabWindowRef (ref) {
     this.focusedWindowRef = ref
     this.updateScrollPos(this.bodyRef, this.focusedWindowRef)
   },
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     this.updateScrollPos(this.bodyRef, this.focusedWindowRef)
   },
 
-  render() {
+  render () {
     const winStore = this.props.winStore
     const openTabCount = winStore.countOpenTabs()
     const openWinCount = winStore.countOpenWindows()
@@ -239,36 +237,36 @@ const SelectablePopup = React.createClass({
     const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.'
 
     return (
-    <div>
-      <div style={Styles.popupHeader}>
-        <SearchBar
-          winStore={this.props.winStore}
-          storeUpdateHandler={this.props.storeUpdateHandler}
-          onSearchInput={this.props.onSearchInput}
-          onSearchUp={this.handlePrevSelection}
-          onSearchDown={this.handleNextSelection}
-          onSearchEnter={this.handleSelectionEnter}
-          onSearchExit={this.handleSearchExit}
-          setInputRef={this.setSearchInputRef}
-          isPopout={this.props.isPopout} />
+      <div>
+        <div style={Styles.popupHeader}>
+          <SearchBar
+            winStore={this.props.winStore}
+            storeUpdateHandler={this.props.storeUpdateHandler}
+            onSearchInput={this.props.onSearchInput}
+            onSearchUp={this.handlePrevSelection}
+            onSearchDown={this.handleNextSelection}
+            onSearchEnter={this.handleSelectionEnter}
+            onSearchExit={this.handleSearchExit}
+            setInputRef={this.setSearchInputRef}
+            isPopout={this.props.isPopout} />
+        </div>
+        <div style={Styles.popupBody} ref={this.setBodyRef}>
+          <TabWindowList
+            winStore={this.props.winStore}
+            storeUpdateHandler={this.props.storeUpdateHandler}
+            filteredWindows={this.props.filteredWindows}
+            appComponent={this.props.appComponent}
+            searchStr={this.props.searchStr}
+            searchRE={this.props.searchRE}
+            selectedWindowIndex={this.state.selectedWindowIndex}
+            selectedTabIndex={this.state.selectedTabIndex}
+            setFocusedTabWindowRef={this.setFocusedTabWindowRef}
+            onItemSelected={this.handleItemSelected} />
+        </div>
+        <div style={Styles.popupFooter}>
+          <span style={Util.merge(Styles.closed, Styles.summarySpan)}>{summarySentence}</span>
+        </div>
       </div>
-      <div style={Styles.popupBody} ref={this.setBodyRef}>
-        <TabWindowList
-          winStore={this.props.winStore}
-          storeUpdateHandler={this.props.storeUpdateHandler}
-          filteredWindows={this.props.filteredWindows}
-          appComponent={this.props.appComponent}
-          searchStr={this.props.searchStr}
-          searchRE={this.props.searchRE}
-          selectedWindowIndex={this.state.selectedWindowIndex}
-          selectedTabIndex={this.state.selectedTabIndex}
-          setFocusedTabWindowRef={this.setFocusedTabWindowRef}
-          onItemSelected={this.handleItemSelected} />
-      </div>
-      <div style={Styles.popupFooter}>
-        <span style={Util.merge(Styles.closed, Styles.summarySpan)}>{summarySentence}</span>
-      </div>
-    </div>
     )
   }
 })
