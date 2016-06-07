@@ -68,7 +68,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
+    "test": "standard src/js/*.js src/js/**/*.js && babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
     "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec"
   },
   "standard": {

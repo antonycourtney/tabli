@@ -9,24 +9,25 @@ import * as Immutable from 'immutable'
 import * as TabWindow from './tabWindow'
 
 function validChromeWindow (cw, normalOnly) {
-  if (!cw)
+  if (!cw) {
     return false
+  }
   const cwTabs = _.get(cw, 'tabs', [])
   const isNormal = cw.type === 'normal' && (cwTabs.length > 0)
   const isPopout = cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === 'Tabli'
   return isNormal || (!normalOnly && isPopout)
 }
 
-export default class TabManagerState extends Immutable.Record( {
-    windowIdMap: Immutable.Map(), // maps from chrome window id for open windows
-    bookmarkIdMap: Immutable.Map(), // maps from bookmark id for saved windows
-    folderId: -1,
-    archiveFolderId: -1,
-    currentWindowId: -1, // chrome window id of window with focus
-    initializing: true, // true until bgHelper initialization completes.
-    showRelNotes: true,
-    expandAll: true, // state of global collapse / expand toggle button
-  }) {
+export default class TabManagerState extends Immutable.Record({
+  windowIdMap: Immutable.Map(), // maps from chrome window id for open windows
+  bookmarkIdMap: Immutable.Map(), // maps from bookmark id for saved windows
+  folderId: -1,
+  archiveFolderId: -1,
+  currentWindowId: -1, // chrome window id of window with focus
+  initializing: true, // true until bgHelper initialization completes.
+  showRelNotes: true,
+  expandAll: true // state of global collapse / expand toggle button
+}) {
   /**
    * Update store to include the specified window, indexed by
    * open window id or bookmark id
@@ -142,7 +143,6 @@ export default class TabManagerState extends Immutable.Record( {
    * internal map of open windows
    */
   syncWindowList (rawChromeWindowList) {
-
     // restrict our management to normal chrome windows that have at least 1 tab:
     const chromeWindowList = _.filter(rawChromeWindowList, cw => validChromeWindow(cw, false))
 

@@ -1732,7 +1732,9 @@ webpackJsonp([0],{
 	
 	
 	function validChromeWindow(cw, normalOnly) {
-	  if (!cw) return false;
+	  if (!cw) {
+	    return false;
+	  }
 	  var cwTabs = _.get(cw, 'tabs', []);
 	  var isNormal = cw.type === 'normal' && cwTabs.length > 0;
 	  var isPopout = cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === 'Tabli';
@@ -1883,7 +1885,6 @@ webpackJsonp([0],{
 	  }, {
 	    key: 'syncWindowList',
 	    value: function syncWindowList(rawChromeWindowList) {
-	
 	      // restrict our management to normal chrome windows that have at least 1 tab:
 	      var chromeWindowList = _.filter(rawChromeWindowList, function (cw) {
 	        return validChromeWindow(cw, false);
@@ -2107,7 +2108,8 @@ webpackJsonp([0],{
 	  currentWindowId: -1, // chrome window id of window with focus
 	  initializing: true, // true until bgHelper initialization completes.
 	  showRelNotes: true,
-	  expandAll: true }));
+	  expandAll: true // state of global collapse / expand toggle button
+	}));
 	
 	exports.default = TabManagerState;
 

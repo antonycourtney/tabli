@@ -1,4 +1,4 @@
-import * as TabWindow from './tabWindow'
+/* globals alert */
 import * as utils from './utils'
 import * as pact from './pact'
 import tabliBrowser from './chromeBrowser'
@@ -24,14 +24,14 @@ export function syncChromeWindowById (windowId, cb) {
  * @param {function} cb -- callback to update state
  */
 export function syncChromeWindows (cb) {
-  var t_preGet = performance.now()
+  var tPreGet = performance.now()
   chrome.windows.getAll({ populate: true }, (windowList) => {
-    var t_postGet = performance.now()
-    console.log('syncChromeWindows: chrome.windows.getAll took ', t_postGet - t_preGet, ' ms')
-    var t_preSync = performance.now()
+    var tPostGet = performance.now()
+    console.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
+    var tPreSync = performance.now()
     cb((state) => state.syncWindowList(windowList))
-    var t_postSync = performance.now()
-    console.log('syncChromeWindows: syncWindowList took ', t_postSync - t_preSync, ' ms')
+    var tPostSync = performance.now()
+    console.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
   })
 }
 
@@ -60,9 +60,9 @@ function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow, cb) {
       for (var i = 0; i < urls.length; i++) {
         // First use our existing tab:
         if (i === 0) {
-          chrome.tabs.update(origTabId, { url: urls[i]})
+          chrome.tabs.update(origTabId, { url: urls[i] })
         } else {
-          const tabInfo = { windowId: currentChromeWindow.id, url: urls[i]}
+          const tabInfo = { windowId: currentChromeWindow.id, url: urls[i] }
           chrome.tabs.create(tabInfo)
         }
       }
@@ -191,7 +191,7 @@ export function revertWindow (tabWindow, cb) {
   // We need to do this before removing tab ids or window could close if all unsaved
   for (var i = 0; i < savedClosedUrls.length; i++) {
     // need to open it:
-    var tabInfo = { windowId: tabWindow.openWindowId, url: savedClosedUrls[i]}
+    var tabInfo = { windowId: tabWindow.openWindowId, url: savedClosedUrls[i] }
     chrome.tabs.create(tabInfo)
   }
 

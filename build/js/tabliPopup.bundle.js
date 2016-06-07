@@ -17317,13 +17317,13 @@ webpackJsonp([3],[
 	var FilteredTabWindow = Immutable.Record({
 	  tabWindow: new TabWindow.TabWindow(),
 	  titleMatches: [],
-	  itemMatches: Immutable.Seq() });
+	  itemMatches: Immutable.Seq() // matching tab items
+	});
 	
 	/**
 	 * Match a TabWindow using a Regexp
 	 *
 	 */
-	// matching tab items
 	function matchTabWindow(tabWindow, searchExp) {
 	  var itemMatches = tabWindow.tabItems.map(function (ti) {
 	    return matchTabItem(ti, searchExp);

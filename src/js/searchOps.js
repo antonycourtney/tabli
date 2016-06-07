@@ -28,7 +28,7 @@ export function matchTabItem (tabItem, searchExp) {
     return null
   }
 
-  return new FilteredTabItem({ tabItem, urlMatches, titleMatches})
+  return new FilteredTabItem({ tabItem, urlMatches, titleMatches })
 }
 
 /**
@@ -37,7 +37,7 @@ export function matchTabItem (tabItem, searchExp) {
 const FilteredTabWindow = Immutable.Record({
   tabWindow: new TabWindow.TabWindow(),
   titleMatches: [],
-  itemMatches: Immutable.Seq(), // matching tab items
+  itemMatches: Immutable.Seq() // matching tab items
 })
 
 /**
@@ -52,7 +52,7 @@ export function matchTabWindow (tabWindow, searchExp) {
     return null
   }
 
-  return FilteredTabWindow({ tabWindow, titleMatches, itemMatches})
+  return FilteredTabWindow({ tabWindow, titleMatches, itemMatches })
 }
 
 /**

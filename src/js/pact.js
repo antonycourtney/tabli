@@ -1,5 +1,4 @@
-import * as TabWindow from './tabWindow'
-import * as utils from './utils'
+import tabliBrowser from './chromeBrowser'
 import Q from 'q'
 
 /*
@@ -123,7 +122,6 @@ export function restorePopout (stRef) {
   // This would probably be cleaner with a promise wrapper
   // for chrome.storage.local.get...
   chrome.storage.local.get({'showPopout': false}, items => {
-
     const closeAct = () => closePopout(stRef.getValue())
     const showAct = () => {
       if (items.showPopout) {

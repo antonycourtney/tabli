@@ -21518,10 +21518,6 @@
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _utils = __webpack_require__(/*! ./utils */ 8);
-	
-	var utils = _interopRequireWildcard(_utils);
-	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21852,7 +21848,8 @@
 	  width: 0,
 	  height: 0,
 	
-	  tabItems: Immutable.List() }));
+	  tabItems: Immutable.List() // <TabItem>
+	}));
 	
 	/**
 	 * reset a window to its base saved state (after window is closed)
@@ -22187,8 +22184,9 @@
 	  var prevOpenState = prevTabItem.openState;
 	  var updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo));
 	
-	  if (updKeys.length == 0) return TabWindow;
-	
+	  if (updKeys.length === 0) {
+	    return TabWindow;
+	  }
 	  var updOpenState = _.reduce(updKeys, function (acc, k) {
 	    return acc.set(k, changeInfo[k]);
 	  }, prevOpenState);
@@ -22293,7 +22291,9 @@
 	 *
 	 */
 	function bestMatch(matchMap) {
-	  if (matchMap.size === 0) return null;
+	  if (matchMap.size === 0) {
+	    return null;
+	  }
 	  var matchSeq = matchMap.entrySeq().sortBy(function (_ref) {
 	    var _ref2 = _slicedToArray(_ref, 2);
 	
@@ -22306,7 +22306,9 @@
 	  }
 	  var topMatch = matchSeq.get(matchSeq.size - 1);
 	  var runnerUp = matchSeq.get(matchSeq.size - 2);
-	  if (topMatch[1] > runnerUp[1]) return topMatch[0];
+	  if (topMatch[1] > runnerUp[1]) {
+	    return topMatch[0];
+	  }
 	  return null;
 	}
 	
@@ -22378,10 +22380,6 @@
 	exports.hideRelNotes = hideRelNotes;
 	exports.showRelNotes = showRelNotes;
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 7);
-	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
-	
 	var _utils = __webpack_require__(/*! ./utils */ 8);
 	
 	var utils = _interopRequireWildcard(_utils);
@@ -22398,7 +22396,8 @@
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	var TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
+	var TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html'; /* globals alert */
+	
 	var TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
 	var TABLI_REVIEW_URL = 'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews';
 	var TABLI_FEEDBACK_URL = 'mailto:tabli-feedback@antonycourtney.com';
@@ -22421,16 +22420,16 @@
 	 * @param {function} cb -- callback to update state
 	 */
 	function syncChromeWindows(cb) {
-	  var t_preGet = performance.now();
+	  var tPreGet = performance.now();
 	  chrome.windows.getAll({ populate: true }, function (windowList) {
-	    var t_postGet = performance.now();
-	    console.log('syncChromeWindows: chrome.windows.getAll took ', t_postGet - t_preGet, ' ms');
-	    var t_preSync = performance.now();
+	    var tPostGet = performance.now();
+	    console.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms');
+	    var tPreSync = performance.now();
 	    cb(function (state) {
 	      return state.syncWindowList(windowList);
 	    });
-	    var t_postSync = performance.now();
-	    console.log('syncChromeWindows: syncWindowList took ', t_postSync - t_preSync, ' ms');
+	    var tPostSync = performance.now();
+	    console.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms');
 	  });
 	}
 	
@@ -22769,21 +22768,15 @@
 	exports.bind_ = bind_;
 	exports.restorePopout = restorePopout;
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 7);
+	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 6);
 	
-	var TabWindow = _interopRequireWildcard(_tabWindow);
-	
-	var _utils = __webpack_require__(/*! ./utils */ 8);
-	
-	var utils = _interopRequireWildcard(_utils);
+	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
 	
 	var _q = __webpack_require__(/*! q */ 12);
 	
 	var _q2 = _interopRequireDefault(_q);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	/*
 	 * Experimental module for composable promise-based actions.
@@ -22838,7 +22831,7 @@
 	function showPopout(winStore) {
 	  var ptw = winStore.getPopoutTabWindow();
 	  if (ptw) {
-	    tabliBrowser.setFocusedWindow(ptw.openWindowId);
+	    _chromeBrowser2.default.setFocusedWindow(ptw.openWindowId);
 	    return (0, _q2.default)(idst);
 	  }
 	  var deferred = _q2.default.defer();
@@ -22910,7 +22903,6 @@
 	  // This would probably be cleaner with a promise wrapper
 	  // for chrome.storage.local.get...
 	  chrome.storage.local.get({ 'showPopout': false }, function (items) {
-	
 	    var closeAct = function closeAct() {
 	      return closePopout(stRef.getValue());
 	    };

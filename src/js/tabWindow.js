@@ -3,7 +3,7 @@
  */
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
-import * as utils from './utils'
+
 /**
  * Tab state that is persisted as a bookmark
  */
@@ -33,13 +33,13 @@ const OpenTabState = Immutable.Record({
  *
  * May be associated with an open tab, a bookmark, or both
  */
-export class TabItem extends Immutable.Record( {
-    saved: false,
-    savedState: null, // SavedTabState iff saved
+export class TabItem extends Immutable.Record({
+  saved: false,
+  savedState: null, // SavedTabState iff saved
 
-    open: false, // Note: Saved tabs may be closed even when containing window is open
-    openState: null // OpenTabState iff open
-  }) {
+  open: false, // Note: Saved tabs may be closed even when containing window is open
+  openState: null // OpenTabState iff open
+}) {
   get title () {
     if (this.open) {
       return this.openState.title
@@ -114,7 +114,7 @@ function makeBookmarkedTabItem (bm) {
 
   const tabItem = new TabItem({
     saved: true,
-  savedState})
+    savedState})
   return tabItem
 }
 
@@ -144,7 +144,7 @@ function makeOpenTabItem (tab) {
 
   const tabItem = new TabItem({
     open: true,
-  openState})
+    openState})
   return tabItem
 }
 
@@ -184,19 +184,19 @@ function escapeTableCell (s) {
  *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
  *   (!open,saved)   - A previously saved window that is not currently open
  */
-export class TabWindow extends Immutable.Record( {
-    saved: false,
-    savedTitle: '',
-    savedFolderId: -1,
+export class TabWindow extends Immutable.Record({
+  saved: false,
+  savedTitle: '',
+  savedFolderId: -1,
 
-    open: false,
-    openWindowId: -1,
-    windowType: '',
-    width: 0,
-    height: 0,
+  open: false,
+  openWindowId: -1,
+  windowType: '',
+  width: 0,
+  height: 0,
 
-    tabItems: Immutable.List(), // <TabItem>
-  }) {
+  tabItems: Immutable.List() // <TabItem>
+}) {
 
   get title () {
     if (this._title === undefined) {
@@ -403,9 +403,7 @@ function mergeTabWindowTabItems (tabWindow, optChromeTab) {
   const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem)
   const baseOpenItems = tabItems.filter(ti => ti.open).map(resetOpenItem)
 
-  const updOpenItems = optChromeTab ?
-    baseOpenItems.toList().insert(optChromeTab.index, makeOpenTabItem(optChromeTab)) :
-    baseOpenItems
+  const updOpenItems = optChromeTab ? baseOpenItems.toList().insert(optChromeTab.index, makeOpenTabItem(optChromeTab)) : baseOpenItems
 
   const mergedItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems)
   const updWindow = tabWindow.setTabItems(mergedItems)
@@ -575,9 +573,9 @@ export function updateTabItem (tabWindow, tabId, changeInfo) {
   const prevOpenState = prevTabItem.openState
   const updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo))
 
-  if (updKeys.length == 0)
+  if (updKeys.length === 0) {
     return TabWindow
-
+  }
   const updOpenState = _.reduce(updKeys, (acc, k) => acc.set(k, changeInfo[k]), prevOpenState)
 
   const updTabItem = (updKeys.length > 0) ? prevTabItem.set('openState', updOpenState) : prevTabItem
