@@ -1,3 +1,4 @@
+build
 node_modules
 *.map
 .DS_Store
