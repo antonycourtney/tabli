@@ -19,7 +19,11 @@ export function renderPopup (storeRef, currentChromeWindow, isPopout, doSync) {
   var parentNode = document.getElementById('windowList-region')
 
   var appElement = <Popup storeRef={storeRef} initialWinStore={storeRef.getValue()} isPopout={isPopout} />
-  var appComponent = ReactDOM.render(appElement, parentNode) // eslint-disable-line no-unused-vars
+  var appComponent = ReactDOM.render(appElement, parentNode, () => { // eslint-disable-line no-unused-vars
+    const searchBoxElem = document.getElementById('searchBox')
+    searchBoxElem.focus()
+  })
+
   var tPostRender = performance.now()
   console.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)')
 
@@ -42,7 +46,6 @@ export function renderPopup (storeRef, currentChromeWindow, isPopout, doSync) {
       // logHTML("Updated savedHTML", renderedString)
       var tPostSyncUpdate = performance.now()
       console.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms')
-      document.getElementById('searchBox').focus()
     }))
   }
 }

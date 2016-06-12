@@ -234,6 +234,7 @@ const SearchBar = React.createClass({
           <input
             className='search-input'
             type='search'
+            tabIndex={1}
             ref={this.setInputRef}
             id='searchBox'
             placeholder='Search...'
