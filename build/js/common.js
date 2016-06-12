@@ -21453,34 +21453,6 @@
 
 /***/ },
 /* 6 */
-/*!*********************************!*\
-  !*** ./src/js/chromeBrowser.js ***!
-  \*********************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	/**
-	 * Implementation of Tabli browser interface for Google Chrome, using extensions API
-	 *
-	 * Only import this module from Chrome!
-	 */
-	var chromeBrowser = {
-	
-	  // make a tab (identified by tab id) the currently focused tab:
-	  activateTab: function activateTab(tabId, callback) {
-	    chrome.tabs.update(tabId, { active: true }, callback);
-	  },
-	
-	  setFocusedWindow: function setFocusedWindow(windowId, callback) {
-	    chrome.windows.update(windowId, { focused: true }, callback);
-	  }
-	};
-	
-	module.exports = chromeBrowser;
-
-/***/ },
-/* 7 */
 /*!*****************************!*\
   !*** ./src/js/tabWindow.js ***!
   \*****************************/
@@ -22206,6 +22178,7 @@
 	}
 
 /***/ },
+/* 7 */,
 /* 8 */
 /*!*************************!*\
   !*** ./src/js/utils.js ***!
@@ -22346,8 +22319,7 @@
 	}
 
 /***/ },
-/* 9 */,
-/* 10 */
+/* 9 */
 /*!***************************!*\
   !*** ./src/js/actions.js ***!
   \***************************/
@@ -22384,11 +22356,11 @@
 	
 	var utils = _interopRequireWildcard(_utils);
 	
-	var _pact = __webpack_require__(/*! ./pact */ 11);
+	var _pact = __webpack_require__(/*! ./pact */ 10);
 	
 	var pact = _interopRequireWildcard(_pact);
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 6);
+	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 11);
 	
 	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
 	
@@ -22750,7 +22722,7 @@
 	}
 
 /***/ },
-/* 11 */
+/* 10 */
 /*!************************!*\
   !*** ./src/js/pact.js ***!
   \************************/
@@ -22768,7 +22740,7 @@
 	exports.bind_ = bind_;
 	exports.restorePopout = restorePopout;
 	
-	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 6);
+	var _chromeBrowser = __webpack_require__(/*! ./chromeBrowser */ 11);
 	
 	var _chromeBrowser2 = _interopRequireDefault(_chromeBrowser);
 	
@@ -22919,6 +22891,34 @@
 	  });
 	  return deferred.promise;
 	}
+
+/***/ },
+/* 11 */
+/*!*********************************!*\
+  !*** ./src/js/chromeBrowser.js ***!
+  \*********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	/**
+	 * Implementation of Tabli browser interface for Google Chrome, using extensions API
+	 *
+	 * Only import this module from Chrome!
+	 */
+	var chromeBrowser = {
+	
+	  // make a tab (identified by tab id) the currently focused tab:
+	  activateTab: function activateTab(tabId, callback) {
+	    chrome.tabs.update(tabId, { active: true }, callback);
+	  },
+	
+	  setFocusedWindow: function setFocusedWindow(windowId, callback) {
+	    chrome.windows.update(windowId, { focused: true }, callback);
+	  }
+	};
+	
+	module.exports = chromeBrowser;
 
 /***/ },
 /* 12 */

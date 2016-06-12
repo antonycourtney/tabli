@@ -20,11 +20,11 @@ webpackJsonp([0],{
 	
 	var semver = _interopRequireWildcard(_semver);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 7);
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
-	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 9);
+	var _tabManagerState = __webpack_require__(/*! ./tabManagerState */ 7);
 	
 	var _tabManagerState2 = _interopRequireDefault(_tabManagerState);
 	
@@ -32,11 +32,11 @@ webpackJsonp([0],{
 	
 	var utils = _interopRequireWildcard(_utils);
 	
-	var _actions = __webpack_require__(/*! ./actions */ 10);
+	var _actions = __webpack_require__(/*! ./actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
-	var _pact = __webpack_require__(/*! ./pact */ 11);
+	var _pact = __webpack_require__(/*! ./pact */ 10);
 	
 	var pact = _interopRequireWildcard(_pact);
 	
@@ -1689,7 +1689,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 9:
+/***/ 7:
 /*!***********************************!*\
   !*** ./src/js/tabManagerState.js ***!
   \***********************************/
@@ -1713,7 +1713,7 @@ webpackJsonp([0],{
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 7);
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	

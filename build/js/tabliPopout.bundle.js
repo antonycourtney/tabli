@@ -6761,7 +6761,7 @@ webpackJsonp([2],[
 	
 	var _Popup2 = _interopRequireDefault(_Popup);
 	
-	var _actions = __webpack_require__(/*! ./actions */ 10);
+	var _actions = __webpack_require__(/*! ./actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -6780,7 +6780,12 @@ webpackJsonp([2],[
 	  var parentNode = document.getElementById('windowList-region');
 	
 	  var appElement = React.createElement(_Popup2.default, { storeRef: storeRef, initialWinStore: storeRef.getValue(), isPopout: isPopout });
-	  var appComponent = ReactDOM.render(appElement, parentNode); // eslint-disable-line no-unused-vars
+	  var appComponent = ReactDOM.render(appElement, parentNode, function () {
+	    // eslint-disable-line no-unused-vars
+	    var searchBoxElem = document.getElementById('searchBox');
+	    searchBoxElem.focus();
+	  });
+	
 	  var tPostRender = performance.now();
 	  console.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)');
 	
@@ -6803,7 +6808,6 @@ webpackJsonp([2],[
 	      // logHTML("Updated savedHTML", renderedString)
 	      var tPostSyncUpdate = performance.now();
 	      console.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms');
-	      document.getElementById('searchBox').focus();
 	    }));
 	  }
 	} /**
@@ -17051,7 +17055,7 @@ webpackJsonp([2],[
 	
 	var React = _interopRequireWildcard(_react);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -17279,7 +17283,7 @@ webpackJsonp([2],[
 	
 	var Immutable = _interopRequireWildcard(_immutable);
 	
-	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 7);
+	var _tabWindow = __webpack_require__(/*! ./tabWindow */ 6);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
@@ -17883,7 +17887,7 @@ webpackJsonp([2],[
 	
 	var Modal = _interopRequireWildcard(_Modal);
 	
-	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 7);
+	var _tabWindow = __webpack_require__(/*! ../tabWindow */ 6);
 	
 	var TabWindow = _interopRequireWildcard(_tabWindow);
 	
@@ -18522,7 +18526,7 @@ webpackJsonp([2],[
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -18828,7 +18832,7 @@ webpackJsonp([2],[
 	
 	var Constants = _interopRequireWildcard(_constants);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -19090,6 +19094,7 @@ webpackJsonp([2],[
 	        React.createElement('input', {
 	          className: 'search-input',
 	          type: 'search',
+	          tabIndex: 1,
 	          ref: this.setInputRef,
 	          id: 'searchBox',
 	          placeholder: 'Search...',
@@ -19134,7 +19139,7 @@ webpackJsonp([2],[
 	
 	var _MessageCard2 = _interopRequireDefault(_MessageCard);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -19280,7 +19285,7 @@ webpackJsonp([2],[
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -19459,7 +19464,7 @@ webpackJsonp([2],[
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
@@ -19641,7 +19646,7 @@ webpackJsonp([2],[
 	
 	var Util = _interopRequireWildcard(_util);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 10);
+	var _actions = __webpack_require__(/*! ../actions */ 9);
 	
 	var actions = _interopRequireWildcard(_actions);
 	
