@@ -135,14 +135,15 @@ const FilteredTabWindow = React.createClass({
     var windowDivProps = {
       style: windowStyles,
       onMouseOver: this.handleMouseOver,
-      onMouseOut: this.handleMouseOut
+      onMouseOut: this.handleMouseOut,
+      ref: wdiv => { this.windowDivRef = wdiv }
     }
     return (
       <div {...windowDivProps}>
         {windowHeader}
         {tabItems}
       </div>
-      )
+    )
   }
 })
 
