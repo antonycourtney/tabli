@@ -62,7 +62,9 @@ const RevertModal = React.createClass({
 
   render () {
     const tabWindow = this.props.tabWindow
-    const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow)
+    // Call removeOpenWindowState with snapshot=false to obtain tentative
+    // reverted state
+    const revertedTabWindow = TabWindow.removeOpenWindowState(tabWindow, false)
     const savedUrlsSet = Immutable.Set(revertedTabWindow.tabItems.map((ti) => ti.url))
 
     const itemsToClose = tabWindow.tabItems.filter((ti) => !(savedUrlsSet.has(ti.url)))

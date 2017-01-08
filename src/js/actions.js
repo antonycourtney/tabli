@@ -45,7 +45,10 @@ function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow, cb) {
    * special case handling of replacing the contents of a fresh window
    */
   chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
-    const urls = tabWindow.tabItems.map((ti) => ti.url).toArray()
+    const tabItems = tabWindow.tabItems
+    // If a snapshot, only use tabItems that were previously open:
+    const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+    const urls = targetItems.map((ti) => ti.url).toArray()
     function cf (chromeWindow) {
       cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
     }

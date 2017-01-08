@@ -51,15 +51,15 @@ export default class TabManagerState extends Immutable.Record({
   handleTabWindowClosed (tabWindow) {
     // console.log("handleTabWindowClosed: ", tabWindow.toJS())
     /*
-     * We only remove window from map of open windows (windowIdMap) but then we re-register
-     * reverted window to ensure that a reverted version of saved window stays in
+     * We remove window from map of open windows (windowIdMap) but then we re-register
+     * closed window to ensure that a version of saved window stays in
      * bookmarkIdMap.
      */
     const closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId)
 
-    const revertedWindow = TabWindow.removeOpenWindowState(tabWindow)
+    const closedWindow = TabWindow.removeOpenWindowState(tabWindow)
 
-    return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(revertedWindow)
+    return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(closedWindow)
   }
 
   handleTabClosed (tabWindow, tabId) {

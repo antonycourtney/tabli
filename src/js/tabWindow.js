@@ -156,6 +156,18 @@ function resetSavedItem (ti) {
 }
 
 /**
+ * Remove components of OpenState that are only relevant while tab
+ * is actually open.
+ * Used when creating snapshot state for later session restore.
+ */
+function cleanOpenState (ti) {
+  if (!ti.open) {
+    return ti
+  }
+  return ti.update('openState', os => os.remove('openTabId'))
+}
+
+/**
  * Return the base state of an open tab (no saved tab info)
  */
 function resetOpenItem (ti) {
@@ -179,10 +191,16 @@ function escapeTableCell (s) {
  *
  * Tab windows have a title and a set of tab items.
  *
- * A TabWindow has 3 possible states:
+ * A TabWindow has 4 possible states:
  *   (open,!saved)   - An open Chrome window that has not had its tabs saved
  *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
- *   (!open,saved)   - A previously saved window that is not currently open
+ *   (!open,saved,!snapshot)   - A previously saved window that is not currently
+ *                           open and has no snapshot. tabItems will consist solely
+ *                           of saved tabs (persisted as boookmarks).
+ *
+ *   (!open,saved,snapshot) - A previously saved window that is not currently open but
+ *                            where tabItems contains the tab state the last time the
+ *                            window was open
  */
 export class TabWindow extends Immutable.Record({
   saved: false,
@@ -195,7 +213,9 @@ export class TabWindow extends Immutable.Record({
   width: 0,
   height: 0,
 
-  tabItems: Immutable.List() // <TabItem>
+  tabItems: Immutable.List(), // <TabItem>
+
+  snapshot: false    // Set if tabItems contains snapshot of last open state
 }) {
 
   get title () {
@@ -279,13 +299,35 @@ Title                                  | URL
 }
 
 /**
- * reset a window to its base saved state (after window is closed)
+ * Mark window as closed and remove any state (such as openWindowId) only
+ * relevant to open windows.
+ *
+ *
  */
-export function removeOpenWindowState (tabWindow) {
-  const savedItems = tabWindow.tabItems.filter((ti) => ti.saved)
-  const resetSavedItems = savedItems.map(resetSavedItem)
+export function removeOpenWindowState (tabWindow, snapshot = true) {
+  // update tabItems by removing openTabId from any open items:
+  const tabItems = tabWindow.tabItems
+  let updTabItems
+  if (!snapshot) {
+    // Not snapshotting, so revert -- only keep saved items,
+    // and discard their open state.
+    const savedTabItems = tabItems.filter(ti => ti.saved)
+    updTabItems = savedTabItems.map(resetSavedItem)
+  } else {
+    // Snapshot -- leave the tab items untouched and
+    // set snapshot to true so that we can restore
+    // the window to its previous state when it is re-opened.
+    updTabItems = tabItems.map(cleanOpenState)
+  }
 
-  return tabWindow.remove('open').remove('openWindowId').remove('windowType').remove('width').remove('height').setTabItems(resetSavedItems)
+  return (tabWindow
+    .remove('open')
+    .remove('openWindowId')
+    .remove('windowType')
+    .remove('width')
+    .remove('height')
+    .set('tabItems', updTabItems)
+    .set('snapshot', true))
 }
 
 /*
@@ -435,6 +477,7 @@ export function updateWindow (tabWindow, chromeWindow) {
     .set('windowType', chromeWindow.type)
     .set('open', true)
     .set('openWindowId', chromeWindow.id)
+    .remove('snapshot')
   return updWindow
 }
 
