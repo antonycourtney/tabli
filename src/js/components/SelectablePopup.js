@@ -55,13 +55,17 @@ const SelectablePopup = React.createClass({
       this.setState({ selectedTabIndex: this.state.selectedTabIndex - 1 })
     } else {
       // Already on first tab, try to back up to previous window:
+      let prevWindowIndex
       if (this.state.selectedWindowIndex > 0) {
-        const prevWindowIndex = this.state.selectedWindowIndex - 1
-        const prevWindow = this.props.filteredWindows[prevWindowIndex]
-        const prevTabCount = (this.props.searchStr.length > 0) ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count()
-
-        this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 })
+        prevWindowIndex = this.state.selectedWindowIndex - 1
+      } else {
+        // ring style, move to last window:
+        prevWindowIndex = this.props.filteredWindows.length - 1
       }
+      const prevWindow = this.props.filteredWindows[prevWindowIndex]
+      const prevTabCount = (this.props.searchStr.length > 0) ? prevWindow.itemMatches.count() : prevWindow.tabWindow.tabItems.count()
+
+      this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 })
     }
   },
 
@@ -80,6 +84,9 @@ const SelectablePopup = React.createClass({
       // Already on last tab, try to advance to next window:
       if ((this.state.selectedWindowIndex + 1) < this.props.filteredWindows.length) {
         this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 })
+      } else {
+        // wrap the search:
+        this.setState({ selectedWindowIndex: 0, selectedTabIndex: 0 })
       }
     }
   },
