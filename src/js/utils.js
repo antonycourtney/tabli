@@ -27,11 +27,11 @@ export function parseURL (url) {
       return ret
     })(),
 
-    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [null, ''])[1],
+    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [null, ''])[1],  // eslint-disable-line
     hash: a.hash.replace('#', ''),
-    path: a.pathname.replace(/^([^\/])/, '/$1'),
-    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [null, ''])[1],
-    segments: a.pathname.replace(/^\//, '').split('/')
+    path: a.pathname.replace(/^([^\/])/, '/$1'), // eslint-disable-line
+    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [null, ''])[1], // eslint-disable-line
+    segments: a.pathname.replace(/^\//, '').split('/') // eslint-disable-line
   }
 }
 

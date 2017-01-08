@@ -58,7 +58,8 @@ export function showPopout (winStore) {
   chrome.storage.local.set({'showPopout': true}, () => {
     chrome.windows.create({ url: 'popout.html',
       type: 'detached_panel',
-      left: 0, top: 0,
+      left: 0,
+      top: 0,
       width: 350,
       height: 625
     }, () => {

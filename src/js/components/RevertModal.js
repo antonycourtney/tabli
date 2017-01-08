@@ -55,7 +55,7 @@ const RevertModal = React.createClass({
     const itemElems = tabItems.map(this.renderItem)
     return (
       <div style={Styles.tabList}>
-      {itemElems}
+        {itemElems}
       </div>
     )
   },

@@ -122,7 +122,7 @@ const SelectableTabPage = React.createClass({
       <div>
         <div className='container'>
           <div className='row'>
-            <div className='com-sm-1'></div>
+            <div className='com-sm-1' />
             <div className='col-sm-10'>
               <img src='../images/popout-icon-1.png' />
               <SearchBar

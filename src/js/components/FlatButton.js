@@ -20,7 +20,7 @@ var FlatButton = React.createClass({
       <a onClick={this.handleClick} href='javascript:;' style={Styles.flatButton}>
         {this.props.label}
       </a>
-      )
+    )
   }
 })
 

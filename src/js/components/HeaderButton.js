@@ -30,7 +30,7 @@ var HeaderButton = React.createClass({
         className={this.props.className}
         title={this.props.title}
         onClick={this.handleClick} />
-      )
+    )
   }
 })
 

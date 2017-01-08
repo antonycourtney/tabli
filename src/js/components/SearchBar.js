@@ -160,7 +160,7 @@ const SearchBar = React.createClass({
         aria-expanded='false'
         title='Open Tabli Menu'
         onClick={this.handleLogoClick}>
-        <span className='glyphicon glyphicon-menu-hamburger' aria-hidden='true'></span>
+        <span className='glyphicon glyphicon-menu-hamburger' aria-hidden='true' />
       </button>
     )
 
@@ -188,7 +188,7 @@ const SearchBar = React.createClass({
         className='btn btn-default btn-xs'
         title='Expand/Collapse All Window Summaries'
         onClick={this.handleExpandToggleClick}>
-        <span className='glyphicon glyphicon-collapse-down' aria-hidden='true'></span>
+        <span className='glyphicon glyphicon-collapse-down' aria-hidden='true' />
       </button>
     )
 
@@ -199,7 +199,7 @@ const SearchBar = React.createClass({
         className='btn btn-default btn-xs'
         title='Copy All to Clipboard'
         onClick={this.handleCopyClick}>
-        <i className='fa fa-clipboard' aria-hidden='true'></i>
+        <i className='fa fa-clipboard' aria-hidden='true' />
       </button>
     )
 
@@ -208,14 +208,14 @@ const SearchBar = React.createClass({
         <li>
           <a className='help-button' href='#' onClick={this.handleHelpClick}>Help (Manual)</a>
         </li>
-        <li role='separator' className='divider'></li>
+        <li role='separator' className='divider' />
         <li>
           <a href='#' onClick={this.handleAboutClick}>About Tabli</a>
         </li>
         <li>
           <a href='#' onClick={this.handleRelNotesClick}>Release Notes</a>
         </li>
-        <li role='separator' className='divider'></li>
+        <li role='separator' className='divider' />
         <li>
           <a href='#' onClick={this.handleReviewClick}>Review Tabli</a>
         </li>

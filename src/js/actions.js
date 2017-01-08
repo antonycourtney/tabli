@@ -210,8 +210,7 @@ export function manageWindow (tabliFolderId, currentWindowId, tabWindow, title, 
     alert('Could not save bookmarks -- no tab manager folder')
   }
 
-  var windowFolder = { parentId: tabliFolderId,
-  title}
+  var windowFolder = {parentId: tabliFolderId, title}
   chrome.bookmarks.create(windowFolder, (windowFolderNode) => {
     // console.log( "succesfully created bookmarks folder ", windowFolderNode )
     // console.log( "for window: ", tabWindow )
