@@ -60,82 +60,83 @@ export const d3BookmarkFolder =
 
 export const d3InitialExpectedTabWindow =
 {
-  'saved': true,
-  'savedTitle': 'd3 docs',
-  'savedFolderId': '431',
-  'open': false,
-  'openWindowId': -1,
-  'windowType': '',
-  'width': 0,
-  'height': 0,
-  'tabItems': [
+  "saved": true,
+  "savedTitle": "d3 docs",
+  "savedFolderId": "431",
+  "open": false,
+  "openWindowId": -1,
+  "windowType": "",
+  "width": 0,
+  "height": 0,
+  "tabItems": [
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '432',
-        'bookmarkIndex': 0,
-        'title': 'API Reference · mbostock/d3 Wiki',
-        'url': 'https://github.com/mbostock/d3/wiki/API-Reference'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "432",
+        "bookmarkIndex": 0,
+        "title": "API Reference · mbostock/d3 Wiki",
+        "url": "https://github.com/mbostock/d3/wiki/API-Reference"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '534',
-        'bookmarkIndex': 1,
-        'title': 'D3.js - Data-Driven Documents',
-        'url': 'http://d3js.org/'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "534",
+        "bookmarkIndex": 1,
+        "title": "D3.js - Data-Driven Documents",
+        "url": "http://d3js.org/"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '535',
-        'bookmarkIndex': 2,
-        'title': 'Gallery · mbostock/d3 Wiki',
-        'url': 'https://github.com/mbostock/d3/wiki/Gallery'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "535",
+        "bookmarkIndex": 2,
+        "title": "Gallery · mbostock/d3 Wiki",
+        "url": "https://github.com/mbostock/d3/wiki/Gallery"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '536',
-        'bookmarkIndex': 3,
-        'title': 'Tutorials · mbostock/d3 Wiki',
-        'url': 'https://github.com/mbostock/d3/wiki/Tutorials'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "536",
+        "bookmarkIndex": 3,
+        "title": "Tutorials · mbostock/d3 Wiki",
+        "url": "https://github.com/mbostock/d3/wiki/Tutorials"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '537',
-        'bookmarkIndex': 4,
-        'title': 'Drag + Zoom',
-        'url': 'http://bl.ocks.org/mbostock/6123708'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "537",
+        "bookmarkIndex": 4,
+        "title": "Drag + Zoom",
+        "url": "http://bl.ocks.org/mbostock/6123708"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '613',
-        'bookmarkIndex': 5,
-        'title': 'Focus+Context via Brushing',
-        'url': 'http://bl.ocks.org/mbostock/1667367'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "613",
+        "bookmarkIndex": 5,
+        "title": "Focus+Context via Brushing",
+        "url": "http://bl.ocks.org/mbostock/1667367"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     }
-  ]
+  ],
+  "snapshot": false
 }
 
 export const chromeWindowSnap =
@@ -819,5 +820,6 @@ export const d3AttachedExpectedTabWindow =
       'open': false,
       'openState': null
     }
-  ]
+  ],
+  "snapshot": false
 }

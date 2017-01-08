@@ -41,129 +41,129 @@ test('chromeTabWindow', (t) => {
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()))
 
-  /*
+/*
     console.log("makeChromeTabWindow returned: ")
     console.log(">>>>>")
     console.log(JSON.stringify(tabWindowJS,null,2))
     console.log(">>>>>")
-  */
-
+*/
   const expectedTabWindow =
   {
-    'saved': false,
-    'savedTitle': '',
-    'savedFolderId': -1,
-    'open': true,
-    'openWindowId': 442,
-    'windowType': 'normal',
-    'width': 1258,
-    'height': 957,
-    'tabItems': [
+    "saved": false,
+    "savedTitle": "",
+    "savedFolderId": -1,
+    "open": true,
+    "openWindowId": 442,
+    "windowType": "normal",
+    "width": 1258,
+    "height": 957,
+    "tabItems": [
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'http://facebook.github.io/react/docs/component-api.html',
-          'openTabId': 443,
-          'active': false,
-          'openTabIndex': 0,
-          'favIconUrl': 'http://facebook.github.io/react/favicon.ico',
-          'title': 'Component API | React',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "http://facebook.github.io/react/docs/component-api.html",
+          "openTabId": 443,
+          "active": false,
+          "openTabIndex": 0,
+          "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+          "title": "Component API | React",
+          "audible": false,
+          "pinned": false
         }
       },
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'http://facebook.github.io/react/docs/tutorial.html',
-          'openTabId': 445,
-          'active': false,
-          'openTabIndex': 1,
-          'favIconUrl': 'http://facebook.github.io/react/favicon.ico',
-          'title': 'Tutorial | React',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "http://facebook.github.io/react/docs/tutorial.html",
+          "openTabId": 445,
+          "active": false,
+          "openTabIndex": 1,
+          "favIconUrl": "http://facebook.github.io/react/favicon.ico",
+          "title": "Tutorial | React",
+          "audible": false,
+          "pinned": false
         }
       },
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat',
-          'openTabId': 447,
-          'active': false,
-          'openTabIndex': 2,
-          'favIconUrl': 'http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d',
-          'title': 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat",
+          "openTabId": 447,
+          "active": false,
+          "openTabIndex": 2,
+          "favIconUrl": "http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d",
+          "title": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
+          "audible": false,
+          "pinned": false
         }
       },
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'http://facebook.github.io/flux/docs/overview.html#content',
-          'openTabId': 449,
-          'active': false,
-          'openTabIndex': 3,
-          'title': 'Flux | Application Architecture for Building User Interfaces',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "http://facebook.github.io/flux/docs/overview.html#content",
+          "openTabId": 449,
+          "active": false,
+          "openTabIndex": 3,
+          "title": "Flux | Application Architecture for Building User Interfaces",
+          "audible": false,
+          "pinned": false
         }
       },
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'http://fluxxor.com/',
-          'openTabId': 451,
-          'active': false,
-          'openTabIndex': 4,
-          'favIconUrl': 'http://fluxxor.com/favicon.ico',
-          'title': 'Fluxxor - Home',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "http://fluxxor.com/",
+          "openTabId": 451,
+          "active": false,
+          "openTabIndex": 4,
+          "favIconUrl": "http://fluxxor.com/favicon.ico",
+          "title": "Fluxxor - Home",
+          "audible": false,
+          "pinned": false
         }
       },
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'http://facebook.github.io/fixed-data-table/',
-          'openTabId': 453,
-          'active': false,
-          'openTabIndex': 5,
-          'favIconUrl': 'http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png',
-          'title': 'FixedDataTable',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "http://facebook.github.io/fixed-data-table/",
+          "openTabId": 453,
+          "active": false,
+          "openTabIndex": 5,
+          "favIconUrl": "http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png",
+          "title": "FixedDataTable",
+          "audible": false,
+          "pinned": false
         }
       },
       {
-        'saved': false,
-        'savedState': null,
-        'open': true,
-        'openState': {
-          'url': 'https://developer.chrome.com/extensions/declare_permissions',
-          'openTabId': 734,
-          'active': true,
-          'openTabIndex': 6,
-          'favIconUrl': 'https://www.google.com/images/icons/product/chrome-32.png',
-          'title': 'Declare Permissions - Google Chrome',
-          'audible': false,
-          'pinned': false
+        "saved": false,
+        "savedState": null,
+        "open": true,
+        "openState": {
+          "url": "https://developer.chrome.com/extensions/declare_permissions",
+          "openTabId": 734,
+          "active": true,
+          "openTabIndex": 6,
+          "favIconUrl": "https://www.google.com/images/icons/product/chrome-32.png",
+          "title": "Declare Permissions - Google Chrome",
+          "audible": false,
+          "pinned": false
         }
       }
-    ]
+    ],
+    "snapshot": false
   }
 
   // dumpDiffs(tabWindowJS,expectedTabWindow)
@@ -318,14 +318,14 @@ test('attachChromeWindow', (t) => {
   const tabWindow = TabWindow.makeFolderTabWindow(testData.d3BookmarkFolder)
   const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()))
 
-  /*
+/*
     console.log("makeFolderTabWindow returned:")
     console.log(">>>>>>>")
     console.log(JSON.stringify(tabWindowJS,null,2))
     console.log(">>>>>>>")
-  */
 
-  /*
+
+
   console.log('diffs between tabWindowJS and expected:')
   dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow)
   */
@@ -338,17 +338,15 @@ test('attachChromeWindow', (t) => {
   const updTabWindow = TabWindow.updateWindow(tabWindow, testData.d3OpenedChromeWindow)
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()))
 
-  /*
+/*
     console.log("updateTabWindow returned:")
     console.log(">>>>>>>")
     console.log(JSON.stringify(updTabWindowJS,null,2))
     console.log(">>>>>>>")
-  */
 
-  /*
     console.log("diffs between updTabWindow (actual) and expected:")
     dumpDiffs(updTabWindowJS, testData.d3AttachedExpectedTabWindow)
-  */
+*/
 
   t.deepEqual(updTabWindowJS, testData.d3AttachedExpectedTabWindow, 'updateWindow -- after attach')
 
@@ -362,7 +360,7 @@ test('attachChromeWindow', (t) => {
   t.equals(savedCount, 6, 'saved tab count')
 
   // Now revert the window to saved state:
-  const revTabWindow = TabWindow.removeOpenWindowState(updTabWindow)
+  const revTabWindow = TabWindow.removeOpenWindowState(updTabWindow, false)
 
   const revTabCount = revTabWindow.tabItems.count()
   const revOpenCount = revTabWindow.tabItems.count(t => t.open)
