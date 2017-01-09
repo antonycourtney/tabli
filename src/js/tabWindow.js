@@ -264,6 +264,19 @@ export class TabWindow extends Immutable.Record({
     return activeTab.title
   }
 
+  // get a unique id for this window
+  // useful as key in React arrays
+  get id () {
+    if (this._id === undefined) {
+      if (this.saved) {
+        this._id = '_saved' + this.savedFolderId
+      } else {
+        this._id = '_open' + this.openWindowId
+      }
+    }
+    return this._id
+  }
+
   get openTabCount () {
     return this.tabItems.count((ti) => ti.open)
   }
