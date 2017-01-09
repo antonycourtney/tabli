@@ -200,7 +200,7 @@ function registerEventHandlers (uf) {
           // See https://bugs.chromium.org/p/chromium/issues/detail?id=30885
           window.setTimeout(() => {
             chrome.storage.local.set({'showPopout': false}, () => {})
-          }, 1000)
+          }, 3000)
         }
       }
       const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state
@@ -385,36 +385,84 @@ function reattachWindows (bmStore, cb) {
   })
 }
 
+/**
+ * load window state for saved windows from local storage and attach to
+ * any closed, saved windows
+ */
+function loadSnapState (bmStore, cb) {
+  chrome.storage.local.get('savedWindowState', items => {
+    const savedWindowStateStr = items.savedWindowState
+    if (!savedWindowStateStr) {
+      console.log('loadSnapState: no saved window state found in local storage')
+      cb(bmStore)
+    } else {
+      const savedWindowState = JSON.parse(savedWindowStateStr)
+      const closedWindowsMap = bmStore.bookmarkIdMap.filter(bmWin => !bmWin.open)
+      const closedWindowIds = closedWindowsMap.keys()
+      let savedOpenTabsMap = {}
+      for (let id of closedWindowIds) {
+        const savedState = savedWindowState[id]
+        if (savedState) {
+          const openTabItems = savedState.tabItems.filter(ti => ti.open)
+          if (openTabItems.length > 0) {
+            const convTabItems = openTabItems.map(ti => TabWindow.tabItemFromJS(ti))
+            const tiList = Immutable.List(convTabItems)
+            savedOpenTabsMap[id] = tiList
+          }
+        }
+      }
+      const keyCount = Object.keys(savedOpenTabsMap).length
+      console.log('read window snapshot state for ', keyCount, ' saved windows')
+      const updBookmarkMap = bmStore.bookmarkIdMap.map((tabWindow, bmId) => {
+        const snapTabs = savedOpenTabsMap[bmId]
+        if (snapTabs == null) {
+          return tabWindow
+        }
+        const baseSavedItems = tabWindow.tabItems.filter(ti => ti.saved).map(TabWindow.resetSavedItem)
+        const mergedTabs = TabWindow.mergeSavedOpenTabs(baseSavedItems, snapTabs)
+        return (tabWindow
+            .set('tabItems', mergedTabs)
+            .set('snapshot', true))
+      })
+      const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap)
+      console.log('merged window state snapshot from local storage')
+      cb(nextStore)
+    }
+  })
+}
+
 function main () {
   initWinStore((rawBMStore) => {
-    reattachWindows(rawBMStore, (bmStore) => {
-      // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
+    reattachWindows(rawBMStore, attachBMStore => {
+      loadSnapState(attachBMStore, (bmStore) => {
+        // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
 
-      // window.winStore = winStore
-      chrome.windows.getCurrent(null, (currentWindow) => {
-        // console.log("bgHelper: currentWindow: ", currentWindow)
-        actions.syncChromeWindows((uf) => {
-          console.log('initial sync of chrome windows complete.')
-          const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
-          console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
-          window.storeRef = new ViewRef(syncedStore)
+        // window.winStore = winStore
+        chrome.windows.getCurrent(null, (currentWindow) => {
+          // console.log("bgHelper: currentWindow: ", currentWindow)
+          actions.syncChromeWindows((uf) => {
+            console.log('initial sync of chrome windows complete.')
+            const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
+            console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
+            window.storeRef = new ViewRef(syncedStore)
 
-          // dumpAll(syncedStore)
-          // dumpChromeWindows()
+            // dumpAll(syncedStore)
+            // dumpChromeWindows()
 
-          setupConnectionListener(window.storeRef)
+            setupConnectionListener(window.storeRef)
 
-          const storeRefUpdater = refUpdater(window.storeRef)
-          registerEventHandlers(storeRefUpdater)
+            const storeRefUpdater = refUpdater(window.storeRef)
+            registerEventHandlers(storeRefUpdater)
 
-          pact.restorePopout(window.storeRef).done(st => {
-            window.storeRef.setValue(st.markInitialized())
-          })
+            pact.restorePopout(window.storeRef).done(st => {
+              window.storeRef.setValue(st.markInitialized())
+            })
 
-          chrome.commands.onCommand.addListener(command => {
-            if (command === 'show_popout') {
-              actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
-            }
+            chrome.commands.onCommand.addListener(command => {
+              if (command === 'show_popout') {
+                actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
+              }
+            })
           })
         })
       })

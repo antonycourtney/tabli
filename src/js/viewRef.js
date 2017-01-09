@@ -1,4 +1,5 @@
 import * as OneRef from 'oneref'
+import * as _ from 'lodash'
 
 /**
  * A wrapper around OneRef.Ref that tracks listeners by numeric id
@@ -7,6 +8,54 @@ import * as OneRef from 'oneref'
  *
  *
  */
+
+// Save previous bookmarkIdMap for efficient diff
+let prevBookmarkIdMap = null  // last bookmarkIdMap written
+
+let latestBookmarkIdMap = null  // most recent bookmark map
+
+/**
+ * get diffs between old and new version of bookmark id map.
+ * Assumes an Immutable.Map() of string to Immutable.Record
+ * returns:
+ *  { deletes: Immutable.Set<string>, updates: Immutable.Seq<record> }
+ */
+const getDiffs = (prevMap, curMap) => {
+  // find deleted keys:
+  const prevKeySet = prevMap.keySeq().toSet()
+  const curKeySet = curMap.keySeq().toSet()
+  const deletes = prevKeySet.subtract(curKeySet)
+
+  const updatedKeys = curMap.keySeq().filter(k => !deletes.has(k) && (prevMap.get(k) !== curMap.get(k)))
+  const updates = updatedKeys.map(k => curMap.get(k))
+
+  return { deletes, updates }
+}
+
+/**
+ * determines if there are any diffs between prevMap and curMap
+ */
+const hasDiffs = (prevMap, curMap) => {
+  const diffs = getDiffs(prevMap, curMap)
+  return ((diffs.deletes.count() > 0) ||
+    (diffs.updates.count() > 0))
+}
+
+const savedWindowStateVersion = 1
+
+// persist bookmarkIdMap to local storage
+const saveState = () => {
+  prevBookmarkIdMap = latestBookmarkIdMap
+  const savedWindowState = JSON.stringify(latestBookmarkIdMap, null, 2)
+  const savedState = { savedWindowStateVersion, savedWindowState }
+  chrome.storage.local.set(savedState, () => {
+    console.log((new Date()).toString() + ' succesfully wrote window state')
+  })
+}
+
+// A throttled version of saveState that will update our saved
+// bookmark state at most once every 30 sec
+const throttledSaveState = _.throttle(saveState, 30 * 1000)
 
 export default class ViewRef extends OneRef.Ref {
   /**
@@ -48,4 +97,18 @@ export default class ViewRef extends OneRef.Ref {
 
     delete this.viewListeners[id]
   }
+
+  setValue (appState) {
+    latestBookmarkIdMap = appState.bookmarkIdMap
+    if (prevBookmarkIdMap == null) {
+      prevBookmarkIdMap = latestBookmarkIdMap
+    } else {
+      if (hasDiffs(prevBookmarkIdMap, latestBookmarkIdMap)) {
+        throttledSaveState()
+      } else {
+      }
+    }
+    super.setValue(appState)
+  }
+
 }

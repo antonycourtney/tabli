@@ -57,6 +57,23 @@ export class TabItem extends Immutable.Record({
   }
 }
 
+function tabItemReviver (k, v) {
+  if (k === 'savedState') {
+    return new SavedTabState(v)
+  } else if (k === 'openState') {
+    return new OpenTabState(v)
+  }
+  return v
+}
+
+/**
+ * convert a JS object to a TabItem
+ */
+export function tabItemFromJS (js) {
+  const tiMap = Immutable.fromJS(js, tabItemReviver)
+  return new TabItem(tiMap)
+}
+
 /**
  * comparator for sorting tab items
  *
@@ -151,7 +168,7 @@ function makeOpenTabItem (tab) {
 /**
  * Returns the base saved state of a tab item (no open tab info)
  */
-function resetSavedItem (ti) {
+export function resetSavedItem (ti) {
   return ti.remove('open').remove('openState')
 }
 
@@ -388,7 +405,7 @@ export function makeChromeTabWindow (chromeWindow) {
  *
  * @return {List<TabItem>}
  */
-function mergeSavedOpenTabs (savedItems, openItems) {
+export function mergeSavedOpenTabs (savedItems, openItems) {
   const openUrlSet = Immutable.Set(openItems.map(ti => ti.url))
   const savedUrlMap = Immutable.Map(savedItems.map(ti => [ti.savedState.url, ti]))
 
