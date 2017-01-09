@@ -84,6 +84,15 @@ const SearchBar = React.createClass({
       }
     }
 
+    // For some odd reason, semicolon gives a keyCode of 186 (?)
+    // but key seems to work so use it
+    if (e.key === ';') {
+      if (this.props.onSearchExpandToggle) {
+        e.preventDefault()
+        this.props.onSearchExpandToggle()
+      }
+    }
+
     if (e.keyCode === Constants.KEY_ESC) {
       if (this.props.onSearchExit) {
         const searchStr = this.searchInputRef.value

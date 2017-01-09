@@ -332,6 +332,14 @@ Title                                  | URL
     return s
   }
 
+  // combine local expanded state with global expanded state to determine if expanded:
+  isExpanded (winStore) {
+    if (this.expanded === null) {
+      return (winStore.expandAll && this.open)
+    }
+    return this.expanded
+  }
+
 }
 
 /**

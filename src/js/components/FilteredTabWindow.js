@@ -39,10 +39,8 @@ const FilteredTabWindow = React.createClass({
    * explicitly set interactively by the user
    */
   getExpandedState () {
-    if (this.props.expanded === null) {
-      return (this.props.expandAll && this.props.filteredTabWindow.tabWindow.open)
-    }
-    return this.props.expanded
+    const tabWindow = this.props.filteredTabWindow.tabWindow
+    return tabWindow.isExpanded(this.props.winStore)
   },
 
   renderTabItems (tabWindow, tabs) {

@@ -106,6 +106,18 @@ const SelectablePopup = React.createClass({
     this.props.onSearchInput('')
   },
 
+  handleSelectionExpandToggle () {
+    if (this.props.filteredWindows.length === 0) {
+      return
+    }
+    const selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex]
+    const tabWindow = selectedWindow.tabWindow
+    // technically the logical negation here isn't right, but it'll do.
+    const expanded = tabWindow.isExpanded(this.props.winStore)
+
+    actions.expandWindow(tabWindow, !expanded, this.props.storeUpdateHandler)
+  },
+
   handleSearchExit () {
     // transfer focus back to current window (if there is one)
     const curWindow = this.props.winStore.getCurrentWindow()
@@ -254,6 +266,7 @@ const SelectablePopup = React.createClass({
             onSearchDown={this.handleNextSelection}
             onSearchEnter={this.handleSelectionEnter}
             onSearchExit={this.handleSearchExit}
+            onSearchExpandToggle={this.handleSelectionExpandToggle}
             setInputRef={this.setSearchInputRef}
             isPopout={this.props.isPopout} />
         </div>
