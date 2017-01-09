@@ -232,7 +232,13 @@ export class TabWindow extends Immutable.Record({
 
   tabItems: Immutable.List(), // <TabItem>
 
-  snapshot: false    // Set if tabItems contains snapshot of last open state
+  snapshot: false,    // Set if tabItems contains snapshot of last open state
+
+  // This is view state, so technically doesn't belong here, but we only have
+  // one window component per window right now, we want to be able to toggle
+  // this state via a keyboard handler much higher in the hierarchy,
+  // and cost to factor out view state would be high.
+  expanded: null   // tri-state: null, true or false
 }) {
 
   get title () {

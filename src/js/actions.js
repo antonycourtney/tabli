@@ -142,6 +142,10 @@ export function closeWindow (tabWindow, cb) {
   })
 }
 
+export function expandWindow (tabWindow, expand, cb) {
+  cb(state => state.handleTabWindowExpand(tabWindow, expand))
+}
+
 // activate a specific tab:
 export function activateTab (lastFocusedTabWindow, targetTabWindow, tab, tabIndex, cb) {
   // console.log("activateTab: ", tabWindow, tab )
@@ -282,7 +286,12 @@ export function hidePopout (winStore, cb) {
 }
 
 export function toggleExpandAll (winStore, cb) {
-  cb(st => st.set('expandAll', !st.expandAll))
+  cb(st => {
+    const allWindows = st.getAll()
+    const updWindows = allWindows.map(w => w.remove('expanded'))
+    const nextSt = st.registerTabWindows(updWindows).set('expandAll', !st.expandAll)
+    return nextSt
+  })
 }
 
 /*

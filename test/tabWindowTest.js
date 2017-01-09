@@ -163,7 +163,8 @@ test('chromeTabWindow', (t) => {
         }
       }
     ],
-    "snapshot": false
+    "snapshot": false,
+    "expanded": null
   }
 
   // dumpDiffs(tabWindowJS,expectedTabWindow)

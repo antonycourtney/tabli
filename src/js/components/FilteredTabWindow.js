@@ -9,22 +9,11 @@ import WindowHeader from './WindowHeader'
 import TabItem from './TabItem'
 
 const FilteredTabWindow = React.createClass({
-  getInitialState () {
-    // Note:  We initialize this with null rather than false so that it will follow
-    // open / closed state of window
-    return ({ expanded: null })
-  },
-
   componentWillReceiveProps (nextProps) {
     if (nextProps.isSelected && !this.props.isSelected) {
       // If this window becomes selected:
       if (this.windowDivRef) {
         this.windowDivRef.scrollIntoViewIfNeeded()
-      }
-    }
-    if (nextProps.expandAll !== this.props.expandAll) {
-      if (this.state.expanded !== null) {
-        this.setState({ expanded: null })
       }
     }
   },
@@ -50,10 +39,10 @@ const FilteredTabWindow = React.createClass({
    * explicitly set interactively by the user
    */
   getExpandedState () {
-    if (this.state.expanded === null) {
+    if (this.props.expanded === null) {
       return (this.props.expandAll && this.props.filteredTabWindow.tabWindow.open)
     }
-    return this.state.expanded
+    return this.props.expanded
   },
 
   renderTabItems (tabWindow, tabs) {
@@ -90,7 +79,7 @@ const FilteredTabWindow = React.createClass({
   },
 
   handleExpand (expand) {
-    this.setState({ expanded: expand })
+    actions.expandWindow(this.props.filteredTabWindow.tabWindow, expand, this.props.storeUpdateHandler)
   },
 
   render () {

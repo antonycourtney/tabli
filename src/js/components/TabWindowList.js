@@ -59,6 +59,7 @@ const TabWindowList = React.createClass({
           winStore={this.props.winStore}
           storeUpdateHandler={this.props.storeUpdateHandler}
           filteredTabWindow={filteredTabWindow}
+          expanded={filteredTabWindow.tabWindow.expanded}
           key={id}
           index={i}
           searchStr={this.props.searchStr}

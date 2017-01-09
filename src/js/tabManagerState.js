@@ -62,6 +62,12 @@ export default class TabManagerState extends Immutable.Record({
     return this.set('windowIdMap', closedWindowIdMap).registerTabWindow(closedWindow)
   }
 
+  handleTabWindowExpand (tabWindow, expand) {
+    var updWindow = tabWindow.set('expanded', expand)
+
+    return this.registerTabWindow(updWindow)
+  }
+
   handleTabClosed (tabWindow, tabId) {
     var updWindow = TabWindow.closeTab(tabWindow, tabId)
     return this.registerTabWindow(updWindow)

@@ -136,7 +136,8 @@ export const d3InitialExpectedTabWindow =
       "openState": null
     }
   ],
-  "snapshot": false
+  "snapshot": false,
+  "expanded": null
 }
 
 export const chromeWindowSnap =
@@ -821,5 +822,6 @@ export const d3AttachedExpectedTabWindow =
       'openState': null
     }
   ],
-  "snapshot": false
+  "snapshot": false,
+  "expanded": null
 }
