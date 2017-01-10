@@ -43,8 +43,8 @@ gulp.task('build_mock_assets', function() {
 gulp.task('build_app_assets', function() {
     gutil.log("copy assets from mock to dist");
 
-    return gulp.src(['../../src/tabli-core/src/html/*','../../src/tabli-core/src/assets/*'],
-                    {base: '../../src/tabli-core/src/'})
+    return gulp.src(['../../src/html/*','../../src/assets/*'],
+                    {base: '../../src/'})
         .pipe(gulp.dest('dist'));
 });
 

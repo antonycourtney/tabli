@@ -131,7 +131,7 @@ fieldset { padding:0; border:0; }
 .card-title {
   font-weight: bold;
   font-size: 20px;
-  padding-bottom: 8px;
+  padding-bottom: 0px;
 }
 .card-subtitle {
   font-size: 14px;
@@ -141,6 +141,10 @@ fieldset { padding:0; border:0; }
   padding-left: 16px;
   padding-right: 16px;
   font-size: 12px;
+}
+a.card-link {
+  text-decoration: none;
+  color: #4285f4;
 }
 .tabli-dialog-button {
   margin: 8px;
