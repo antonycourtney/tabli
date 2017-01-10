@@ -197,10 +197,13 @@ function registerEventHandlers (uf) {
         if (!state.initializing) {
           // try using a timer as a guess at whether this was due to
           // a Chrome quit or not
+          // Our hope here is that on a Chrome exit, the Chrome process
+          // will terminate before the timer event fires.
+          // Horrible, horrible hack.
           // See https://bugs.chromium.org/p/chromium/issues/detail?id=30885
           window.setTimeout(() => {
             chrome.storage.local.set({'showPopout': false}, () => {})
-          }, 3000)
+          }, 10000)
         }
       }
       const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state

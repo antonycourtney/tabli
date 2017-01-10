@@ -110,7 +110,7 @@ export default class TabManagerState extends Immutable.Record({
     // A store without oldTabWindow
     const rmStore = oldTabWindow ? this.handleTabWindowClosed(oldTabWindow) : this
 
-    const attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow)
+    const attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow).remove('expanded')
 
     // console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS())
 
