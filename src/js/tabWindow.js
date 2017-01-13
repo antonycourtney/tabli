@@ -55,6 +55,13 @@ export class TabItem extends Immutable.Record({
 
     return this.savedState.url
   }
+
+  get pinned () {
+    if (this.open) {
+      return this.openState.pinned
+    }
+    return false
+  }
 }
 
 function tabItemReviver (k, v) {
