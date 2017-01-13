@@ -35,56 +35,71 @@ export function syncChromeWindows (cb) {
   })
 }
 
+const isNewWindow = (tabWindow) => {
+  const tabItems = tabWindow.tabItems
+
+  if (tabItems.count() === 1) {
+    const ti = tabItems.get(0)
+    if (ti.open && ti.openState.url === 'chrome://newtab/') {
+      return true
+    }
+  }
+  return false
+}
+
 /**
  * restore a bookmark window.
  *
  * N.B.: NOT exported; called from openWindow
  */
 function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow, cb) {
-  /*
-   * special case handling of replacing the contents of a fresh window
-   */
-  chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
-    const tabItems = tabWindow.tabItems
-    // If a snapshot, only use tabItems that were previously open:
-    const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
-    const urls = targetItems.map((ti) => ti.url).toArray()
-    function cf (chromeWindow) {
-      cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
+  // If a snapshot, only use tabItems that were previously open:
+  const tabItems = tabWindow.snapshot ? tabWindow.tabItems.filter(ti => ti.open) : tabWindow.tabItems
+
+  function cf (chromeWindow) {
+    cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
+  }
+
+  const restoreTabs = (newWindowId, firstTabId) => {
+    // Replace the new tab:
+    console.log('restoring tabItems: ', tabItems.toJS())
+    const firstTabItem = tabItems.first()
+    const firstTabAction = (v, ctcb) => {
+      chrome.tabs.update(firstTabId, { url: firstTabItem.url, pinned: firstTabItem.pinned }, ctcb)
     }
-
-    if ((currentChromeWindow.tabs.length === 1) &&
-      (currentChromeWindow.tabs[0].url === 'chrome://newtab/')) {
-      // console.log("found new window -- replacing contents")
-      var origTabId = currentChromeWindow.tabs[0].id
-
-      // new window -- replace contents with urls:
-      // TODO: replace this loop with call to utils.seqActions
-      for (var i = 0; i < urls.length; i++) {
-        // First use our existing tab:
-        if (i === 0) {
-          chrome.tabs.update(origTabId, { url: urls[i] })
-        } else {
-          const tabInfo = { windowId: currentChromeWindow.id, url: urls[i] }
-          chrome.tabs.create(tabInfo)
-        }
+    const createTabActions = tabItems.shift().map(ti => {
+      const ctAction = (v, ctcb) => {
+        const tabInfo = { windowId: newWindowId, url: ti.url, pinned: ti.pinned }
+        chrome.tabs.create(tabInfo, ctcb)
       }
+      return ctAction
+    }).toArray()
+    createTabActions.unshift(firstTabAction)
+    utils.seqActions(createTabActions, null, () => {
+      console.log('all tabs created -- attaching')
+      chrome.windows.get(newWindowId, { populate: true }, cf)
+    })
+  }
 
-      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf)
+  if ((lastFocusedTabWindow != null) && lastFocusedTabWindow.open && isNewWindow(lastFocusedTabWindow)) {
+    /*
+     * special case handling of replacing the contents of a fresh window
+     */
+    restoreTabs(lastFocusedTabWindow.openWindowId, lastFocusedTabWindow.tabItems.get(0).openState.openTabId)
+  } else {
+    var createData = { focused: true, type: 'normal' }
+    if (lastFocusedTabWindow) {
+      createData.width = lastFocusedTabWindow.width
+      createData.height = lastFocusedTabWindow.height
     } else {
-      // normal case -- create a new window for these urls:
-      var createData = { url: urls, focused: true, type: 'normal' }
-      if (lastFocusedTabWindow) {
-        createData.width = lastFocusedTabWindow.width
-        createData.height = lastFocusedTabWindow.height
-      } else {
-        // HACK. Would be better to use dimensions of some arbitrary open window
-        createData.width = 1024
-        createData.height = 768
-      }
-      chrome.windows.create(createData, cf)
+      // HACK. Would be better to use dimensions of some arbitrary open window
+      createData.width = 1024
+      createData.height = 768
     }
-  })
+    chrome.windows.create(createData, chromeWindow => {
+      restoreTabs(chromeWindow.id, chromeWindow.tabs[0].id)
+    })
+  }
 }
 
 export function openWindow (lastFocusedTabWindow, targetTabWindow, cb) {
