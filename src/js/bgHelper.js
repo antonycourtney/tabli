@@ -21,6 +21,8 @@ import { refUpdater } from 'oneref'
 const tabmanFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
 
+let lastSessionTimestamp = -1
+
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows (winStore, tabManFolder) {
   var folderTabWindows = []
@@ -206,6 +208,7 @@ function registerEventHandlers (uf) {
           }, 10000)
         }
       }
+      console.log('got window closed event')
       const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state
       return st
     })
@@ -285,6 +288,14 @@ function registerEventHandlers (uf) {
     // handle like tab creation:
     chrome.tabs.get(tabId, tab => onTabCreated(uf, tab, true))
   })
+
+  chrome.sessions.onChanged.addListener(() => {
+    chrome.sessions.getRecentlyClosed(sessions => {
+      const winSessions = sessions.filter(s => 'window' in s).filter(s => s.lastModified > lastSessionTimestamp)
+      uf(st => attachSessions(st, winSessions))
+    })
+  })
+
 }
 
 /**
@@ -388,12 +399,49 @@ function reattachWindows (bmStore, cb) {
   })
 }
 
+// does session state match window snapshot?
+// Note: We no longer require snapshot===true so that we can
+// deal with sessions.onChanged event before close event.
+const matchSnapshot = (tabWindow, session) => {
+  const snapUrls = tabWindow.tabItems.filter(ti => ti.open).map(ti => ti.url).toArray()
+  const sessionUrls = session.window.tabs.map(t => t.url)
+  if (_.isEqual(snapUrls, sessionUrls)) {
+    console.log('matchSnapshot: found session for window "' + tabWindow.title + '"')
+    return true
+  }
+  return false
+}
+
+const attachSessions = (st, sessions) => {
+  console.log('attachSessions: ', sessions)
+  // We used to filter to only attach to closed windows, but
+  // then we have a race between close event and sessions.onChanged
+  const tabWindows = st.bookmarkIdMap.toIndexedSeq().toArray()
+
+  let nextSt = st
+  for (let tabWindow of tabWindows) {
+    for (let s of sessions) {
+      if (matchSnapshot(tabWindow, s)) {
+        let nextWin = tabWindow.set('chromeSessionId', s.window.sessionId)
+        nextSt = nextSt.registerTabWindow(nextWin)
+      }
+      if (s.lastModified > lastSessionTimestamp) {
+        lastSessionTimestamp = s.lastModified
+      }
+    }
+  }
+  console.log('attachSessions: done')
+  return nextSt
+}
 /**
  * load window state for saved windows from local storage and attach to
  * any closed, saved windows
  */
 function loadSnapState (bmStore, cb) {
   chrome.storage.local.get('savedWindowState', items => {
+    if (!items) {
+      cb(bmStore)
+    }
     const savedWindowStateStr = items.savedWindowState
     if (!savedWindowStateStr) {
       console.log('loadSnapState: no saved window state found in local storage')
@@ -429,10 +477,16 @@ function loadSnapState (bmStore, cb) {
       })
       const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap)
       console.log('merged window state snapshot from local storage')
-      cb(nextStore)
+      // Now try attach sessions:
+      chrome.sessions.getRecentlyClosed(sessions => {
+        const winSessions = sessions.filter(s => 'window' in s)
+        const sessStore = attachSessions(nextStore, winSessions)
+        cb(sessStore)
+      })
     }
   })
 }
+
 
 function main () {
   initWinStore((rawBMStore) => {

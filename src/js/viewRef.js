@@ -46,7 +46,9 @@ const savedWindowStateVersion = 1
 // persist bookmarkIdMap to local storage
 const saveState = () => {
   prevBookmarkIdMap = latestBookmarkIdMap
-  const savedWindowState = JSON.stringify(latestBookmarkIdMap, null, 2)
+  // never persist a chrome session id -- we'll set during startup from sessions API
+  const serBookmarkIdMap = latestBookmarkIdMap.map(tw => tw.remove('chromeSessionId'))
+  const savedWindowState = JSON.stringify(serBookmarkIdMap, null, 2)
   const savedState = { savedWindowStateVersion, savedWindowState }
   chrome.storage.local.set(savedState, () => {
     console.log((new Date()).toString() + ' succesfully wrote window state')
@@ -105,8 +107,7 @@ export default class ViewRef extends OneRef.Ref {
     } else {
       if (hasDiffs(prevBookmarkIdMap, latestBookmarkIdMap)) {
         throttledSaveState()
-      } else {
-      }
+      } 
     }
     super.setValue(appState)
   }

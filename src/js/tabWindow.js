@@ -240,6 +240,7 @@ export class TabWindow extends Immutable.Record({
   tabItems: Immutable.List(), // <TabItem>
 
   snapshot: false,    // Set if tabItems contains snapshot of last open state
+  chromeSessionId: null,  // Chrome session id for restore (if found)
 
   // This is view state, so technically doesn't belong here, but we only have
   // one window component per window right now, we want to be able to toggle
@@ -352,7 +353,6 @@ Title                                  | URL
 /**
  * Mark window as closed and remove any state (such as openWindowId) only
  * relevant to open windows.
- *
  *
  */
 export function removeOpenWindowState (tabWindow, snapshot = true) {
@@ -529,6 +529,7 @@ export function updateWindow (tabWindow, chromeWindow) {
     .set('open', true)
     .set('openWindowId', chromeWindow.id)
     .remove('snapshot')
+    .remove('chromeSessionId')
   return updWindow
 }
 

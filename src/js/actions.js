@@ -41,50 +41,62 @@ export function syncChromeWindows (cb) {
  * N.B.: NOT exported; called from openWindow
  */
 function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow, cb) {
-  /*
-   * special case handling of replacing the contents of a fresh window
-   */
-  chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
-    const tabItems = tabWindow.tabItems
-    // If a snapshot, only use tabItems that were previously open:
-    const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
-    const urls = targetItems.map((ti) => ti.url).toArray()
-    function cf (chromeWindow) {
-      cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
-    }
+  console.log('restoreBookmarkWindow: restoring "'+ tabWindow.title + '"')
+  function cf (chromeWindow) {
+    cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
+  }
 
-    if ((currentChromeWindow.tabs.length === 1) &&
-      (currentChromeWindow.tabs[0].url === 'chrome://newtab/')) {
-      // console.log("found new window -- replacing contents")
-      var origTabId = currentChromeWindow.tabs[0].id
+  if (tabWindow.snapshot && tabWindow.chromeSessionId) {
+    console.log('restoring chrome session id ', tabWindow.chromeSessionId)
+    // TODO: may want to re-validate the session id by
+    // calling chrome.sessions.getRecentlyClosed...
+    chrome.sessions.restore(tabWindow.chromeSessionId, rs => {
+      console.log('Chrome session restore complete')
+      cf(rs.window)
+    })
+  } else {
+    /*
+     * special case handling of replacing the contents of a fresh window
+     */
+    chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
+      const tabItems = tabWindow.tabItems
+      // If a snapshot, only use tabItems that were previously open:
+      const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+      const urls = targetItems.map((ti) => ti.url).toArray()
 
-      // new window -- replace contents with urls:
-      // TODO: replace this loop with call to utils.seqActions
-      for (var i = 0; i < urls.length; i++) {
-        // First use our existing tab:
-        if (i === 0) {
-          chrome.tabs.update(origTabId, { url: urls[i] })
-        } else {
-          const tabInfo = { windowId: currentChromeWindow.id, url: urls[i] }
-          chrome.tabs.create(tabInfo)
+      if ((currentChromeWindow.tabs.length === 1) &&
+        (currentChromeWindow.tabs[0].url === 'chrome://newtab/')) {
+        // console.log("found new window -- replacing contents")
+        var origTabId = currentChromeWindow.tabs[0].id
+
+        // new window -- replace contents with urls:
+        // TODO: replace this loop with call to utils.seqActions
+        for (var i = 0; i < urls.length; i++) {
+          // First use our existing tab:
+          if (i === 0) {
+            chrome.tabs.update(origTabId, { url: urls[i] })
+          } else {
+            const tabInfo = { windowId: currentChromeWindow.id, url: urls[i] }
+            chrome.tabs.create(tabInfo)
+          }
         }
-      }
 
-      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf)
-    } else {
-      // normal case -- create a new window for these urls:
-      var createData = { url: urls, focused: true, type: 'normal' }
-      if (lastFocusedTabWindow) {
-        createData.width = lastFocusedTabWindow.width
-        createData.height = lastFocusedTabWindow.height
+        chrome.windows.get(currentChromeWindow.id, { populate: true }, cf)
       } else {
-        // HACK. Would be better to use dimensions of some arbitrary open window
-        createData.width = 1024
-        createData.height = 768
+        // normal case -- create a new window for these urls:
+        var createData = { url: urls, focused: true, type: 'normal' }
+        if (lastFocusedTabWindow) {
+          createData.width = lastFocusedTabWindow.width
+          createData.height = lastFocusedTabWindow.height
+        } else {
+          // HACK. Would be better to use dimensions of some arbitrary open window
+          createData.width = 1024
+          createData.height = 768
+        }
+        chrome.windows.create(createData, cf)
       }
-      chrome.windows.create(createData, cf)
-    }
-  })
+    })
+  }
 }
 
 export function openWindow (lastFocusedTabWindow, targetTabWindow, cb) {

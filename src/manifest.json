@@ -20,7 +20,8 @@
     "storage",
     "tabs",
     "bookmarks",
-    "chrome://favicon/*"
+    "chrome://favicon/*",
+    "sessions"
   ],
   "icons": {
     "16": "images/glyphicons_154_more_windows.png",
