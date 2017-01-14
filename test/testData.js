@@ -137,6 +137,7 @@ export const d3InitialExpectedTabWindow =
     }
   ],
   "snapshot": false,
+  "chromeSessionId": null,
   "expanded": null
 }
 
@@ -823,5 +824,6 @@ export const d3AttachedExpectedTabWindow =
     }
   ],
   "snapshot": false,
+  "chromeSessionId": null,
   "expanded": null
 }

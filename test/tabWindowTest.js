@@ -164,6 +164,7 @@ test('chromeTabWindow', (t) => {
       }
     ],
     "snapshot": false,
+    "chromeSessionId": null,
     "expanded": null
   }
 

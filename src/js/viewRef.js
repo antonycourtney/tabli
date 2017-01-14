@@ -107,7 +107,7 @@ export default class ViewRef extends OneRef.Ref {
     } else {
       if (hasDiffs(prevBookmarkIdMap, latestBookmarkIdMap)) {
         throttledSaveState()
-      } 
+      }
     }
     super.setValue(appState)
   }

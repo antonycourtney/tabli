@@ -295,7 +295,6 @@ function registerEventHandlers (uf) {
       uf(st => attachSessions(st, winSessions))
     })
   })
-
 }
 
 /**
@@ -486,7 +485,6 @@ function loadSnapState (bmStore, cb) {
     }
   })
 }
-
 
 function main () {
   initWinStore((rawBMStore) => {

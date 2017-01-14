@@ -41,7 +41,7 @@ export function syncChromeWindows (cb) {
  * N.B.: NOT exported; called from openWindow
  */
 function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow, cb) {
-  console.log('restoreBookmarkWindow: restoring "'+ tabWindow.title + '"')
+  console.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
   function cf (chromeWindow) {
     cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
