@@ -16,7 +16,6 @@
     "persistent": true
   },
   "permissions": [
-    "downloads",
     "storage",
     "tabs",
     "bookmarks",
