@@ -36,6 +36,59 @@ export function syncChromeWindows (cb) {
 }
 
 /**
+ * restoreFromAppState
+ *
+ * Restore a saved window using only App state.
+ * Fallback for when no session id available or session restore fails
+ */
+const restoreFromAppState = (lastFocusedTabWindow, tabWindow, cb) => {
+  function cf (chromeWindow) {
+    cb((state) => state.attachChromeWindow(tabWindow, chromeWindow))
+  }
+  /*
+   * special case handling of replacing the contents of a fresh window
+   */
+  chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
+    const tabItems = tabWindow.tabItems
+    // If a snapshot, only use tabItems that were previously open:
+    const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+    const urls = targetItems.map((ti) => ti.url).toArray()
+
+    if ((currentChromeWindow.tabs.length === 1) &&
+      (currentChromeWindow.tabs[0].url === 'chrome://newtab/')) {
+      // console.log("found new window -- replacing contents")
+      var origTabId = currentChromeWindow.tabs[0].id
+
+      // new window -- replace contents with urls:
+      // TODO: replace this loop with call to utils.seqActions
+      for (var i = 0; i < urls.length; i++) {
+        // First use our existing tab:
+        if (i === 0) {
+          chrome.tabs.update(origTabId, { url: urls[i] })
+        } else {
+          const tabInfo = { windowId: currentChromeWindow.id, url: urls[i] }
+          chrome.tabs.create(tabInfo)
+        }
+      }
+
+      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf)
+    } else {
+      // normal case -- create a new window for these urls:
+      var createData = { url: urls, focused: true, type: 'normal' }
+      if (lastFocusedTabWindow) {
+        createData.width = lastFocusedTabWindow.width
+        createData.height = lastFocusedTabWindow.height
+      } else {
+        // HACK. Would be better to use dimensions of some arbitrary open window
+        createData.width = 1024
+        createData.height = 768
+      }
+      chrome.windows.create(createData, cf)
+    }
+  })
+}
+
+/**
  * restore a bookmark window.
  *
  * N.B.: NOT exported; called from openWindow
@@ -51,51 +104,17 @@ function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow, cb) {
     // TODO: may want to re-validate the session id by
     // calling chrome.sessions.getRecentlyClosed...
     chrome.sessions.restore(tabWindow.chromeSessionId, rs => {
-      console.log('Chrome session restore complete')
-      cf(rs.window)
-    })
-  } else {
-    /*
-     * special case handling of replacing the contents of a fresh window
-     */
-    chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
-      const tabItems = tabWindow.tabItems
-      // If a snapshot, only use tabItems that were previously open:
-      const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
-      const urls = targetItems.map((ti) => ti.url).toArray()
-
-      if ((currentChromeWindow.tabs.length === 1) &&
-        (currentChromeWindow.tabs[0].url === 'chrome://newtab/')) {
-        // console.log("found new window -- replacing contents")
-        var origTabId = currentChromeWindow.tabs[0].id
-
-        // new window -- replace contents with urls:
-        // TODO: replace this loop with call to utils.seqActions
-        for (var i = 0; i < urls.length; i++) {
-          // First use our existing tab:
-          if (i === 0) {
-            chrome.tabs.update(origTabId, { url: urls[i] })
-          } else {
-            const tabInfo = { windowId: currentChromeWindow.id, url: urls[i] }
-            chrome.tabs.create(tabInfo)
-          }
-        }
-
-        chrome.windows.get(currentChromeWindow.id, { populate: true }, cf)
+      if (chrome.runtime.lastError) {
+        console.warn('Caught exception restoring via session API: ', chrome.runtime.lastError.message)
+        console.warn('(restoring from Tabli state)')
+        restoreFromAppState(lastFocusedTabWindow, tabWindow, cb)
       } else {
-        // normal case -- create a new window for these urls:
-        var createData = { url: urls, focused: true, type: 'normal' }
-        if (lastFocusedTabWindow) {
-          createData.width = lastFocusedTabWindow.width
-          createData.height = lastFocusedTabWindow.height
-        } else {
-          // HACK. Would be better to use dimensions of some arbitrary open window
-          createData.width = 1024
-          createData.height = 768
-        }
-        chrome.windows.create(createData, cf)
+        console.log('Chrome session restore succeeded')
+        cf(rs.window)
       }
     })
+  } else {
+    restoreFromAppState(lastFocusedTabWindow, tabWindow, cb)
   }
 }
 

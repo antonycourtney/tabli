@@ -412,11 +412,9 @@ const matchSnapshot = (tabWindow, session) => {
 }
 
 const attachSessions = (st, sessions) => {
-  console.log('attachSessions: ', sessions)
   // We used to filter to only attach to closed windows, but
   // then we have a race between close event and sessions.onChanged
   const tabWindows = st.bookmarkIdMap.toIndexedSeq().toArray()
-
   let nextSt = st
   for (let tabWindow of tabWindows) {
     for (let s of sessions) {
@@ -429,7 +427,6 @@ const attachSessions = (st, sessions) => {
       }
     }
   }
-  console.log('attachSessions: done')
   return nextSt
 }
 /**
