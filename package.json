@@ -35,7 +35,7 @@
     "babel-register": "^6.18.0",
     "bootstrap": "^3.3.7",
     "difflet": "^1.0.1",
-    "ekko-lightbox": "^5.0.0",
+    "ekko-lightbox": "^4.0.1",
     "eslint": "^3.13.0",
     "eslint-config-airbnb": "13.0.0",
     "eslint-config-standard": "^6.2.1",
