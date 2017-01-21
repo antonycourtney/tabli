@@ -58,7 +58,14 @@ gulp.task('build_favicon', function() {
     .pipe(gulp.dest('dist/favicon'));
 });
 
-gulp.task('html-include', ['build_assets', 'build_lightbox', 'build_favicon'], function() {
+gulp.task('build_cname', function() {
+  gutil.log("copy CNAME file to dist");
+
+  return gulp.src('./CNAME')
+    .pipe(gulp.dest('./dist/'));
+});
+
+gulp.task('html-include', ['build_cname','build_assets', 'build_lightbox', 'build_favicon'], function() {
     return gulp.src('./src/*.html')
         .pipe(include())
         .pipe(gulp.dest('./dist/'));
