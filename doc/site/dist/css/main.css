@@ -127,6 +127,9 @@ a{
 	font-size:17px;
 	margin-bottom:20px;
 }
+.modal-header{
+	display:none;
+}
 .centered-text{
 	text-align:center;
 }
