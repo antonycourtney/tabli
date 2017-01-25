@@ -1,17 +1,14 @@
 <div class="card">
   <div class="card-header">
-    <div class="card-title">Tabli 0.9.5</div>
-    <div class="card-subtitle">Jan. 11, 2017</div>
+    <div class="card-title">Tabli 0.9.6</div>
+    <div class="card-subtitle">Jan. 24, 2017</div>
   </div>
   <div class="card-body">
-    <span>New in this release:
+    <span>New in this release:</span>
     <ul>
-      <li><b>Basic Session Management:</b> When a Saved Window is closed and re-opened, Tabli will restore all
-      previously open tabs in that window. This works even after re-starting Chrome or if Chrome crashes. Of course you can still use the revert <span style="white-space:nowrap">button (<img src="../assets/revert-button.png"></img>)</span> to close all but your explicitly saved tabs (marked with a <img src="../assets/check.png"></img>) .
-      <li><b>New keyboard shortcut:</b> Press <code>;</code> to expand or collapse the currently selected window summary.
-      <li>If you open the Tabli Popout (by clicking <img src="../assets/popout.png"></img>), it will remain open after re-starting Chrome. If you have a large, high-resolution monitor I highly recommend using the Tabli Popout.
-      <li>When navigating with keyboard shortcuts, the selected window will scroll into view.
-      <li>Keyboard navigation now wraps: Up from top window moves to bottom of window list and vice versa.
+      <li>Tabli now uses the Chrome Sessions API when re-opening Saved Windows. This enables Tabli to restore the
+      state of pinned tabs for those that use that feature of Chrome.
+      <li>Tabli no longer requests the 'Manage your Downloads' permission.
     </ul>
     <span><strong>Reminder:</strong> If you haven't already done so, please take a few seconds to <a class="card-link" target="_blank" href="https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews">Rate Tabli on the Chrome Web Store</a>. Thank You!
   </div>
