@@ -315,8 +315,8 @@ const styles = {
   },
   // entire popup window container, including modals:
   popupOuter: {
-    width: 352,
-    maxWidth: 352,
+    minWidth: 352,
+    width: '100%',
     height: '100%'
   /* adding this border is useful for debugging styling issues: */
     // border: '1px solid #bababa'
@@ -329,8 +329,10 @@ const styles = {
     flexWrap: 'nowrap'
   },
   popupHeader: {
-    width: 350,
-    maxWidth: 350,
+    minWidth: 350,
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
     height: Constants.POPUP_HEADER_HEIGHT,
     background: '#ffffff',
     borderBottom: '1px solid #bababa',
@@ -344,8 +346,7 @@ const styles = {
     flex: '1 1 auto'
   },
   popupFooter: {
-    width: 350,
-    maxWidth: 350,
+    minWidth: 350,
     height: Constants.POPUP_FOOTER_HEIGHT,
     background: '#ffffff',
     borderTop: '1px solid #bababa',

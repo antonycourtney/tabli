@@ -15,6 +15,7 @@ body {
       width: 350px;
       margin: 0px;
       height: 100%;
+      width: 100%;
    }
 h1, h2, h3 {font-family: sans-serif;}
 h1 { font-size: 16px; }
@@ -40,6 +41,7 @@ fieldset { padding:0; border:0; }
 
 .main-container {
   height: 100%;
+  width: 100%;
 }
 .tabItem:hover {
   border-top: 1px solid #cacaca;
@@ -172,6 +174,8 @@ a.card-link {
   align-items: center;
   margin-top: 8px;
   margin-bottom: 8px;
+  min-width: 340px;
+  justify: center;
 }
 .header-toolbar {
   display: flex;
@@ -185,6 +189,7 @@ a.card-link {
   max-width: 200px;
   margin-left: 8px;
   margin-right: 12px;
+  flex: 0 0 auto;
 }
 /* GRRRRRR. @#!@#$ CSS */
 .popout-button {
