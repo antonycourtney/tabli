@@ -313,13 +313,17 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: 5
   },
-  popupContainer: {
+  // entire popup window container, including modals:
+  popupOuter: {
     width: 352,
     maxWidth: 352,
-    minHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
-    // maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
+    height: '100%'
   /* adding this border is useful for debugging styling issues: */
-    border: '1px solid #bababa',  // FIX FIX -- remove before commit
+    // border: '1px solid #bababa'
+  },
+  // inner popup container, consisting of just header,body and footer:
+  popupInner: {
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     flexWrap: 'nowrap'
@@ -334,7 +338,8 @@ const styles = {
     flex: '0 0 auto'
   },
   popupBody: {
-    height: Constants.POPUP_BODY_HEIGHT,
+    minHeight: Constants.POPUP_BODY_HEIGHT,
+    position: 'relative',
     overflow: 'auto',
     flex: '1 1 auto'
   },

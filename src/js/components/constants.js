@@ -1,5 +1,5 @@
 export const WINDOW_HEADER_HEIGHT = 22
-export const POPUP_HEADER_HEIGHT = 30
+export const POPUP_HEADER_HEIGHT = 38
 export const POPUP_BODY_HEIGHT = 537
 export const POPUP_FOOTER_HEIGHT = 25
 export const FOCUS_SCROLL_BASE = 10

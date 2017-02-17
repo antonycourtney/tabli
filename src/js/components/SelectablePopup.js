@@ -258,7 +258,7 @@ const SelectablePopup = React.createClass({
     const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.'
 
     return (
-      <div>
+      <div style={Styles.popupInner}>
         <div style={Styles.popupHeader}>
           <SearchBar
             winStore={this.props.winStore}

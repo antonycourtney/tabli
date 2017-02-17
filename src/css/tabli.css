@@ -1,7 +1,11 @@
 * {
   box-sizing: border-box;
 }
-body {  background: white;
+html {
+  height: 100%;
+}
+body {
+      background: white;
       font-family: sans-serif;
       /* max-width: 400px; */
       /* overflow-x: hidden; */
@@ -10,7 +14,7 @@ body {  background: white;
       overflow: hidden;
       width: 350px;
       margin: 0px;
-      height: 700px;
+      height: 100%;
    }
 h1, h2, h3 {font-family: sans-serif;}
 h1 { font-size: 16px; }
@@ -34,6 +38,9 @@ fieldset { padding:0; border:0; }
   font-weight: bold;
 }
 
+.main-container {
+  height: 100%;
+}
 .tabItem:hover {
   border-top: 1px solid #cacaca;
   border-bottom: 1px solid #cacaca;
@@ -164,7 +171,7 @@ a.card-link {
   display: flex;
   align-items: center;
   margin-top: 8px;
-  margin-bottom: 0;
+  margin-bottom: 8px;
 }
 .header-toolbar {
   display: flex;

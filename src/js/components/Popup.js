@@ -127,7 +127,7 @@ const Popup = React.createClass({
       const revertModal = this.renderRevertModal()
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
       ret = (
-        <div style={Styles.popupContainer}>
+        <div style={Styles.popupOuter}>
           <SelectablePopup
             onSearchInput={this.handleSearchInput}
             winStore={this.state.winStore}
