@@ -168,7 +168,7 @@ const SearchBar = React.createClass({
         aria-haspopup='true'
         aria-expanded='false'
         title='Open Tabli Menu'
-        onClick={this.handleLogoClick}>
+        >
         <span className='glyphicon glyphicon-menu-hamburger' aria-hidden='true' />
       </button>
     )
@@ -237,9 +237,11 @@ const SearchBar = React.createClass({
     return (
       <div className='header-container'>
         <div className='header-toolbar'>
-          {menuButton}
+          <div className='dropdown'>
+            {menuButton}
+            {dropdownMenu}
+          </div>
           {popoutButton}
-          {dropdownMenu}
           <input
             className='search-input'
             type='search'

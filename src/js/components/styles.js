@@ -313,53 +313,47 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: 5
   },
+  popupContainer: {
+    width: 352,
+    maxWidth: 352,
+    minHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
+    // maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
+  /* adding this border is useful for debugging styling issues: */
+    border: '1px solid #bababa',  // FIX FIX -- remove before commit
+    display: 'flex',
+    flexDirection: 'column',
+    flexWrap: 'nowrap'
+  },
   popupHeader: {
     width: 350,
     maxWidth: 350,
     height: Constants.POPUP_HEADER_HEIGHT,
-    position: 'absolute', // let's try instead of fixed to see if it becomes rel to container
-    top: 0,
     background: '#ffffff',
-    zIndex: 1,
     borderBottom: '1px solid #bababa',
-    padding: 0
-  },
-  popupContainer: {
-    // We use absolute positioning at (0,0) so that header/footer will be relative to this
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 352,
-    maxWidth: 352,
-    height: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT,
-    maxHeight: Constants.POPUP_BODY_HEIGHT + Constants.POPUP_HEADER_HEIGHT + Constants.POPUP_FOOTER_HEIGHT
-  /* adding this border is useful for debugging styling issues:
-  /* border: '1px solid #bababa' */
+    padding: 0,
+    flex: '0 0 auto'
   },
   popupBody: {
-    marginTop: Constants.POPUP_HEADER_HEIGHT,
-    marginBottom: Constants.POPUP_FOOTER_HEIGHT,
-    maxHeight: Constants.POPUP_BODY_HEIGHT,
-    overflow: 'auto'
+    height: Constants.POPUP_BODY_HEIGHT,
+    overflow: 'auto',
+    flex: '1 1 auto'
   },
   popupFooter: {
     width: 350,
     maxWidth: 350,
     height: Constants.POPUP_FOOTER_HEIGHT,
-    position: 'absolute',
-    bottom: 0,
     background: '#ffffff',
-    zIndex: 1,
     borderTop: '1px solid #bababa',
     paddingLeft: 10,
     paddingRight: 16,
     paddingTop: 4,
     paddingBottom: 4,
     fontSize: 11,
+    flex: '0 0 auto',
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 5
+    margin: 0
   },
   summarySpan: {
     marginRight: 5
