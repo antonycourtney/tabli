@@ -98,11 +98,15 @@ const SelectablePopup = React.createClass({
       return
     }
 
-    // TODO: deal with this.state.selectedTabIndex==-1
-
+    const currentWindow = this.props.winStore.getCurrentWindow()
     const selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex]
-    const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex)
-    actions.activateTab(this.props.winStore.getCurrentWindow(), selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler)
+    if (this.state.selectedTabIndex === -1) {
+      // no specific tab, but still active / open window
+      actions.openWindow(currentWindow, selectedWindow.tabWindow, this.props.storeUpdateHandler)
+    } else {
+      const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex)
+      actions.activateTab(currentWindow, selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler)
+    }
     // And reset the search field:
     inputRef.value = ''
     this.props.onSearchInput('')
