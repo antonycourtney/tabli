@@ -40,7 +40,7 @@ const RevertModal = React.createClass({
     var tabFavIcon = <img style={Styles.favIcon} src={fiSrc} />
     const tabOpenStyle = tabItem.open ? null : Styles.closed
     var tabActiveStyle = tabItem.active ? Styles.activeSpan : null
-    var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle)
+    var tabTitleStyles = Util.merge(Styles.text, Styles.simpleTabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle)
     const id = 'tabItem-' + idx
     return (
       <div key={id} style={Util.merge(Styles.noWrap, Styles.tabItem)}>

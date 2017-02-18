@@ -99,6 +99,10 @@ const styles = {
     maxWidth: Constants.TAB_TITLE_MAX_WIDTH,
     flexGrow: 1
   },
+  // for use in revert modal:
+  simpleTabTitle: {
+    width: Constants.SIMPLE_TAB_TITLE_WIDTH
+  },
   expandablePanel: {
     width: '100%',
     position: 'relative',
@@ -262,16 +266,21 @@ const styles = {
     zIndex: 5,
     width: '100%',
     height: '100%',
-    display: 'flex'
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'column'
   },
   modalContainer: {
-    width: 300,
+    minWidth: 300,
+    maxWidth: '80%',
+    maxHeight: '80%',
     position: 'relative',
     zIndex: 10,
     borderRadius: 3,
     background: '#fff',
     margin: 'auto',
     border: '1px solid #bababa',
+    flexGrow: 0,
     display: 'flex',
     flexDirection: 'column'
   },
