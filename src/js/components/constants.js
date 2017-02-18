@@ -1,8 +1,8 @@
 export const WINDOW_HEADER_HEIGHT = 22
 export const WINDOW_MIN_WIDTH = 345
-export const WINDOW_MAX_WIDTH = 550
+export const WINDOW_MAX_WIDTH = 700
 export const WINDOW_TITLE_MIN_WIDTH = 243
-export const WINDOW_TITLE_MAX_WIDTH = 450
+export const WINDOW_TITLE_MAX_WIDTH = 600
 export const TAB_TITLE_MIN_WIDTH = 275
 export const TAB_TITLE_MAX_WIDTH = 475
 export const SIMPLE_TAB_TITLE_WIDTH = 200
