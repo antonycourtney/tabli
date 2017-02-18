@@ -1,4 +1,6 @@
 import tabliBrowser from './chromeBrowser'
+import * as Constants from './components/constants'
+
 import Q from 'q'
 
 /*
@@ -60,8 +62,8 @@ export function showPopout (winStore) {
       type: 'popup',
       left: 0,
       top: 0,
-      width: 350,
-      height: 625
+      width: Constants.POPOUT_DEFAULT_WIDTH,
+      height: Constants.POPOUT_DEFAULT_HEIGHT
     }, () => {
       deferred.resolve(idst)
     })

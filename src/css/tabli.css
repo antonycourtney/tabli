@@ -4,6 +4,10 @@
 html {
   height: 100%;
 }
+.popup-html {
+  width: 375px;
+  height: 600px;
+}
 body {
       background: white;
       font-family: sans-serif;
@@ -12,7 +16,6 @@ body {
       font-size:12px;
       cursor: default;
       overflow: hidden;
-      width: 350px;
       margin: 0px;
       height: 100%;
       width: 100%;

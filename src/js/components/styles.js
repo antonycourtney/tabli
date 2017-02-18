@@ -15,7 +15,8 @@ const styles = {
     border: '1px solid #bababa',
     borderRadius: 3,
     marginBottom: 8,
-    maxWidth: 345,
+    minWidth: Constants.WINDOW_MIN_WIDTH,
+    maxWidth: Constants.WINDOW_MAX_WIDTH,
     display: 'flex',
     flexDirection: 'column'
   },
@@ -94,8 +95,9 @@ const styles = {
     marginLeft: 3
   },
   tabTitle: {
-    width: 275,
-    maxWidth: 275
+    minWidth: Constants.TAB_TITLE_MIN_WIDTH,
+    maxWidth: Constants.TAB_TITLE_MAX_WIDTH,
+    flexGrow: 1
   },
   expandablePanel: {
     width: '100%',
@@ -239,8 +241,9 @@ const styles = {
   },
   windowTitle: {
     fontWeight: 'bold',
-    width: 243,
-    maxWidth: 243
+    minWidth: Constants.WINDOW_TITLE_MIN_WIDTH,
+    maxWidth: Constants.WINDOW_TITLE_MAX_WIDTH,
+    flexGrow: 1
   },
   modalTitle: {
     fontWeight: 'bold',
@@ -304,12 +307,17 @@ const styles = {
   },
   windowListSection: {
     borderBottom: '1px solid #bababa',
-    paddingLeft: 10,
-    paddingRight: 16,
+    paddingLeft: 12,
+    paddingRight: 24,
     paddingTop: 10,
-    paddingBottom: 4
+    paddingBottom: 4,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch'
   },
   windowListSectionHeader: {
+    minWidth: Constants.WINDOW_MIN_WIDTH,
+    maxWidth: Constants.WINDOW_MAX_WIDTH,
     fontWeight: 'bold',
     marginBottom: 5
   },
