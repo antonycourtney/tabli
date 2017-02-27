@@ -171,7 +171,8 @@ const styles = {
   favIcon: {
     width: 16,
     height: 16,
-    marginRight: 3
+    marginRight: 3,
+    flex: 'none'
   },
   favIconClosed: {
     WebkitFilter: 'grayscale(1)'
@@ -215,9 +216,10 @@ const styles = {
    * so we'll hack margin instead.
    */
   tabCheckItem: {
-    width: 13,
+    width: 10,
     height: 13,
-    margin: '3px 3px 3px 3px'
+    margin: '3px 3px 3px 3px',
+    flex: 'none'
   },
   windowManagedButton: {
     WebkitMaskImage: mkUrl('images/Status-9.png'),
