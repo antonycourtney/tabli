@@ -131,10 +131,10 @@ gulp.task("webpack:build", function(callback) {
                     "NODE_ENV": JSON.stringify("production")
                 }
             }),
-            new webpack.optimize.DedupePlugin(),
             new webpack.optimize.UglifyJsPlugin()
         );
     }
+
     // run webpack
     webpack(myConfig, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack:build", err);
@@ -151,7 +151,6 @@ gulp.task("build_js", ["webpack:build"]);
 // modify some webpack config options
 var myDevConfig = Object.create(webpackConfig);
 myDevConfig.devtool = "sourcemap";
-myDevConfig.debug = true;
 
 // create a single instance of the compiler to allow caching
 var devCompiler = webpack(myDevConfig);

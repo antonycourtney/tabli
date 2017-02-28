@@ -3,7 +3,10 @@
 var webpack = require('webpack');
 
 var commonsPlugin =
-  new webpack.optimize.CommonsChunkPlugin('common.js');
+  new webpack.optimize.CommonsChunkPlugin({
+    name: "common",
+    filename: "common.js"
+  });
 
 module.exports = {
     entry: {
@@ -21,10 +24,7 @@ module.exports = {
         loaders: [
             { test: /\.(js|jsx)$/,
               exclude: /node_modules/,
-              loader: "babel-loader",
-              query: {
-                presets:['es2015','react']
-              }
+              loader: "babel-loader?presets[]=es2015,presets[]=react"
             },
             { test: /\.(json)$/, loader: "json-loader" },
             { test: /\.jpg$/, loader: "file-loader" },
@@ -33,6 +33,6 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ["", ".js", ".jsx", ".json"]
+        extensions: [".js", ".jsx", ".json"]
     }
 };
