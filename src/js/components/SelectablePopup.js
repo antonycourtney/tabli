@@ -273,6 +273,7 @@ const SelectablePopup = React.createClass({
             onSearchEnter={this.handleSelectionEnter}
             onSearchExit={this.handleSearchExit}
             onSearchExpandToggle={this.handleSelectionExpandToggle}
+            onShowPreferences={this.props.appComponent.openPreferencesModal}
             setInputRef={this.setSearchInputRef}
             isPopout={this.props.isPopout} />
         </div>

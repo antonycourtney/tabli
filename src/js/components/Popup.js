@@ -5,6 +5,7 @@ import * as searchOps from '../searchOps'
 import { refUpdater } from 'oneref'
 
 import Styles from './styles'
+import PreferencesModal from './PreferencesModal'
 import RevertModal from './RevertModal'
 import SaveModal from './SaveModal'
 import SelectablePopup from './SelectablePopup'
@@ -38,6 +39,7 @@ const Popup = React.createClass({
   getInitialState () {
     var st = this.storeAsState(this.props.initialWinStore, true)
 
+    st.prefsModalIsOpen = false
     st.saveModalIsOpen = false
     st.revertModalIsOpen = false
     st.revertTabWindow = null
@@ -74,6 +76,15 @@ const Popup = React.createClass({
     this.setState({ revertModalIsOpen: false, revertTabWindow: null })
   },
 
+  openPreferencesModal () {
+    console.log('openPreferencesModal')
+    this.setState({ prefsModalIsOpen: true })
+  },
+
+  closePreferencesModal () {
+    this.setState({ prefsModalIsOpen: false })
+  },
+
   /* handler for save modal */
   doSave (titleStr) {
     const storeRef = this.props.storeRef
@@ -87,6 +98,18 @@ const Popup = React.createClass({
     const updateHandler = refUpdater(this.props.storeRef)
     actions.revertWindow(this.state.revertTabWindow, updateHandler)
     this.closeRevertModal()
+  },
+
+  /* render Preferences modal based on storeState.showPreferences */
+  renderPreferencesModal () {
+    let modal = null
+    if (this.state.prefsModalIsOpen) {
+      modal = (
+        <PreferencesModal
+          onClose={this.closePreferencesModal}
+          onSubmit={() => {}} />)
+    }
+    return modal
   },
 
   /* render save modal (or not) based on this.state.saveModalIsOpen */
@@ -123,6 +146,7 @@ const Popup = React.createClass({
   render () {
     var ret
     try {
+      const PreferencesModal = this.renderPreferencesModal()
       const saveModal = this.renderSaveModal()
       const revertModal = this.renderRevertModal()
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
@@ -137,6 +161,7 @@ const Popup = React.createClass({
             searchStr={this.state.searchStr}
             searchRE={this.state.searchRE}
             isPopout={this.props.isPopout} />
+          {PreferencesModal}
           {saveModal}
           {revertModal}
         </div>

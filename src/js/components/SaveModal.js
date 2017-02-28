@@ -27,7 +27,7 @@ const SaveModal = React.createClass({
         </Modal.Info>
         <Modal.Body>
           <div style={Styles.centerContents}>
-            <form className='dialog-form' onSubmit={this.handleSubmit}>
+            <form className='dialog-form save-form' onSubmit={this.handleSubmit}>
               <fieldset>
                 <label htmlFor='title'>
                   Window Title

@@ -141,6 +141,11 @@ const SearchBar = React.createClass({
     actions.toggleExpandAll(this.props.winStore, this.props.storeUpdateHandler)
   },
 
+  handlePreferencesClick (e) {
+    e.preventDefault()
+    this.props.onShowPreferences()
+  },
+
   handleCopyClick () {
     const openWindows = this.props.winStore.getTabWindowsByType('normal')
 
@@ -217,12 +222,15 @@ const SearchBar = React.createClass({
         <li>
           <a className='help-button' href='#' onClick={this.handleHelpClick}>Help (Manual)</a>
         </li>
-        <li role='separator' className='divider' />
         <li>
           <a href='#' onClick={this.handleAboutClick}>About Tabli</a>
         </li>
         <li>
           <a href='#' onClick={this.handleRelNotesClick}>Release Notes</a>
+        </li>
+        <li role='separator' className='divider' />
+        <li>
+          <a href='#' onClick={this.handlePreferencesClick}>Preferences...</a>
         </li>
         <li role='separator' className='divider' />
         <li>

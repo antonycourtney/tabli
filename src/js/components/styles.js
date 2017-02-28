@@ -3,6 +3,8 @@ import * as BC from './browserConstants'
 
 const mkUrl = relPath => 'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")'
 
+const selectedBorder = '2px solid #a0a0a0'
+
 const styles = {
   noWrap: {
     overflow: 'hidden',
@@ -55,7 +57,7 @@ const styles = {
     margin: 10
   },
   tabWindowSelected: {
-    border: '2px solid #a0a0a0'
+    border: selectedBorder
   },
   tabWindowFocused: {
     boxShadow: '0px 0px 5px 2px #7472ff'
@@ -281,7 +283,7 @@ const styles = {
     borderRadius: 3,
     background: '#fff',
     margin: 'auto',
-    border: '1px solid #bababa',
+    border: selectedBorder,
     flexGrow: 0,
     display: 'flex',
     flexDirection: 'column'

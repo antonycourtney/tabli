@@ -7,6 +7,7 @@
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
 import * as TabWindow from './tabWindow'
+import * as prefs from './preferences'
 
 function validChromeWindow (cw, normalOnly) {
   if (!cw) {
@@ -26,7 +27,8 @@ export default class TabManagerState extends Immutable.Record({
   currentWindowId: -1, // chrome window id of window with focus
   initializing: true, // true until bgHelper initialization completes.
   showRelNotes: true,
-  expandAll: true // state of global collapse / expand toggle button
+  expandAll: true, // state of global collapse / expand toggle button
+  preferences: new prefs.Preferences()
 }) {
   /**
    * Update store to include the specified window, indexed by
