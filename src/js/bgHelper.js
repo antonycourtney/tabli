@@ -48,18 +48,16 @@ function loadManagedWindows (winStore, tabManFolder) {
 
 /*
  * given a specific parent Folder node, ensure a particular child exists.
- * Will invoke callback either synchronously or asynchronously passing the node
- * for the named child
+ * returns: Promise<BookmarkTreeNode>
  */
-function ensureChildFolder (parentNode, childFolderName, callback) {
+async function ensureChildFolder (parentNode, childFolderName) {
   if (parentNode.children) {
     for (var i = 0; i < parentNode.children.length; i++) {
       var childFolder = parentNode.children[i]
       if (childFolder.title.toLowerCase() === childFolderName.toLowerCase()) {
         // exists
-        // console.log( "found target child folder: ", childFolderName )
-        callback(childFolder)
-        return true
+        console.log('found target child folder: ', childFolderName)
+        return childFolder
       }
     }
   }
@@ -68,7 +66,7 @@ function ensureChildFolder (parentNode, childFolderName, callback) {
 
   // If we got here, child Folder doesn't exist
   var folderObj = { parentId: parentNode.id, title: childFolderName }
-  chrome.bookmarks.create(folderObj, callback)
+  return chromep.bookmarks.create(folderObj)
 }
 
 /**
@@ -88,35 +86,32 @@ function initRelNotes (st, storedVersion) {
 /**
  * acquire main folder and archive folder and initialize
  * window store
+ *
+ * returns: Promise<TabManagerState>
  */
-const initWinStore = (cb) => {
+const initWinStore = async () => {
   var tabmanFolderId = null
   var archiveFolderId = null
 
-  chromep.bookmarks.getTree()
-    .then(tree => {
-      var otherBookmarksNode = tree[0].children[1]
+  const tree = await chromep.bookmarks.getTree()
+  var otherBookmarksNode = tree[0].children[1]
 
-      // console.log( "otherBookmarksNode: ", otherBookmarksNode )
-      ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, (tabManFolder) => {
-        // console.log('tab manager folder acquired.')
-        tabmanFolderId = tabManFolder.id
-        ensureChildFolder(tabManFolder, archiveFolderTitle, (archiveFolder) => {
-          // console.log('archive folder acquired.')
-          archiveFolderId = archiveFolder.id
-          chrome.bookmarks.getSubTree(tabManFolder.id, (subTreeNodes) => {
-            // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
-            const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId})
-            const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
+  // console.log( "otherBookmarksNode: ", otherBookmarksNode )
+  const tabManFolder = await ensureChildFolder(otherBookmarksNode, tabmanFolderTitle)
+  // console.log('tab manager folder acquired.')
+  tabmanFolderId = tabManFolder.id
+  const archiveFolder = await ensureChildFolder(tabManFolder, archiveFolderTitle)
+  // console.log('archive folder acquired.')
+  archiveFolderId = archiveFolder.id
+  const subTreeNodes = await chromep.bookmarks.getSubTree(tabManFolder.id)
+  // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
+  const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId})
+  const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
 
-            chrome.storage.local.get({readRelNotesVersion: ''}, items => {
-              const relNotesStore = initRelNotes(loadedWinStore, items.readRelNotesVersion)
-              cb(relNotesStore)
-            })
-          })
-        })
-      })
-    })
+  const items = await chromep.storage.local.get({readRelNotesVersion: ''})
+  const relNotesStore = initRelNotes(loadedWinStore, items.readRelNotesVersion)
+
+  return relNotesStore
 }
 
 function setupConnectionListener (storeRef) {
@@ -487,42 +482,43 @@ function loadSnapState (bmStore, cb) {
 }
 
 function main () {
-  initWinStore(rawBMStore => {
-    reattachWindows(rawBMStore, attachBMStore => {
-      loadSnapState(attachBMStore, (bmStore) => {
-        // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
+  initWinStore()
+    .then(rawBMStore => {
+      reattachWindows(rawBMStore, attachBMStore => {
+        loadSnapState(attachBMStore, (bmStore) => {
+          // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
 
-        // window.winStore = winStore
-        chrome.windows.getCurrent(null, (currentWindow) => {
-          // console.log("bgHelper: currentWindow: ", currentWindow)
-          actions.syncChromeWindows((uf) => {
-            console.log('initial sync of chrome windows complete.')
-            const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
-            console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
-            window.storeRef = new ViewRef(syncedStore)
+          // window.winStore = winStore
+          chrome.windows.getCurrent(null, (currentWindow) => {
+            // console.log("bgHelper: currentWindow: ", currentWindow)
+            actions.syncChromeWindows((uf) => {
+              console.log('initial sync of chrome windows complete.')
+              const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
+              console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
+              window.storeRef = new ViewRef(syncedStore)
 
-            // dumpAll(syncedStore)
-            // dumpChromeWindows()
+              // dumpAll(syncedStore)
+              // dumpChromeWindows()
 
-            setupConnectionListener(window.storeRef)
+              setupConnectionListener(window.storeRef)
 
-            const storeRefUpdater = refUpdater(window.storeRef)
-            registerEventHandlers(storeRefUpdater)
+              const storeRefUpdater = refUpdater(window.storeRef)
+              registerEventHandlers(storeRefUpdater)
 
-            pact.restorePopout(window.storeRef).done(st => {
-              window.storeRef.setValue(st.markInitialized())
-            })
+              pact.restorePopout(window.storeRef).done(st => {
+                window.storeRef.setValue(st.markInitialized())
+              })
 
-            chrome.commands.onCommand.addListener(command => {
-              if (command === 'show_popout') {
-                actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
-              }
+              chrome.commands.onCommand.addListener(command => {
+                if (command === 'show_popout') {
+                  actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
+                }
+              })
             })
           })
         })
       })
     })
-  })
 }
 
 main()
