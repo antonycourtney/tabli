@@ -303,10 +303,10 @@ function registerEventHandlers (uf) {
  * Heuristics here are imperfect; only way to get this truly right would be with a proper
  * session management API.
  *
- * calls cb with a TabManager state when complete.
+ * return: Promise<TabManagerState>
  *
  */
-function reattachWindows (bmStore, cb) {
+async function reattachWindows (bmStore) {
   const MATCH_THRESHOLD = 0.4
 
   const urlIdMap = bmStore.getUrlBookmarkIdMap()
@@ -314,86 +314,86 @@ function reattachWindows (bmStore, cb) {
   // type constructor for match info:
   const MatchInfo = Immutable.Record({windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0})
 
-  chrome.windows.getAll({ populate: true }, (windowList) => {
-    function getMatchInfo (w) {
-      // matches :: Array<Set<BookmarkId>>
-      const matchSets = w.tabs.map(t => urlIdMap.get(t.url, null)).filter(x => x)
-      // countMaps :: Array<Map<BookmarkId,Num>>
-      const countMaps = matchSets.map(s => s.countBy(v => v))
+  const windowList = await chromep.windows.getAll({ populate: true })
 
-      // Now let's reduce array, merging all maps into a single map, aggregating counts:
-      const aggMerge = (mA, mB) => mA.mergeWith((prev, next) => prev + next, mB)
+  function getMatchInfo (w) {
+    // matches :: Array<Set<BookmarkId>>
+    const matchSets = w.tabs.map(t => urlIdMap.get(t.url, null)).filter(x => x)
+    // countMaps :: Array<Map<BookmarkId,Num>>
+    const countMaps = matchSets.map(s => s.countBy(v => v))
 
-      // matchMap :: Map<BookmarkId,Num>
-      const matchMap = countMaps.reduce(aggMerge, Immutable.Map())
+    // Now let's reduce array, merging all maps into a single map, aggregating counts:
+    const aggMerge = (mA, mB) => mA.mergeWith((prev, next) => prev + next, mB)
 
-      // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
-      function aboveMatchThreshold (matchCount, bookmarkId) {
-        const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId)
-        const savedUrlCount = savedTabWindow.tabItems.count()
-        const matchRatio = matchCount / savedUrlCount
-        // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
-        return (matchRatio >= MATCH_THRESHOLD)
-      }
+    // matchMap :: Map<BookmarkId,Num>
+    const matchMap = countMaps.reduce(aggMerge, Immutable.Map())
 
-      const threshMap = matchMap.filter(aboveMatchThreshold)
-
-      const bestMatch = utils.bestMatch(threshMap)
-
-      return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length })
+    // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
+    function aboveMatchThreshold (matchCount, bookmarkId) {
+      const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId)
+      const savedUrlCount = savedTabWindow.tabItems.count()
+      const matchRatio = matchCount / savedUrlCount
+      // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
+      return (matchRatio >= MATCH_THRESHOLD)
     }
 
-    /**
-     * We could come up with better heuristics here, but for now we'll be conservative
-     * and only re-attach when there is an unambiguous best match
-     */
-    // Only look at windows that match exactly one bookmark folder
-    // (Could be improved by sorting entries on number of matches and picking best (if there is one))
-    const windowMatchInfo = Immutable.Seq(windowList).map(getMatchInfo).filter(mi => mi.bestMatch)
+    const threshMap = matchMap.filter(aboveMatchThreshold)
 
-    // console.log("windowMatchInfo: ", windowMatchInfo.toJS())
+    const bestMatch = utils.bestMatch(threshMap)
 
-    // Now gather an inverse map of the form:
-    // Map<BookmarkId,Map<WindowId,Num>>
-    const bmMatches = windowMatchInfo.groupBy((mi) => mi.bestMatch)
+    return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length })
+  }
 
-    // console.log("bmMatches: ", bmMatches.toJS())
+  /**
+   * We could come up with better heuristics here, but for now we'll be conservative
+   * and only re-attach when there is an unambiguous best match
+   */
+  // Only look at windows that match exactly one bookmark folder
+  // (Could be improved by sorting entries on number of matches and picking best (if there is one))
+  const windowMatchInfo = Immutable.Seq(windowList).map(getMatchInfo).filter(mi => mi.bestMatch)
 
-    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
-    const bmMatchMaps = bmMatches.map(mis => {
-      // mis :: Seq<MatchInfo>
+  // console.log("windowMatchInfo: ", windowMatchInfo.toJS())
 
-      // mercifully each mi will have a distinct windowId at this point:
-      const entries = mis.map(mi => {
-        const matchTabCount = mi.matches.get(mi.bestMatch)
-        return [mi.windowId, matchTabCount]
-      })
+  // Now gather an inverse map of the form:
+  // Map<BookmarkId,Map<WindowId,Num>>
+  const bmMatches = windowMatchInfo.groupBy((mi) => mi.bestMatch)
 
-      return Immutable.Map(entries)
+  // console.log("bmMatches: ", bmMatches.toJS())
+
+  // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
+  const bmMatchMaps = bmMatches.map(mis => {
+    // mis :: Seq<MatchInfo>
+
+    // mercifully each mi will have a distinct windowId at this point:
+    const entries = mis.map(mi => {
+      const matchTabCount = mi.matches.get(mi.bestMatch)
+      return [mi.windowId, matchTabCount]
     })
 
-    // console.log("bmMatchMaps: ", bmMatchMaps.toJS())
-
-    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>
-    const bestBMMatches = bmMatchMaps.map(mm => utils.bestMatch(mm)).filter(ct => ct)
-    // console.log("bestBMMatches: ", bestBMMatches.toJS())
-
-    // Form a map from chrome window ids to chrome window snapshots:
-    const chromeWinMap = _.fromPairs(windowList.map(w => [w.id, w]))
-
-    // And build up our attached state by attaching to each window in bestBMMatches:
-
-    const attacher = (st, windowId, bookmarkId) => {
-      const chromeWindow = chromeWinMap[windowId]
-      const bmTabWindow = st.bookmarkIdMap.get(bookmarkId)
-      const nextSt = st.attachChromeWindow(bmTabWindow, chromeWindow)
-      return nextSt
-    }
-
-    const attachedStore = bestBMMatches.reduce(attacher, bmStore)
-
-    cb(attachedStore)
+    return Immutable.Map(entries)
   })
+
+  // console.log("bmMatchMaps: ", bmMatchMaps.toJS())
+
+  // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>
+  const bestBMMatches = bmMatchMaps.map(mm => utils.bestMatch(mm)).filter(ct => ct)
+  // console.log("bestBMMatches: ", bestBMMatches.toJS())
+
+  // Form a map from chrome window ids to chrome window snapshots:
+  const chromeWinMap = _.fromPairs(windowList.map(w => [w.id, w]))
+
+  // And build up our attached state by attaching to each window in bestBMMatches:
+
+  const attacher = (st, windowId, bookmarkId) => {
+    const chromeWindow = chromeWinMap[windowId]
+    const bmTabWindow = st.bookmarkIdMap.get(bookmarkId)
+    const nextSt = st.attachChromeWindow(bmTabWindow, chromeWindow)
+    return nextSt
+  }
+
+  const attachedStore = bestBMMatches.reduce(attacher, bmStore)
+
+  return attachedStore
 }
 
 // does session state match window snapshot?
@@ -431,94 +431,90 @@ const attachSessions = (st, sessions) => {
  * load window state for saved windows from local storage and attach to
  * any closed, saved windows
  */
-function loadSnapState (bmStore, cb) {
-  chrome.storage.local.get('savedWindowState', items => {
-    if (!items) {
-      cb(bmStore)
-    }
-    const savedWindowStateStr = items.savedWindowState
-    if (!savedWindowStateStr) {
-      console.log('loadSnapState: no saved window state found in local storage')
-      cb(bmStore)
-    } else {
-      const savedWindowState = JSON.parse(savedWindowStateStr)
-      const closedWindowsMap = bmStore.bookmarkIdMap.filter(bmWin => !bmWin.open)
-      const closedWindowIds = closedWindowsMap.keys()
-      let savedOpenTabsMap = {}
-      for (let id of closedWindowIds) {
-        const savedState = savedWindowState[id]
-        if (savedState) {
-          const openTabItems = savedState.tabItems.filter(ti => ti.open)
-          if (openTabItems.length > 0) {
-            const convTabItems = openTabItems.map(ti => TabWindow.tabItemFromJS(ti))
-            const tiList = Immutable.List(convTabItems)
-            savedOpenTabsMap[id] = tiList
-          }
-        }
+async function loadSnapState (bmStore) {
+  const items = await chromep.storage.local.get('savedWindowState')
+  if (!items) {
+    return bmStore
+  }
+  const savedWindowStateStr = items.savedWindowState
+  if (!savedWindowStateStr) {
+    console.log('loadSnapState: no saved window state found in local storage')
+    return bmStore
+  }
+  const savedWindowState = JSON.parse(savedWindowStateStr)
+  const closedWindowsMap = bmStore.bookmarkIdMap.filter(bmWin => !bmWin.open)
+  const closedWindowIds = closedWindowsMap.keys()
+  let savedOpenTabsMap = {}
+  for (let id of closedWindowIds) {
+    const savedState = savedWindowState[id]
+    if (savedState) {
+      const openTabItems = savedState.tabItems.filter(ti => ti.open)
+      if (openTabItems.length > 0) {
+        const convTabItems = openTabItems.map(ti => TabWindow.tabItemFromJS(ti))
+        const tiList = Immutable.List(convTabItems)
+        savedOpenTabsMap[id] = tiList
       }
-      const keyCount = Object.keys(savedOpenTabsMap).length
-      console.log('read window snapshot state for ', keyCount, ' saved windows')
-      const updBookmarkMap = bmStore.bookmarkIdMap.map((tabWindow, bmId) => {
-        const snapTabs = savedOpenTabsMap[bmId]
-        if (snapTabs == null) {
-          return tabWindow
-        }
-        const baseSavedItems = tabWindow.tabItems.filter(ti => ti.saved).map(TabWindow.resetSavedItem)
-        const mergedTabs = TabWindow.mergeSavedOpenTabs(baseSavedItems, snapTabs)
-        return (tabWindow
-            .set('tabItems', mergedTabs)
-            .set('snapshot', true))
-      })
-      const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap)
-      console.log('merged window state snapshot from local storage')
-      // Now try attach sessions:
-      chrome.sessions.getRecentlyClosed(sessions => {
-        const winSessions = sessions.filter(s => 'window' in s)
-        const sessStore = attachSessions(nextStore, winSessions)
-        cb(sessStore)
-      })
     }
+  }
+  const keyCount = Object.keys(savedOpenTabsMap).length
+  console.log('read window snapshot state for ', keyCount, ' saved windows')
+  const updBookmarkMap = bmStore.bookmarkIdMap.map((tabWindow, bmId) => {
+    const snapTabs = savedOpenTabsMap[bmId]
+    if (snapTabs == null) {
+      return tabWindow
+    }
+    const baseSavedItems = tabWindow.tabItems.filter(ti => ti.saved).map(TabWindow.resetSavedItem)
+    const mergedTabs = TabWindow.mergeSavedOpenTabs(baseSavedItems, snapTabs)
+    return (tabWindow
+        .set('tabItems', mergedTabs)
+        .set('snapshot', true))
   })
+  const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap)
+  console.log('merged window state snapshot from local storage')
+  // Now try attach sessions:
+  const sessions = await chromep.sessions.getRecentlyClosed()
+  const winSessions = sessions.filter(s => 'window' in s)
+  const sessStore = attachSessions(nextStore, winSessions)
+  return sessStore
 }
 
-function main () {
-  initWinStore()
-    .then(rawBMStore => {
-      reattachWindows(rawBMStore, attachBMStore => {
-        loadSnapState(attachBMStore, (bmStore) => {
-          // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
+async function main () {
+  try {
+    const rawBMStore = await initWinStore()
+    const attachBMStore = await reattachWindows(rawBMStore)
+    const bmStore = await loadSnapState(attachBMStore)
+      // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
 
-          // window.winStore = winStore
-          chrome.windows.getCurrent(null, (currentWindow) => {
-            // console.log("bgHelper: currentWindow: ", currentWindow)
-            actions.syncChromeWindows((uf) => {
-              console.log('initial sync of chrome windows complete.')
-              const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
-              console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
-              window.storeRef = new ViewRef(syncedStore)
+      // window.winStore = winStore
+    const currentWindow = await chromep.windows.getCurrent(null)
+    // console.log("bgHelper: currentWindow: ", currentWindow)
+    actions.syncChromeWindows((uf) => {
+      console.log('initial sync of chrome windows complete.')
+      const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
+      console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
+      window.storeRef = new ViewRef(syncedStore)
 
-              // dumpAll(syncedStore)
-              // dumpChromeWindows()
+      // dumpAll(syncedStore)
+      // dumpChromeWindows()
 
-              setupConnectionListener(window.storeRef)
+      setupConnectionListener(window.storeRef)
 
-              const storeRefUpdater = refUpdater(window.storeRef)
-              registerEventHandlers(storeRefUpdater)
+      const storeRefUpdater = refUpdater(window.storeRef)
+      registerEventHandlers(storeRefUpdater)
 
-              pact.restorePopout(window.storeRef).done(st => {
-                window.storeRef.setValue(st.markInitialized())
-              })
+      pact.restorePopout(window.storeRef).done(st => {
+        window.storeRef.setValue(st.markInitialized())
+      })
 
-              chrome.commands.onCommand.addListener(command => {
-                if (command === 'show_popout') {
-                  actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
-                }
-              })
-            })
-          })
-        })
+      chrome.commands.onCommand.addListener(command => {
+        if (command === 'show_popout') {
+          actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
+        }
       })
     })
+  } catch (e) {
+    console.error('*** caught top level exception: ', e)
+  }
 }
 
 main()
