@@ -8,6 +8,8 @@
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
 import * as semver from 'semver'
+import ChromePromise from 'chrome-promise'
+const chromep = new ChromePromise()
 
 import * as TabWindow from './tabWindow'
 import TabManagerState from './tabManagerState'
@@ -87,33 +89,34 @@ function initRelNotes (st, storedVersion) {
  * acquire main folder and archive folder and initialize
  * window store
  */
-function initWinStore (cb) {
+const initWinStore = (cb) => {
   var tabmanFolderId = null
   var archiveFolderId = null
 
-  chrome.bookmarks.getTree((tree) => {
-    var otherBookmarksNode = tree[0].children[1]
+  chromep.bookmarks.getTree()
+    .then(tree => {
+      var otherBookmarksNode = tree[0].children[1]
 
-    // console.log( "otherBookmarksNode: ", otherBookmarksNode )
-    ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, (tabManFolder) => {
-      // console.log('tab manager folder acquired.')
-      tabmanFolderId = tabManFolder.id
-      ensureChildFolder(tabManFolder, archiveFolderTitle, (archiveFolder) => {
-        // console.log('archive folder acquired.')
-        archiveFolderId = archiveFolder.id
-        chrome.bookmarks.getSubTree(tabManFolder.id, (subTreeNodes) => {
-          // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
-          const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId})
-          const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
+      // console.log( "otherBookmarksNode: ", otherBookmarksNode )
+      ensureChildFolder(otherBookmarksNode, tabmanFolderTitle, (tabManFolder) => {
+        // console.log('tab manager folder acquired.')
+        tabmanFolderId = tabManFolder.id
+        ensureChildFolder(tabManFolder, archiveFolderTitle, (archiveFolder) => {
+          // console.log('archive folder acquired.')
+          archiveFolderId = archiveFolder.id
+          chrome.bookmarks.getSubTree(tabManFolder.id, (subTreeNodes) => {
+            // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
+            const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId})
+            const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
 
-          chrome.storage.local.get({readRelNotesVersion: ''}, items => {
-            const relNotesStore = initRelNotes(loadedWinStore, items.readRelNotesVersion)
-            cb(relNotesStore)
+            chrome.storage.local.get({readRelNotesVersion: ''}, items => {
+              const relNotesStore = initRelNotes(loadedWinStore, items.readRelNotesVersion)
+              cb(relNotesStore)
+            })
           })
         })
       })
     })
-  })
 }
 
 function setupConnectionListener (storeRef) {
@@ -484,7 +487,7 @@ function loadSnapState (bmStore, cb) {
 }
 
 function main () {
-  initWinStore((rawBMStore) => {
+  initWinStore(rawBMStore => {
     reattachWindows(rawBMStore, attachBMStore => {
       loadSnapState(attachBMStore, (bmStore) => {
         // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())

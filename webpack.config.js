@@ -9,11 +9,12 @@ var commonsPlugin =
   });
 
 module.exports = {
+    devtool: 'cheap-module-source-map',
     entry: {
-      renderTest: "./src/js/renderTest.js",
-      tabliPopup: "./src/js/tabliPopup.js",
-      tabliPopout: "./src/js/tabliPopout.js",
-      bgHelper: "./src/js/bgHelper.js"
+      renderTest: ["babel-polyfill", "./src/js/renderTest.js"],
+      tabliPopup: ["babel-polyfill", "./src/js/tabliPopup.js"],
+      tabliPopout: ["babel-polyfill", "./src/js/tabliPopout.js"],
+      bgHelper: ["babel-polyfill", "./src/js/bgHelper.js"]
     },
     output: {
         path: "./build/js",
@@ -24,7 +25,7 @@ module.exports = {
         loaders: [
             { test: /\.(js|jsx)$/,
               exclude: /node_modules/,
-              loader: "babel-loader?presets[]=es2015,presets[]=react"
+              loader: "babel-loader?presets[]=es2015,presets[]=react,presets[]=stage-3"
             },
             { test: /\.(json)$/, loader: "json-loader" },
             { test: /\.jpg$/, loader: "file-loader" },
