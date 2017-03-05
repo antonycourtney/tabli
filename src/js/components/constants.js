@@ -11,7 +11,7 @@ export const POPUP_BODY_HEIGHT = 537
 export const POPUP_FOOTER_HEIGHT = 25
 export const FOCUS_SCROLL_BASE = 10
 export const MODAL_BODY_MAX_HEIGHT = 500
-export const POPOUT_DEFAULT_WIDTH = 375
+export const POPOUT_DEFAULT_WIDTH = 450
 export const POPOUT_DEFAULT_HEIGHT = 750
 
 export const KEY_F1 = 112

@@ -3593,9 +3593,9 @@ once@~1.3.0, once@~1.3.3:
   dependencies:
     wrappy "1"
 
-oneref@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/oneref/-/oneref-0.2.1.tgz#c412f9d02fba6e0455ba3291b0bb7cbb5351acfc"
+oneref@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/oneref/-/oneref-0.3.1.tgz#37e9ea9b1518e8bcdc700782dd553a57dea6e79c"
   dependencies:
     events "^1.1.0"
 

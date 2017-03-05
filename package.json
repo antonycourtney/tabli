@@ -21,7 +21,7 @@
     "jquery": "^3.1.1",
     "lodash": "^4.17.4",
     "object-assign": "^4.1.1",
-    "oneref": "^0.2.1",
+    "oneref": "^0.3.1",
     "react": "^15.4.2",
     "react-addons-pure-render-mixin": "^15.4.2",
     "react-dnd": "^2.2.3",

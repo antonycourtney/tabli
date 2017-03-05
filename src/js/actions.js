@@ -1,7 +1,7 @@
 /* globals alert */
 import * as utils from './utils'
-import * as pact from './pact'
 import tabliBrowser from './chromeBrowser'
+import * as Constants from './components/constants'
 
 const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html'
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html'
@@ -309,11 +309,22 @@ export function sendFeedback (winStore, cb) {
 }
 
 export function showPopout (winStore, cb) {
-  pact.showPopout(winStore).done(cb)
+  const ptw = winStore.getPopoutTabWindow()
+  if (ptw) {
+    tabliBrowser.setFocusedWindow(ptw.openWindowId)
+  }
+  chrome.windows.create({ url: 'popout.html',
+    type: 'popup',
+    left: 0,
+    top: 0,
+    width: Constants.POPOUT_DEFAULT_WIDTH,
+    height: Constants.POPOUT_DEFAULT_HEIGHT
+  })
 }
 
 export function hidePopout (winStore, cb) {
-  pact.hidePopout(winStore).done(cb)
+  const ptw = winStore.getPopoutTabWindow()
+  closeWindow(ptw, cb)
 }
 
 export function toggleExpandAll (winStore, cb) {

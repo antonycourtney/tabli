@@ -25,7 +25,6 @@ export default class TabManagerState extends Immutable.Record({
   folderId: -1,
   archiveFolderId: -1,
   currentWindowId: -1, // chrome window id of window with focus
-  initializing: true, // true until bgHelper initialization completes.
   showRelNotes: true,
   expandAll: true, // state of global collapse / expand toggle button
   preferences: new prefs.Preferences()
@@ -286,9 +285,5 @@ export default class TabManagerState extends Immutable.Record({
       return popupTabWindows.get(0)
     }
     return null
-  }
-
-  markInitialized () {
-    return this.set('initializing', false)
   }
 }

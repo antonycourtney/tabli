@@ -13,12 +13,14 @@ const chromep = new ChromePromise()
 
 import * as TabWindow from './tabWindow'
 import TabManagerState from './tabManagerState'
+import * as prefs from './preferences'
 import * as utils from './utils'
 import * as actions from './actions'
-import * as pact from './pact'
 import ViewRef from './viewRef'
 
 import { refUpdater } from 'oneref'
+
+const USER_PREFS_KEY = 'UserPreferences'
 
 const tabmanFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
@@ -193,19 +195,6 @@ function registerEventHandlers (uf) {
   chrome.windows.onRemoved.addListener((windowId) => {
     uf((state) => {
       const tabWindow = state.getTabWindowByChromeId(windowId)
-      if (tabWindow && tabWindow.windowType === 'popup') {
-        if (!state.initializing) {
-          // try using a timer as a guess at whether this was due to
-          // a Chrome quit or not
-          // Our hope here is that on a Chrome exit, the Chrome process
-          // will terminate before the timer event fires.
-          // Horrible, horrible hack.
-          // See https://bugs.chromium.org/p/chromium/issues/detail?id=30885
-          window.setTimeout(() => {
-            chrome.storage.local.set({'showPopout': false}, () => {})
-          }, 10000)
-        }
-      }
       console.log('got window closed event')
       const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state
       return st
@@ -478,11 +467,33 @@ async function loadSnapState (bmStore) {
   return sessStore
 }
 
+/*
+ * load preferences into an updated application state.
+ */
+const loadPreferences = async (st) => {
+  const items = await chromep.storage.local.get(USER_PREFS_KEY)
+  console.log('loadPreferences: read: ', items, chrome.runtime.lastError)
+  let jsPrefs
+  const prefsStr = items[USER_PREFS_KEY]
+  if (prefsStr) {
+    const storedPrefs = JSON.parse(prefsStr)
+    jsPrefs = _.defaultsDeep(storedPrefs.contents, prefs.defaultPrefsJS)
+  } else {
+    jsPrefs = prefs.defaultPrefsJS
+  }
+  const userPrefs = new prefs.Preferences(jsPrefs)
+
+  console.log('loadPreferences: userPrefs: ', userPrefs.toJS())
+  return st.set('preferences', userPrefs)
+}
+
 async function main () {
   try {
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)
     const bmStore = await loadSnapState(attachBMStore)
+    const prefsStore = await loadPreferences(bmStore)
+
       // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
 
       // window.winStore = winStore
@@ -490,10 +501,10 @@ async function main () {
     // console.log("bgHelper: currentWindow: ", currentWindow)
     actions.syncChromeWindows((uf) => {
       console.log('initial sync of chrome windows complete.')
-      const syncedStore = uf(bmStore).setCurrentWindow(currentWindow)
-      console.log('current window after initial sync: ', syncedStore.currentWindowId, syncedStore.getCurrentWindow())
+      const syncedStore = uf(prefsStore).setCurrentWindow(currentWindow)
+      console.log('current window after initial sync: ', syncedStore.currentWindowId,
+                  syncedStore.getCurrentWindow())
       window.storeRef = new ViewRef(syncedStore)
-
       // dumpAll(syncedStore)
       // dumpChromeWindows()
 
@@ -502,10 +513,14 @@ async function main () {
       const storeRefUpdater = refUpdater(window.storeRef)
       registerEventHandlers(storeRefUpdater)
 
-      pact.restorePopout(window.storeRef).done(st => {
-        window.storeRef.setValue(st.markInitialized())
-      })
+      // In case of restart: hide any previously open popout that
+      // might be hanging around...
+      // TODO: We MUST chain this action...
+      // actions.hidePopout(syncedStore, storeRefUpdater)
 
+      if (syncedStore.preferences.popoutOnStart) {
+        actions.showPopout(syncedStore, storeRefUpdater)
+      }
       chrome.commands.onCommand.addListener(command => {
         if (command === 'show_popout') {
           actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
