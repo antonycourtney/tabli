@@ -1,3 +1,4 @@
+// @flow
 /**
  * Background helper page.
  * Gathering bookmark and window state and places in local storage so that
@@ -117,7 +118,8 @@ const initWinStore = async () => {
 }
 
 function setupConnectionListener (storeRef) {
-  chrome.runtime.onConnect.addListener((port) => {
+  chrome.runtime.onConnect.addListener((cport): void => {
+    const port : any = cport  // to deal with typo in 'onDisconnect' in flow-interfaces-chrome
     port.onMessage.addListener((msg) => {
       var listenerId = msg.listenerId
       port.onDisconnect.addListener(() => {
@@ -247,7 +249,7 @@ function registerEventHandlers (uf) {
     }
     onTabRemoved(uf, removeInfo.windowId, tabId)
   })
-  chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
+  chrome.tabs.onReplaced.addListener((addedTabId: number, removedTabId: number) => {
     console.log('tabs.onReplaced: added: ', addedTabId, ', removed: ', removedTabId)
     uf(state => {
       const tabWindow = state.getTabWindowByChromeTabId(removedTabId)
@@ -271,7 +273,7 @@ function registerEventHandlers (uf) {
     // just handle like tab closing:
     onTabRemoved(uf, detachInfo.oldWindowId, tabId)
   })
-  chrome.tabs.onAttached.addListener((tabId, attachInfo) => {
+  chrome.tabs.onAttached.addListener((tabId: number, attachInfo) => {
     // handle like tab creation:
     chrome.tabs.get(tabId, tab => onTabCreated(uf, tab, true))
   })
@@ -388,12 +390,14 @@ async function reattachWindows (bmStore) {
 // does session state match window snapshot?
 // Note: We no longer require snapshot===true so that we can
 // deal with sessions.onChanged event before close event.
-const matchSnapshot = (tabWindow, session) => {
-  const snapUrls = tabWindow.tabItems.filter(ti => ti.open).map(ti => ti.url).toArray()
-  const sessionUrls = session.window.tabs.map(t => t.url)
-  if (_.isEqual(snapUrls, sessionUrls)) {
-    console.log('matchSnapshot: found session for window "' + tabWindow.title + '"')
-    return true
+const matchSnapshot = (tabWindow, session: Object) => {
+  if ((session.window != null) && (session.window.tabs != null)) {
+    const snapUrls = tabWindow.tabItems.filter(ti => ti.open).map(ti => ti.url).toArray()
+    const sessionUrls = session.window.tabs.map(t => t.url)
+    if (_.isEqual(snapUrls, sessionUrls)) {
+      console.log('matchSnapshot: found session for window "' + tabWindow.title + '"')
+      return true
+    }
   }
   return false
 }
@@ -405,7 +409,7 @@ const attachSessions = (st, sessions) => {
   let nextSt = st
   for (let tabWindow of tabWindows) {
     for (let s of sessions) {
-      if (matchSnapshot(tabWindow, s)) {
+      if (s.window && matchSnapshot(tabWindow, s)) {
         let nextWin = tabWindow.set('chromeSessionId', s.window.sessionId)
         nextSt = nextSt.registerTabWindow(nextWin)
       }
