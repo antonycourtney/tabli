@@ -16,6 +16,7 @@
     "chrome-promise": "^2.0.2",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "events": "^1.1.1",
+    "flow-bin": "^0.41.0",
     "font-awesome": "^4.7.0",
     "immutable": "^3.8.1",
     "jquery": "^3.1.1",
@@ -41,10 +42,12 @@
     "eslint": "^3.16.1",
     "eslint-config-airbnb": "14.1.0",
     "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-flowtype": "^2.30.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-react": "^6.10.0",
     "file-loader": "^0.10.1",
     "filesize": "^3.5.5",
+    "flow-interfaces-chrome": "^0.3.0",
     "gulp": "^3.9.1",
     "gulp-build-branch": "^0.1.4",
     "gulp-clean": "^0.3.2",
@@ -58,7 +61,6 @@
     "json-loader": "^0.5.4",
     "memwatch-next": "^0.3.0",
     "pre-commit": "^1.2.2",
-    "react": "^15.4.2",
     "react-addons-perf": "^15.4.2",
     "react-addons-test-utils": "^15.4.2",
     "sinon": "^1.17.7",
@@ -71,7 +73,8 @@
   "scripts": {
     "lint": "eslint .",
     "test": "standard src/js/*.js src/js/**/*.js && babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
-    "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec"
+    "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
   "standard": {
     "globals": [
@@ -81,6 +84,10 @@
     "ignore": [
       "gulpfile.js",
       "webpack.config.js"
+    ],
+    "parser": "babel-eslint",
+    "plugins": [
+      "flowtype"
     ]
   }
 }

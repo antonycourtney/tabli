@@ -27,5 +27,8 @@
     },
     "globals": {
       "chrome": true,
-    }
+    },
+    "plugins": [
+        "standard", "flowtype"
+    ]    
 }

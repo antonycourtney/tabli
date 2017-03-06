@@ -13,6 +13,8 @@ export const FOCUS_SCROLL_BASE = 10
 export const MODAL_BODY_MAX_HEIGHT = 500
 export const POPOUT_DEFAULT_WIDTH = 450
 export const POPOUT_DEFAULT_HEIGHT = 750
+export const BROWSER_DEFAULT_WIDTH = 1024
+export const BROWSER_DEFAULT_HEIGHT = 768
 
 export const KEY_F1 = 112
 export const KEY_UP = 38
