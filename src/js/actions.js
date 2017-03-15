@@ -4,6 +4,8 @@ import * as utils from './utils'
 import tabliBrowser from './chromeBrowser'
 import * as Constants from './components/constants'
 import { TabItem, TabWindow} from './tabWindow' // eslint-disable-line
+import ChromePromise from 'chrome-promise'
+const chromep = new ChromePromise()
 
 type TabId = number
 
@@ -34,18 +36,25 @@ export function syncChromeWindowById (windowId: WindowId, updater: TMSUpdater) {
  * get all open Chrome windows and synchronize state with our tab window store
  *
  */
-export function syncChromeWindows (updater: TMSUpdater) {
+export const syncChromeWindows = async (updater: TMSUpdater): TabManagerState => {
   var tPreGet = performance.now()
-  chrome.windows.getAll({ populate: true }, (windowList) => {
-    var tPostGet = performance.now()
-    console.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
-    var tPreSync = performance.now()
-    updater((state) => state.syncWindowList(windowList))
-    var tPostSync = performance.now()
-    console.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
-  })
+  const windowList = await chromep.windows.getAll({ populate: true })
+  var tPostGet = performance.now()
+  console.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
+  var tPreSync = performance.now()
+  const nextSt = updater((state) => state.syncWindowList(windowList))
+  var tPostSync = performance.now()
+  console.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
+  return nextSt
 }
 
+/**
+ * get current chrome window and mark it as current window in store
+ */
+export const syncCurrent = async (updater: TMSUpdater): TabManagerState => {
+  const currentChromeWindow = await chromep.windows.getCurrent(null)
+  return updater(st => st.setCurrentWindow(currentChromeWindow))
+}
 /**
  * restoreFromAppState
  *
@@ -178,15 +187,14 @@ export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem, updater: TMSU
   })
 }
 
-export function closeWindow (tabWindow: TabWindow, updater: TMSUpdater) {
+export const closeWindow = async (tabWindow: TabWindow, updater: TMSUpdater): TabManagerState => {
   if (!tabWindow.open) {
     console.log('closeWindow: request to close non-open window, ignoring...')
     return
   }
 
-  chrome.windows.remove(tabWindow.openWindowId, () => {
-    updater((state) => state.handleTabWindowClosed(tabWindow))
-  })
+  await chromep.windows.remove(tabWindow.openWindowId)
+  return updater((state) => state.handleTabWindowClosed(tabWindow))
 }
 
 export function expandWindow (tabWindow: TabWindow, expand: ?boolean, updater: TMSUpdater) {
@@ -336,23 +344,31 @@ export function sendFeedback (winStore: TabManagerState, updater: TMSUpdater) {
   chrome.tabs.create({ url: TABLI_FEEDBACK_URL })
 }
 
-export function showPopout (winStore: TabManagerState, updater: TMSUpdater) {
+export const showPopout = async (winStore: TabManagerState, updater: TMSUpdater): TabManagerState => {
   const ptw = winStore.getPopoutTabWindow()
   if (ptw) {
     tabliBrowser.setFocusedWindow(ptw.openWindowId)
+  } else {
+    await chromep.windows.create({ url: 'popout.html',
+      type: 'popup',
+      left: 0,
+      top: 0,
+      width: Constants.POPOUT_DEFAULT_WIDTH,
+      height: Constants.POPOUT_DEFAULT_HEIGHT
+    })
   }
-  chrome.windows.create({ url: 'popout.html',
-    type: 'popup',
-    left: 0,
-    top: 0,
-    width: Constants.POPOUT_DEFAULT_WIDTH,
-    height: Constants.POPOUT_DEFAULT_HEIGHT
-  })
+  return winStore
 }
 
-export function hidePopout (winStore: TabManagerState, updater: TMSUpdater) {
+export const hidePopout = async (winStore: TabManagerState, updater: TMSUpdater): TabManagerState => {
   const ptw = winStore.getPopoutTabWindow()
-  closeWindow(ptw, updater)
+  console.log('hidePoput: ptw: ', ptw)
+  if (ptw) {
+    const nextSt = await closeWindow(ptw, updater)
+    console.log('hidePopout: after close, ptw: ', nextSt.getPopoutTabWindow())
+    return nextSt
+  }
+  return winStore
 }
 
 export function toggleExpandAll (winStore: TabManagerState, updater: TMSUpdater) {

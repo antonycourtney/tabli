@@ -72,8 +72,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "standard src/js/*.js src/js/**/*.js && babel-node --presets es2015,react ./test/runAllTests.js | tap-spec",
-    "leaktest": "babel-node --expose-gc --presets es2015,react ./test/leakTest.js | tap-spec",
+    "test": "standard src/js/*.js src/js/**/*.js && babel-node --presets es2015,react,stage-3 ./test/runAllTests.js | tap-spec",
+    "leaktest": "babel-node --expose-gc --presets es2015,react,stage-3 ./test/leakTest.js | tap-spec",
     "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
   "standard": {

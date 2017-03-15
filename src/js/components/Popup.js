@@ -1,3 +1,4 @@
+// @flow
 /* globals chrome */
 import * as React from 'react'
 import * as actions from '../actions'
@@ -18,7 +19,7 @@ import * as _ from 'lodash'
  * send message to BGhelper
  */
 function sendHelperMessage (msg) {
-  var port = chrome.runtime.connect({ name: 'popup' })
+  var port = (chrome.runtime.connect : any)({ name: 'popup' })
   port.postMessage(msg)
   port.onMessage.addListener((response) => {
     console.log('Got response message: ', response)
@@ -37,7 +38,7 @@ const Popup = React.createClass({
   },
 
   getInitialState () {
-    var st = this.storeAsState(this.props.initialWinStore, true)
+    var st : Object = this.storeAsState(this.props.initialWinStore, true)
 
     st.prefsModalIsOpen = false
     st.saveModalIsOpen = false

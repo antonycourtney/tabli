@@ -29,7 +29,7 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
 /**
  * An element that manages the selection.
  *
- * We want this as a distinct element from its parent TabMan, because it does local state management
+ * We want this as a distinct element from its parent, because it does local state management
  * and validation that should happen with respect to the (already calculated) props containing
  * filtered windows that we receive from above
  */

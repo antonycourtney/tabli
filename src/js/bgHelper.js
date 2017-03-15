@@ -203,6 +203,7 @@ function registerEventHandlers (uf) {
     })
   })
   chrome.windows.onCreated.addListener(chromeWindow => {
+    console.log('windows.onCreated: ', chromeWindow)
     uf((state) => {
       return state.syncChromeWindow(chromeWindow)
     })
@@ -498,38 +499,33 @@ async function main () {
     const bmStore = await loadSnapState(attachBMStore)
     const prefsStore = await loadPreferences(bmStore)
 
-      // console.log("init: done reading bookmarks and re-attaching: ", bmStore.toJS())
+    window.storeRef = new ViewRef(prefsStore)
+    const storeRefUpdater = refUpdater(window.storeRef)
 
-      // window.winStore = winStore
-    const currentWindow = await chromep.windows.getCurrent(null)
-    // console.log("bgHelper: currentWindow: ", currentWindow)
-    actions.syncChromeWindows((uf) => {
-      console.log('initial sync of chrome windows complete.')
-      const syncedStore = uf(prefsStore).setCurrentWindow(currentWindow)
-      console.log('current window after initial sync: ', syncedStore.currentWindowId,
-                  syncedStore.getCurrentWindow())
-      window.storeRef = new ViewRef(syncedStore)
-      // dumpAll(syncedStore)
-      // dumpChromeWindows()
+    await actions.syncChromeWindows(storeRefUpdater)
+    console.log('initial sync of chrome windows complete.')
+    const syncedStore = await actions.syncCurrent(storeRefUpdater)
+    console.log('current window after initial sync: ', syncedStore.currentWindowId,
+                syncedStore.getCurrentWindow())
+    // dumpAll(syncedStore)
+    // dumpChromeWindows()
 
-      setupConnectionListener(window.storeRef)
+    setupConnectionListener(window.storeRef)
 
-      const storeRefUpdater = refUpdater(window.storeRef)
-      registerEventHandlers(storeRefUpdater)
+    registerEventHandlers(storeRefUpdater)
 
-      // In case of restart: hide any previously open popout that
-      // might be hanging around...
-      // TODO: We MUST chain this action...
-      // actions.hidePopout(syncedStore, storeRefUpdater)
+    // In case of restart: hide any previously open popout that
+    // might be hanging around...
+    // TODO: We MUST chain this action...
+    const noPopStore = await actions.hidePopout(syncedStore, storeRefUpdater)
 
-      if (syncedStore.preferences.popoutOnStart) {
-        actions.showPopout(syncedStore, storeRefUpdater)
+    if (noPopStore.preferences.popoutOnStart) {
+      actions.showPopout(noPopStore, storeRefUpdater)
+    }
+    chrome.commands.onCommand.addListener(command => {
+      if (command === 'show_popout') {
+        actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
       }
-      chrome.commands.onCommand.addListener(command => {
-        if (command === 'show_popout') {
-          actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
-        }
-      })
     })
   } catch (e) {
     console.error('*** caught top level exception: ', e)
