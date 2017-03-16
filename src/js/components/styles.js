@@ -135,7 +135,8 @@ const styles = {
     width: 16,
     height: 16,
     marginLeft: 1,
-    marginRight: 1
+    marginRight: 1,
+    flex: 'none'
   },
   dialogButton: {
     outline: 'none',
