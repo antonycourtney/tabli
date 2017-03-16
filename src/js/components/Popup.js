@@ -101,6 +101,12 @@ const Popup = React.createClass({
     this.closeRevertModal()
   },
 
+  doUpdatePreferences (newPrefs) {
+    console.log('update preferences: ', newPrefs.toJS())
+    actions.savePreferences(newPrefs, refUpdater(this.props.storeRef))
+    this.closePreferencesModal()
+  },
+
   /* render Preferences modal based on storeState.showPreferences */
   renderPreferencesModal () {
     let modal = null
@@ -108,7 +114,9 @@ const Popup = React.createClass({
       modal = (
         <PreferencesModal
           onClose={this.closePreferencesModal}
-          onSubmit={() => {}} />)
+          initialPrefs={this.state.winStore.preferences}
+          storeUpdateHandler={refUpdater(this.props.storeRef)}
+          onSubmit={this.doUpdatePreferences} />)
     }
     return modal
   },

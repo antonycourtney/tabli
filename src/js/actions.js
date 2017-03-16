@@ -1,6 +1,8 @@
 // @flow
 /* globals alert */
+import * as _ from 'lodash'
 import * as utils from './utils'
+import * as prefs from './preferences'
 import tabliBrowser from './chromeBrowser'
 import * as Constants from './components/constants'
 import { TabItem, TabWindow} from './tabWindow' // eslint-disable-line
@@ -12,7 +14,7 @@ type TabId = number
 import type {RefUpdater} from 'oneref'
 import TabManagerState from './tabManagerState'
 
-// type RefUpdater<A> = (uf: ((a: A) => A)) => A
+const USER_PREFS_KEY = 'UserPreferences'
 
 const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html'
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html'
@@ -362,10 +364,8 @@ export const showPopout = async (winStore: TabManagerState, updater: TMSUpdater)
 
 export const hidePopout = async (winStore: TabManagerState, updater: TMSUpdater): TabManagerState => {
   const ptw = winStore.getPopoutTabWindow()
-  console.log('hidePoput: ptw: ', ptw)
   if (ptw) {
     const nextSt = await closeWindow(ptw, updater)
-    console.log('hidePopout: after close, ptw: ', nextSt.getPopoutTabWindow())
     return nextSt
   }
   return winStore
@@ -417,4 +417,31 @@ export function hideRelNotes (winStore: TabManagerState, updater: TMSUpdater) {
 
 export function showRelNotes (winStore: TabManagerState, updater: TMSUpdater) {
   updater(st => st.set('showRelNotes', true))
+}
+
+export const loadPreferences = async (updater: TMSUpdater): TabManagerState => {
+  const items = await chromep.storage.local.get(USER_PREFS_KEY)
+  console.log('loadPreferences: read: ', items, chrome.runtime.lastError)
+  let jsPrefs
+  const prefsStr = items[USER_PREFS_KEY]
+  if (prefsStr) {
+    const storedPrefs = JSON.parse(prefsStr)
+    jsPrefs = _.defaultsDeep(storedPrefs.contents, prefs.defaultPrefsJS)
+  } else {
+    jsPrefs = prefs.defaultPrefsJS
+  }
+  const userPrefs = new prefs.Preferences(jsPrefs)
+
+  console.log('loadPreferences: userPrefs: ', userPrefs.toJS())
+  return updater(st => st.set('preferences', userPrefs))
+}
+
+export const savePreferences = async (userPrefs: prefs.Preferences, updater: TMSUpdater): TabManagerState => {
+  const savedPrefsState = { version: prefs.PREFS_VERSION, contents: userPrefs.toJS() }
+  let saveObj = {}
+  saveObj[USER_PREFS_KEY] = JSON.stringify(savedPrefsState)
+  await chromep.storage.local.set(saveObj)
+  console.log('wrote preferences to local storage: ', savedPrefsState)
+  // and update application state:
+  return updater(st => st.set('preferences', userPrefs))
 }

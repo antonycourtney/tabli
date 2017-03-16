@@ -14,14 +14,11 @@ const chromep = new ChromePromise()
 
 import * as TabWindow from './tabWindow'
 import TabManagerState from './tabManagerState'
-import * as prefs from './preferences'
 import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
 
 import { refUpdater } from 'oneref'
-
-const USER_PREFS_KEY = 'UserPreferences'
 
 const tabmanFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
@@ -472,35 +469,16 @@ async function loadSnapState (bmStore) {
   return sessStore
 }
 
-/*
- * load preferences into an updated application state.
- */
-const loadPreferences = async (st) => {
-  const items = await chromep.storage.local.get(USER_PREFS_KEY)
-  console.log('loadPreferences: read: ', items, chrome.runtime.lastError)
-  let jsPrefs
-  const prefsStr = items[USER_PREFS_KEY]
-  if (prefsStr) {
-    const storedPrefs = JSON.parse(prefsStr)
-    jsPrefs = _.defaultsDeep(storedPrefs.contents, prefs.defaultPrefsJS)
-  } else {
-    jsPrefs = prefs.defaultPrefsJS
-  }
-  const userPrefs = new prefs.Preferences(jsPrefs)
-
-  console.log('loadPreferences: userPrefs: ', userPrefs.toJS())
-  return st.set('preferences', userPrefs)
-}
-
 async function main () {
   try {
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)
     const bmStore = await loadSnapState(attachBMStore)
-    const prefsStore = await loadPreferences(bmStore)
 
-    window.storeRef = new ViewRef(prefsStore)
+    window.storeRef = new ViewRef(bmStore)
     const storeRefUpdater = refUpdater(window.storeRef)
+
+    await actions.loadPreferences(storeRefUpdater)
 
     await actions.syncChromeWindows(storeRefUpdater)
     console.log('initial sync of chrome windows complete.')
