@@ -54,8 +54,14 @@ export const syncChromeWindows = async (updater: TMSUpdater): TabManagerState =>
  * get current chrome window and mark it as current window in store
  */
 export const syncCurrent = async (updater: TMSUpdater): TabManagerState => {
-  const currentChromeWindow = await chromep.windows.getCurrent(null)
-  return updater(st => st.setCurrentWindow(currentChromeWindow))
+  try {
+    const currentChromeWindow = await chromep.windows.getCurrent(null)
+    return updater(st => st.setCurrentWindow(currentChromeWindow))
+  } catch (e) {
+    console.error('syncCurrent: ', e)
+    console.log('(ignoring exception)')
+    return updater(st => st)
+  }
 }
 /**
  * restoreFromAppState
