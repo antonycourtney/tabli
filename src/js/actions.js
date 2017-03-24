@@ -1,6 +1,5 @@
 // @flow
 /* globals alert */
-import * as _ from 'lodash'
 import * as utils from './utils'
 import * as prefs from './preferences'
 import tabliBrowser from './chromeBrowser'
@@ -427,27 +426,18 @@ export function showRelNotes (winStore: TabManagerState, updater: TMSUpdater) {
 
 export const loadPreferences = async (updater: TMSUpdater): TabManagerState => {
   const items = await chromep.storage.local.get(USER_PREFS_KEY)
-  console.log('loadPreferences: read: ', items, chrome.runtime.lastError)
-  let jsPrefs
+  console.log('loadPreferences: read: ', items)
   const prefsStr = items[USER_PREFS_KEY]
-  if (prefsStr) {
-    const storedPrefs = JSON.parse(prefsStr)
-    jsPrefs = _.defaultsDeep(storedPrefs.contents, prefs.defaultPrefsJS)
-  } else {
-    jsPrefs = prefs.defaultPrefsJS
-  }
-  const userPrefs = new prefs.Preferences(jsPrefs)
-
+  const userPrefs = prefs.Preferences.deserialize(prefsStr)
   console.log('loadPreferences: userPrefs: ', userPrefs.toJS())
   return updater(st => st.set('preferences', userPrefs))
 }
 
 export const savePreferences = async (userPrefs: prefs.Preferences, updater: TMSUpdater): TabManagerState => {
-  const savedPrefsState = { version: prefs.PREFS_VERSION, contents: userPrefs.toJS() }
   let saveObj = {}
-  saveObj[USER_PREFS_KEY] = JSON.stringify(savedPrefsState)
+  saveObj[USER_PREFS_KEY] = userPrefs.serialize()
   await chromep.storage.local.set(saveObj)
-  console.log('wrote preferences to local storage: ', savedPrefsState)
+  console.log('wrote preferences to local storage: ', saveObj)
   // and update application state:
   return updater(st => st.set('preferences', userPrefs))
 }
