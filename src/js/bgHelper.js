@@ -483,8 +483,6 @@ async function main () {
     await actions.syncChromeWindows(storeRefUpdater)
     console.log('initial sync of chrome windows complete.')
     const syncedStore = await actions.syncCurrent(storeRefUpdater)
-    console.log('current window after initial sync: ', syncedStore.currentWindowId,
-                syncedStore.getCurrentWindow())
     // dumpAll(syncedStore)
     // dumpChromeWindows()
 
