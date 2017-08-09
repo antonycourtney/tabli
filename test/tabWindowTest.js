@@ -51,7 +51,7 @@ test('chromeTabWindow', (t) => {
   {
     "saved": false,
     "savedTitle": "",
-    "savedFolderId": -1,
+    "savedFolderId": "",
     "open": true,
     "openWindowId": 442,
     "windowType": "normal",

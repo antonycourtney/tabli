@@ -131,11 +131,13 @@ function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, upda
     updater((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
 
-  if (tabWindow.snapshot && tabWindow.chromeSessionId) {
-    console.log('restoring chrome session id ', tabWindow.chromeSessionId)
+  const chromeSessionId = tabWindow.chromeSessionId
+
+  if (tabWindow.snapshot && chromeSessionId) {
+    console.log('restoring chrome session id ', chromeSessionId)
     // TODO: may want to re-validate the session id by
     // calling chrome.sessions.getRecentlyClosed...
-    chrome.sessions.restore(tabWindow.chromeSessionId, rs => {
+    chrome.sessions.restore(chromeSessionId, rs => {
       if (chrome.runtime.lastError) {
         console.warn('Caught exception restoring via session API: ', chrome.runtime.lastError.message)
         console.warn('(restoring from Tabli state)')
@@ -189,7 +191,7 @@ export function saveTab (tabWindow: TabWindow, tabItem: TabItem, updater: TMSUpd
 }
 
 export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem, updater: TMSUpdater) {
-  chrome.bookmarks.remove(tabItem.savedState.bookmarkId, () => {
+  chrome.bookmarks.remove(tabItem.safeSavedState.bookmarkId, () => {
     updater((state) => state.handleTabUnsaved(tabWindow, tabItem))
   })
 }
@@ -229,7 +231,7 @@ export function activateTab (
               chrome.windows.update(tabWindow.openWindowId, { focused: true })
             })
       */
-      tabliBrowser.activateTab(tab.openState.openTabId, () => {
+      tabliBrowser.activateTab(tab.safeOpenState.openTabId, () => {
         tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId)
       })
     } else {
@@ -259,8 +261,8 @@ export function revertWindow (tabWindow: TabWindow, updater: TMSUpdater) {
    * Instead we'll try just removing the unsaved tabs and re-opening any saved, closed tabs.
    * This has the downside of not removing duplicates of any saved tabs.
    */
-  const unsavedOpenTabIds = tabWindow.tabItems.filter((ti) => ti.open && !ti.saved).map((ti) => ti.openState.openTabId).toArray()
-  const savedClosedUrls = tabWindow.tabItems.filter((ti) => !ti.open && ti.saved).map((ti) => ti.savedState.url).toArray()
+  const unsavedOpenTabIds = tabWindow.tabItems.filter((ti) => ti.open && !ti.saved).map((ti) => ti.safeOpenState.openTabId).toArray()
+  const savedClosedUrls = tabWindow.tabItems.filter((ti) => !ti.open && ti.saved).map((ti) => ti.safeSavedState.url).toArray()
 
   // re-open saved URLs:
   // We need to do this before removing tab ids or window could close if all unsaved
@@ -399,7 +401,7 @@ export function moveTabItem (
     return
   }
 
-  const tabId = sourceTabItem.openState.openTabId
+  const tabId = sourceTabItem.safeOpenState.openTabId
   if (!targetTabWindow.open) {
     console.log('moveTabItem: target tab window not open, ignoring...')
     return

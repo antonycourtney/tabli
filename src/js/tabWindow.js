@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * Representation of tabbed windows using Immutable.js
  */
@@ -7,17 +8,22 @@ import * as Immutable from 'immutable'
 /**
  * Tab state that is persisted as a bookmark
  */
-const SavedTabState = Immutable.Record({
+export class SavedTabState extends Immutable.Record({
   bookmarkId: '',
   bookmarkIndex: 0, // position in bookmark folder
   title: '',
   url: ''
-})
+}) {
+  bookmarkId: string
+  bookmarkIndex: number
+  title: string
+  url: string
+}
 
 /**
  * Tab state associated with an open browser tab
  */
-const OpenTabState = Immutable.Record({
+export class OpenTabState extends Immutable.Record({
   url: '',
   openTabId: -1,
   active: false,
@@ -26,7 +32,16 @@ const OpenTabState = Immutable.Record({
   title: '',
   audible: false,
   pinned: false
-})
+}) {
+  url: string
+  openTabId: number
+  active: boolean
+  openTabIndex: number
+  favIconUrl: string
+  title: string
+  audible: boolean
+  pinned: boolean
+}
 
 /**
  * An item in a tabbed window.
@@ -40,28 +55,50 @@ export class TabItem extends Immutable.Record({
   open: false, // Note: Saved tabs may be closed even when containing window is open
   openState: null // OpenTabState iff open
 }) {
-  get title () {
-    if (this.open) {
+  saved: boolean
+  savedState: ?SavedTabState
+  open: boolean
+  openState: ?OpenTabState
+
+  get title (): string {
+    if (this.open && this.openState) {
       return this.openState.title
     }
 
-    return this.savedState.title
+    return this.savedState ? this.savedState.title : ''
   }
 
-  get url () {
-    if (this.open) {
+  get url (): string {
+    if (this.open && this.openState) {
       return this.openState.url
     }
 
-    return this.savedState.url
+    return (this.savedState ? this.savedState.url : '')
   }
 
-  get pinned () {
-    if (this.open) {
+  get pinned (): boolean {
+    if (this.open && this.openState) {
       return this.openState.pinned
     }
     return false
   }
+
+  // safe accessor for savedState:
+  get safeSavedState (): SavedTabState {
+    if (this.saved && this.savedState) {
+      return this.savedState
+    }
+    throw new Error('Unexpected access of savedState on unsaved tab')
+  }
+
+  // safe accessor for openState:
+  get safeOpenState (): OpenTabState {
+    if (this.open && this.openState) {
+      return this.openState
+    }
+    throw new Error('Unexpected access of openState on non-open tab')
+  }
+
 }
 
 function tabItemReviver (k, v) {
@@ -76,7 +113,7 @@ function tabItemReviver (k, v) {
 /**
  * convert a JS object to a TabItem
  */
-export function tabItemFromJS (js) {
+export function tabItemFromJS (js: Object) {
   const tiMap = Immutable.fromJS(js, tabItemReviver)
   return new TabItem(tiMap)
 }
@@ -87,7 +124,7 @@ export function tabItemFromJS (js) {
  * NOTE (!!): Only used during initial construction of a saved or open window, because
  * open tab items don't maintain openTabIndex in response to tab events.
  */
-export function tabItemCompare (tiA, tiB) {
+export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
   // open items before non-open items:
   if (tiA.open !== tiB.open) {
     if (tiA.open) {
@@ -95,7 +132,7 @@ export function tabItemCompare (tiA, tiB) {
     }
     return 1
   }
-  if (tiA.open) {
+  if (tiA.open && tiA.openState && tiB.openState) {
     // both open, use openTabIndex for comparison:
     const ret = tiA.openState.openTabIndex - tiB.openState.openTabIndex
     if (ret === 0) {
@@ -104,7 +141,10 @@ export function tabItemCompare (tiA, tiB) {
     return ret
   }
   // both closed and saved, use bookmark index:
-  const sret = tiA.savedState.bookmarkIndex - tiB.savedState.bookmarkIndex
+  let sret = 0
+  if (tiA.savedState && tiB.savedState) {
+    sret = tiA.savedState.bookmarkIndex - tiB.savedState.bookmarkIndex
+  }
   if (sret === 0) {
     console.warn('unexpected equal bookmarkIndex vals:', tiA.toJS(), tiB.toJS())
   }
@@ -175,7 +215,7 @@ function makeOpenTabItem (tab) {
 /**
  * Returns the base saved state of a tab item (no open tab info)
  */
-export function resetSavedItem (ti) {
+export function resetSavedItem (ti: TabItem): TabItem {
   return ti.remove('open').remove('openState')
 }
 
@@ -184,7 +224,7 @@ export function resetSavedItem (ti) {
  * is actually open.
  * Used when creating snapshot state for later session restore.
  */
-function cleanOpenState (ti) {
+function cleanOpenState (ti: TabItem): TabItem {
   if (!ti.open) {
     return ti
   }
@@ -194,7 +234,7 @@ function cleanOpenState (ti) {
 /**
  * Return the base state of an open tab (no saved tab info)
  */
-function resetOpenItem (ti) {
+function resetOpenItem (ti: TabItem): TabItem {
   return ti.remove('saved').remove('savedState')
 }
 
@@ -203,11 +243,14 @@ function resetOpenItem (ti) {
  * Since just used on a page title, just rewrite pipes to -s; GFM actually
  * buggy here: https://github.com/gitlabhq/gitlabhq/issues/1238
  */
-function escapeTableCell (s) {
-  if (s.indexOf('|') >= 0) {
+function escapeTableCell (s: ?string): string {
+  if (s && s.indexOf('|') >= 0) {
     return s.replace(/\|/g, '-')
   }
-  return s
+  if (s != null) {
+    return s
+  }
+  return ''
 }
 
 /**
@@ -229,7 +272,7 @@ function escapeTableCell (s) {
 export class TabWindow extends Immutable.Record({
   saved: false,
   savedTitle: '',
-  savedFolderId: -1,
+  savedFolderId: '',
 
   open: false,
   openWindowId: -1,
@@ -248,8 +291,21 @@ export class TabWindow extends Immutable.Record({
   // and cost to factor out view state would be high.
   expanded: null   // tri-state: null, true or false
 }) {
+  saved: boolean
+  savedTitle: string
+  savedFolderId: string
 
-  get title () {
+  open: boolean
+  openWindowId: number
+  windowType: string
+  width: number
+  height: number
+  tabItems: Immutable.List<TabItem>
+  snapshot: boolean
+  chromeSessionId: ?string
+  expanded: ?boolean
+
+  get title (): string {
     if (this._title === undefined) {
       this._title = this.computeTitle()
     }
@@ -257,7 +313,7 @@ export class TabWindow extends Immutable.Record({
     return this._title
   }
 
-  computeTitle () {
+  computeTitle (): string {
     if (this.saved) {
       return this.savedTitle
     }
@@ -280,7 +336,7 @@ export class TabWindow extends Immutable.Record({
 
   // get a unique id for this window
   // useful as key in React arrays
-  get id () {
+  get id (): string {
     if (this._id === undefined) {
       if (this.saved) {
         this._id = '_saved' + this.savedFolderId
@@ -291,18 +347,19 @@ export class TabWindow extends Immutable.Record({
     return this._id
   }
 
-  get openTabCount () {
+  get openTabCount (): number {
     return this.tabItems.count((ti) => ti.open)
   }
 
   /*
    * Returns [index,TabItem] pair if window contains chrome tab id or else undefined
    */
-  findChromeTabId (tabId) {
-    return this.tabItems.findEntry((ti) => ti.open && ti.openState.openTabId === tabId)
+  findChromeTabId (tabId: number): ?([number, TabItem]) {
+    return this.tabItems.findEntry((ti) => ti.open &&
+      ti.openState && ti.openState.openTabId === tabId)
   }
 
-  getActiveTabId () {
+  getActiveTabId (): ?string {
     const activeTab = this.tabItems.find((t) => t.open && t.openState.active)
     const tabId = activeTab ? activeTab.openState.openTabId : undefined
     return tabId
@@ -317,7 +374,7 @@ export class TabWindow extends Immutable.Record({
    * result in nextItems being a List.
    * Seems to make the most sentence to just make tabItems a List not a Seq
    */
-  setTabItems (nextItems) {
+  setTabItems (nextItems: Immutable.List<TabItem>): TabWindow {
     /* HACK: debugging only check; get rid of this! */
     if (!nextItems) {
       console.error('setTabItems: bad nextItems: ', nextItems)
@@ -325,9 +382,10 @@ export class TabWindow extends Immutable.Record({
     return this.set('tabItems', nextItems)
   }
 
-  exportStr () {
+  exportStr (): string {
     const fmtTabItem = ti => {
-      const ret = escapeTableCell(ti.title) + ' | ' + ti.url + '\n'
+      const urls = (ti.url != null) ? ti.url : ''
+      const ret = escapeTableCell(ti.title) + ' | ' + urls + '\n'
       return ret
     }
     const titleStr = '### ' + this.title
@@ -341,7 +399,7 @@ Title                                  | URL
   }
 
   // combine local expanded state with global expanded state to determine if expanded:
-  isExpanded (winStore) {
+  isExpanded (winStore: any): ?boolean {
     if (this.expanded === null) {
       return (winStore.expandAll && this.open)
     }
@@ -355,7 +413,8 @@ Title                                  | URL
  * relevant to open windows.
  *
  */
-export function removeOpenWindowState (tabWindow, snapshot = true) {
+export function removeOpenWindowState (tabWindow: TabWindow,
+    snapshot: boolean = true): TabWindow {
   // update tabItems by removing openTabId from any open items:
   const tabItems = tabWindow.tabItems
   let updTabItems
@@ -386,14 +445,14 @@ export function removeOpenWindowState (tabWindow, snapshot = true) {
  *
  * Used when unsave'ing a saved window
  */
-export function removeSavedWindowState (tabWindow) {
+export function removeSavedWindowState (tabWindow: TabWindow): TabWindow {
   return tabWindow.remove('saved').remove('savedFolderId').remove('savedTitle')
 }
 
 /**
  * Initialize an unopened TabWindow from a bookmarks folder
  */
-export function makeFolderTabWindow (bookmarkFolder) {
+export function makeFolderTabWindow (bookmarkFolder: any): TabWindow {
   const itemChildren = bookmarkFolder.children.filter((node) => 'url' in node)
   const tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem))
   var fallbackTitle = ''
@@ -417,7 +476,7 @@ export function makeFolderTabWindow (bookmarkFolder) {
 /**
  * Initialize a TabWindow from an open Chrome window
  */
-export function makeChromeTabWindow (chromeWindow) {
+export function makeChromeTabWindow (chromeWindow: any): TabWindow {
   const chromeTabs = chromeWindow.tabs ? chromeWindow.tabs : []
   const tabItems = chromeTabs.map(makeOpenTabItem)
   const tabWindow = new TabWindow({
@@ -439,9 +498,10 @@ export function makeChromeTabWindow (chromeWindow) {
  *
  * @return {List<TabItem>}
  */
-export function mergeSavedOpenTabs (savedItems, openItems) {
+export function mergeSavedOpenTabs (savedItems: Immutable.List<TabItem>,
+    openItems: Immutable.List<TabItem>): Immutable.List<TabItem> {
   const openUrlSet = Immutable.Set(openItems.map(ti => ti.url))
-  const savedUrlMap = Immutable.Map(savedItems.map(ti => [ti.savedState.url, ti]))
+  const savedUrlMap = Immutable.Map(savedItems.map(ti => [ti.safeSavedState.url, ti]))
 
   /*
    * openTabItems for result -- just map over openItems, enriching with saved state if
@@ -450,14 +510,16 @@ export function mergeSavedOpenTabs (savedItems, openItems) {
    * is crucial since openTabIndex isn't maintained in tab update events.
    */
   const openTabItems = openItems.map(openItem => {
-    const savedItem = savedUrlMap.get(openItem.openState.url, null)
+    const savedItem = (openItem.openState
+      ? savedUrlMap.get(openItem.openState.url, null) : null)
     const mergedItem = savedItem ? openItem.set('saved', true)
       .set('savedState', savedItem.savedState) : openItem
     return mergedItem
   })
 
   // now grab those saved items that aren't currently open:
-  const closedTabItems = savedItems.filter(savedItem => !openUrlSet.has(savedItem.savedState.url))
+  const closedTabItems = savedItems.filter(savedItem =>
+     savedItem.savedState && !openUrlSet.has(savedItem.savedState.url))
 
   const mergedTabItems = openTabItems.concat(closedTabItems)
 
@@ -509,7 +571,7 @@ function mergeTabWindowTabItems (tabWindow, optChromeTab) {
  * @param {TabWindow} tabWindow - TabWindow to be updated
  * @param {Tab} tab - newly created Chrome tab
  */
-export function createTab (tabWindow, tab) {
+export function createTab (tabWindow: TabWindow, tab: any): TabWindow {
   return mergeTabWindowTabItems(tabWindow, tab)
 }
 
@@ -521,7 +583,7 @@ export function createTab (tabWindow, tab) {
  *
  * @return {TabWindow} Updated TabWindow
  */
-export function updateWindow (tabWindow, chromeWindow) {
+export function updateWindow (tabWindow: TabWindow, chromeWindow: any): TabWindow {
   const mergedTabItems = mergeOpenTabs(tabWindow.tabItems, chromeWindow.tabs)
   const updWindow = tabWindow
     .setTabItems(mergedTabItems)
@@ -541,7 +603,7 @@ export function updateWindow (tabWindow, chromeWindow) {
  *
  * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
  */
-export function closeTab (tabWindow, tabId) {
+export function closeTab (tabWindow: TabWindow, tabId: number): TabWindow {
   // console.log("closeTab: ", tabWindow, tabId)
   const entry = tabWindow.findChromeTabId(tabId)
 
@@ -572,8 +634,14 @@ export function closeTab (tabWindow, tabId) {
  *
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
-export function saveTab (tabWindow, tabItem, tabNode) {
-  var [index] = tabWindow.findChromeTabId(tabItem.openState.openTabId)
+export function saveTab (tabWindow: TabWindow,
+    tabItem: TabItem, tabNode: any): TabWindow {
+  const entry = tabWindow.findChromeTabId(tabItem.safeOpenState.openTabId)
+  if (!entry) {
+    console.error('saveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
+    return tabWindow
+  }
+  const [index] = entry
 
   const savedState = new SavedTabState(tabNode)
 
@@ -593,8 +661,13 @@ export function saveTab (tabWindow, tabItem, tabNode) {
  *
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
-export function unsaveTab (tabWindow, tabItem) {
-  var [index] = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.savedState.bookmarkId === tabItem.savedState.bookmarkId)
+export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem) {
+  const entry = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.safeSavedState.bookmarkId === tabItem.safeSavedState.bookmarkId)
+  if (!entry) {
+    console.error('saveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
+    return tabWindow
+  }
+  var [index] = entry
   const updTabItem = resetOpenItem(tabItem)
 
   var updItems
@@ -616,7 +689,7 @@ export function unsaveTab (tabWindow, tabItem) {
  *
  * @return {TabWindow} tabWindow updated with specified tab as active tab.
  */
-export function setActiveTab (tabWindow, tabId) {
+export function setActiveTab (tabWindow: TabWindow, tabId: number) {
   const tabPos = tabWindow.findChromeTabId(tabId)
 
   if (!tabPos) {
@@ -632,12 +705,12 @@ export function setActiveTab (tabWindow, tabId) {
 
   // mark all other tabs as not active:
   const tabItemRemoveActive = (ti) => {
-    return (ti.open ? ti.set('openState', ti.openState.remove('active')) : ti)
+    return (ti.open ? ti.set('openState', ti.safeOpenState.remove('active')) : ti)
   }
 
   const nonActiveItems = tabWindow.tabItems.map(tabItemRemoveActive)
 
-  const updOpenState = tabItem.openState.set('active', true)
+  const updOpenState = tabItem.safeOpenState.set('active', true)
   const updActiveTab = tabItem.set('openState', updOpenState)
   const updItems = nonActiveItems.splice(index, 1, updActiveTab)
 
@@ -655,7 +728,7 @@ export function setActiveTab (tabWindow, tabId) {
  *
  * @return {TabWindow} tabWindow with updated tab state
  */
-export function updateTabItem (tabWindow, tabId, changeInfo) {
+export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: Object) {
   const tabPos = tabWindow.findChromeTabId(tabId)
 
   var updItems
@@ -666,6 +739,10 @@ export function updateTabItem (tabWindow, tabId, changeInfo) {
   }
   const [index, prevTabItem] = tabPos
   const prevOpenState = prevTabItem.openState
+  if (prevOpenState == null) {
+    console.error('updateTabItem: unexpected null open state: ', prevTabItem)
+    return tabWindow
+  }
   const updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo))
 
   if (updKeys.length === 0) {
