@@ -20,6 +20,12 @@ import ViewRef from './viewRef'
 
 import { refUpdater } from 'oneref'
 
+/*
+import * as searchOps from './searchOps'
+import ChromePromise from 'chrome-promise'
+const chromep = new ChromePromise()
+*/
+
 const tabmanFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
 
@@ -189,6 +195,63 @@ function onTabRemoved (uf, windowId, tabId) {
   })
 }
 
+/*
+ * A little helper for running an async function returning a
+ * state -> state update function from a non-async context,
+ * which becomes a Promise<state -> state)
+ */
+/*
+const asyncRunner = (uf) => (af) => {
+  let stp = af()
+  stp.then(sf => uf(sf))
+    .catch(err => {
+      console.error('asyncRunner: error executing async function: ', err)
+    })
+}
+*/
+
+/*
+ * It's super gross to use the uf to grab state, pass it along
+ * to actions, and return a state->state updater, but we both want to use the current state and ensure
+ * that we update the latest version of state after any async actions
+ */
+/*
+ * TODO
+const depudeTab = async (uf, tabId, changeInfo, tab) => {
+  uf(state => {
+  const url = changeInfo.url
+  if (url != null) {
+    const urlRE = new RegExp('^' + url + '$')
+    // call searchOps...
+    const openWindows = this.getOpen().toArray()
+    const filteredWindows = searchOps.filterTabWindows(openWindows,
+      urlRE, {matchUrl: true})
+    if (filteredWindows.length > 0) {
+      const ftw = filteredWindows[0]
+      const {tabWindow: targetTabWindow, itemMatches} = ftw
+      const targetTab = itemMatches.first()
+      console.log('handleTabUpdated: duplicate url detected - closing tab')
+      await chromep.tabs.remove(tabId)
+      console.log('handleTabUpdated: tab closed, switching to existing tab:')
+      const currentWindow = this.getCurrentWindow()
+      actions.activateTab(currentWindow, targetTabWindow, targetTab, 0, uf)
+    }
+  }
+}
+*/
+
+const onTabUpdated = (uf, tabId, changeInfo, tab) => {
+  uf(state => {
+    const tabWindow = state.getTabWindowByChromeId(tab.windowId)
+    if (!tabWindow) {
+      console.warn('tabs.onUpdated: window id not found: ', tab.windowId)
+      return state
+    }
+    return state.handleTabUpdated(tabWindow, tabId, changeInfo)
+  })
+  /* asyncRunner(uf)(async () => dedupeTab(uf, tabId, changeInfo, tab)) */
+}
+
 function registerEventHandlers (uf) {
   // window events:
   chrome.windows.onRemoved.addListener((windowId) => {
@@ -218,16 +281,8 @@ function registerEventHandlers (uf) {
 
   // tab events:
   chrome.tabs.onCreated.addListener(tab => onTabCreated(uf, tab))
-  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    uf(state => {
-      const tabWindow = state.getTabWindowByChromeId(tab.windowId)
-      if (!tabWindow) {
-        console.warn('tabs.onUpdated: window id not found: ', tab.windowId)
-        return state
-      }
-      return state.handleTabUpdated(tabWindow, tabId, changeInfo)
-    })
-  })
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) =>
+    onTabUpdated(uf, tabId, changeInfo, tab))
   chrome.tabs.onActivated.addListener(activeInfo => {
     // console.log("tabs.onActivated: ", activeInfo)
     uf((state) => {

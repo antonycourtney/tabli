@@ -109,7 +109,7 @@ X Keep track of popup window so we can close it on restart
 
 X Reset search field on Enter or ESC
 
-- Format source using 'standard' 
+- Format source using 'standard'
 https://www.npmjs.com/package/standard
 
 X  Right now we transfer selection to the active window and active tab when we get a window focus change event.  For consistency we should also transfer when we get an active tab change event.
@@ -118,9 +118,12 @@ X BUG: New Tab doesn't seem to change title / URL. Repro: click on new tab on ta
 Conjecture:  Need to handle 'tab replaced' event
 
 X(?) Getting exceptions in revert modal:
+
+```
   RevertModal.js:32 Uncaught TypeError: Cannot read property 'favIconUrl' of null
-  
+
   2ReactCompositeComponent.js:559 Uncaught TypeError: Cannot read property '_currentElement' of null
+```
 
 X Need to clear search field after opening a window or tab.  Current cleared on <Enter> key, but not on mouse click.
 
@@ -183,7 +186,7 @@ X Need to deal better with not having a current window (esp. on startup).  Shoul
   - pick 0th window (if there is one)
   - use "sensible" window width / height if no current window available
   Easy repro: Reload in popout window. (Note: If we have a previously saved "current" window,
-  use that instead of updating current) 
+  use that instead of updating current)
 
 =======
 *** Critical issue, 2May16:
@@ -220,4 +223,75 @@ $ node-inspector --web-host 0.0.0.0
 http://127.0.0.1:8080/?ws=127.0.0.1:8080&port=8010
 
 What worked (kind of) was running node directly via tests/leakTestWrap.
+===========
 
+Revisiting Tabli, 8/13/17
+
+Attempting to implement URL de-dup'ing, I've again hit a case where we want to compose multiple independent actions that may update app state in response to a single external event.
+(This isn't the first time -- the entire sequence of actions in main() in bgHelper had
+ this issue at some point.)
+
+I will probably kludge this for now because the surgery involved would be just too costly.
+But my inclination about the right solution is something along the lines of a state monad
+and / or Redux Saga.
+
+What we want:
+    - Composition of state updates: If we have two independents actions that update the global
+      application state, we need to ensure that both state updates are applied (i.e. that
+      neither update gets lost).
+    - Asynchronous state handling:  We will often need to update state after an asynchronous
+      action has been performed.  If the update depends on the current state (which it often
+      will), we want to ensure that the state is read *after* the asynchronous action has
+      been performed.
+
+How things work now:
+
+From OneRef, we get our hands on an explicit State Updater:
+
+```
+  refUpdater: (ref: Ref<A>) => (uf: (A) => A) => A
+```
+
+We pass this as an extra argument to all of our actions, for example:
+
+```
+  <input ... onChange={() => actions.updateText(item, text, stateRefUpdater)}
+```
+
+and then in `actions`, each action explicitly calls stateRefUpdater, like so:
+
+```
+export function updateText(item, text, updater) {
+  const updatedItem = item.set('text',text)
+  updater((state) => state.addItem(updatedItem))
+}
+```
+
+What I think we want instead is something like a State Monad (SM) for OneRef.
+Like a monad, actions would no longer perform the actions directly but instead
+return a data structure or thunk that denotes a description of the interleaved
+state updates and asynchronous actions to perform.
+At the top level of a React event callback we would have a run() method to
+execute an action.
+
+So we'd get something like this:
+
+```
+  <input ... onChange={() => runAction(actions.updateText(item, text)) }
+```
+where `runAction` is passed down prop that is `oneref.run` partially applied to
+the state ref.
+
+Instead of returning `void`, each action would now have to return a
+`state -> state` update function.
+
+Questions:
+   - Should wrapped type be: state => state, or (state => (state,a)) ?
+   - How does 'async' (or possibly generator functions) fit here?
+     It seems somewhat tempting to have an action be an async function that
+     returns a State Transformer (state -> state function), but how will
+     that work with sequences of async calls in the body of the async
+     functions?
+     Can actions, which return State Transformers, directly call other actions?
+     How do we ensure that we are always operating on the latest state
+     after an async call to either a platform API or another action?

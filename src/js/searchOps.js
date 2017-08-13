@@ -6,6 +6,21 @@ import * as _ from 'lodash'
 import * as Immutable from 'immutable'
 import * as TW from './tabWindow'
 
+type SearchSpec = string | RegExp
+/*
+ * note that matchURL and matchTitle are effectively OR'ed -- if matchURL and
+ * matchTitle are both true, a tab will match if either the url or title
+ * matches.
+ */
+type SearchOpts = {
+  matchUrl: boolean,
+  matchTitle: boolean
+}
+const defaultSearchOpts : SearchOpts = {
+  matchUrl: true,
+  matchTitle: true
+}
+
 /**
  * A TabItem augmented with search results
  */
@@ -21,14 +36,21 @@ const FilteredTabItem = Immutable.Record({
  *
  * @return {FilteredTabItem} filtered item (or null if no match)
  */
-export function matchTabItem (tabItem: TW.TabItem, searchExp: string) {
-  var urlMatches = tabItem.url.match(searchExp)
-  var titleMatches = tabItem.title.match(searchExp)
+export function matchTabItem (tabItem: TW.TabItem,
+  searchExp: SearchSpec, options: SearchOpts): ?FilteredTabItem {
+  let urlMatches = null
+  if (options.matchUrl) {
+    urlMatches = tabItem.url.match(searchExp)
+  }
+  let titleMatches = null
+  if (options.matchTitle) {
+    titleMatches = tabItem.title.match(searchExp)
+  }
 
   if (urlMatches === null && titleMatches === null) {
     return null
   }
-
+  // console.log('matchTabItem: ', urlMatches, titleMatches)
   return new FilteredTabItem({ tabItem, urlMatches, titleMatches })
 }
 
@@ -45,9 +67,16 @@ const FilteredTabWindow = Immutable.Record({
  * Match a TabWindow using a Regexp
  *
  */
-export function matchTabWindow (tabWindow: TW.TabWindow, searchExp: string) {
-  const itemMatches = tabWindow.tabItems.map((ti) => matchTabItem(ti, searchExp)).filter((fti) => fti !== null)
-  const titleMatches = tabWindow.title.match(searchExp)
+export function matchTabWindow (tabWindow: TW.TabWindow,
+    searchExp: SearchSpec,
+    options: SearchOpts): ?FilteredTabWindow {
+  const itemMatches =
+    tabWindow.tabItems.map((ti) =>
+      matchTabItem(ti, searchExp, options)).filter((fti) => fti !== null)
+  let titleMatches = null
+  if (options.matchTitle) {
+    titleMatches = tabWindow.title.match(searchExp)
+  }
 
   if (titleMatches === null && itemMatches.count() === 0) {
     return null
@@ -60,12 +89,14 @@ export function matchTabWindow (tabWindow: TW.TabWindow, searchExp: string) {
  * filter an array of TabWindows using a searchRE to obtain
  * an array of FilteredTabWindow
  */
-export function filterTabWindows (tabWindows: Array<TW.TabWindow>, searchExp: string): Array<FilteredTabWindow> {
+export function filterTabWindows (tabWindows: Array<TW.TabWindow>,
+    searchExp: SearchSpec,
+    options: SearchOpts = defaultSearchOpts): Array<FilteredTabWindow> {
   var res
   if (searchExp === null) {
     res = _.map(tabWindows, (tw) => new FilteredTabWindow({ tabWindow: tw }))
   } else {
-    const mappedWindows = _.map(tabWindows, (tw) => matchTabWindow(tw, searchExp))
+    const mappedWindows = _.map(tabWindows, (tw) => matchTabWindow(tw, searchExp, options))
     res = _.filter(mappedWindows, (fw) => fw !== null)
   }
 
