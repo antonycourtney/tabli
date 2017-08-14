@@ -5,13 +5,12 @@ import * as prefs from './preferences'
 import tabliBrowser from './chromeBrowser'
 import * as Constants from './components/constants'
 import { TabItem, TabWindow} from './tabWindow' // eslint-disable-line
+import type {RefUpdater} from 'oneref'
+import TabManagerState from './tabManagerState'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
 
 type TabId = number
-
-import type {RefUpdater} from 'oneref'
-import TabManagerState from './tabManagerState'
 
 const USER_PREFS_KEY = 'UserPreferences'
 

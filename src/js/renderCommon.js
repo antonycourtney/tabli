@@ -28,7 +28,7 @@ export function renderPopup (
   var parentNode = document.getElementById('windowList-region')
 
   var appElement = <Popup storeRef={storeRef} initialWinStore={storeRef.getValue()} isPopout={isPopout} />
-  var appComponent = ReactDOM.render(appElement, parentNode, () => { // eslint-disable-line no-unused-vars
+  ReactDOM.render(appElement, parentNode, () => { // eslint-disable-line no-unused-vars
     const searchBoxElem = document.getElementById('searchBox')
     if (searchBoxElem) {
       searchBoxElem.focus()

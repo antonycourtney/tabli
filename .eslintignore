@@ -2,6 +2,8 @@
 
 # Ignore build folder
 build
+lib
+flow-typed
 
 # Ignore config stuff
 server.*.js

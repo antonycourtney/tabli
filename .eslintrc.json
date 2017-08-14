@@ -1,0 +1,30 @@
+{
+  "extends": ["standard", "plugin:react/recommended"],
+  "parser": "babel-eslint",
+  "plugins": [
+    "standard", "flowtype", "react"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true
+  },
+  "globals": {
+    "chrome": true
+  },
+  "rules": {
+    "comma-dangle": 0,
+    "indent": [2, 2, {"SwitchCase": 1}],
+    "react/prop-types": 0,
+    "camelcase": 0,
+    "no-var": 0,
+    "vars-on-top": 0,
+    "no-console": 0,
+    "no-alert": 0,
+    "new-cap": 0,
+    "react/sort-comp": 0,
+    "react/jsx-indent-props": 0,
+    "react/prefer-es6-class": 0,
+    "max-len": 0
+  }
+}

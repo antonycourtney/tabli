@@ -98,7 +98,6 @@ export class TabItem extends Immutable.Record({
     }
     throw new Error('Unexpected access of openState on non-open tab')
   }
-
 }
 
 function tabItemReviver (k, v) {
@@ -405,7 +404,6 @@ Title                                  | URL
     }
     return this.expanded
   }
-
 }
 
 /**

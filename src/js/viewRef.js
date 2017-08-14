@@ -111,5 +111,4 @@ export default class ViewRef extends OneRef.Ref {
     }
     super.setValue(appState)
   }
-
 }

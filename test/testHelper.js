@@ -1,9 +1,8 @@
 import jsdom from 'jsdom'
+const dom = new jsdom.JSDOM('<!doctype html><html><body></body></html>')
+const win = dom.window
 
-const doc = jsdom.jsdom('<!doctype html><html><body></body></html>')
-const win = doc.defaultView
-
-global.document = doc
+global.document = win.document
 global.window = win
 
 Object.keys(window).forEach((key) => {

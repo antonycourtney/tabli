@@ -9,16 +9,14 @@
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
 import * as semver from 'semver'
-import ChromePromise from 'chrome-promise'
-const chromep = new ChromePromise()
-
 import * as TabWindow from './tabWindow'
 import TabManagerState from './tabManagerState'
 import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
-
 import { refUpdater } from 'oneref'
+import ChromePromise from 'chrome-promise'
+const chromep = new ChromePromise()
 
 /*
 import * as searchOps from './searchOps'
@@ -526,6 +524,7 @@ async function loadSnapState (bmStore) {
 
 async function main () {
   try {
+    console.log('bgHelper started...')
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)
     const bmStore = await loadSnapState(attachBMStore)
