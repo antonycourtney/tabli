@@ -48,14 +48,6 @@
     "file-loader": "^0.11.2",
     "filesize": "^3.5.10",
     "flow-interfaces-chrome": "^0.3.1",
-    "gulp": "^3.9.1",
-    "gulp-build-branch": "^0.1.4",
-    "gulp-clean": "^0.3.2",
-    "gulp-html-tag-include": "^1.0.1",
-    "gulp-react": "^3.1.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-subtree": "^0.1.0",
-    "gulp-util": "^3.0.8",
     "html-loader": "^0.5.1",
     "image-webpack-loader": "^3.3.1",
     "jsdom": "^11.1.0",
@@ -95,7 +87,6 @@
       "performance"
     ],
     "ignore": [
-      "gulpfile.js",
       "webpack.config.js"
     ],
     "parser": "babel-eslint",
