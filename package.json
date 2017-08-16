@@ -72,10 +72,22 @@
     "webpack": "^3.5.4"
   },
   "scripts": {
-    "lint": "eslint .",
-    "test": "eslint . && babel-node --presets es2015,react,stage-3 ./test/runAllTests.js | tap-spec",
+    "build:dir": "mkdirp build && mkdirp build/css && mkdirp build/js && mkdirp build/fonts && mkdirp build/images && mkdirp build/testData",
+    "build:bootstrap": "cp -r node_modules/bootstrap/dist/* build",
+    "build:jquery": "cp -r node_modules/jquery/dist/* build/js",
+    "build:fa": "cp -r node_modules/font-awesome/css/* build/css && cp -r node_modules/font-awesome/fonts/* build/fonts",
+    "build:html": "cp -r src/css/* build/css && cp -r src/html/* build",
+    "build:images": "cp -r src/images/* src/assets/*.png build/images",
+    "build:testData": "cp -r test/*.json build/testData",
+    "build:manifest": "cp src/manifest.json build",
+    "build-assets": "npm run build:dir && npm run build:jquery && npm run build:bootstrap && npm run build:fa && npm run build:html && npm run build:images && npm run build:testData && npm run build:manifest",
+    "build-dev": "npm run build-assets && webpack --env=dev",
+    "build-prod": "npm run build-assets && webpack --env=prod",
+    "clean": "rm -rf ./build",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "leaktest": "babel-node --expose-gc --presets es2015,react,stage-3 ./test/leakTest.js | tap-spec",
-    "flow": "flow; test $? -eq 0 -o $? -eq 2"
+    "lint": "eslint .",
+    "test": "eslint . && babel-node --presets es2015,react,stage-3 ./test/runAllTests.js | tap-spec"
   },
   "standard": {
     "globals": [
