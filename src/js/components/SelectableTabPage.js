@@ -87,7 +87,7 @@ const SelectableTabPage = React.createClass({
     const selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex]
     const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex)
     console.log('opening: ', selectedTabItem.toJS())
-    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler)
+    actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeRef)
   },
 
   componentWillReceiveProps (nextProps) {
@@ -135,7 +135,7 @@ const SelectableTabPage = React.createClass({
           <div className='container-fluid'>
             <TabTileList
               winStore={this.props.winStore}
-              storeUpdateHandler={this.props.storeUpdateHandler}
+              storeRef={this.props.storeRef}
               filteredWindows={this.props.filteredWindows}
               appComponent={this.props.appComponent}
               searchStr={this.props.searchStr}

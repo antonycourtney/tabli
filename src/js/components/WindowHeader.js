@@ -14,7 +14,7 @@ const WindowHeader = React.createClass({
     console.log('unamange: ', this.props.tabWindow)
     event.preventDefault()
     const archiveFolderId = this.props.winStore.archiveFolderId
-    actions.unmanageWindow(archiveFolderId, this.props.tabWindow, this.props.storeUpdateHandler)
+    actions.unmanageWindow(archiveFolderId, this.props.tabWindow, this.props.storeRef)
     event.stopPropagation()
   },
 

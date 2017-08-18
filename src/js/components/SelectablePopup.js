@@ -102,10 +102,10 @@ const SelectablePopup = React.createClass({
     const selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex]
     if (this.state.selectedTabIndex === -1) {
       // no specific tab, but still active / open window
-      actions.openWindow(currentWindow, selectedWindow.tabWindow, this.props.storeUpdateHandler)
+      actions.openWindow(currentWindow, selectedWindow.tabWindow, this.props.storeRef)
     } else {
       const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex)
-      actions.activateTab(currentWindow, selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeUpdateHandler)
+      actions.activateTab(currentWindow, selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeRef)
     }
     // And reset the search field:
     inputRef.value = ''
@@ -121,7 +121,7 @@ const SelectablePopup = React.createClass({
     // technically the logical negation here isn't right, but it'll do.
     const expanded = tabWindow.isExpanded(this.props.winStore)
 
-    actions.expandWindow(tabWindow, !expanded, this.props.storeUpdateHandler)
+    actions.expandWindow(tabWindow, !expanded, this.props.storeRef)
   },
 
   handleSearchExit () {
@@ -130,7 +130,7 @@ const SelectablePopup = React.createClass({
     if (!curWindow) {
       return
     }
-    actions.openWindow(curWindow, curWindow, this.props.storeUpdateHandler)
+    actions.openWindow(curWindow, curWindow, this.props.storeRef)
   },
 
   componentWillReceiveProps (nextProps) {
@@ -266,7 +266,7 @@ const SelectablePopup = React.createClass({
         <div style={Styles.popupHeader}>
           <SearchBar
             winStore={this.props.winStore}
-            storeUpdateHandler={this.props.storeUpdateHandler}
+            storeRef={this.props.storeRef}
             onSearchInput={this.props.onSearchInput}
             onSearchUp={this.handlePrevSelection}
             onSearchDown={this.handleNextSelection}
@@ -280,7 +280,7 @@ const SelectablePopup = React.createClass({
         <div style={Styles.popupBody} ref={this.setBodyRef}>
           <TabWindowList
             winStore={this.props.winStore}
-            storeUpdateHandler={this.props.storeUpdateHandler}
+            storeRef={this.props.storeRef}
             filteredWindows={this.props.filteredWindows}
             appComponent={this.props.appComponent}
             searchStr={this.props.searchStr}

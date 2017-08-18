@@ -5,7 +5,7 @@ import * as prefs from './preferences'
 import tabliBrowser from './chromeBrowser'
 import * as Constants from './components/constants'
 import { TabItem, TabWindow} from './tabWindow' // eslint-disable-line
-import type {RefUpdater} from 'oneref'
+import type { Ref } from 'oneref'
 import TabManagerState from './tabManagerState'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
@@ -19,16 +19,16 @@ const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html'
 const TABLI_REVIEW_URL = 'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews'
 const TABLI_FEEDBACK_URL = 'mailto:tabli-feedback@antonycourtney.com'
 
-type TMSUpdater = RefUpdater<TabManagerState>
 type WindowId = number
+type TMSRef = Ref<TabManagerState>
 
 /**
  * sync a single Chrome window by its Chrome window id
  *
  */
-export function syncChromeWindowById (windowId: WindowId, updater: TMSUpdater) {
+export function syncChromeWindowById (windowId: WindowId, storeRef: TMSRef) {
   chrome.windows.get(windowId, { populate: true }, (chromeWindow) => {
-    updater((state) => state.syncChromeWindow(chromeWindow))
+    storeRef.update((state) => state.syncChromeWindow(chromeWindow))
   })
 }
 
@@ -36,13 +36,14 @@ export function syncChromeWindowById (windowId: WindowId, updater: TMSUpdater) {
  * get all open Chrome windows and synchronize state with our tab window store
  *
  */
-export const syncChromeWindows = async (updater: TMSUpdater): TabManagerState => {
+export const syncChromeWindows = async (storeRef: TMSRef): TabManagerState => {
   var tPreGet = performance.now()
   const windowList = await chromep.windows.getAll({ populate: true })
   var tPostGet = performance.now()
   console.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
   var tPreSync = performance.now()
-  const nextSt = updater((state) => state.syncWindowList(windowList))
+  storeRef.update((state) => state.syncWindowList(windowList))
+  const nextSt = storeRef.getValue()
   var tPostSync = performance.now()
   console.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
   return nextSt
@@ -51,14 +52,15 @@ export const syncChromeWindows = async (updater: TMSUpdater): TabManagerState =>
 /**
  * get current chrome window and mark it as current window in store
  */
-export const syncCurrent = async (updater: TMSUpdater): TabManagerState => {
+export const syncCurrent = async (storeRef: TMSRef): TabManagerState => {
   try {
     const currentChromeWindow = await chromep.windows.getCurrent(null)
-    return updater(st => st.setCurrentWindow(currentChromeWindow))
+    storeRef.update(st => st.setCurrentWindow(currentChromeWindow))
+    return storeRef.getValue()
   } catch (e) {
     console.error('syncCurrent: ', e)
     console.log('(ignoring exception)')
-    return updater(st => st)
+    return storeRef.getValue()
   }
 }
 /**
@@ -67,9 +69,9 @@ export const syncCurrent = async (updater: TMSUpdater): TabManagerState => {
  * Restore a saved window using only App state.
  * Fallback for when no session id available or session restore fails
  */
-const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, updater: TMSUpdater) => {
+const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, storeRef: TMSRef) => {
   function cf (chromeWindow) {
-    updater((state) => state.attachChromeWindow(tabWindow, chromeWindow))
+    storeRef.update((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
   /*
    * special case handling of replacing the contents of a fresh window
@@ -124,10 +126,10 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, updater
  *
  * N.B.: NOT exported; called from openWindow
  */
-function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, updater: TMSUpdater) {
+function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, storeRef: TMSRef) {
   console.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
   function cf (chromeWindow) {
-    updater((state) => state.attachChromeWindow(tabWindow, chromeWindow))
+    storeRef.update((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
 
   const chromeSessionId = tabWindow.chromeSessionId
@@ -140,18 +142,18 @@ function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, upda
       if (chrome.runtime.lastError) {
         console.warn('Caught exception restoring via session API: ', chrome.runtime.lastError.message)
         console.warn('(restoring from Tabli state)')
-        restoreFromAppState(lastFocusedTabWindow, tabWindow, updater)
+        restoreFromAppState(lastFocusedTabWindow, tabWindow, storeRef)
       } else {
         console.log('Chrome session restore succeeded')
         cf(rs.window)
       }
     })
   } else {
-    restoreFromAppState(lastFocusedTabWindow, tabWindow, updater)
+    restoreFromAppState(lastFocusedTabWindow, tabWindow, storeRef)
   }
 }
 
-export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: TabWindow, updater: TMSUpdater) {
+export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: TabWindow, storeRef: TMSRef) {
   if (targetTabWindow.open) {
     // existing, open window -- just transfer focus
     chrome.windows.update(targetTabWindow.openWindowId, { focused: true })
@@ -159,15 +161,15 @@ export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: Ta
   // TODO: update focus in winStore
   } else {
     // bookmarked window -- need to open it!
-    restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, updater)
+    restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, storeRef)
   }
 }
 
-export function closeTab (tabWindow: TabWindow, tabId: TabId, updater: TMSUpdater) {
+export function closeTab (tabWindow: TabWindow, tabId: TabId, storeRef: TMSRef) {
   const openTabCount = tabWindow.openTabCount
   chrome.tabs.remove(tabId, () => {
     if (openTabCount === 1) {
-      updater((state) => state.handleTabWindowClosed(tabWindow))
+      storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
     } else {
       /*
        * We'd like to do a full chrome.windows.get here so that we get the currently active tab
@@ -177,36 +179,37 @@ export function closeTab (tabWindow: TabWindow, tabId: TabId, updater: TMSUpdate
         winStore.syncChromeWindow(chromeWindow)
       })
       */
-      updater((state) => state.handleTabClosed(tabWindow, tabId))
+      storeRef.update((state) => state.handleTabClosed(tabWindow, tabId))
     }
   })
 }
 
-export function saveTab (tabWindow: TabWindow, tabItem: TabItem, updater: TMSUpdater) {
+export function saveTab (tabWindow: TabWindow, tabItem: TabItem, storeRef: TMSRef) {
   const tabMark = { parentId: tabWindow.savedFolderId, title: tabItem.title, url: tabItem.url }
   chrome.bookmarks.create(tabMark, (tabNode) => {
-    updater((state) => state.handleTabSaved(tabWindow, tabItem, tabNode))
+    storeRef.update((state) => state.handleTabSaved(tabWindow, tabItem, tabNode))
   })
 }
 
-export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem, updater: TMSUpdater) {
+export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem, storeRef: TMSRef) {
   chrome.bookmarks.remove(tabItem.safeSavedState.bookmarkId, () => {
-    updater((state) => state.handleTabUnsaved(tabWindow, tabItem))
+    storeRef.update((state) => state.handleTabUnsaved(tabWindow, tabItem))
   })
 }
 
-export const closeWindow = async (tabWindow: TabWindow, updater: TMSUpdater): TabManagerState => {
+export const closeWindow = async (tabWindow: TabWindow, storeRef: TMSRef): TabManagerState => {
   if (!tabWindow.open) {
     console.log('closeWindow: request to close non-open window, ignoring...')
     return
   }
 
   await chromep.windows.remove(tabWindow.openWindowId)
-  return updater((state) => state.handleTabWindowClosed(tabWindow))
+  storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
+  return storeRef.getValue()
 }
 
-export function expandWindow (tabWindow: TabWindow, expand: ?boolean, updater: TMSUpdater) {
-  updater(state => state.handleTabWindowExpand(tabWindow, expand))
+export function expandWindow (tabWindow: TabWindow, expand: ?boolean, storeRef: TMSRef) {
+  storeRef.update(state => state.handleTabWindowExpand(tabWindow, expand))
 }
 
 // activate a specific tab:
@@ -215,7 +218,7 @@ export function activateTab (
   targetTabWindow: TabWindow,
   tab: TabItem,
   tabIndex: number,
-  updater: TMSUpdater
+  storeRef: TMSRef
 ) {
   // console.log("activateTab: ", tabWindow, tab )
 
@@ -249,11 +252,11 @@ export function activateTab (
   } else {
     // console.log("activateTab: opening non-open window")
     // TODO: insert our own callback so we can activate chosen tab after opening window!
-    openWindow(lastFocusedTabWindow, targetTabWindow, updater)
+    openWindow(lastFocusedTabWindow, targetTabWindow, storeRef)
   }
 }
 
-export function revertWindow (tabWindow: TabWindow, updater: TMSUpdater) {
+export function revertWindow (tabWindow: TabWindow, storeRef: TMSRef) {
   /*
    * We used to reload saved tabs, but this is slow, could lose tab state, and doesn't deal gracefully with
    * pinned tabs.
@@ -273,7 +276,7 @@ export function revertWindow (tabWindow: TabWindow, updater: TMSUpdater) {
 
   // blow away all the unsaved open tabs:
   chrome.tabs.remove(unsavedOpenTabIds, () => {
-    syncChromeWindowById(tabWindow.openWindowId, updater)
+    syncChromeWindowById(tabWindow.openWindowId, storeRef)
   })
 }
 
@@ -285,7 +288,7 @@ export function manageWindow (
   currentWindowId: number,
   tabWindow: TabWindow,
   title: string,
-  updater: TMSUpdater
+  storeRef: TMSRef
 ) {
   // and write out a Bookmarks folder for this newly managed window:
   if (!tabliFolderId) {
@@ -316,7 +319,7 @@ export function manageWindow (
 
         // We'll retrieve the latest chrome Window state and attach that:
         chrome.windows.get(tabWindow.openWindowId, { populate: true }, (chromeWindow) => {
-          updater((state) => state.attachBookmarkFolder(fullFolderNode, chromeWindow))
+          storeRef.update((state) => state.attachBookmarkFolder(fullFolderNode, chromeWindow))
         })
       })
     })
@@ -324,7 +327,7 @@ export function manageWindow (
 }
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, updater: TMSUpdater) {
+export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, storeRef: TMSRef) {
   // console.log("unmanageWindow: ", tabWindow.toJS())
   if (!archiveFolderId) {
     alert('could not move managed window folder to archive -- no archive folder')
@@ -334,25 +337,25 @@ export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, u
   // Could potentially disambiguate names in archive folder...
   chrome.bookmarks.move(tabWindow.savedFolderId, { parentId: archiveFolderId }, () => {
     // console.log("unmanageWindow: bookmark folder moved to archive folder")
-    updater((state) => state.unmanageWindow(tabWindow))
+    storeRef.update((state) => state.unmanageWindow(tabWindow))
   })
 }
 
-export function showHelp (winStore: TabManagerState, updater: TMSUpdater) {
+export function showHelp (winStore: TabManagerState, storeRef: TMSRef) {
   chrome.tabs.create({ url: TABLI_HELP_URL })
 }
 
-export function showAbout (winStore: TabManagerState, updater: TMSUpdater) {
+export function showAbout (winStore: TabManagerState, storeRef: TMSRef) {
   chrome.tabs.create({ url: TABLI_ABOUT_URL })
 }
-export function showReview (winStore: TabManagerState, updater: TMSUpdater) {
+export function showReview (winStore: TabManagerState, storeRef: TMSRef) {
   chrome.tabs.create({ url: TABLI_REVIEW_URL })
 }
-export function sendFeedback (winStore: TabManagerState, updater: TMSUpdater) {
+export function sendFeedback (winStore: TabManagerState, storeRef: TMSRef) {
   chrome.tabs.create({ url: TABLI_FEEDBACK_URL })
 }
 
-export const showPopout = async (winStore: TabManagerState, updater: TMSUpdater): TabManagerState => {
+export const showPopout = async (winStore: TabManagerState, storeRef: TMSRef): TabManagerState => {
   const ptw = winStore.getPopoutTabWindow()
   if (ptw) {
     tabliBrowser.setFocusedWindow(ptw.openWindowId)
@@ -368,17 +371,17 @@ export const showPopout = async (winStore: TabManagerState, updater: TMSUpdater)
   return winStore
 }
 
-export const hidePopout = async (winStore: TabManagerState, updater: TMSUpdater): TabManagerState => {
+export const hidePopout = async (winStore: TabManagerState, storeRef: TMSRef): TabManagerState => {
   const ptw = winStore.getPopoutTabWindow()
   if (ptw) {
-    const nextSt = await closeWindow(ptw, updater)
+    const nextSt = await closeWindow(ptw, storeRef)
     return nextSt
   }
   return winStore
 }
 
-export function toggleExpandAll (winStore: TabManagerState, updater: TMSUpdater) {
-  updater(st => {
+export function toggleExpandAll (winStore: TabManagerState, storeRef: TMSRef) {
+  storeRef.update(st => {
     const allWindows = st.getAll()
     const updWindows = allWindows.map(w => w.remove('expanded'))
     const nextSt = st.registerTabWindows(updWindows).set('expandAll', !st.expandAll)
@@ -393,7 +396,7 @@ export function moveTabItem (
   targetTabWindow: TabWindow,
   targetIndex: number,
   sourceTabItem: TabItem,
-  uf: TMSUpdater
+  storeRef: TMSRef
 ) {
   if (!sourceTabItem.open) {
     console.log('moveTabItem: source tab not open, ignoring...')
@@ -410,35 +413,37 @@ export function moveTabItem (
   chrome.tabs.move(tabId, moveProps, (chromeTab) => {
     // console.log("moveTabItem: tab move complete: ", chromeTab)
     // Let's just refresh the whole window:
-    syncChromeWindowById(targetWindowId, uf)
+    syncChromeWindowById(targetWindowId, storeRef)
   })
 }
 
-export function hideRelNotes (winStore: TabManagerState, updater: TMSUpdater) {
+export function hideRelNotes (winStore: TabManagerState, storeRef: TMSRef) {
   const manifest = chrome.runtime.getManifest()
   chrome.storage.local.set({ readRelNotesVersion: manifest.version }, () => {
-    updater(st => st.set('showRelNotes', false))
+    storeRef.update(st => st.set('showRelNotes', false))
   })
 }
 
-export function showRelNotes (winStore: TabManagerState, updater: TMSUpdater) {
-  updater(st => st.set('showRelNotes', true))
+export function showRelNotes (winStore: TabManagerState, storeRef: TMSRef) {
+  storeRef.update(st => st.set('showRelNotes', true))
 }
 
-export const loadPreferences = async (updater: TMSUpdater): TabManagerState => {
+export const loadPreferences = async (storeRef: TMSRef): TabManagerState => {
   const items = await chromep.storage.local.get(USER_PREFS_KEY)
   console.log('loadPreferences: read: ', items)
   const prefsStr = items[USER_PREFS_KEY]
   const userPrefs = prefs.Preferences.deserialize(prefsStr)
   console.log('loadPreferences: userPrefs: ', userPrefs.toJS())
-  return updater(st => st.set('preferences', userPrefs))
+  storeRef.update(st => st.set('preferences', userPrefs))
+  return storeRef.getValue()
 }
 
-export const savePreferences = async (userPrefs: prefs.Preferences, updater: TMSUpdater): TabManagerState => {
+export const savePreferences = async (userPrefs: prefs.Preferences, storeRef: TMSRef): TabManagerState => {
   let saveObj = {}
   saveObj[USER_PREFS_KEY] = userPrefs.serialize()
   await chromep.storage.local.set(saveObj)
   console.log('wrote preferences to local storage: ', saveObj)
   // and update application state:
-  return updater(st => st.set('preferences', userPrefs))
+  storeRef.update(st => st.set('preferences', userPrefs))
+  return storeRef.getValue()
 }

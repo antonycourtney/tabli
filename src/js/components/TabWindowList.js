@@ -18,7 +18,7 @@ const TabWindowList = React.createClass({
 
   /* acknowledge release notes (and hide them) */
   ackRelNotes () {
-    actions.hideRelNotes(this.props.winStore, this.props.storeUpdateHandler)
+    actions.hideRelNotes(this.props.winStore, this.props.storeRef)
   },
 
   render () {
@@ -30,7 +30,7 @@ const TabWindowList = React.createClass({
         <WindowListSection>
           <MessageCard
             winStore={this.props.winStore}
-            storeUpdateHandler={this.props.storeUpdateHandler}
+            storeRef={this.props.storeRef}
             content={relNotesStr}
             onClick={this.ackRelNotes} />
         </WindowListSection>
@@ -57,7 +57,7 @@ const TabWindowList = React.createClass({
       var windowElem = (
         <FilteredTabWindow
           winStore={this.props.winStore}
-          storeUpdateHandler={this.props.storeUpdateHandler}
+          storeRef={this.props.storeRef}
           filteredTabWindow={filteredTabWindow}
           expanded={filteredTabWindow.tabWindow.expanded}
           key={id}

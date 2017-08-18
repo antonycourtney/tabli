@@ -29,7 +29,7 @@ function collect (connect, monitor) {
 const tabItemTarget = {
   drop (props, monitor, component) {
     const sourceItem = monitor.getItem()
-    actions.moveTabItem(props.tabWindow, props.tabIndex + 1, sourceItem.sourceTab, props.storeUpdateHandler)
+    actions.moveTabItem(props.tabWindow, props.tabIndex + 1, sourceItem.sourceTab, props.storeRef)
   }
 }
 
@@ -52,7 +52,7 @@ const TabItem = React.createClass({
     tab: PropTypes.object.isRequired,
     tabIndex: PropTypes.number.isRequired,
     winStore: PropTypes.object.isRequired,
-    storeUpdateHandler: PropTypes.func.isRequired,
+    storeRef: PropTypes.object.isRequired,
     isSelected: PropTypes.bool.isRequired,
     appComponent: PropTypes.object.isRequired,
     isOver: PropTypes.bool.isRequired,
@@ -66,7 +66,7 @@ const TabItem = React.createClass({
 
     // console.log("TabItem: handleClick: tab: ", tab)
 
-    actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeUpdateHandler)
+    actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeRef)
 
     if (this.props.onItemSelected) {
       this.props.onItemSelected(tab)
@@ -81,19 +81,19 @@ const TabItem = React.createClass({
       return
     }
     var tabId = this.props.tab.openState.openTabId
-    actions.closeTab(this.props.tabWindow, tabId, this.props.storeUpdateHandler)
+    actions.closeTab(this.props.tabWindow, tabId, this.props.storeRef)
   },
 
   handleBookmarkTabItem (event) {
     event.stopPropagation()
     console.log('bookmark tab: ', this.props.tab.toJS())
-    actions.saveTab(this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler)
+    actions.saveTab(this.props.tabWindow, this.props.tab, this.props.storeRef)
   },
 
   handleUnbookmarkTabItem (event) {
     event.stopPropagation()
     console.log('unbookmark tab: ', this.props.tab.toJS())
-    actions.unsaveTab(this.props.tabWindow, this.props.tab, this.props.storeUpdateHandler)
+    actions.unsaveTab(this.props.tabWindow, this.props.tab, this.props.storeRef)
   },
 
   render () {

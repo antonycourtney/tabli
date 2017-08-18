@@ -3,7 +3,6 @@
 import * as React from 'react'
 import * as actions from '../actions'
 import * as searchOps from '../searchOps'
-import { refUpdater } from 'oneref'
 
 import Styles from './styles'
 import PreferencesModal from './PreferencesModal'
@@ -91,19 +90,18 @@ const Popup = React.createClass({
     const storeRef = this.props.storeRef
     const storeState = storeRef.getValue()
     const tabliFolderId = storeState.folderId
-    actions.manageWindow(tabliFolderId, storeState.currentWindowId, this.state.saveTabWindow, titleStr, refUpdater(storeRef))
+    actions.manageWindow(tabliFolderId, storeState.currentWindowId, this.state.saveTabWindow, titleStr, storeRef)
     this.closeSaveModal()
   },
 
   doRevert (tabWindow) { // eslint-disable-line no-unused-vars
-    const updateHandler = refUpdater(this.props.storeRef)
-    actions.revertWindow(this.state.revertTabWindow, updateHandler)
+    actions.revertWindow(this.state.revertTabWindow, this.props.storeRef)
     this.closeRevertModal()
   },
 
   doUpdatePreferences (newPrefs) {
     console.log('update preferences: ', newPrefs.toJS())
-    actions.savePreferences(newPrefs, refUpdater(this.props.storeRef))
+    actions.savePreferences(newPrefs, this.props.storeRef)
     this.closePreferencesModal()
   },
 
@@ -115,7 +113,7 @@ const Popup = React.createClass({
         <PreferencesModal
           onClose={this.closePreferencesModal}
           initialPrefs={this.state.winStore.preferences}
-          storeUpdateHandler={refUpdater(this.props.storeRef)}
+          storeRef={this.props.storeRef}
           onSubmit={this.doUpdatePreferences} />)
     }
     return modal
@@ -164,7 +162,7 @@ const Popup = React.createClass({
           <SelectablePopup
             onSearchInput={this.handleSearchInput}
             winStore={this.state.winStore}
-            storeUpdateHandler={refUpdater(this.props.storeRef)}
+            storeRef={this.props.storeRef}
             filteredWindows={filteredWindows}
             appComponent={this}
             searchStr={this.state.searchStr}

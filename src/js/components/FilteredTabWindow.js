@@ -19,7 +19,7 @@ const FilteredTabWindow = React.createClass({
   },
 
   handleOpen () {
-    actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler)
+    actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeRef)
     if (this.props.onItemSelected) {
       this.props.onItemSelected(this.props.filteredTabWindow.tabWindow)
     }
@@ -27,7 +27,7 @@ const FilteredTabWindow = React.createClass({
 
   handleClose (event) { // eslint-disable-line no-unused-vars
     // console.log("handleClose")
-    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeUpdateHandler)
+    actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeRef)
   },
 
   handleRevert (event) { // eslint-disable-line no-unused-vars
@@ -56,7 +56,7 @@ const FilteredTabWindow = React.createClass({
       var tabItem = (
         <TabItem
           winStore={this.props.winStore}
-          storeUpdateHandler={this.props.storeUpdateHandler}
+          storeRef={this.props.storeRef}
           tabWindow={tabWindow}
           tab={tabs.get(i)}
           key={id}
@@ -77,7 +77,7 @@ const FilteredTabWindow = React.createClass({
   },
 
   handleExpand (expand) {
-    actions.expandWindow(this.props.filteredTabWindow.tabWindow, expand, this.props.storeUpdateHandler)
+    actions.expandWindow(this.props.filteredTabWindow.tabWindow, expand, this.props.storeRef)
   },
 
   render () {
@@ -105,7 +105,7 @@ const FilteredTabWindow = React.createClass({
     var windowHeader = (
       <WindowHeader
         winStore={this.props.winStore}
-        storeUpdateHandler={this.props.storeUpdateHandler}
+        storeRef={this.props.storeRef}
         tabWindow={tabWindow}
         expanded={expanded}
         onExpand={this.handleExpand}

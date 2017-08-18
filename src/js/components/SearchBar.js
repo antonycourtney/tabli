@@ -116,29 +116,29 @@ const SearchBar = React.createClass({
 
   handlePopoutClick (e) {
     if (this.props.isPopout) {
-      actions.hidePopout(this.props.winStore, this.props.storeUpdateHandler)
+      actions.hidePopout(this.props.winStore, this.props.storeRef)
     } else {
-      actions.showPopout(this.props.winStore, this.props.storeUpdateHandler)
+      actions.showPopout(this.props.winStore, this.props.storeRef)
     }
   },
 
   handleReviewClick (e) {
     e.preventDefault()
-    actions.showReview(this.props.winStore, this.props.storeUpdateHandler)
+    actions.showReview(this.props.winStore, this.props.storeRef)
   },
 
   handleFeedbackClick (e) {
     e.preventDefault()
-    actions.sendFeedback(this.props.winStore, this.props.storeUpdateHandler)
+    actions.sendFeedback(this.props.winStore, this.props.storeRef)
   },
 
   handleRelNotesClick (e) {
     e.preventDefault()
-    actions.showRelNotes(this.props.winStore, this.props.storeUpdateHandler)
+    actions.showRelNotes(this.props.winStore, this.props.storeRef)
   },
 
   handleExpandToggleClick () {
-    actions.toggleExpandAll(this.props.winStore, this.props.storeUpdateHandler)
+    actions.toggleExpandAll(this.props.winStore, this.props.storeRef)
   },
 
   handlePreferencesClick (e) {

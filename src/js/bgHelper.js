@@ -14,7 +14,6 @@ import TabManagerState from './tabManagerState'
 import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
-import { refUpdater } from 'oneref'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
 
@@ -167,9 +166,9 @@ function dumpChromeWindows () { // eslint-disable-line no-unused-vars
  * create a TabMan element, render it to HTML and save it for fast loading when
  * opening the popup
  */
-function onTabCreated (uf, tab, markActive) {
+function onTabCreated (storeRef, tab, markActive) {
   // console.log("onTabCreated: ", tab)
-  uf(state => {
+  storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId)
     if (!tabWindow) {
       console.warn('tabs.onCreated: window id not found: ', tab.windowId)
@@ -182,8 +181,8 @@ function onTabCreated (uf, tab, markActive) {
   })
 }
 
-function onTabRemoved (uf, windowId, tabId) {
-  uf(state => {
+function onTabRemoved (storeRef, windowId, tabId) {
+  storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(windowId)
     if (!tabWindow) {
       console.warn('tabs.onTabRemoved: window id not found: ', windowId)
@@ -216,7 +215,7 @@ const asyncRunner = (uf) => (af) => {
 /*
  * TODO
 const depudeTab = async (uf, tabId, changeInfo, tab) => {
-  uf(state => {
+  storeRef.update(state => {
   const url = changeInfo.url
   if (url != null) {
     const urlRE = new RegExp('^' + url + '$')
@@ -238,8 +237,8 @@ const depudeTab = async (uf, tabId, changeInfo, tab) => {
 }
 */
 
-const onTabUpdated = (uf, tabId, changeInfo, tab) => {
-  uf(state => {
+const onTabUpdated = (storeRef, tabId, changeInfo, tab) => {
+  storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId)
     if (!tabWindow) {
       console.warn('tabs.onUpdated: window id not found: ', tab.windowId)
@@ -250,10 +249,10 @@ const onTabUpdated = (uf, tabId, changeInfo, tab) => {
   /* asyncRunner(uf)(async () => dedupeTab(uf, tabId, changeInfo, tab)) */
 }
 
-function registerEventHandlers (uf) {
+function registerEventHandlers (storeRef) {
   // window events:
   chrome.windows.onRemoved.addListener((windowId) => {
-    uf((state) => {
+    storeRef.update((state) => {
       const tabWindow = state.getTabWindowByChromeId(windowId)
       console.log('got window closed event')
       const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state
@@ -262,7 +261,7 @@ function registerEventHandlers (uf) {
   })
   chrome.windows.onCreated.addListener(chromeWindow => {
     console.log('windows.onCreated: ', chromeWindow)
-    uf((state) => {
+    storeRef.update((state) => {
       return state.syncChromeWindow(chromeWindow)
     })
   })
@@ -270,7 +269,7 @@ function registerEventHandlers (uf) {
     if (windowId === chrome.windows.WINDOW_ID_NONE) {
       return
     }
-    uf((state) => {
+    storeRef.update((state) => {
       return state.setCurrentWindowId(windowId)
     })
   },
@@ -278,12 +277,12 @@ function registerEventHandlers (uf) {
   )
 
   // tab events:
-  chrome.tabs.onCreated.addListener(tab => onTabCreated(uf, tab))
+  chrome.tabs.onCreated.addListener(tab => onTabCreated(storeRef, tab))
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) =>
-    onTabUpdated(uf, tabId, changeInfo, tab))
+    onTabUpdated(storeRef, tabId, changeInfo, tab))
   chrome.tabs.onActivated.addListener(activeInfo => {
     // console.log("tabs.onActivated: ", activeInfo)
-    uf((state) => {
+    storeRef.update((state) => {
       const tabWindow = state.getTabWindowByChromeId(activeInfo.windowId)
       if (!tabWindow) {
         console.warn('tabs.onActivated: window id not found: ', activeInfo.windowId, activeInfo)
@@ -298,11 +297,11 @@ function registerEventHandlers (uf) {
       // window closing, ignore...
       return
     }
-    onTabRemoved(uf, removeInfo.windowId, tabId)
+    onTabRemoved(storeRef, removeInfo.windowId, tabId)
   })
   chrome.tabs.onReplaced.addListener((addedTabId: number, removedTabId: number) => {
     console.log('tabs.onReplaced: added: ', addedTabId, ', removed: ', removedTabId)
-    uf(state => {
+    storeRef.update(state => {
       const tabWindow = state.getTabWindowByChromeTabId(removedTabId)
       if (!tabWindow) {
         console.warn('tabs.onReplaced: could not find window for removed tab: ', removedTabId)
@@ -311,28 +310,28 @@ function registerEventHandlers (uf) {
       const nextSt = state.handleTabClosed(tabWindow, removedTabId)
 
       // And arrange for the added tab to be added to the window:
-      chrome.tabs.get(addedTabId, tab => onTabCreated(uf, tab))
+      chrome.tabs.get(addedTabId, tab => onTabCreated(storeRef, tab))
       return nextSt
     })
   })
   chrome.tabs.onMoved.addListener((tabId, moveInfo) => {
     // console.log("tab.onMoved: ", tabId, moveInfo)
     // Let's just refresh the whole window:
-    actions.syncChromeWindowById(moveInfo.windowId, uf)
+    actions.syncChromeWindowById(moveInfo.windowId, storeRef)
   })
   chrome.tabs.onDetached.addListener((tabId, detachInfo) => {
     // just handle like tab closing:
-    onTabRemoved(uf, detachInfo.oldWindowId, tabId)
+    onTabRemoved(storeRef, detachInfo.oldWindowId, tabId)
   })
   chrome.tabs.onAttached.addListener((tabId: number, attachInfo) => {
     // handle like tab creation:
-    chrome.tabs.get(tabId, tab => onTabCreated(uf, tab, true))
+    chrome.tabs.get(tabId, tab => onTabCreated(storeRef, tab, true))
   })
 
   chrome.sessions.onChanged.addListener(() => {
     chrome.sessions.getRecentlyClosed(sessions => {
       const winSessions = sessions.filter(s => 'window' in s).filter(s => s.lastModified > lastSessionTimestamp)
-      uf(st => attachSessions(st, winSessions))
+      storeRef.update(st => attachSessions(st, winSessions))
     })
   })
 }
@@ -529,32 +528,33 @@ async function main () {
     const attachBMStore = await reattachWindows(rawBMStore)
     const bmStore = await loadSnapState(attachBMStore)
 
-    window.storeRef = new ViewRef(bmStore)
-    const storeRefUpdater = refUpdater(window.storeRef)
+    const storeRef = new ViewRef(bmStore)
+    window.storeRef = storeRef
 
-    await actions.loadPreferences(storeRefUpdater)
-
-    await actions.syncChromeWindows(storeRefUpdater)
+    await actions.loadPreferences(storeRef)
+    await actions.syncChromeWindows(storeRef)
     console.log('initial sync of chrome windows complete.')
-    const syncedStore = await actions.syncCurrent(storeRefUpdater)
+    const syncedStore = await actions.syncCurrent(storeRef)
     // dumpAll(syncedStore)
     // dumpChromeWindows()
 
-    setupConnectionListener(window.storeRef)
+    setupConnectionListener(storeRef)
 
-    registerEventHandlers(storeRefUpdater)
+    registerEventHandlers(storeRef)
 
     // In case of restart: hide any previously open popout that
     // might be hanging around...
-    // TODO: We MUST chain this action...
-    const noPopStore = await actions.hidePopout(syncedStore, storeRefUpdater)
+    console.log('store before hiding popout: ', syncedStore.toJS())
+    const noPopStore = await actions.hidePopout(syncedStore, storeRef)
+
+    console.log('noPopStore: ', noPopStore)
 
     if (noPopStore.preferences.popoutOnStart) {
-      actions.showPopout(noPopStore, storeRefUpdater)
+      actions.showPopout(noPopStore, storeRef)
     }
     chrome.commands.onCommand.addListener(command => {
       if (command === 'show_popout') {
-        actions.showPopout(window.storeRef.getValue(), storeRefUpdater)
+        actions.showPopout(window.storeRef.getValue(), storeRef)
       }
     })
   } catch (e) {
