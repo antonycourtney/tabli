@@ -165,23 +165,23 @@ export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: Ta
   }
 }
 
-export function closeTab (tabWindow: TabWindow, tabId: TabId, storeRef: TMSRef) {
+export const closeTab = async (tabWindow: TabWindow, tabId: TabId, storeRef: TMSRef): TabManagerState => {
   const openTabCount = tabWindow.openTabCount
-  chrome.tabs.remove(tabId, () => {
-    if (openTabCount === 1) {
-      storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
-    } else {
-      /*
-       * We'd like to do a full chrome.windows.get here so that we get the currently active tab
-       * but amazingly we still see the closed tab when we do that!
-      chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
-        console.log("closeTab: got window state: ", chromeWindow)
-        winStore.syncChromeWindow(chromeWindow)
-      })
-      */
-      storeRef.update((state) => state.handleTabClosed(tabWindow, tabId))
-    }
-  })
+  await chromep.tabs.remove(tabId)
+  if (openTabCount === 1) {
+    storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
+  } else {
+    /*
+     * We'd like to do a full chrome.windows.get here so that we get the currently active tab
+     * but amazingly we still see the closed tab when we do that!
+    chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
+      console.log("closeTab: got window state: ", chromeWindow)
+      winStore.syncChromeWindow(chromeWindow)
+    })
+    */
+    storeRef.update((state) => state.handleTabClosed(tabWindow, tabId))
+  }
+  return storeRef.getValue()
 }
 
 export function saveTab (tabWindow: TabWindow, tabItem: TabItem, storeRef: TMSRef) {
@@ -200,11 +200,10 @@ export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem, storeRef: TMS
 export const closeWindow = async (tabWindow: TabWindow, storeRef: TMSRef): TabManagerState => {
   if (!tabWindow.open) {
     console.log('closeWindow: request to close non-open window, ignoring...')
-    return
+  } else {
+    await chromep.windows.remove(tabWindow.openWindowId)
+    storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
   }
-
-  await chromep.windows.remove(tabWindow.openWindowId)
-  storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
   return storeRef.getValue()
 }
 

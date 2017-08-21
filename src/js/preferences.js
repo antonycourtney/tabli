@@ -1,3 +1,4 @@
+// @flow
 /*
  * Serializable, immutable user preferences
  */
@@ -7,11 +8,15 @@ import * as Immutable from 'immutable'
 
 type VersionedObject = { version: number, contents: any }
 
-export const PREFS_VERSION = 2
+export const PREFS_VERSION = 3
 
 export class Preferences extends Immutable.Record({
-  popoutOnStart: false // show popout on startup?
+  popoutOnStart: false, // show popout on startup?
+  dedupeTabs: false // close tab if URL matches existing tab
 }) {
+  popoutOnStart: boolean
+  dedupeTabs: boolean
+
   static deserialize (blob: ?string): Preferences {
     let jsPrefs = defaultPrefsJS
     if (blob != null) {

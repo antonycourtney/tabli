@@ -34,8 +34,15 @@ class PreferencesModal extends React.Component {
     this.setState({prefs: nextPrefs})
   }
 
+  handleTabDedupeChange (e) {
+    const oldPrefs = this.state.prefs
+    const nextPrefs = oldPrefs.set('dedupeTabs', !oldPrefs.dedupeTabs)
+    this.setState({prefs: nextPrefs})
+  }
+
   render () {
     const popStart = this.state.prefs.popoutOnStart
+    const dedupeTabs = this.state.prefs.dedupeTabs
 
     return (
       <Modal.Dialog title='Tabli Preferences' onClose={this.props.onClose}>
@@ -49,7 +56,17 @@ class PreferencesModal extends React.Component {
                     checked={popStart}
                     onChange={e => this.handlePopStartChange(e)}
                   />
-                  Show Tabli Popout Window at Startup
+                  Show Tabli popout window at startup
+                </label>
+              </div>
+              <div className='checkbox'>
+                <label>
+                  <input
+                    type='checkbox'
+                    checked={dedupeTabs}
+                    onChange={e => this.handleTabDedupeChange(e)}
+                  />
+                  Automatically close duplicate tabs
                 </label>
               </div>
             </form>

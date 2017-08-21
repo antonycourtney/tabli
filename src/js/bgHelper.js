@@ -14,14 +14,9 @@ import TabManagerState from './tabManagerState'
 import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
-import ChromePromise from 'chrome-promise'
-const chromep = new ChromePromise()
-
-/*
 import * as searchOps from './searchOps'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
-*/
 
 const tabmanFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
@@ -192,50 +187,41 @@ function onTabRemoved (storeRef, windowId, tabId) {
   })
 }
 
-/*
- * A little helper for running an async function returning a
- * state -> state update function from a non-async context,
- * which becomes a Promise<state -> state)
- */
-/*
-const asyncRunner = (uf) => (af) => {
-  let stp = af()
-  stp.then(sf => uf(sf))
-    .catch(err => {
-      console.error('asyncRunner: error executing async function: ', err)
-    })
-}
-*/
-
-/*
- * It's super gross to use the uf to grab state, pass it along
- * to actions, and return a state->state updater, but we both want to use the current state and ensure
- * that we update the latest version of state after any async actions
- */
-/*
- * TODO
-const depudeTab = async (uf, tabId, changeInfo, tab) => {
-  storeRef.update(state => {
+const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
   const url = changeInfo.url
   if (url != null) {
+    const st = storeRef.getValue()
     const urlRE = new RegExp('^' + url + '$')
-    // call searchOps...
-    const openWindows = this.getOpen().toArray()
+    const openWindows = st.getOpen().toArray()
     const filteredWindows = searchOps.filterTabWindows(openWindows,
-      urlRE, {matchUrl: true})
-    if (filteredWindows.length > 0) {
-      const ftw = filteredWindows[0]
+      urlRE, {matchUrl: true, matchTitle: false})
+    // expand to a simple array of [TabWindow,TabItem] pairs:
+    const matchPairs = _.flatten(filteredWindows.map(ftw => {
       const {tabWindow: targetTabWindow, itemMatches} = ftw
-      const targetTab = itemMatches.first()
-      console.log('handleTabUpdated: duplicate url detected - closing tab')
-      await chromep.tabs.remove(tabId)
-      console.log('handleTabUpdated: tab closed, switching to existing tab:')
-      const currentWindow = this.getCurrentWindow()
-      actions.activateTab(currentWindow, targetTabWindow, targetTab, 0, uf)
+      return itemMatches.map(match => [targetTabWindow, match.tabItem]).toArray()
+    }))
+    // and filter out the tab we're checking:
+    const isSelf = (tw, ti) => (
+      tw.open && tw.openWindowId === tab.windowId &&
+      ti.open && ti.openState.openTabId === tabId
+    )
+    const filteredMatchPairs = matchPairs.filter(([tw, ti]) => !isSelf(tw, ti))
+    if (filteredMatchPairs.length > 0) {
+      const [origTabWindow, origTab] = filteredMatchPairs[0]
+      console.log('handleTabUpdated: duplicate url detected - reverting duplicate. url: ', url)
+      // if we wanted to programatically go back instead of closing:
+      // (required <all_urls> permission in manifest)
+      // const revertScript = {code: 'history.back();'}
+      // await chromep.tabs.executeScript(tabId, revertScript)
+
+      const tabWindow = st.getTabWindowByChromeId(tab.windowId)
+      const tabClosedSt = await actions.closeTab(tabWindow, tabId, storeRef)
+      console.log('dedupeTab: switching to existing tab:')
+      const currentWindow = tabClosedSt.getCurrentWindow()
+      actions.activateTab(currentWindow, origTabWindow, origTab, 0, storeRef)
     }
   }
 }
-*/
 
 const onTabUpdated = (storeRef, tabId, changeInfo, tab) => {
   storeRef.update(state => {
@@ -246,7 +232,10 @@ const onTabUpdated = (storeRef, tabId, changeInfo, tab) => {
     }
     return state.handleTabUpdated(tabWindow, tabId, changeInfo)
   })
-  /* asyncRunner(uf)(async () => dedupeTab(uf, tabId, changeInfo, tab)) */
+  const st = storeRef.getValue()
+  if (st.preferences.dedupeTabs) {
+    dedupeTab(storeRef, tabId, changeInfo, tab)
+  }
 }
 
 function registerEventHandlers (storeRef) {
