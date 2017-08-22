@@ -249,7 +249,6 @@ function registerEventHandlers (storeRef) {
     })
   })
   chrome.windows.onCreated.addListener(chromeWindow => {
-    console.log('windows.onCreated: ', chromeWindow)
     storeRef.update((state) => {
       return state.syncChromeWindow(chromeWindow)
     })

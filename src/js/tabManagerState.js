@@ -71,7 +71,7 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   handleTabClosed (tabWindow, tabId) {
-    console.log('handleTabClosed: ', tabId)
+    // console.log('handleTabClosed: ', tabId)
     var updWindow = TabWindow.closeTab(tabWindow, tabId)
     return this.registerTabWindow(updWindow)
   }
@@ -92,7 +92,6 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   handleTabCreated (tabWindow, tab) {
-    console.log('handleTabCreated: ', tab.url)
     const updWindow = TabWindow.createTab(tabWindow, tab)
     return this.registerTabWindow(updWindow)
   }
