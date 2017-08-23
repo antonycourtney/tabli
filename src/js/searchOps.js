@@ -14,11 +14,13 @@ type SearchSpec = string | RegExp
  */
 type SearchOpts = {
   matchUrl: boolean,
-  matchTitle: boolean
+  matchTitle: boolean,
+  openOnly: boolean // return only open tabs
 }
 const defaultSearchOpts : SearchOpts = {
   matchUrl: true,
-  matchTitle: true
+  matchTitle: true,
+  openOnly: false
 }
 
 /**
@@ -39,6 +41,9 @@ const FilteredTabItem = Immutable.Record({
 export function matchTabItem (tabItem: TW.TabItem,
   searchExp: SearchSpec, options: SearchOpts): ?FilteredTabItem {
   let urlMatches = null
+  if (options.openOnly && tabItem.open === false) {
+    return null
+  }
   if (options.matchUrl) {
     urlMatches = tabItem.url.match(searchExp)
   }

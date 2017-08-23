@@ -194,7 +194,7 @@ const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
     const urlRE = new RegExp('^' + url + '$')
     const openWindows = st.getOpen().toArray()
     const filteredWindows = searchOps.filterTabWindows(openWindows,
-      urlRE, {matchUrl: true, matchTitle: false})
+      urlRE, {matchUrl: true, matchTitle: false, openOnly: true})
     // expand to a simple array of [TabWindow,TabItem] pairs:
     const matchPairs = _.flatten(filteredWindows.map(ftw => {
       const {tabWindow: targetTabWindow, itemMatches} = ftw
