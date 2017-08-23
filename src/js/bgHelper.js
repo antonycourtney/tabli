@@ -21,8 +21,6 @@ const chromep = new ChromePromise()
 const tabmanFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
 
-let lastSessionTimestamp = -1
-
 /* On startup load managed windows from bookmarks folder */
 function loadManagedWindows (winStore, tabManFolder) {
   var folderTabWindows = []
@@ -315,13 +313,6 @@ function registerEventHandlers (storeRef) {
     // handle like tab creation:
     chrome.tabs.get(tabId, tab => onTabCreated(storeRef, tab, true))
   })
-
-  chrome.sessions.onChanged.addListener(() => {
-    chrome.sessions.getRecentlyClosed(sessions => {
-      const winSessions = sessions.filter(s => 'window' in s).filter(s => s.lastModified > lastSessionTimestamp)
-      storeRef.update(st => attachSessions(st, winSessions))
-    })
-  })
 }
 
 /**
@@ -425,39 +416,6 @@ async function reattachWindows (bmStore) {
   return attachedStore
 }
 
-// does session state match window snapshot?
-// Note: We no longer require snapshot===true so that we can
-// deal with sessions.onChanged event before close event.
-const matchSnapshot = (tabWindow, session: Object) => {
-  if ((session.window != null) && (session.window.tabs != null)) {
-    const snapUrls = tabWindow.tabItems.filter(ti => ti.open).map(ti => ti.url).toArray()
-    const sessionUrls = session.window.tabs.map(t => t.url)
-    if (_.isEqual(snapUrls, sessionUrls)) {
-      console.log('matchSnapshot: found session for window "' + tabWindow.title + '"')
-      return true
-    }
-  }
-  return false
-}
-
-const attachSessions = (st, sessions) => {
-  // We used to filter to only attach to closed windows, but
-  // then we have a race between close event and sessions.onChanged
-  const tabWindows = st.bookmarkIdMap.toIndexedSeq().toArray()
-  let nextSt = st
-  for (let tabWindow of tabWindows) {
-    for (let s of sessions) {
-      if (s.window && matchSnapshot(tabWindow, s)) {
-        let nextWin = tabWindow.set('chromeSessionId', s.window.sessionId)
-        nextSt = nextSt.registerTabWindow(nextWin)
-      }
-      if (s.lastModified > lastSessionTimestamp) {
-        lastSessionTimestamp = s.lastModified
-      }
-    }
-  }
-  return nextSt
-}
 /**
  * load window state for saved windows from local storage and attach to
  * any closed, saved windows
@@ -502,11 +460,7 @@ async function loadSnapState (bmStore) {
   })
   const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap)
   console.log('merged window state snapshot from local storage')
-  // Now try attach sessions:
-  const sessions = await chromep.sessions.getRecentlyClosed()
-  const winSessions = sessions.filter(s => 'window' in s)
-  const sessStore = attachSessions(nextStore, winSessions)
-  return sessStore
+  return nextStore
 }
 
 async function main () {

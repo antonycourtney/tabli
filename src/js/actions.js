@@ -127,29 +127,7 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, storeRe
  */
 function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, storeRef: TMSRef) {
   console.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
-  function cf (chromeWindow) {
-    storeRef.update((state) => state.attachChromeWindow(tabWindow, chromeWindow))
-  }
-
-  const chromeSessionId = tabWindow.chromeSessionId
-
-  if (tabWindow.snapshot && chromeSessionId) {
-    console.log('restoring chrome session id ', chromeSessionId)
-    // TODO: may want to re-validate the session id by
-    // calling chrome.sessions.getRecentlyClosed...
-    chrome.sessions.restore(chromeSessionId, rs => {
-      if (chrome.runtime.lastError) {
-        console.warn('Caught exception restoring via session API: ', chrome.runtime.lastError.message)
-        console.warn('(restoring from Tabli state)')
-        restoreFromAppState(lastFocusedTabWindow, tabWindow, storeRef)
-      } else {
-        console.log('Chrome session restore succeeded')
-        cf(rs.window)
-      }
-    })
-  } else {
-    restoreFromAppState(lastFocusedTabWindow, tabWindow, storeRef)
-  }
+  restoreFromAppState(lastFocusedTabWindow, tabWindow, storeRef)
 }
 
 export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: TabWindow, storeRef: TMSRef) {

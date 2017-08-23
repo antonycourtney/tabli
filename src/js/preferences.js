@@ -8,7 +8,7 @@ import * as Immutable from 'immutable'
 
 type VersionedObject = { version: number, contents: any }
 
-export const PREFS_VERSION = 3
+export const PREFS_VERSION = 4
 
 export class Preferences extends Immutable.Record({
   popoutOnStart: false, // show popout on startup?
