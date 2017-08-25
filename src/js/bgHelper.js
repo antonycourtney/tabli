@@ -155,10 +155,6 @@ function dumpChromeWindows () { // eslint-disable-line no-unused-vars
   })
 }
 
-/**
- * create a TabMan element, render it to HTML and save it for fast loading when
- * opening the popup
- */
 function onTabCreated (storeRef, tab, markActive) {
   // console.log("onTabCreated: ", tab)
   storeRef.update(state => {
@@ -172,6 +168,12 @@ function onTabCreated (storeRef, tab, markActive) {
     const ast = markActive ? st.handleTabActivated(nw, tab.id) : st
     return ast
   })
+  const st = storeRef.getValue()
+  if (st.preferences.dedupeTabs) {
+    // let's try passing tab as changeInfo since presumaby the
+    // keys are the same:
+    dedupeTab(storeRef, tab.id, tab, tab)
+  }
 }
 
 function onTabRemoved (storeRef, windowId, tabId) {
@@ -206,7 +208,7 @@ const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
     const filteredMatchPairs = matchPairs.filter(([tw, ti]) => !isSelf(tw, ti))
     if (filteredMatchPairs.length > 0) {
       const [origTabWindow, origTab] = filteredMatchPairs[0]
-      console.log('handleTabUpdated: duplicate url detected - reverting duplicate. url: ', url)
+      console.log('dedupeTab: duplicate url detected - closing duplicate. url: ', url)
       // if we wanted to programatically go back instead of closing:
       // (required <all_urls> permission in manifest)
       // const revertScript = {code: 'history.back();'}
