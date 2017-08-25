@@ -15,6 +15,7 @@ import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
 import * as searchOps from './searchOps'
+import escapeStringRegexp from 'escape-string-regexp'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
 
@@ -156,7 +157,7 @@ function dumpChromeWindows () { // eslint-disable-line no-unused-vars
 }
 
 function onTabCreated (storeRef, tab, markActive) {
-  // console.log("onTabCreated: ", tab)
+  // console.log('onTabCreated: url: ', tab.url)
   storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId)
     if (!tabWindow) {
@@ -191,7 +192,7 @@ const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
   const url = changeInfo.url
   if (url != null) {
     const st = storeRef.getValue()
-    const urlRE = new RegExp('^' + url + '$')
+    const urlRE = new RegExp('^' + escapeStringRegexp(changeInfo.url) + '$')
     const openWindows = st.getOpen().toArray()
     const filteredWindows = searchOps.filterTabWindows(openWindows,
       urlRE, {matchUrl: true, matchTitle: false, openOnly: true})
