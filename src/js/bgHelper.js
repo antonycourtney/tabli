@@ -190,7 +190,7 @@ function onTabRemoved (storeRef, windowId, tabId) {
 
 const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
   const url = changeInfo.url
-  if (url != null) {
+  if ((url != null) && (url !== 'chrome://newtab/')) {
     const st = storeRef.getValue()
     const urlRE = new RegExp('^' + escapeStringRegexp(changeInfo.url) + '$')
     const openWindows = st.getOpen().toArray()
@@ -489,10 +489,10 @@ async function main () {
 
     // In case of restart: hide any previously open popout that
     // might be hanging around...
-    console.log('store before hiding popout: ', syncedStore.toJS())
+    // console.log('store before hiding popout: ', syncedStore.toJS())
     const noPopStore = await actions.hidePopout(syncedStore, storeRef)
 
-    console.log('noPopStore: ', noPopStore)
+    // console.log('noPopStore: ', noPopStore)
 
     if (noPopStore.preferences.popoutOnStart) {
       actions.showPopout(noPopStore, storeRef)
