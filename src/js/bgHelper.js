@@ -156,7 +156,7 @@ function dumpChromeWindows () { // eslint-disable-line no-unused-vars
   })
 }
 
-function onTabCreated (storeRef, tab, markActive) {
+function onTabCreated (storeRef: any, tab: any, markActive: boolean = false) {
   // console.log('onTabCreated: url: ', tab.url)
   storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId)
@@ -266,7 +266,7 @@ function registerEventHandlers (storeRef) {
   )
 
   // tab events:
-  chrome.tabs.onCreated.addListener(tab => onTabCreated(storeRef, tab))
+  chrome.tabs.onCreated.addListener((tab: any) => onTabCreated(storeRef, tab))
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) =>
     onTabUpdated(storeRef, tabId, changeInfo, tab))
   chrome.tabs.onActivated.addListener(activeInfo => {

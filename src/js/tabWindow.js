@@ -4,6 +4,7 @@
  */
 import * as _ from 'lodash'
 import * as Immutable from 'immutable'
+import * as time from './time'
 
 /**
  * Tab state that is persisted as a bookmark
@@ -53,12 +54,18 @@ export class TabItem extends Immutable.Record({
   savedState: null, // SavedTabState iff saved
 
   open: false, // Note: Saved tabs may be closed even when containing window is open
-  openState: null // OpenTabState iff open
+  openState: null, // OpenTabState iff open
+
+  lastOpenTime: null,
+  lastAccessTime: null
 }) {
   saved: boolean
   savedState: ?SavedTabState
   open: boolean
   openState: ?OpenTabState
+
+  lastOpenTime: ?number
+  lastAccessTime: ?number
 
   get title (): string {
     if (this.open && this.openState) {
@@ -97,6 +104,12 @@ export class TabItem extends Immutable.Record({
       return this.openState
     }
     throw new Error('Unexpected access of openState on non-open tab')
+  }
+
+  updateAccessTime (): TabItem {
+    const ret = this.set('lastAccessTime', time.now())
+    console.log('tab ', ret.title, ': updating lastAccessTime: ', new Date(ret.lastAccessTime).toString())
+    return ret
   }
 }
 
@@ -205,9 +218,15 @@ function makeOpenTabState (tab) {
 function makeOpenTabItem (tab) {
   const openState = makeOpenTabState(tab)
 
+  const lastOpenTime = time.now()
+  const lastAccessTime = lastOpenTime
+
   const tabItem = new TabItem({
     open: true,
-    openState})
+    openState,
+    lastOpenTime,
+    lastAccessTime
+  })
   return tabItem
 }
 
@@ -666,7 +685,7 @@ export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem) {
     return tabWindow
   }
   var [index] = entry
-  const updTabItem = resetOpenItem(tabItem)
+  const updTabItem = resetOpenItem(tabItem).updateAccessTime()
 
   var updItems
   if (updTabItem.open) {
@@ -709,7 +728,7 @@ export function setActiveTab (tabWindow: TabWindow, tabId: number) {
   const nonActiveItems = tabWindow.tabItems.map(tabItemRemoveActive)
 
   const updOpenState = tabItem.safeOpenState.set('active', true)
-  const updActiveTab = tabItem.set('openState', updOpenState)
+  const updActiveTab = tabItem.set('openState', updOpenState).updateAccessTime()
   const updItems = nonActiveItems.splice(index, 1, updActiveTab)
 
   return tabWindow.setTabItems(updItems)
@@ -750,8 +769,9 @@ export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: 
 
   const updTabItem = (updKeys.length > 0) ? prevTabItem.set('openState', updOpenState) : prevTabItem
 
+  const updAccTabItem = updTabItem.updateAccessTime()
   // console.log("updateTabItem: ", index, updTabItem.toJS())
-  updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
+  updItems = tabWindow.tabItems.splice(index, 1, updAccTabItem)
 
   const updWindow = tabWindow.setTabItems(updItems)
 

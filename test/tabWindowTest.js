@@ -2,6 +2,10 @@ import test from 'tape'
 import * as TabWindow from '../src/js/tabWindow'
 import difflet from 'difflet'
 import * as testData from './testData'
+import * as time from '../src/js/time'
+
+const TEST_TIME = 1504100985328
+time.setTestMode(TEST_TIME)
 
 function dumpDiffs (objA, objB) {
   var s = difflet({indent: 2, comment: true}).compare(objA, objB)
@@ -41,12 +45,12 @@ test('chromeTabWindow', (t) => {
 
   const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()))
 
-/*
+
     console.log("makeChromeTabWindow returned: ")
     console.log(">>>>>")
     console.log(JSON.stringify(tabWindowJS,null,2))
     console.log(">>>>>")
-*/
+
   const expectedTabWindow =
   {
     "saved": false,
@@ -71,7 +75,9 @@ test('chromeTabWindow', (t) => {
           "title": "Component API | React",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       },
       {
         "saved": false,
@@ -86,7 +92,9 @@ test('chromeTabWindow', (t) => {
           "title": "Tutorial | React",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       },
       {
         "saved": false,
@@ -101,7 +109,9 @@ test('chromeTabWindow', (t) => {
           "title": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       },
       {
         "saved": false,
@@ -115,7 +125,9 @@ test('chromeTabWindow', (t) => {
           "title": "Flux | Application Architecture for Building User Interfaces",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       },
       {
         "saved": false,
@@ -130,7 +142,9 @@ test('chromeTabWindow', (t) => {
           "title": "Fluxxor - Home",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       },
       {
         "saved": false,
@@ -145,7 +159,9 @@ test('chromeTabWindow', (t) => {
           "title": "FixedDataTable",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       },
       {
         "saved": false,
@@ -160,7 +176,9 @@ test('chromeTabWindow', (t) => {
           "title": "Declare Permissions - Google Chrome",
           "audible": false,
           "pinned": false
-        }
+        },
+        "lastOpenTime": 1504100985328,
+        "lastAccessTime": 1504100985328
       }
     ],
     "snapshot": false,
@@ -330,7 +348,7 @@ test('attachChromeWindow', (t) => {
 
   console.log('diffs between tabWindowJS and expected:')
   dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow)
-  */
+*/
 
   t.deepEqual(tabWindowJS, testData.d3InitialExpectedTabWindow, 'attachChromeWindow basic functionality')
 
