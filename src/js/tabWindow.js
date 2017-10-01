@@ -70,17 +70,26 @@ export class TabItem extends Immutable.Record({
   get title (): string {
     if (this.open && this.openState) {
       return this.openState.title
+    } else if (this.savedState) {
+      return this.savedState.title
+    } else if (this.openState) {
+      // title when it was last open:
+      return this.openState.title
     }
-
-    return this.savedState ? this.savedState.title : ''
+    return ''
   }
 
   get url (): string {
     if (this.open && this.openState) {
       return this.openState.url
+    } else if (this.savedState) {
+      return this.savedState.url
+    } else if (this.openState) {
+      // URL as of last open:
+      return this.openState.url
+    } else {
+      return ''
     }
-
-    return (this.savedState ? this.savedState.url : '')
   }
 
   get pinned (): boolean {
@@ -276,9 +285,8 @@ function escapeTableCell (s: ?string): string {
  *
  * Tab windows have a title and a set of tab items.
  *
- * A TabWindow has 4 possible states:
+ * A TabWindow has 3 possible states:
  *   (open,!saved)   - An open Chrome window that has not had its tabs saved
- *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
  *   (!open,saved,!snapshot)   - A previously saved window that is not currently
  *                           open and has no snapshot. tabItems will consist solely
  *                           of saved tabs (persisted as boookmarks).
@@ -556,7 +564,12 @@ function mergeOpenTabs (tabItems, openTabs) {
   const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem)
   const chromeOpenTabItems = Immutable.List(openTabs.map(makeOpenTabItem))
 
-  const mergedTabItems = mergeSavedOpenTabs(baseSavedItems, chromeOpenTabItems)
+  const savedOpenTabItems = mergeSavedOpenTabs(baseSavedItems, chromeOpenTabItems)
+
+  // Let's grab the recently closed tabs and tack them on the end:
+  const closedTabItems = tabItems.filter(ti => !ti.saved && !ti.open)
+  console.log('mergeOpenTabs: closedTabItems:', closedTabItems.toJS())
+  const mergedTabItems = savedOpenTabItems.concat(closedTabItems)
 
   return mergedTabItems
 }
@@ -577,8 +590,13 @@ function mergeTabWindowTabItems (tabWindow, optChromeTab) {
 
   const updOpenItems = optChromeTab ? baseOpenItems.toList().insert(optChromeTab.index, makeOpenTabItem(optChromeTab)) : baseOpenItems
 
-  const mergedItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems)
-  const updWindow = tabWindow.setTabItems(mergedItems)
+  const savedOpenTabItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems)
+  // Let's grab the recently closed tabs and tack them on the end:
+  const closedTabItems = tabItems.filter(ti => !ti.saved && !ti.open)
+  console.log('mergeTabWindowTabItems: closedTabItems:', closedTabItems.toJS())
+  const mergedTabItems = savedOpenTabItems.concat(closedTabItems)
+
+  const updWindow = tabWindow.setTabItems(mergedTabItems)
   return updWindow
 }
 
@@ -632,12 +650,11 @@ export function closeTab (tabWindow: TabWindow, tabId: number): TabWindow {
 
   var updItems
 
-  if (tabItem.saved) {
-    var updTabItem = resetSavedItem(tabItem)
-    updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
-  } else {
-    updItems = tabWindow.tabItems.splice(index, 1)
-  }
+  // We use to call resetSavedItem, but now we will just remove
+  // open to try and preserve last openState:
+  const updTabItem = tabItem.remove('open')
+
+  updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
 
   return tabWindow.setTabItems(updItems)
 }
