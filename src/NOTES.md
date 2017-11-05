@@ -295,3 +295,81 @@ Questions:
      Can actions, which return State Transformers, directly call other actions?
      How do we ensure that we are always operating on the latest state
      after an async call to either a platform API or another action?
+
+------
+9/27/17 -- rethinking merging of tabs in the presence of recently closed tabs:
+
+If we support presenting recently closed tabs, we now have all four states:
+
+(open,saved)   -- A tab open to a URL that is saved.
+(open,!saved)  -- A tab open to a URL that is not saved.
+(!open, saved) -- A bookmark'ed URL in current window that is not currently open.
+(!open,!saved) -- A recently closed tab, for an un-saved URL.
+
+Only those in the (!open,!saved) state are candidates to be removed from the tab list.
+
+Tabli currently "merges" open and saved tab items, but the current model is a
+bit broken when the same saved tab is open more than once in a window and is
+then subsequently closed -- this will result in duplicate entries for the
+same URL in the (!open,saved) state.
+
+The right definition of the merge process:
+  - We start with:
+     - open tabs (from Chrome Window)
+     - saved tabs (from Bookmark)
+  - We can determine two sets:
+     - the set of currently open URLs
+     - the set of saved (bookmarked) URLs.
+  - Start with all open tabs, and the set of saved URLs for the window.
+    Partition into: (open,saved) tabs and (open,!saved)
+    These all go in to result set.
+  - Now determine:
+     - The set of saved URLs that are not currently open:
+        savedNotOpenURLs := SavedURLs - OpenURLs
+    These go in result set.
+  - Finally:
+      ClosedUnsavedURLs := RecentlyClosedURLs - SavedURLs     
+    These go in result set.
+======
+Now let's consider the set of events we might have to deal with for a TabWindow, and
+  - Close a tab (URL)
+  - Open a tab at a specific URL   
+  - Un-save a saved tab
+  - Save an unsaved tab
+
+Merging tabs is a little tricky because we must:
+   - Take all open tabs and join with the saved URLs to determine which tabs are saved.
+   - For closed tabs, ensure that we join with saved URLs
+
+...and, although we don't support it today, we should really consider adding
+support for events on the bookmark folders.
+
+-----
+And then we need to think about ordering of TabItems:
+
+Let's keep it simple:
+open tabs before !open tabs
+  then: open tabs in tab order
+  !open tabs:
+    saved before !saved
+       saved tabs in bookmark order
+       !saved tabs in LRU order
+
+--------
+Reflections from awkward implementation challenges, Oct. 5, 2017:
+
+Trying to add suppot for "recently closed" tabs to Tabli raised all sorts of surprisingly thorny implementation questions. Notably:
+Where do we put the "last known" favIconUrl?  Or last access time?  
+Should this live per-saved-tab, per-window, or global (browser level) keyed by URL?
+
+Much of this leads me to want to store state globally, keyed by URL.
+But thinking more about that makes me want to just kill the hierarchy and make a tag-based bookmark system.
+
+Also:  Let's just build a different extension:  Bunnytab.
+
+Bunnytab should be an extension that takes over the New Tab and offers unified search across:
+    - Open Tabs
+    - Bookmarks
+    - History
+    - External bookmark sources (like Bunny)
+    - Google
