@@ -564,12 +564,7 @@ function mergeOpenTabs (tabItems, openTabs) {
   const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem)
   const chromeOpenTabItems = Immutable.List(openTabs.map(makeOpenTabItem))
 
-  const savedOpenTabItems = mergeSavedOpenTabs(baseSavedItems, chromeOpenTabItems)
-
-  // Let's grab the recently closed tabs and tack them on the end:
-  const closedTabItems = tabItems.filter(ti => !ti.saved && !ti.open)
-  console.log('mergeOpenTabs: closedTabItems:', closedTabItems.toJS())
-  const mergedTabItems = savedOpenTabItems.concat(closedTabItems)
+  const mergedTabItems = mergeSavedOpenTabs(baseSavedItems, chromeOpenTabItems)
 
   return mergedTabItems
 }
@@ -590,13 +585,8 @@ function mergeTabWindowTabItems (tabWindow, optChromeTab) {
 
   const updOpenItems = optChromeTab ? baseOpenItems.toList().insert(optChromeTab.index, makeOpenTabItem(optChromeTab)) : baseOpenItems
 
-  const savedOpenTabItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems)
-  // Let's grab the recently closed tabs and tack them on the end:
-  const closedTabItems = tabItems.filter(ti => !ti.saved && !ti.open)
-  console.log('mergeTabWindowTabItems: closedTabItems:', closedTabItems.toJS())
-  const mergedTabItems = savedOpenTabItems.concat(closedTabItems)
-
-  const updWindow = tabWindow.setTabItems(mergedTabItems)
+  const mergedItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems)
+  const updWindow = tabWindow.setTabItems(mergedItems)
   return updWindow
 }
 

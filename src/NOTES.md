@@ -354,3 +354,22 @@ open tabs before !open tabs
     saved before !saved
        saved tabs in bookmark order
        !saved tabs in LRU order
+
+--------
+Reflections from awkward implementation challenges, Oct. 5, 2017:
+
+Trying to add suppot for "recently closed" tabs to Tabli raised all sorts of surprisingly thorny implementation questions. Notably:
+Where do we put the "last known" favIconUrl?  Or last access time?  
+Should this live per-saved-tab, per-window, or global (browser level) keyed by URL?
+
+Much of this leads me to want to store state globally, keyed by URL.
+But thinking more about that makes me want to just kill the hierarchy and make a tag-based bookmark system.
+
+Also:  Let's just build a different extension:  Bunnytab.
+
+Bunnytab should be an extension that takes over the New Tab and offers unified search across:
+    - Open Tabs
+    - Bookmarks
+    - History
+    - External bookmark sources (like Bunny)
+    - Google
