@@ -40,9 +40,16 @@ class PreferencesModal extends React.Component {
     this.setState({prefs: nextPrefs})
   }
 
+  handleRevertOnOpenChange (e) {
+    const oldPrefs = this.state.prefs
+    const nextPrefs = oldPrefs.set('revertOnOpen', !oldPrefs.revertOnOpen)
+    this.setState({prefs: nextPrefs})
+  }
+
   render () {
     const popStart = this.state.prefs.popoutOnStart
     const dedupeTabs = this.state.prefs.dedupeTabs
+    const revertOnOpen = this.state.prefs.revertOnOpen
 
     return (
       <Modal.Dialog title='Tabli Preferences' onClose={this.props.onClose}>
@@ -67,6 +74,16 @@ class PreferencesModal extends React.Component {
                     onChange={e => this.handleTabDedupeChange(e)}
                   />
                   Automatically close duplicate tabs
+                </label>
+              </div>
+              <div className='checkbox'>
+                <label>
+                  <input
+                    type='checkbox'
+                    checked={revertOnOpen}
+                    onChange={e => this.handleRevertOnOpenChange(e)}
+                  />
+                  Only open anchor tabs when re-opening saved windows
                 </label>
               </div>
             </form>

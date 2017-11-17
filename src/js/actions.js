@@ -68,7 +68,8 @@ export const syncCurrent = async (storeRef: TMSRef): TabManagerState => {
  * Restore a saved window using only App state.
  * Fallback for when no session id available or session restore fails
  */
-const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, storeRef: TMSRef) => {
+const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
+  revertOnOpen: boolean, storeRef: TMSRef) => {
   function cf (chromeWindow) {
     storeRef.update((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
@@ -77,8 +78,13 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, storeRe
    */
   chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
     const tabItems = tabWindow.tabItems
-    // If a snapshot, only use tabItems that were previously open:
-    const targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+    let targetItems
+    if (revertOnOpen) {
+      targetItems = tabItems.filter(ti => ti.saved)
+    } else {
+      // If a snapshot, only use tabItems that were previously open:
+      targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+    }
     const urls = targetItems.map((ti) => ti.url).toArray()
 
     if (currentChromeWindow.tabs &&
@@ -127,7 +133,8 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow, storeRe
  */
 function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, storeRef: TMSRef) {
   console.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
-  restoreFromAppState(lastFocusedTabWindow, tabWindow, storeRef)
+  const st = storeRef.getValue()
+  restoreFromAppState(lastFocusedTabWindow, tabWindow, st.preferences.revertOnOpen, storeRef)
 }
 
 export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: TabWindow, storeRef: TMSRef) {
