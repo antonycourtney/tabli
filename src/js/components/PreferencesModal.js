@@ -83,7 +83,7 @@ class PreferencesModal extends React.Component {
                     checked={revertOnOpen}
                     onChange={e => this.handleRevertOnOpenChange(e)}
                   />
-                  Only open anchor tabs when re-opening saved windows
+                  Only re-open saved tabs when re-opening saved windows
                 </label>
               </div>
             </form>

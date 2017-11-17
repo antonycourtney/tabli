@@ -78,12 +78,13 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
    */
   chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
     const tabItems = tabWindow.tabItems
-    let targetItems
+    // If a snapshot, only use tabItems that were previously open:
+    let targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
     if (revertOnOpen) {
-      targetItems = tabItems.filter(ti => ti.saved)
-    } else {
-      // If a snapshot, only use tabItems that were previously open:
-      targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+      // So revertOnOpen something of a misnomer. If a snapshot available,
+      // limits what's opened to what was previously open and
+      // explicitly saved, to minimize the number of tabs we load.
+      targetItems = targetItems.filter(ti => ti.saved)
     }
     const urls = targetItems.map((ti) => ti.url).toArray()
 
