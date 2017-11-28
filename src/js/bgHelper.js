@@ -468,13 +468,19 @@ async function reattachWindows (bmStore) {
     // matchMap :: Map<BookmarkId,Num>
     const matchMap = countMaps.reduce(aggMerge, Immutable.Map())
 
+    /*
+     * The logic here is convoluted but seems to work OK
+     * in practice.
+     */
     // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
     function aboveMatchThreshold (matchCount, bookmarkId) {
       const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId)
       const savedUrlCount = savedTabWindow.tabItems.count()
       const matchRatio = matchCount / savedUrlCount
-//      console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
-      return (matchRatio >= MATCH_THRESHOLD)
+      return ((matchCount > 1) ||
+              (savedUrlCount === 1 && matchCount === 1) ||
+              (matchRatio >= MATCH_THRESHOLD))
+      //      console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
     }
 
     const threshMap = matchMap.filter(aboveMatchThreshold)
