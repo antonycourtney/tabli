@@ -146,6 +146,12 @@ const SearchBar = React.createClass({
     this.props.onShowPreferences()
   },
 
+  handleReloadClick (e) {
+    e.preventDefault()
+    console.log('handleReloadClick')
+    actions.reload()
+  },
+
   handleCopyClick () {
     const openWindows = this.props.winStore.getTabWindowsByType('normal')
 
@@ -231,6 +237,9 @@ const SearchBar = React.createClass({
         <li role='separator' className='divider' />
         <li>
           <a href='#' onClick={this.handlePreferencesClick}>Preferences...</a>
+        </li>
+        <li>
+          <a href='#' onClick={this.handleReloadClick}>Reload</a>
         </li>
         <li role='separator' className='divider' />
         <li>

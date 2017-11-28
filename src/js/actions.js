@@ -431,3 +431,16 @@ export const savePreferences = async (userPrefs: prefs.Preferences, storeRef: TM
   storeRef.update(st => st.set('preferences', userPrefs))
   return storeRef.getValue()
 }
+
+export const setReloadHandler = (reloadFn: () => void) => {
+  const bgPage = chrome.extension.getBackgroundPage()
+  bgPage.reloadHandler = reloadFn
+}
+
+export const reload = async () => {
+  const bgPage = chrome.extension.getBackgroundPage()
+  const reloadHandler = bgPage.reloadHandler
+  if (reloadHandler) {
+    reloadHandler()
+  }
+}

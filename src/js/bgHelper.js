@@ -335,6 +335,17 @@ const onBookmarkChanged = async (storeRef, id, changeInfo) => {
 
 const onBookmarkMoved = (storeRef, id, moveInfo) => {
   console.log('bookmark moved: ', id, moveInfo)
+  if (moveInfo.oldParentId === tabliFolderId && moveInfo.parentId === archiveFolderId) {
+    // looks like window was unmanaged:
+    storeRef.update(state => {
+      let nextSt = state
+      const tabWindow = state.getSavedWindowByBookmarkId(id.toString())
+      if (tabWindow) {
+        nextSt = state.unmanageWindow(tabWindow)
+      }
+      return nextSt
+    })
+  }
 }
 
 function registerEventHandlers (storeRef) {
@@ -575,6 +586,7 @@ async function loadSnapState (bmStore) {
 async function main () {
   try {
     console.log('bgHelper started...')
+    actions.setReloadHandler(main)
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)
     const bmStore = await loadSnapState(attachBMStore)
