@@ -333,6 +333,11 @@ export class TabWindow extends Immutable.Record({
     return activeTab.title
   }
 
+  updateSavedTitle (title: string): TabWindow {
+    delete this._title
+    return this.set('savedTitle', title)
+  }
+
   // get a unique id for this window
   // useful as key in React arrays
   get id (): string {
@@ -357,6 +362,13 @@ export class TabWindow extends Immutable.Record({
     return this.tabItems.findEntry((ti) => ti.open &&
       ti.openState && ti.openState.openTabId === tabId)
   }
+  /*
+   * Returns [index,TabItem] pair if window contains chrome bookmark id or else undefined
+   */
+  findChromeBookmarkId (bookmarkId: string): ?([number, TabItem]) {
+    return this.tabItems.findEntry((ti) => ti.saved &&
+      ti.savedState && ti.savedState.bookmarkId === bookmarkId)
+  }
 
   getActiveTabId (): ?string {
     const activeTab = this.tabItems.find((t) => t.open && t.openState.active)
@@ -379,6 +391,13 @@ export class TabWindow extends Immutable.Record({
       console.error('setTabItems: bad nextItems: ', nextItems)
     }
     return this.set('tabItems', nextItems)
+  }
+
+  /*
+   * get index of an item in this TabWindow
+   */
+  indexOf (target: TabItem): ?number {
+    return this.tabItems.indexOf(target)
   }
 
   exportStr (): string {
@@ -451,7 +470,8 @@ export function removeSavedWindowState (tabWindow: TabWindow): TabWindow {
  * Initialize an unopened TabWindow from a bookmarks folder
  */
 export function makeFolderTabWindow (bookmarkFolder: any): TabWindow {
-  const itemChildren = bookmarkFolder.children.filter((node) => 'url' in node)
+  const bmChildren = bookmarkFolder.children
+  const itemChildren = bmChildren ? bmChildren.filter((node) => 'url' in node) : []
   const tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem))
   var fallbackTitle = ''
   if (bookmarkFolder.title === undefined) {
@@ -549,8 +569,9 @@ function mergeOpenTabs (tabItems, openTabs) {
  *
  * @param {TabWindow} tabWindow - TabWindow to be updated
  * @param {Tab|Null} optChromeTab - optional newly created Chrome tab
+ * @param {BookmarkTreeNode|Null} optBookmark - optional newly created Chrome bookmark
  */
-function mergeTabWindowTabItems (tabWindow, optChromeTab) {
+function mergeTabWindowTabItems (tabWindow, optChromeTab, optBookmark) {
   const tabItems = tabWindow.tabItems
 
   const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem)
@@ -558,7 +579,9 @@ function mergeTabWindowTabItems (tabWindow, optChromeTab) {
 
   const updOpenItems = optChromeTab ? baseOpenItems.toList().insert(optChromeTab.index, makeOpenTabItem(optChromeTab)) : baseOpenItems
 
-  const mergedItems = mergeSavedOpenTabs(baseSavedItems, updOpenItems)
+  const updSavedItems = optBookmark ? baseSavedItems.toList().push(makeBookmarkedTabItem(optBookmark)) : baseSavedItems
+
+  const mergedItems = mergeSavedOpenTabs(updSavedItems, updOpenItems)
   const updWindow = tabWindow.setTabItems(mergedItems)
   return updWindow
 }
@@ -570,7 +593,17 @@ function mergeTabWindowTabItems (tabWindow, optChromeTab) {
  * @param {Tab} tab - newly created Chrome tab
  */
 export function createTab (tabWindow: TabWindow, tab: any): TabWindow {
-  return mergeTabWindowTabItems(tabWindow, tab)
+  return mergeTabWindowTabItems(tabWindow, tab, null)
+}
+
+/**
+ * Update a TabWindow by adding a newly created bookmark
+ *
+ * @param {TabWindow} tabWindow - TabWindow to be updated
+ * @param {BookmarkTreeNode} bm - newly created Chrome bookmark
+ */
+export function createBookmark (tabWindow: TabWindow, bm: any): TabWindow {
+  return mergeTabWindowTabItems(tabWindow, null, bm)
 }
 
 /**
@@ -729,7 +762,6 @@ export function setActiveTab (tabWindow: TabWindow, tabId: number) {
 export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: Object) {
   const tabPos = tabWindow.findChromeTabId(tabId)
 
-  var updItems
   if (!tabPos) {
     // console.warn("updateTabItem: Got update for unknown tab id ", tabId)
     // console.log("updateTabItem: changeInfo: ", changeInfo)
@@ -744,14 +776,56 @@ export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: 
   const updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo))
 
   if (updKeys.length === 0) {
-    return TabWindow
+    return tabWindow
   }
   const updOpenState = _.reduce(updKeys, (acc, k) => acc.set(k, changeInfo[k]), prevOpenState)
 
   const updTabItem = (updKeys.length > 0) ? prevTabItem.set('openState', updOpenState) : prevTabItem
 
   // console.log("updateTabItem: ", index, updTabItem.toJS())
-  updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
+  const updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
+  const updWindow = tabWindow.setTabItems(updItems)
+
+  if (_.has(changeInfo, 'url')) {
+    // May have to split or the updated tabItems -- just re-merge all tabs:
+    return mergeTabWindowTabItems(updWindow)
+  }
+  return updWindow
+}
+
+/**
+ * update SavedTabState of a tab item in response to a change
+ * notification indicating an update to the corresponding bookmark's
+ * title or url
+ *
+ * @param {TabWindow} tabWindow -- tab window to be updated
+ * @param {TabItem} tabItem - tab item corresponding to tab
+ * @param {changeInfo} object -- fields that have changed in bookmark (title and/or url)
+ *
+ * @return {TabWindow} tabWindow with updated tab state
+ */
+export function updateTabBookmark (tabWindow: TabWindow, tabItem: TabItem, changeInfo: Object) {
+  const index = tabWindow.indexOf(tabItem)
+  if (!index) {
+    console.error('tabItem not found in TabWindow: ', tabWindow.toJS(), tabItem.toJS())
+    return tabWindow
+  }
+  const prevTabItem = tabItem
+  const prevSavedState = tabItem.savedState
+  if (prevSavedState == null) {
+    return tabWindow
+  }
+  const updKeys = _.intersection(_.keys(prevSavedState.toJS()), _.keys(changeInfo))
+
+  if (updKeys.length === 0) {
+    return tabWindow
+  }
+  const updSavedState = _.reduce(updKeys, (acc, k) => acc.set(k, changeInfo[k]), prevSavedState)
+
+  const updTabItem = (updKeys.length > 0) ? prevTabItem.set('savedState', updSavedState) : prevTabItem
+
+  // console.log("updateTabItem: ", index, updTabItem.toJS())
+  const updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
 
   const updWindow = tabWindow.setTabItems(updItems)
 

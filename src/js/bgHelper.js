@@ -19,25 +19,29 @@ import escapeStringRegexp from 'escape-string-regexp'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
 
-const tabmanFolderTitle = 'Tabli Saved Windows'
+const tabliFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
+let tabliFolderId = null
+let archiveFolderId = null
+
+const isValidWindowFolder = (bookmarkNode: Object) => {
+  if (_.has(bookmarkNode, 'url')) {
+    return false
+  }
+  if (bookmarkNode.title[0] === '_') {
+    return false
+  }
+  return true
+}
 
 /* On startup load managed windows from bookmarks folder */
-function loadManagedWindows (winStore, tabManFolder) {
+function loadManagedWindows (winStore, tabliFolder) {
   var folderTabWindows = []
-  for (var i = 0; i < tabManFolder.children.length; i++) {
-    var windowFolder = tabManFolder.children[i]
-    if (windowFolder.title[0] === '_') {
-      continue
+  for (var i = 0; i < tabliFolder.children.length; i++) {
+    var windowFolder = tabliFolder.children[i]
+    if (isValidWindowFolder(windowFolder)) {
+      folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder))
     }
-
-    var fc = windowFolder.children
-    if (!fc) {
-      console.log('Found bookmarks folder with no children, skipping: ', fc)
-      continue
-    }
-
-    folderTabWindows.push(TabWindow.makeFolderTabWindow(windowFolder))
   }
 
   return winStore.registerTabWindows(folderTabWindows)
@@ -87,22 +91,19 @@ function initRelNotes (st, storedVersion) {
  * returns: Promise<TabManagerState>
  */
 const initWinStore = async () => {
-  var tabmanFolderId = null
-  var archiveFolderId = null
-
   const tree = await chromep.bookmarks.getTree()
   var otherBookmarksNode = tree[0].children[1]
 
   // console.log( "otherBookmarksNode: ", otherBookmarksNode )
-  const tabManFolder = await ensureChildFolder(otherBookmarksNode, tabmanFolderTitle)
+  const tabliFolder = await ensureChildFolder(otherBookmarksNode, tabliFolderTitle)
   // console.log('tab manager folder acquired.')
-  tabmanFolderId = tabManFolder.id
-  const archiveFolder = await ensureChildFolder(tabManFolder, archiveFolderTitle)
+  tabliFolderId = tabliFolder.id
+  const archiveFolder = await ensureChildFolder(tabliFolder, archiveFolderTitle)
   // console.log('archive folder acquired.')
   archiveFolderId = archiveFolder.id
-  const subTreeNodes = await chromep.bookmarks.getSubTree(tabManFolder.id)
-  // console.log("bookmarks.getSubTree for TabManFolder: ", subTreeNodes)
-  const baseWinStore = new TabManagerState({folderId: tabmanFolderId, archiveFolderId})
+  const subTreeNodes = await chromep.bookmarks.getSubTree(tabliFolder.id)
+  // console.log("bookmarks.getSubTree for tabliFolder: ", subTreeNodes)
+  const baseWinStore = new TabManagerState({folderId: tabliFolderId, archiveFolderId})
   const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
 
   const items = await chromep.storage.local.get({readRelNotesVersion: ''})
@@ -239,6 +240,103 @@ const onTabUpdated = (storeRef, tabId, changeInfo, tab) => {
   }
 }
 
+const onBookmarkCreated = (storeRef, id, bookmark) => {
+  console.log('boomark created: ', id, bookmark)
+  storeRef.update(state => {
+    let nextSt = state
+    /* is this bookmark a folder? */
+    if (!isValidWindowFolder(bookmark)) {
+      // Ordinary (non-folder) bookmark
+      // Is parent a Tabli window folder?
+      const tabWindow = state.getSavedWindowByBookmarkId(bookmark.parentId)
+      if (tabWindow) {
+        // Do we already have this as a saved tab?
+        const entry = tabWindow.findChromeBookmarkId(bookmark.id)
+        if (!entry) {
+          console.log('new bookmark in saved window: ', bookmark)
+          nextSt = state.handleBookmarkCreated(tabWindow, bookmark)
+        }
+      }
+    } else {
+      // folder (window) bookmark
+      // Is this a Tabli window folder (parent is Tabli folder?)
+      if (bookmark.parentId === tabliFolderId) {
+        const tabWindow = state.getSavedWindowByBookmarkId(bookmark.id)
+        if (!tabWindow) {
+          // new saved window (bookmark folder) not in local state
+          const tw = TabWindow.makeFolderTabWindow(bookmark)
+          nextSt = state.registerTabWindow(tw)
+        }
+      }
+    }
+    return nextSt
+  })
+}
+
+/*
+ * higher-order helper that determines whether a bookmark node
+ * is either a saved window folder or saved tab, and invokes
+ * handles for each case
+ */
+
+const handleBookmarkUpdate = (storeRef, parentId, bookmark, handleTab, handleTabWindow) => {
+  storeRef.update(state => {
+    let nextSt = state
+    /* is this bookmark a folder? */
+    if (!isValidWindowFolder(bookmark)) {
+      // Ordinary (non-folder) bookmark
+      // Is parent a Tabli window folder?
+      const tabWindow = state.getSavedWindowByBookmarkId(parentId)
+      if (tabWindow) {
+        // Do we already have this as a saved tab?
+        const entry = tabWindow.findChromeBookmarkId(bookmark.id)
+        if (entry) {
+          const [index, tabItem] = entry
+          nextSt = handleTab(state, tabWindow, index, tabItem)
+        }
+      }
+    } else {
+      // folder (window) bookmark
+      // Is this a Tabli window folder (parent is Tabli folder?)
+      if (parentId === tabliFolderId) {
+        const tabWindow = state.getSavedWindowByBookmarkId(bookmark.id)
+        if (tabWindow) {
+          nextSt = handleTabWindow(state, tabWindow)
+        }
+      }
+    }
+    return nextSt
+  })
+}
+
+const onBookmarkRemoved = (storeRef, id, removeInfo) => {
+  console.log('onBookmarkRemoved: ', id, removeInfo)
+  handleBookmarkUpdate(storeRef, removeInfo.parentId, removeInfo.node,
+    (st, tabWindow, index, tabItem) => st.handleTabUnsaved(tabWindow, tabItem),
+    (st, tabWindow) => st.unmanageWindow(tabWindow)
+  )
+}
+
+const safeUpdateWindowTitle = (st, tabWindow, title) => {
+  return (title == null) ? st : st.updateSavedWindowTitle(tabWindow, title)
+}
+
+const onBookmarkChanged = async (storeRef, id, changeInfo) => {
+  console.log('bookmark changed: ', id, changeInfo)
+  const res = await chromep.bookmarks.get(id)
+  if (res && res.length > 0) {
+    const bookmark = res[0]
+    handleBookmarkUpdate(storeRef, bookmark.parentId, bookmark,
+      (st, tabWindow, index, tabItem) => st.handleBookmarkUpdated(tabWindow, tabItem, changeInfo),
+      (st, tabWindow) => safeUpdateWindowTitle(st, tabWindow, changeInfo.title)
+    )
+  }
+}
+
+const onBookmarkMoved = (storeRef, id, moveInfo) => {
+  console.log('bookmark moved: ', id, moveInfo)
+}
+
 function registerEventHandlers (storeRef) {
   // window events:
   chrome.windows.onRemoved.addListener((windowId) => {
@@ -316,6 +414,14 @@ function registerEventHandlers (storeRef) {
     // handle like tab creation:
     chrome.tabs.get(tabId, tab => onTabCreated(storeRef, tab, true))
   })
+  chrome.bookmarks.onCreated.addListener((id, bookmark) =>
+    onBookmarkCreated(storeRef, id, bookmark))
+  chrome.bookmarks.onRemoved.addListener((index, bookmark) =>
+    onBookmarkRemoved(storeRef, index, bookmark))
+  chrome.bookmarks.onMoved.addListener((id, moveInfo) =>
+    onBookmarkMoved(storeRef, id, moveInfo))
+  chrome.bookmarks.onChanged.addListener((id, changeInfo) =>
+    onBookmarkChanged(storeRef, id, changeInfo))
 }
 
 /**
@@ -330,7 +436,7 @@ function registerEventHandlers (storeRef) {
  *
  */
 async function reattachWindows (bmStore) {
-  const MATCH_THRESHOLD = 0.4
+  const MATCH_THRESHOLD = 0.25
 
   const urlIdMap = bmStore.getUrlBookmarkIdMap()
 
@@ -356,7 +462,7 @@ async function reattachWindows (bmStore) {
       const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId)
       const savedUrlCount = savedTabWindow.tabItems.count()
       const matchRatio = matchCount / savedUrlCount
-      // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
+//      console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
       return (matchRatio >= MATCH_THRESHOLD)
     }
 

@@ -101,6 +101,21 @@ export default class TabManagerState extends Immutable.Record({
     return this.registerTabWindow(updWindow)
   }
 
+  handleBookmarkCreated (tabWindow, bm) {
+    const updWindow = TabWindow.createBookmark(tabWindow, bm)
+    return this.registerTabWindow(updWindow)
+  }
+
+  handleBookmarkUpdated (tabWindow, tabItem, changeInfo) {
+    const updWindow = TabWindow.updateTabBookmark(tabWindow, tabItem, changeInfo)
+    return this.registerTabWindow(updWindow)
+  }
+
+  updateSavedWindowTitle (tabWindow, title) {
+    const updWindow = tabWindow.updateSavedTitle(title)
+    return this.registerTabWindow(updWindow)
+  }
+
   /**
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */
@@ -247,6 +262,11 @@ export default class TabManagerState extends Immutable.Record({
   getTabWindowByChromeTabId (tabId) {
     const tw = this.windowIdMap.find(w => w.findChromeTabId(tabId))
     return tw
+  }
+
+  // returns a tabWindow or undefined
+  getSavedWindowByBookmarkId (bookmarkId) {
+    return this.bookmarkIdMap.get(bookmarkId)
   }
 
   countOpenWindows () {
