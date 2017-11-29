@@ -198,6 +198,10 @@ a.card-link {
   margin-right: 12px;
   flex: 0 0 auto;
 }
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: searchfield-cancel-button;
+  margin-right: 5px;
+}
 /* GRRRRRR. @#!@#$ CSS */
 .popout-button {
   line-height: 1.0;
