@@ -277,7 +277,7 @@ const styles = {
   },
   modalContainer: {
     minWidth: 300,
-    maxWidth: '80%',
+    maxWidth: 480,
     maxHeight: '80%',
     position: 'relative',
     zIndex: 10,

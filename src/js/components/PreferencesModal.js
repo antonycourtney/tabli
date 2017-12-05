@@ -54,8 +54,8 @@ class PreferencesModal extends React.Component {
     return (
       <Modal.Dialog title='Tabli Preferences' onClose={this.props.onClose}>
         <Modal.Body>
-          <div className='container'>
-            <form className='dialog-form form-inline preferences-form' onSubmit={this.handleSubmit}>
+          <div className="modal-body-container">
+            <form className='dialog-form preferences-form' onSubmit={this.handleSubmit}>
               <div className='checkbox'>
                 <label>
                   <input

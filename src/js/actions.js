@@ -325,18 +325,24 @@ export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, s
   })
 }
 
-export function showHelp (winStore: TabManagerState, storeRef: TMSRef) {
+export function showHelp () {
   chrome.tabs.create({ url: TABLI_HELP_URL })
 }
 
-export function showAbout (winStore: TabManagerState, storeRef: TMSRef) {
+export function showAbout () {
   chrome.tabs.create({ url: TABLI_ABOUT_URL })
 }
-export function showReview (winStore: TabManagerState, storeRef: TMSRef) {
+export function showReview () {
   chrome.tabs.create({ url: TABLI_REVIEW_URL })
 }
-export function sendFeedback (winStore: TabManagerState, storeRef: TMSRef) {
+export function sendFeedback () {
   chrome.tabs.create({ url: TABLI_FEEDBACK_URL })
+}
+
+export function showPreferences () {
+  const prefsURL = chrome.runtime.getURL('preferences.html')
+  console.log({prefsURL})
+  chrome.tabs.create({ url: prefsURL })
 }
 
 export const showPopout = async (winStore: TabManagerState, storeRef: TMSRef): TabManagerState => {

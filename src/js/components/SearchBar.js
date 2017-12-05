@@ -143,7 +143,7 @@ const SearchBar = React.createClass({
 
   handlePreferencesClick (e) {
     e.preventDefault()
-    this.props.onShowPreferences()
+    actions.showPreferences()
   },
 
   handleReloadClick (e) {

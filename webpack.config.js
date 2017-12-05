@@ -13,6 +13,7 @@ function config(nodeEnv) {
         extensions: [".webpack.js", ".web.js", ".js"]
     },
     entry: {
+      prefsPage: ["babel-polyfill", "./src/js/prefsPage.js"],
       renderTest: ["babel-polyfill", "./src/js/renderTest.js"],
       tabliPopup: ["babel-polyfill", "./src/js/tabliPopup.js"],
       tabliPopout: ["babel-polyfill", "./src/js/tabliPopout.js"],

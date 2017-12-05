@@ -13,7 +13,6 @@ import HeaderButton from './HeaderButton'
 
 export const Dialog = React.createClass({
   handleClose (event) {
-    console.log('Modal.handleClose: ', event, arguments)
     event.preventDefault()
     this.props.onClose(event)
   },
