@@ -16,13 +16,13 @@ function copyTextToClipboard (text) {
   body.removeChild(copyFrom)
 }
 
-const SearchBar = React.createClass({
-  handleChange () {
+class SearchBar extends React.Component {
+  handleChange = () => {
     const searchStr = this.searchInputRef.value
     this.props.onSearchInput(searchStr)
-  },
+  };
 
-  handleKeyDown (e) {
+  handleKeyDown = (e) => {
     // console.log('handleKeyDown: ', _.omit(e, _.isObject))
     if ((e.keyCode === Constants.KEY_F1) ||
       (e.keyCode === Constants.KEY_QUESTION && e.ctrlKey && e.shiftKey)) {
@@ -102,57 +102,57 @@ const SearchBar = React.createClass({
         }
       }
     }
-  },
+  };
 
-  handleHelpClick (e) {
+  handleHelpClick = (e) => {
     e.preventDefault()
     actions.showHelp()
-  },
+  };
 
-  handleAboutClick (e) {
+  handleAboutClick = (e) => {
     e.preventDefault()
     actions.showAbout()
-  },
+  };
 
-  handlePopoutClick (e) {
+  handlePopoutClick = (e) => {
     if (this.props.isPopout) {
       actions.hidePopout(this.props.winStore, this.props.storeRef)
     } else {
       actions.showPopout(this.props.winStore, this.props.storeRef)
     }
-  },
+  };
 
-  handleReviewClick (e) {
+  handleReviewClick = (e) => {
     e.preventDefault()
     actions.showReview(this.props.winStore, this.props.storeRef)
-  },
+  };
 
-  handleFeedbackClick (e) {
+  handleFeedbackClick = (e) => {
     e.preventDefault()
     actions.sendFeedback(this.props.winStore, this.props.storeRef)
-  },
+  };
 
-  handleRelNotesClick (e) {
+  handleRelNotesClick = (e) => {
     e.preventDefault()
     actions.showRelNotes(this.props.winStore, this.props.storeRef)
-  },
+  };
 
-  handleExpandToggleClick () {
+  handleExpandToggleClick = () => {
     actions.toggleExpandAll(this.props.winStore, this.props.storeRef)
-  },
+  };
 
-  handlePreferencesClick (e) {
+  handlePreferencesClick = (e) => {
     e.preventDefault()
     actions.showPreferences()
-  },
+  };
 
-  handleReloadClick (e) {
+  handleReloadClick = (e) => {
     e.preventDefault()
     console.log('handleReloadClick')
     actions.reload()
-  },
+  };
 
-  handleCopyClick () {
+  handleCopyClick = () => {
     const openWindows = this.props.winStore.getTabWindowsByType('normal')
 
     var cmpFn = Util.windowCmp(this.props.winStore.currentWindowId)
@@ -161,14 +161,14 @@ const SearchBar = React.createClass({
     const s = sortedWindows.reduce((rs, tw) => rs + '\n\n' + tw.exportStr(), '')
 
     copyTextToClipboard(s)
-  },
+  };
 
-  setInputRef (ref) {
+  setInputRef = (ref) => {
     this.searchInputRef = ref
     if (this.props.setInputRef) {
       this.props.setInputRef(ref)
     }
-  },
+  };
 
   render () {
     const menuButton = (
@@ -275,6 +275,6 @@ const SearchBar = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default SearchBar

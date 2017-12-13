@@ -1,17 +1,15 @@
 import * as React from 'react'
-import * as PureRenderMixin from 'react-addons-pure-render-mixin'
 import Styles from './styles'
 
 const buttonSpacer = <div style={Styles.headerButton} />
 
-var HeaderButton = React.createClass({
-  mixins: [PureRenderMixin],
-  handleClick (event) {
+class HeaderButton extends React.PureComponent {
+  handleClick = (event) => {
     if (this.props.visible) {
       this.props.onClick(event)
       event.stopPropagation()
     }
-  },
+  };
 
   render () {
     /* We render a LOT of these, and React profiler indicates we're spending a lot of time here
@@ -32,6 +30,6 @@ var HeaderButton = React.createClass({
         onClick={this.handleClick} />
     )
   }
-})
+}
 
 export default HeaderButton

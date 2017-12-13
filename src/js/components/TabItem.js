@@ -4,9 +4,6 @@ import * as Util from './util'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
-
-import * as PureRenderMixin from 'react-addons-pure-render-mixin'
-
 import HeaderButton from './HeaderButton'
 
 const PropTypes = React.PropTypes
@@ -41,10 +38,8 @@ function collectDropTarget (connect, monitor) {
   }
 }
 
-const TabItem = React.createClass({
-  mixins: [PureRenderMixin],
-
-  propTypes: {
+class TabItem extends React.PureComponent {
+  static propTypes = {
     connectDragSource: PropTypes.func.isRequired,
     connectDropTarget: PropTypes.func.isRequired,
     isDragging: PropTypes.bool.isRequired,
@@ -57,9 +52,9 @@ const TabItem = React.createClass({
     appComponent: PropTypes.object.isRequired,
     isOver: PropTypes.bool.isRequired,
     onItemSelected: PropTypes.func
-  },
+  };
 
-  handleClick (event) {
+  handleClick = (event) => {
     var tabWindow = this.props.tabWindow
     var tab = this.props.tab
     var tabIndex = this.props.tabIndex
@@ -71,9 +66,9 @@ const TabItem = React.createClass({
     if (this.props.onItemSelected) {
       this.props.onItemSelected(tab)
     }
-  },
+  };
 
-  handleClose () {
+  handleClose = () => {
     if (!this.props.tabWindow.open) {
       return
     }
@@ -82,19 +77,19 @@ const TabItem = React.createClass({
     }
     var tabId = this.props.tab.openState.openTabId
     actions.closeTab(this.props.tabWindow, tabId, this.props.storeRef)
-  },
+  };
 
-  handleBookmarkTabItem (event) {
+  handleBookmarkTabItem = (event) => {
     event.stopPropagation()
     console.log('bookmark tab: ', this.props.tab.toJS())
     actions.saveTab(this.props.tabWindow, this.props.tab, this.props.storeRef)
-  },
+  };
 
-  handleUnbookmarkTabItem (event) {
+  handleUnbookmarkTabItem = (event) => {
     event.stopPropagation()
     console.log('unbookmark tab: ', this.props.tab.toJS())
     actions.unsaveTab(this.props.tabWindow, this.props.tab, this.props.storeRef)
-  },
+  };
 
   render () {
     const { connectDragSource, connectDropTarget, isOver } = this.props
@@ -188,7 +183,7 @@ const TabItem = React.createClass({
         {closeButton}
       </div>))
   }
-})
+}
 
 const DropWrap = DropTarget(DragItemTypes.TAB_ITEM, tabItemTarget, collectDropTarget)
 const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect)

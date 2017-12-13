@@ -25,19 +25,10 @@ function sendHelperMessage (msg) {
   })
 }
 
-const Popup = React.createClass({
-  storeAsState (winStore) {
-    var tabWindows = winStore.getAll()
-    var cmpFn = Util.windowCmp(winStore.currentWindowId)
-    var sortedWindows = tabWindows.sort(cmpFn)
-
-    return {
-      winStore,
-      sortedWindows}
-  },
-
-  getInitialState () {
-    var st : Object = this.storeAsState(this.props.initialWinStore, true)
+class Popup extends React.Component {
+  constructor (props, context) {
+    super(props, context)
+    var st : Object = this.storeAsState(props.initialWinStore, true)
 
     st.prefsModalIsOpen = false
     st.saveModalIsOpen = false
@@ -45,10 +36,20 @@ const Popup = React.createClass({
     st.revertTabWindow = null
     st.searchStr = ''
     st.searchRE = null
-    return st
-  },
+    this.state = st
+  }
 
-  handleSearchInput (rawSearchStr) {
+  storeAsState = (winStore) => {
+    var tabWindows = winStore.getAll()
+    var cmpFn = Util.windowCmp(winStore.currentWindowId)
+    var sortedWindows = tabWindows.sort(cmpFn)
+
+    return {
+      winStore,
+      sortedWindows}
+  };
+
+  handleSearchInput = (rawSearchStr) => {
     const searchStr = rawSearchStr.trim()
 
     var searchRE = null
@@ -57,56 +58,56 @@ const Popup = React.createClass({
     }
 
     this.setState({ searchStr, searchRE })
-  },
+  };
 
-  openSaveModal (tabWindow) {
+  openSaveModal = (tabWindow) => {
     const initialTitle = tabWindow.title
     this.setState({ saveModalIsOpen: true, saveInitialTitle: initialTitle, saveTabWindow: tabWindow })
-  },
+  };
 
-  closeSaveModal () {
+  closeSaveModal = () => {
     this.setState({ saveModalIsOpen: false })
-  },
+  };
 
-  openRevertModal (filteredTabWindow) {
+  openRevertModal = (filteredTabWindow) => {
     this.setState({ revertModalIsOpen: true, revertTabWindow: filteredTabWindow.tabWindow })
-  },
+  };
 
-  closeRevertModal () {
+  closeRevertModal = () => {
     this.setState({ revertModalIsOpen: false, revertTabWindow: null })
-  },
+  };
 
-  openPreferencesModal () {
+  openPreferencesModal = () => {
     console.log('openPreferencesModal')
     this.setState({ prefsModalIsOpen: true })
-  },
+  };
 
-  closePreferencesModal () {
+  closePreferencesModal = () => {
     this.setState({ prefsModalIsOpen: false })
-  },
+  };
 
   /* handler for save modal */
-  doSave (titleStr) {
+  doSave = (titleStr) => {
     const storeRef = this.props.storeRef
     const storeState = storeRef.getValue()
     const tabliFolderId = storeState.folderId
     actions.manageWindow(tabliFolderId, storeState.currentWindowId, this.state.saveTabWindow, titleStr, storeRef)
     this.closeSaveModal()
-  },
+  };
 
-  doRevert (tabWindow) { // eslint-disable-line no-unused-vars
+  doRevert = (tabWindow) => { // eslint-disable-line no-unused-vars
     actions.revertWindow(this.state.revertTabWindow, this.props.storeRef)
     this.closeRevertModal()
-  },
+  };
 
-  doUpdatePreferences (newPrefs) {
+  doUpdatePreferences = (newPrefs) => {
     console.log('update preferences: ', newPrefs.toJS())
     actions.savePreferences(newPrefs, this.props.storeRef)
     this.closePreferencesModal()
-  },
+  };
 
   /* render Preferences modal based on storeState.showPreferences */
-  renderPreferencesModal () {
+  renderPreferencesModal = () => {
     let modal = null
     if (this.state.prefsModalIsOpen) {
       modal = (
@@ -117,10 +118,10 @@ const Popup = React.createClass({
           onSubmit={this.doUpdatePreferences} />)
     }
     return modal
-  },
+  };
 
   /* render save modal (or not) based on this.state.saveModalIsOpen */
-  renderSaveModal () {
+  renderSaveModal = () => {
     var modal = null
     if (this.state.saveModalIsOpen) {
       modal = (
@@ -133,10 +134,10 @@ const Popup = React.createClass({
     }
 
     return modal
-  },
+  };
 
   /* render revert modal (or not) based on this.state.revertModalIsOpen */
-  renderRevertModal () {
+  renderRevertModal = () => {
     var modal = null
     if (this.state.revertModalIsOpen) {
       modal = (
@@ -148,7 +149,7 @@ const Popup = React.createClass({
     }
 
     return modal
-  },
+  };
 
   render () {
     var ret
@@ -180,7 +181,7 @@ const Popup = React.createClass({
     }
 
     return ret
-  },
+  }
 
   componentWillMount () {
     if (this.props.noListener) {
@@ -204,6 +205,6 @@ const Popup = React.createClass({
     console.log('componentWillMount: added view listener: ', listenerId)
     sendHelperMessage({ listenerId })
   }
-})
+}
 
 export default DragDropContext(HTML5Backend)(Popup)

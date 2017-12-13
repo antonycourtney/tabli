@@ -3,22 +3,19 @@ import Styles from './styles'
 import * as Util from './util'
 import * as actions from '../actions'
 
-import * as PureRenderMixin from 'react-addons-pure-render-mixin'
 import HeaderButton from './HeaderButton'
 import ExpanderButton from './ExpanderButton'
 
-const WindowHeader = React.createClass({
-  mixins: [PureRenderMixin],
-
-  handleUnmanageClick (event) {
+class WindowHeader extends React.PureComponent {
+  handleUnmanageClick = (event) => {
     console.log('unamange: ', this.props.tabWindow)
     event.preventDefault()
     const archiveFolderId = this.props.winStore.archiveFolderId
     actions.unmanageWindow(archiveFolderId, this.props.tabWindow, this.props.storeRef)
     event.stopPropagation()
-  },
+  };
 
-  handleManageClick (event) {
+  handleManageClick = (event) => {
     console.log('manage: ', this.props.tabWindow)
     event.preventDefault()
     var tabWindow = this.props.tabWindow
@@ -26,7 +23,7 @@ const WindowHeader = React.createClass({
     appComponent.openSaveModal(tabWindow)
 
     event.stopPropagation()
-  },
+  };
 
   render () {
     var tabWindow = this.props.tabWindow
@@ -87,6 +84,6 @@ const WindowHeader = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default WindowHeader

@@ -8,7 +8,7 @@ import * as actions from '../actions'
 import WindowHeader from './WindowHeader'
 import TabItem from './TabItem'
 
-const FilteredTabWindow = React.createClass({
+class FilteredTabWindow extends React.Component {
   componentWillReceiveProps (nextProps) {
     if (nextProps.isSelected && !this.props.isSelected) {
       // If this window becomes selected:
@@ -16,34 +16,34 @@ const FilteredTabWindow = React.createClass({
         this.windowDivRef.scrollIntoViewIfNeeded()
       }
     }
-  },
+  }
 
-  handleOpen () {
+  handleOpen = () => {
     actions.openWindow(this.props.winStore.getCurrentWindow(), this.props.filteredTabWindow.tabWindow, this.props.storeRef)
     if (this.props.onItemSelected) {
       this.props.onItemSelected(this.props.filteredTabWindow.tabWindow)
     }
-  },
+  };
 
-  handleClose (event) { // eslint-disable-line no-unused-vars
+  handleClose = (event) => { // eslint-disable-line no-unused-vars
     // console.log("handleClose")
     actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeRef)
-  },
+  };
 
-  handleRevert (event) { // eslint-disable-line no-unused-vars
+  handleRevert = (event) => { // eslint-disable-line no-unused-vars
     var appComponent = this.props.appComponent
     appComponent.openRevertModal(this.props.filteredTabWindow)
-  },
+  };
 
   /* expanded state follows window open/closed state unless it is
    * explicitly set interactively by the user
    */
-  getExpandedState () {
+  getExpandedState = () => {
     const tabWindow = this.props.filteredTabWindow.tabWindow
     return tabWindow.isExpanded(this.props.winStore)
-  },
+  };
 
-  renderTabItems (tabWindow, tabs) {
+  renderTabItems = (tabWindow, tabs) => {
     /*
      * We tried explicitly checking for expanded state and
      * returning null if not expanded, but (somewhat surprisingly) it
@@ -74,11 +74,11 @@ const FilteredTabWindow = React.createClass({
       <div style={tabListStyle}>
         {items}
       </div>)
-  },
+  };
 
-  handleExpand (expand) {
+  handleExpand = (expand) => {
     actions.expandWindow(this.props.filteredTabWindow.tabWindow, expand, this.props.storeRef)
-  },
+  };
 
   render () {
     var filteredTabWindow = this.props.filteredTabWindow
@@ -132,6 +132,6 @@ const FilteredTabWindow = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default FilteredTabWindow

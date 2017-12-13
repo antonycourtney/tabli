@@ -3,21 +3,21 @@ import Styles from './styles'
 import * as Constants from './constants'
 import * as Modal from './Modal'
 
-const SaveModal = React.createClass({
-  handleKeyDown (e) {
+class SaveModal extends React.Component {
+  handleKeyDown = (e) => {
     if (e.keyCode === Constants.KEY_ESC) {
       // ESC key
       e.preventDefault()
       this.props.onClose(e)
     }
-  },
+  };
 
-  handleSubmit (e) {
+  handleSubmit = (e) => {
     e.preventDefault()
     const titleStr = this.refs.titleInput.value
     console.log('handleSubmit: title: ', titleStr)
     this.props.onSubmit(titleStr)
-  },
+  };
 
   render () {
     return (
@@ -46,7 +46,7 @@ const SaveModal = React.createClass({
         </Modal.Body>
       </Modal.Dialog>
     )
-  },
+  }
 
   componentDidMount () {
     console.log('SaveModal: did mount')
@@ -58,6 +58,6 @@ const SaveModal = React.createClass({
       titleElem.setSelectionRange(0, titleLen)
     }, 0)
   }
-})
+}
 
 export default SaveModal

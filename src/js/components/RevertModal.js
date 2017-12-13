@@ -12,8 +12,8 @@ import * as TabWindow from '../tabWindow'
 /*
  * Modal dialog for reverting a bookmarked window
  */
-const RevertModal = React.createClass({
-  handleKeyDown (e) {
+class RevertModal extends React.Component {
+  handleKeyDown = (e) => {
     if (e.keyCode === Constants.KEY_ESC) {
       // ESC key
       e.preventDefault()
@@ -21,14 +21,14 @@ const RevertModal = React.createClass({
     } else if (e.keyCode === Constants.KEY_ENTER) {
       this.handleSubmit(e)
     }
-  },
+  };
 
-  handleSubmit (e) {
+  handleSubmit = (e) => {
     e.preventDefault()
     this.props.onSubmit(this.props.tabWindow)
-  },
+  };
 
-  renderItem (tabItem, idx) {
+  renderItem = (tabItem, idx) => {
     const favIconUrl = tabItem.open ? tabItem.openState.favIconUrl : null
     var fiSrc = favIconUrl || ''
 
@@ -49,16 +49,16 @@ const RevertModal = React.createClass({
         <div style={Styles.spacer} />
       </div>
     )
-  },
+  };
 
-  renderTabItems (tabItems) {
+  renderTabItems = (tabItems) => {
     const itemElems = tabItems.map(this.renderItem)
     return (
       <div style={Styles.tabList}>
         {itemElems}
       </div>
     )
-  },
+  };
 
   render () {
     const tabWindow = this.props.tabWindow
@@ -128,13 +128,13 @@ const RevertModal = React.createClass({
         </Modal.Body>
       </Modal.Dialog>
     )
-  },
+  }
 
   /* HACK - get focus to the OK button, because tabIndex getting ignored. */
   componentDidMount () {
     console.log('revertModal: did mount')
     this.refs.okButton.focus()
   }
-})
+}
 
 export default RevertModal

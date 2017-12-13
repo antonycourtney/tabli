@@ -11,11 +11,11 @@ import HeaderButton from './HeaderButton'
 /* Allow multiple components in this file: */
 /* eslint react/no-multi-comp:0 */
 
-export const Dialog = React.createClass({
-  handleClose (event) {
+export class Dialog extends React.PureComponent {
+  handleClose = (event) => {
     event.preventDefault()
     this.props.onClose(event)
-  },
+  };
 
   render () {
     var modalDiv = null
@@ -41,9 +41,9 @@ export const Dialog = React.createClass({
       </div>)
     return modalDiv
   }
-})
+}
 
-export const Info = React.createClass({
+export class Info extends React.Component {
   render () {
     return (
       <div style={Styles.dialogInfo}>
@@ -53,9 +53,9 @@ export const Info = React.createClass({
       </div>
     )
   }
-})
+}
 
-export const Body = React.createClass({
+export class Body extends React.Component {
   render () {
     return (
       <div style={Styles.modalBodyContainer}>
@@ -63,4 +63,4 @@ export const Body = React.createClass({
       </div>
     )
   }
-})
+}

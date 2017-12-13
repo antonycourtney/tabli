@@ -28,15 +28,13 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
  * and validation that should happen with respect to the (already calculated) props containing
  * filtered windows that we receive from above
  */
-const SelectableTabPage = React.createClass({
-  getInitialState () {
-    return {
-      selectedWindowIndex: 0,
-      selectedTabIndex: 0
-    }
-  },
+class SelectableTabPage extends React.Component {
+  state = {
+    selectedWindowIndex: 0,
+    selectedTabIndex: 0
+  };
 
-  handlePrevSelection (byPage) {
+  handlePrevSelection = (byPage) => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -56,9 +54,9 @@ const SelectableTabPage = React.createClass({
         this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 })
       }
     }
-  },
+  };
 
-  handleNextSelection (byPage) {
+  handleNextSelection = (byPage) => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -75,9 +73,9 @@ const SelectableTabPage = React.createClass({
         this.setState({ selectedWindowIndex: this.state.selectedWindowIndex + 1, selectedTabIndex: 0 })
       }
     }
-  },
+  };
 
-  handleSelectionEnter () {
+  handleSelectionEnter = () => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -88,7 +86,7 @@ const SelectableTabPage = React.createClass({
     const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex)
     console.log('opening: ', selectedTabItem.toJS())
     actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeRef)
-  },
+  };
 
   componentWillReceiveProps (nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex
@@ -107,7 +105,7 @@ const SelectableTabPage = React.createClass({
       var nextTabIndex = Math.min(this.state.selectedTabIndex, matchingTabCount(this.props.searchStr, nextSelectedWindow) - 1)
       this.setState({ selectedTabIndex: nextTabIndex })
     }
-  },
+  }
 
   render () {
     const winStore = this.props.winStore
@@ -150,6 +148,6 @@ const SelectableTabPage = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default SelectableTabPage

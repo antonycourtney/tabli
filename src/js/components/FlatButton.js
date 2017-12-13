@@ -1,10 +1,8 @@
 import * as React from 'react'
-import * as PureRenderMixin from 'react-addons-pure-render-mixin'
 import Styles from './styles'
 
-var FlatButton = React.createClass({
-  mixins: [PureRenderMixin],
-  handleClick (event) {
+class FlatButton extends React.Component {
+  handleClick = (event) => {
     console.log('FlatButton.handleClick: ', this.props)
     event.stopPropagation()
     event.preventDefault()
@@ -13,7 +11,7 @@ var FlatButton = React.createClass({
     }
     console.log('FlatButton.handleClick: returning false')
     return false
-  },
+  };
 
   render () {
     return (
@@ -22,6 +20,6 @@ var FlatButton = React.createClass({
       </a>
     )
   }
-})
+}
 
 export default FlatButton

@@ -14,12 +14,11 @@ if (!util.isNode) {
   relNotesStr = require('../../html/relnotes.html')
 }
 
-const TabWindowList = React.createClass({
-
+class TabWindowList extends React.Component {
   /* acknowledge release notes (and hide them) */
-  ackRelNotes () {
+  ackRelNotes = () => {
     actions.hideRelNotes(this.props.winStore, this.props.storeRef)
-  },
+  };
 
   render () {
     const showRelNotes = this.props.winStore.showRelNotes
@@ -108,6 +107,6 @@ const TabWindowList = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default TabWindowList

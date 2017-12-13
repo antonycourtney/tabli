@@ -33,17 +33,15 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
  * and validation that should happen with respect to the (already calculated) props containing
  * filtered windows that we receive from above
  */
-const SelectablePopup = React.createClass({
-  getInitialState () {
-    return {
-      selectedWindowIndex: 0,
-      selectedTabIndex: 0,
-      scrolledToWindowId: -1,
-      scrolledToTabId: -1
-    }
-  },
+class SelectablePopup extends React.Component {
+  state = {
+    selectedWindowIndex: 0,
+    selectedTabIndex: 0,
+    scrolledToWindowId: -1,
+    scrolledToTabId: -1
+  };
 
-  handlePrevSelection (byPage) {
+  handlePrevSelection = (byPage) => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -69,9 +67,9 @@ const SelectablePopup = React.createClass({
 
       this.setState({ selectedWindowIndex: prevWindowIndex, selectedTabIndex: prevTabCount - 1 })
     }
-  },
+  };
 
-  handleNextSelection (byPage) {
+  handleNextSelection = (byPage) => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -91,9 +89,9 @@ const SelectablePopup = React.createClass({
         this.setState({ selectedWindowIndex: 0, selectedTabIndex: 0 })
       }
     }
-  },
+  };
 
-  handleSelectionEnter (inputRef) {
+  handleSelectionEnter = (inputRef) => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -110,9 +108,9 @@ const SelectablePopup = React.createClass({
     // And reset the search field:
     inputRef.value = ''
     this.props.onSearchInput('')
-  },
+  };
 
-  handleSelectionExpandToggle () {
+  handleSelectionExpandToggle = () => {
     if (this.props.filteredWindows.length === 0) {
       return
     }
@@ -122,16 +120,16 @@ const SelectablePopup = React.createClass({
     const expanded = tabWindow.isExpanded(this.props.winStore)
 
     actions.expandWindow(tabWindow, !expanded, this.props.storeRef)
-  },
+  };
 
-  handleSearchExit () {
+  handleSearchExit = () => {
     // transfer focus back to current window (if there is one)
     const curWindow = this.props.winStore.getCurrentWindow()
     if (!curWindow) {
       return
     }
     actions.openWindow(curWindow, curWindow, this.props.storeRef)
-  },
+  };
 
   componentWillReceiveProps (nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex
@@ -151,7 +149,7 @@ const SelectablePopup = React.createClass({
       var nextTabIndex = Math.min(this.state.selectedTabIndex, matchCount - 1)
       this.setState({ selectedTabIndex: nextTabIndex })
     }
-  },
+  }
 
   /*
    * We have to do some fairly horrible change detection here because
@@ -164,7 +162,7 @@ const SelectablePopup = React.createClass({
    * This turned out not to really reduce jitter because Chrome window titles are determined
    * by tab title, so simply switching tabs resulted in abrupt changes in window sort order.
    */
-  updateScrollPos (bodyRef, windowRef) {
+  updateScrollPos = (bodyRef, windowRef) => {
     const needScrollUpdate = (this.state.scrolledToWindowId !== this.props.winStore.currentWindowId) ||
       (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId())
 
@@ -221,36 +219,36 @@ const SelectablePopup = React.createClass({
       // console.log("updateScrollPos: udpating State: ", updState)
       this.setState(updState)
     }
-  },
+  };
 
   // Search input ref:
-  setSearchInputRef (ref) {
+  setSearchInputRef = (ref) => {
     this.searchInputRef = ref
-  },
+  };
 
-  handleItemSelected (item) {
+  handleItemSelected = (item) => {
     if (this.searchInputRef) {
       // And reset the search field:
       this.searchInputRef.value = ''
       this.props.onSearchInput('')
     }
-  },
+  };
 
   // Scrollable body (container) DOM ref
-  setBodyRef (ref) {
+  setBodyRef = (ref) => {
     this.bodyRef = ref
     this.updateScrollPos(this.bodyRef, this.focusedWindowRef)
-  },
+  };
 
   // DOM ref for currently focused tab window:
-  setFocusedTabWindowRef (ref) {
+  setFocusedTabWindowRef = (ref) => {
     this.focusedWindowRef = ref
     this.updateScrollPos(this.bodyRef, this.focusedWindowRef)
-  },
+  };
 
   componentDidUpdate () {
     this.updateScrollPos(this.bodyRef, this.focusedWindowRef)
-  },
+  }
 
   render () {
     const winStore = this.props.winStore
@@ -296,6 +294,6 @@ const SelectablePopup = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default SelectablePopup

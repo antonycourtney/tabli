@@ -8,7 +8,7 @@ import FlatButton from './FlatButton'
  *
  * http://www.material-ui.com/#/components/card
  */
-const MessageCard = React.createClass({
+class MessageCard extends React.Component {
   render () {
     const cardStyle = Util.merge(Styles.tabWindow, Styles.tabWindowFocused, Styles.messageCard)
     const rawMarkup = { __html: this.props.content }
@@ -22,6 +22,6 @@ const MessageCard = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default MessageCard

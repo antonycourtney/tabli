@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Styles from './styles'
 
-const WindowListSection = React.createClass({
+class WindowListSection extends React.Component {
   render () {
     var header = null
     if (this.props.title) {
@@ -26,6 +26,6 @@ const WindowListSection = React.createClass({
       </div>
     )
   }
-})
+}
 
 export default WindowListSection
