@@ -34,6 +34,7 @@
     "babel-cli": "^6.24.1",
     "babel-eslint": "^7.2.3",
     "babel-loader": "^7.1.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-register": "^6.24.1",
     "bootstrap": "^3.3.7",
@@ -79,7 +80,7 @@
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "leaktest": "babel-node --expose-gc --presets es2015,react,stage-3 ./test/leakTest.js | tap-spec",
     "lint": "eslint .",
-    "test": "eslint . && babel-node --presets es2015,react,stage-3 ./test/runAllTests.js | tap-spec"
+    "test": "eslint . && babel-node ./test/runAllTests.js | tap-spec"
   },
   "standard": {
     "globals": [

@@ -27,7 +27,7 @@ function config(nodeEnv) {
         loaders: [
           { test: /\.(js|jsx)$/,
             exclude: /node_modules/,
-            loader: "babel-loader?presets[]=es2015,presets[]=react,presets[]=stage-3"
+            loader: "babel-loader?presets[]=es2015,presets[]=react,presets[]=stage-3,plugins[]=transform-class-properties"
           },
           { test: /\.(json)$/, loader: "json-loader" },
           {
