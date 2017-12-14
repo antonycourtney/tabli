@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import * as React from 'react'
 import Styles from './styles'
 import * as Util from './util'
@@ -5,8 +6,6 @@ import * as actions from '../actions'
 import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
 import HeaderButton from './HeaderButton'
-
-const PropTypes = React.PropTypes
 
 const tabItemSource = {
   beginDrag (props) {
