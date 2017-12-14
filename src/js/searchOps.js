@@ -73,8 +73,8 @@ const FilteredTabWindow = Immutable.Record({
  *
  */
 export function matchTabWindow (tabWindow: TW.TabWindow,
-    searchExp: SearchSpec,
-    options: SearchOpts): ?FilteredTabWindow {
+  searchExp: SearchSpec,
+  options: SearchOpts): ?FilteredTabWindow {
   const itemMatches =
     tabWindow.tabItems.map((ti) =>
       matchTabItem(ti, searchExp, options)).filter((fti) => fti !== null)
@@ -95,8 +95,8 @@ export function matchTabWindow (tabWindow: TW.TabWindow,
  * an array of FilteredTabWindow
  */
 export function filterTabWindows (tabWindows: Array<TW.TabWindow>,
-    searchExp: SearchSpec,
-    options: SearchOpts = defaultSearchOpts): Array<FilteredTabWindow> {
+  searchExp: SearchSpec,
+  options: SearchOpts = defaultSearchOpts): Array<FilteredTabWindow> {
   var res
   if (searchExp === null) {
     res = _.map(tabWindows, (tw) => new FilteredTabWindow({ tabWindow: tw }))

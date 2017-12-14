@@ -10,9 +10,9 @@ import * as _ from 'lodash'
  */
 
 // Save previous bookmarkIdMap for efficient diff
-let prevBookmarkIdMap = null  // last bookmarkIdMap written
+let prevBookmarkIdMap = null // last bookmarkIdMap written
 
-let latestBookmarkIdMap = null  // most recent bookmark map
+let latestBookmarkIdMap = null // most recent bookmark map
 
 /**
  * get diffs between old and new version of bookmark id map.

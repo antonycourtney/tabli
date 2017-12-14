@@ -1,7 +1,6 @@
 /* globals XMLHttpRequest */
 
 import * as Immutable from 'immutable'
-import * as Perf from 'react-addons-perf'
 import * as RenderCommon from './renderCommon'
 
 import * as TabWindow from './tabWindow'
@@ -9,7 +8,7 @@ import TabManagerState from './tabManagerState'
 import ViewRef from './viewRef'
 
 // make a TabWindow from its JSON
-function makeTabWindow (jsWin) {  // eslint-disable-line no-unused-vars
+function makeTabWindow (jsWin) { // eslint-disable-line no-unused-vars
   const decItems = jsWin.tabItems.map((tiFields) => new TabWindow.TabItem(tiFields))
 
   const itemWin = Object.assign({}, jsWin, { tabItems: Immutable.Seq(decItems) })
@@ -32,28 +31,13 @@ function renderPage (testData) {
 
   const currentChromeWindow = testChromeWindows[0]
 
-  if (Perf) {
-    Perf.start()
-  }
-
   var tPreRender = performance.now()
 
   // N.B. false last arg to prevent sync'ing current chrome windows
   RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false)
 
   var tPostRender = performance.now()
-  if (Perf) {
-    Perf.stop()
-  }
   console.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
-  if (Perf) {
-    console.log('inclusive:')
-    Perf.printInclusive()
-    console.log('exclusive:')
-    Perf.printExclusive()
-    console.log('wasted:')
-    Perf.printWasted()
-  }
 }
 
 var testStateUrl = 'testData/renderTest-chromeWindowSnap.json'

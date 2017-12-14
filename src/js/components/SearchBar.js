@@ -179,7 +179,7 @@ class SearchBar extends React.Component {
         aria-haspopup='true'
         aria-expanded='false'
         title='Open Tabli Menu'
-        >
+      >
         <span className='glyphicon glyphicon-menu-hamburger' aria-hidden='true' />
       </button>
     )

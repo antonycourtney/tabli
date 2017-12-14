@@ -281,14 +281,14 @@ export class TabWindow extends Immutable.Record({
 
   tabItems: Immutable.List(), // <TabItem>
 
-  snapshot: false,    // Set if tabItems contains snapshot of last open state
-  chromeSessionId: null,  // Chrome session id for restore (if found)
+  snapshot: false, // Set if tabItems contains snapshot of last open state
+  chromeSessionId: null, // Chrome session id for restore (if found)
 
   // This is view state, so technically doesn't belong here, but we only have
   // one window component per window right now, we want to be able to toggle
   // this state via a keyboard handler much higher in the hierarchy,
   // and cost to factor out view state would be high.
-  expanded: null   // tri-state: null, true or false
+  expanded: null // tri-state: null, true or false
 }) {
   saved: boolean
   savedTitle: string
@@ -431,7 +431,7 @@ Title                                  | URL
  *
  */
 export function removeOpenWindowState (tabWindow: TabWindow,
-    snapshot: boolean = true): TabWindow {
+  snapshot: boolean = true): TabWindow {
   // update tabItems by removing openTabId from any open items:
   const tabItems = tabWindow.tabItems
   let updTabItems
@@ -517,7 +517,7 @@ export function makeChromeTabWindow (chromeWindow: any): TabWindow {
  * @return {List<TabItem>}
  */
 export function mergeSavedOpenTabs (savedItems: Immutable.List<TabItem>,
-    openItems: Immutable.List<TabItem>): Immutable.List<TabItem> {
+  openItems: Immutable.List<TabItem>): Immutable.List<TabItem> {
   const openUrlSet = Immutable.Set(openItems.map(ti => ti.url))
   const savedUrlMap = Immutable.Map(savedItems.map(ti => [ti.safeSavedState.url, ti]))
 
@@ -537,7 +537,7 @@ export function mergeSavedOpenTabs (savedItems: Immutable.List<TabItem>,
 
   // now grab those saved items that aren't currently open:
   const closedTabItems = savedItems.filter(savedItem =>
-     savedItem.savedState && !openUrlSet.has(savedItem.savedState.url))
+    savedItem.savedState && !openUrlSet.has(savedItem.savedState.url))
 
   const mergedTabItems = openTabItems.concat(closedTabItems)
 
@@ -666,7 +666,7 @@ export function closeTab (tabWindow: TabWindow, tabId: number): TabWindow {
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function saveTab (tabWindow: TabWindow,
-    tabItem: TabItem, tabNode: any): TabWindow {
+  tabItem: TabItem, tabNode: any): TabWindow {
   const entry = tabWindow.findChromeTabId(tabItem.safeOpenState.openTabId)
   if (!entry) {
     console.error('saveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())

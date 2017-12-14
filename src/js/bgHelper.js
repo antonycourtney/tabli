@@ -114,7 +114,7 @@ const initWinStore = async () => {
 
 function setupConnectionListener (storeRef) {
   chrome.runtime.onConnect.addListener((cport): void => {
-    const port : any = cport  // to deal with typo in 'onDisconnect' in flow-interfaces-chrome
+    const port : any = cport // to deal with typo in 'onDisconnect' in flow-interfaces-chrome
     port.onMessage.addListener((msg) => {
       var listenerId = msg.listenerId
       port.onDisconnect.addListener(() => {
@@ -371,7 +371,7 @@ function registerEventHandlers (storeRef) {
       return state.setCurrentWindowId(windowId)
     })
   },
-    { windowTypes: ['normal'] }
+  { windowTypes: ['normal'] }
   )
 
   // tab events:
@@ -581,8 +581,8 @@ async function loadSnapState (bmStore) {
     const baseSavedItems = tabWindow.tabItems.filter(ti => ti.saved).map(TabWindow.resetSavedItem)
     const mergedTabs = TabWindow.mergeSavedOpenTabs(baseSavedItems, snapTabs)
     return (tabWindow
-        .set('tabItems', mergedTabs)
-        .set('snapshot', true))
+      .set('tabItems', mergedTabs)
+      .set('snapshot', true))
   })
   const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap)
   console.log('merged window state snapshot from local storage')
