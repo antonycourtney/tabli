@@ -46,7 +46,8 @@ class Popup extends React.Component {
 
     return {
       winStore,
-      sortedWindows}
+      sortedWindows
+    }
   };
 
   handleSearchInput = (rawSearchStr) => {

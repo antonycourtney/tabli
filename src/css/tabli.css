@@ -209,3 +209,85 @@ input[type="search"]::-webkit-search-cancel-button {
 .modal-body-container {
   margin: 8px;
 }
+.newtab-main-container {
+  display: flex;
+  width: 100%;
+}
+
+.newtab-content-container {
+  width: 600px;
+  height: 800px;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: auto;
+}
+
+.newtab-logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  align-items: center;
+  width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 16px;
+}
+
+.newtab-logo-container h1 {
+  font-weight: 500;
+  font-size: 48px;
+  color: #328fa6;
+  font-family: 'sinkin_sans500_medium';
+  margin-left: 16px;
+}
+
+.newtab-logo-container img {
+  flex: none;
+}
+
+.newtab-search-container {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 16px;
+  width: 600px;
+}
+.newtab-search-input {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  height: 50px;
+  width: 600px;
+  margin: auto;
+  font-size: 16px;
+  padding-left: 4px;
+}
+
+.newtab-search-results {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  width: 600px;
+}
+
+.tabSearchCard-card {
+  display: flex;
+  width: 600px;
+  height: 60px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin: auto;
+}
+
+.tabSearchCard-text-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabSearchCard-text-title {
+  display: block;
+}
+
+.tabSearchCard-text-url {
+  display: block;
+}

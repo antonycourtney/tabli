@@ -68,12 +68,12 @@
     "build:dir": "mkdirp build && mkdirp build/css && mkdirp build/js && mkdirp build/fonts && mkdirp build/images && mkdirp build/testData",
     "build:bootstrap": "cp -r node_modules/bootstrap/dist/* build",
     "build:jquery": "cp -r node_modules/jquery/dist/* build/js",
-    "build:fa": "cp -r node_modules/font-awesome/css/* build/css && cp -r node_modules/font-awesome/fonts/* build/fonts",
+    "build:fonts": "cp -r node_modules/font-awesome/css/* doc/site/mock/impl/css/fonts.css build/css && cp -r node_modules/font-awesome/fonts/* doc/site/mock/impl/fonts/* build/fonts",
     "build:html": "cp -r src/css/* build/css && cp -r src/html/* build",
     "build:images": "cp -r src/images/* src/assets/*.png build/images",
     "build:testData": "cp -r test/*.json build/testData",
     "build:manifest": "cp src/manifest.json build",
-    "build-assets": "npm run build:dir && npm run build:jquery && npm run build:bootstrap && npm run build:fa && npm run build:html && npm run build:images && npm run build:testData && npm run build:manifest",
+    "build-assets": "npm run build:dir && npm run build:jquery && npm run build:bootstrap && npm run build:fonts && npm run build:html && npm run build:images && npm run build:testData && npm run build:manifest",
     "build-dev": "npm run build-assets && webpack --env=dev",
     "build-prod": "npm run build-assets && webpack --env=prod",
     "clean": "rm -rf ./build",
@@ -81,7 +81,8 @@
     "leaktest": "babel-node --expose-gc --presets es2015,react,stage-3 ./test/leakTest.js | tap-spec",
     "lint": "eslint .",
     "lintfix": "eslint --fix .",
-    "test": "eslint . && babel-node ./test/runAllTests.js | tap-spec"
+    "test": "eslint . && babel-node ./test/runAllTests.js | tap-spec",
+    "watch": "webpack --env=dev --watch"
   },
   "standard": {
     "globals": [

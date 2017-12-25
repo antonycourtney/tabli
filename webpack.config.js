@@ -17,6 +17,7 @@ function config(nodeEnv) {
       renderTest: ["babel-polyfill", "./src/js/renderTest.js"],
       tabliPopup: ["babel-polyfill", "./src/js/tabliPopup.js"],
       tabliPopout: ["babel-polyfill", "./src/js/tabliPopout.js"],
+      newtabPage: ["babel-polyfill", "./src/js/newtabMain.js"],
       bgHelper: ["babel-polyfill", "./src/js/bgHelper.js"]
     },
     output: {

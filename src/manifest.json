@@ -42,5 +42,8 @@
         "mac": "MacCtrl+Comma"
       }
     }
+  },
+  "chrome_url_overrides" : {
+    "newtab": "newtabPage.html"
   }
 }
