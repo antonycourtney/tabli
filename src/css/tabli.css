@@ -215,7 +215,8 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .newtab-content-container {
-  width: 600px;
+  --newtab-content-width: 600px;
+  width: var(--newtab-content-width);
   height: 800px;
   flex-direction: column;
   align-items: flex-start;
@@ -228,7 +229,7 @@ input[type="search"]::-webkit-search-cancel-button {
   align-items: center;
   justify-content: flex-start;
   align-items: center;
-  width: 600px;
+  width: var(--newtab-content-width);
   margin-left: auto;
   margin-right: auto;
   margin-top: 16px;
@@ -251,13 +252,13 @@ input[type="search"]::-webkit-search-cancel-button {
   margin-left: auto;
   margin-right: auto;
   margin-top: 16px;
-  width: 600px;
+  width: var(--newtab-content-width);
 }
 .newtab-search-input {
   border: 1px solid #ccc;
   border-radius: 3px;
   height: 50px;
-  width: 600px;
+  width: var(--newtab-content-width);
   margin: auto;
   font-size: 16px;
   padding-left: 4px;
@@ -267,19 +268,38 @@ input[type="search"]::-webkit-search-cancel-button {
   display: flex;
   flex-direction: column;
   margin: auto;
-  width: 600px;
+  width: var(--newtab-content-width);
 }
 
 .tabSearchCard-card {
   display: flex;
-  width: 600px;
+  width: var(--newtab-content-width);
   height: 60px;
   border: 1px solid #ccc;
   border-radius: 3px;
   margin: auto;
   font-size: 12px;
   overflow:hidden;
+  flex-direction: column;
+}
+
+.tabSearchCard-details {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  flex-wrap: nowrap;
+}
+
+.tabSearchCard-provider {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tabSearchCard-provider-name {
+  font-size: 10px;
+  font-weight: bold;
+  margin-right: 4px;
 }
 
 .tabSearchCard-spacer {
@@ -308,7 +328,7 @@ input[type="search"]::-webkit-search-cancel-button {
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
-  width: 500px;
+  width: 460px;
 }
 
 .tabSearchCard-text-title {
