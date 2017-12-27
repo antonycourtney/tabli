@@ -50,7 +50,8 @@ class TabItem extends React.PureComponent {
     isSelected: PropTypes.bool.isRequired,
     appComponent: PropTypes.object.isRequired,
     isOver: PropTypes.bool.isRequired,
-    onItemSelected: PropTypes.func
+    onItemSelected: PropTypes.func,
+    storybook: PropTypes.bool.isRequired
   };
 
   handleClick = (event) => {
@@ -138,7 +139,15 @@ class TabItem extends React.PureComponent {
 
     // const favIconUrl = tab.open ? tab.openState.favIconUrl : null
     // var fiSrc = favIconUrl ? favIconUrl : ''
-    var fiSrc = 'chrome://favicon/size/16/' + tab.url
+
+    var fiSrc
+    if (!this.props.storybook) {
+      fiSrc = 'chrome://favicon/size/16/' + tab.url
+    } else {
+      // deal with storybook running in an iframe:
+      // fiSrc = 'http://www.google.com/s2/favicons?domain_url=' + encodeURIComponent(tab.url)
+      fiSrc = 'https://api.statvoo.com/favicon?url=' + encodeURIComponent(tab.url)
+    }
 
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {

@@ -31,6 +31,9 @@
     "semver": "^5.4.1"
   },
   "devDependencies": {
+    "@storybook/addon-actions": "^3.2.19",
+    "@storybook/addon-links": "^3.2.19",
+    "@storybook/react": "^3.2.19",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.0.3",
     "babel-loader": "^7.1.2",
@@ -54,6 +57,7 @@
     "jsdom": "^11.5.1",
     "json-loader": "^0.5.7",
     "memwatch-next": "^0.3.0",
+    "mkdirp": "^0.5.1",
     "pre-commit": "^1.2.2",
     "react-addons-perf": "^15.4.2",
     "react-addons-test-utils": "^15.6.2",
@@ -62,10 +66,7 @@
     "tap-spec": "^4.1.1",
     "tape": "^4.8.0",
     "url-loader": "^0.6.2",
-    "webpack": "^3.10.0",
-    "@storybook/react": "^3.2.19",
-    "@storybook/addon-actions": "^3.2.19",
-    "@storybook/addon-links": "^3.2.19"
+    "webpack": "^3.10.0"
   },
   "scripts": {
     "build:dir": "mkdirp build && mkdirp build/css && mkdirp build/js && mkdirp build/fonts && mkdirp build/images && mkdirp build/testData",

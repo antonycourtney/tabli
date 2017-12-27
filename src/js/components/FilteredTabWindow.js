@@ -63,7 +63,9 @@ class FilteredTabWindow extends React.Component {
           tabIndex={i}
           isSelected={isSelected}
           appComponent={this.props.appComponent}
-          onItemSelected={this.props.onItemSelected} />)
+          onItemSelected={this.props.onItemSelected}
+          storybook={this.props.storybook}
+        />)
       items.push(tabItem)
     }
 

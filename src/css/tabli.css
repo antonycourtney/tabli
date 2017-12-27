@@ -277,17 +277,52 @@ input[type="search"]::-webkit-search-cancel-button {
   border: 1px solid #ccc;
   border-radius: 3px;
   margin: auto;
+  font-size: 12px;
+  overflow:hidden;
+  align-items: center;
 }
 
+.tabSearchCard-spacer {
+  outline: none;
+  border: none;
+  background-repeat: no-repeat;
+  width: 32px;
+  height: 32px;
+  margin-left: 1px;
+  margin-right: 1px;
+  flex: none;
+}
+.tabSearchCard-managed {
+  -webkit-mask-image: url("../images/Status-9-32px.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 32px;
+  background-color: #7472ff;
+}
+.tabSearchCard-favIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 6px;
+  flex: none;
+}
 .tabSearchCard-text-info {
   display: flex;
   flex-direction: column;
+  flex: 0 1 auto;
+  width: 500px;
 }
 
 .tabSearchCard-text-title {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
 }
 
 .tabSearchCard-text-url {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #828282;
 }

@@ -5,12 +5,6 @@ import { action } from '@storybook/addon-actions'
 import { linkTo } from '@storybook/addon-links'
 
 import { Button, Welcome } from '@storybook/react/demo'
-
-import ExpanderButton from '../components/ExpanderButton'
-import FlatButton from '../components/FlatButton'
-import HeaderButton from '../components/HeaderButton'
-import WindowHeader from '../components/WindowHeader'
-import FilteredTabWindow from '../components/FilteredTabWindow'
 import * as Util from '../components/util'
 import Styles from '../components/styles'
 import TabManagerState from '../tabManagerState'
@@ -18,6 +12,13 @@ import ViewRef from '../viewRef'
 import * as searchOps from '../searchOps'
 import { DragDropContextProvider } from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
+
+import ExpanderButton from '../components/ExpanderButton'
+import FlatButton from '../components/FlatButton'
+import HeaderButton from '../components/HeaderButton'
+import WindowHeader from '../components/WindowHeader'
+import FilteredTabWindow from '../components/FilteredTabWindow'
+import TabSearchCard from '../components/TabSearchCard'
 
 const mkWinStore = (testData) => {
   const testChromeWindows = testData.chromeWindows
@@ -108,5 +109,30 @@ storiesOf('FilteredTabWindow', module)
       selectedTabIndex={-1}
       appComponent={null}
       onItemSelected={action('itemSelected')}
-      expandAll={false} />
+      expandAll={false}
+      storybook={true}
+    />
+  )
+
+const testTab0 = {
+  saved: false,
+  title: 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
+  url: 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat'
+}
+
+const testTab1 = {
+  saved: true,
+  title: 'Interactive development & testing environment for React, React-Native, Vue UI components',
+  url: 'https://github.com/storybooks/storybook'
+}
+
+storiesOf('TabSearchCard', module)
+  .add('unsaved tab', () =>
+    <TabSearchCard
+      storybook={true}
+      tabItem={testTab0}/>)
+  .add('saved tab', () =>
+    <TabSearchCard
+      storybook={true}
+      tabItem={testTab1}/>
   )
