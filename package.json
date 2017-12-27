@@ -62,7 +62,10 @@
     "tap-spec": "^4.1.1",
     "tape": "^4.8.0",
     "url-loader": "^0.6.2",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "@storybook/react": "^3.2.19",
+    "@storybook/addon-actions": "^3.2.19",
+    "@storybook/addon-links": "^3.2.19"
   },
   "scripts": {
     "build:dir": "mkdirp build && mkdirp build/css && mkdirp build/js && mkdirp build/fonts && mkdirp build/images && mkdirp build/testData",
@@ -82,7 +85,9 @@
     "lint": "eslint .",
     "lintfix": "eslint --fix .",
     "test": "eslint . && babel-node ./test/runAllTests.js | tap-spec",
-    "watch": "webpack --env=dev --watch"
+    "watch": "webpack --env=dev --watch",
+    "storybook": "start-storybook -p 6006 -s build",
+    "build-storybook": "build-storybook"
   },
   "standard": {
     "globals": [
