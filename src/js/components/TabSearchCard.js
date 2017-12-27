@@ -36,15 +36,13 @@ export default class TabSearchCard extends React.Component {
 
     return (
       <div className='tabSearchCard-card'>
-        <div className='tabSearchCard-details'>
-          {tabCheckItem}
-          {tabFavIcon}
-          <div className='tabSearchCard-text-info'>
-            <span className='tabSearchCard-text-title'>{tabTitle}</span>
-            <span className='tabSearchCard-text-url'>{tabURL}</span>
-          </div>
+        {tabCheckItem}
+        {tabFavIcon}
+        <div className='tabSearchCard-text-info'>
+          <span className='tabSearchCard-text-title'>{tabTitle}</span>
+          <span className='tabSearchCard-text-url'>{tabURL}</span>
         </div>
-        <div className='tabSearchCard-provider'>
+        <div className='tabSearchCard-provider-info'>
           <span className='tabSearchCard-provider-name'>Open Tab</span>
         </div>
       </div>

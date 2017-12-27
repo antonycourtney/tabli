@@ -214,8 +214,12 @@ input[type="search"]::-webkit-search-cancel-button {
   width: 100%;
 }
 
-.newtab-content-container {
+:root {
   --newtab-content-width: 600px;
+  --tabSearchCard-height: 60px;
+}
+
+.newtab-content-container {
   width: var(--newtab-content-width);
   height: 800px;
   flex-direction: column;
@@ -274,32 +278,32 @@ input[type="search"]::-webkit-search-cancel-button {
 .tabSearchCard-card {
   display: flex;
   width: var(--newtab-content-width);
-  height: 60px;
+  height: var(--tabSearchcard-height);
   border: 1px solid #ccc;
   border-radius: 3px;
   margin: auto;
   font-size: 12px;
   overflow:hidden;
-  flex-direction: column;
-}
-
-.tabSearchCard-details {
   margin-top: 4px;
-  display: flex;
   flex-direction: row;
   align-items: center;
-  flex-wrap: nowrap;
 }
 
-.tabSearchCard-provider {
+.tabSearchCard-provider-info {
   display: flex;
   justify-content: flex-end;
+  align-items: flex-end;
+  flex-direction: column;
+  height: 45px;
+  width: 75px;
+  flex: none;
 }
 
 .tabSearchCard-provider-name {
   font-size: 10px;
   font-weight: bold;
   margin-right: 4px;
+  text-align: right;
 }
 
 .tabSearchCard-spacer {
@@ -328,7 +332,7 @@ input[type="search"]::-webkit-search-cancel-button {
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
-  width: 460px;
+  width: 450px;
 }
 
 .tabSearchCard-text-title {
