@@ -289,22 +289,6 @@ input[type="search"]::-webkit-search-cancel-button {
   align-items: center;
 }
 
-.tabSearchCard-provider-info {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  flex-direction: column;
-  height: 45px;
-  width: 75px;
-  flex: none;
-}
-
-.tabSearchCard-provider-name {
-  font-size: 10px;
-  font-weight: bold;
-  margin-right: 4px;
-  text-align: right;
-}
 
 .tabSearchCard-spacer {
   outline: none;
@@ -332,7 +316,23 @@ input[type="search"]::-webkit-search-cancel-button {
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
-  width: 450px;
+  width: 465px;
+}
+.tabSearchCard-provider-info {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  flex-direction: column;
+  height: 45px;
+  width: 60px;
+  flex: none;
+}
+
+.tabSearchCard-provider-name {
+  font-size: 10px;
+  font-weight: bold;
+  margin-right: 4px;
+  text-align: right;
 }
 
 .tabSearchCard-text-title {
