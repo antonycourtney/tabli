@@ -1,13 +1,20 @@
+// @flow
 
 import * as React from 'react'
-import Styles from './styles'
 import * as Util from './util'
 
-export default class TabSearchCard extends React.Component {
+type Props = {
+  saved: boolean,
+  url: string,
+  title: string,
+  providerName: string,
+  storybook: ?boolean
+}
+
+export default class TabSearchCard extends React.Component<Props> {
   render () {
-    const tabItem = this.props.tabItem
     let tabCheckItem = null
-    if (tabItem.saved) {
+    if (this.props.saved) {
       tabCheckItem =
         <div className='tabSearchCard-spacer tabSearchCard-managed' />
     } else {
@@ -16,26 +23,35 @@ export default class TabSearchCard extends React.Component {
 
     var fiSrc
     if (!this.props.storybook) {
-      fiSrc = 'chrome://favicon/size/32/' + tabItem.url
+      fiSrc = 'chrome://favicon/size/32/' + this.props.url
     } else {
-      // fiSrc = 'http://www.google.com/s2/favicons?domain_url=' + encodeURIComponent(tabItem.url)
-      fiSrc = 'https://api.statvoo.com/favicon?url=' + encodeURIComponent(tabItem.url)
+      // fiSrc = 'http://www.google.com/s2/favicons?domain_url=' + encodeURIComponent(this.props.url)
+      fiSrc = 'https://api.statvoo.com/favicon?url=' + encodeURIComponent(this.props.url)
     }
     // Skip the chrome FAVICONs; they just throw when accessed.
     if (fiSrc.indexOf('chrome://theme/') === 0) {
       fiSrc = ''
     }
 
-    const emptyFavIcon = <div style={Util.merge(Styles.headerButton, Styles.emptyFavIcon)} />
+    let fiClasses = ['tabSearchCard-favIcon']
 
-    // TODO: also cards for saved, closed tabs...
-    var tabFavIcon = (fiSrc.length > 0) ? <img className='tabSearchCard-favIcon' src={fiSrc} /> : emptyFavIcon
+    if (!this.props.open) {
+      fiClasses.push('tabSearchCard-closed')
+    }
+    const tabOpenStyle = this.props.open ? 'tabSearchCard-open' : 'tabSearchCard-closed'
 
-    const tabTitle = tabItem.title
-    const tabURL = tabItem.url
+    let tabFavIcon
+    if ((this.props.url.length > 0) && (fiSrc.length > 0)) {
+      tabFavIcon = <img className={fiClasses.join(' ')} src={fiSrc} />
+    } else {
+      fiClasses.push('tabSearchCard-favIcon-empty')
+      tabFavIcon = <div className={fiClasses.join(' ')} />
+    }
+    const tabTitle = this.props.title
+    const tabURL = this.props.url
 
     return (
-      <div className='tabSearchCard-card'>
+      <div className={Util.mergeCSS('tabSearchCard-card', tabOpenStyle)}>
         {tabCheckItem}
         {tabFavIcon}
         <div className='tabSearchCard-text-info'>
@@ -43,7 +59,7 @@ export default class TabSearchCard extends React.Component {
           <span className='tabSearchCard-text-url'>{tabURL}</span>
         </div>
         <div className='tabSearchCard-provider-info'>
-          <span className='tabSearchCard-provider-name'>Open Tab</span>
+          <span className='tabSearchCard-provider-name'>{this.props.providerName}</span>
         </div>
       </div>
     )

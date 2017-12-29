@@ -70,12 +70,24 @@ class NewTabPage extends React.Component {
     console.log('windowList: ', windowList.toJS())
     const matchingTabs = windowList.flatMap(ftw => ftw.itemMatches.map(item => item.tabItem))
     const openMatchingTabs = matchingTabs.filter(ti => ti.open)
-    console.log('openMatchingTabs: ', openMatchingTabs.toJS())
-    const searchElems = openMatchingTabs.map(ti => (
+    const openElems = openMatchingTabs.map(ti => (
       <TabSearchCard
-        tabItem = {ti}
-      />
-    ))
+        open={true}
+        saved={ti.saved}
+        title={ti.title}
+        url={ti.url}
+        providerName='Open Tab'
+      />))
+    const closedMatchingTabs = matchingTabs.filter(ti => !ti.open)
+    const closedElems = closedMatchingTabs.map(ti => (
+      <TabSearchCard
+        open={false}
+        saved={ti.saved}
+        title={ti.title}
+        url={ti.url}
+        providerName='Saved Tab'
+      />))
+    const searchElems = openElems.concat(closedElems)
     try {
       ret = (
         <div className='newtab-main-container'>

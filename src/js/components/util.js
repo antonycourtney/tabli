@@ -16,6 +16,11 @@ export function merge () {
   return res
 }
 
+// merge CSS class names:
+export function mergeCSS (...classNames) {
+  return classNames.join(' ')
+}
+
 /*
  * sort criteria for window list:
  *   open windows first, then alpha by title

@@ -1,3 +1,4 @@
+// @flow
 import React from 'react'
 
 import { storiesOf } from '@storybook/react'
@@ -42,7 +43,7 @@ const mkWinStore = (testData) => {
   console.log('current window: ', curWin.toJS())
   const storeRef = new ViewRef(mockWinStore)
 
-  const filteredTabWindows = searchOps.filterTabWindows(mockWinStore.getAll(), null)
+  const filteredTabWindows = searchOps.filterTabWindows(mockWinStore.getAll(), '')
 
   console.log('ftws: ', filteredTabWindows.map(r => r.toJS()))
 
@@ -115,24 +116,55 @@ storiesOf('FilteredTabWindow', module)
   )
 
 const testTab0 = {
+  open: true,
   saved: false,
   title: 'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
   url: 'http://stackoverflow.com/questions/21903604/is-there-any-proper-way-to-integrate-d3-js-graphics-into-facebook-react-applicat'
 }
 
 const testTab1 = {
+  open: true,
   saved: true,
   title: 'Interactive development & testing environment for React, React-Native, Vue UI components',
   url: 'https://github.com/storybooks/storybook'
 }
 
+const testTab2 = {
+  open: false,
+  saved: true,
+  title: 'Webpack Configuration',
+  url: 'https://webpack.js.org/configuration/'
+}
+
+const testTab3 = {
+  open: false,
+  saved: false,
+  title: 'This is for a web page with no URL (empty favIcon)',
+  url: ''
+}
+
 storiesOf('TabSearchCard', module)
-  .add('unsaved tab', () =>
+  .add('unsaved open tab', () =>
     <TabSearchCard
       storybook={true}
-      tabItem={testTab0}/>)
-  .add('saved tab', () =>
+      {...testTab0}
+      providerName='Open Tab'
+    />)
+  .add('saved open tab', () =>
     <TabSearchCard
       storybook={true}
-      tabItem={testTab1}/>
-  )
+      {...testTab1}
+      providerName='Open Tab'
+    />)
+  .add('saved closed tab', () =>
+    <TabSearchCard
+      storybook={true}
+      {...testTab2}
+      providerName='Saved Tab'
+    />)
+  .add('empty favIcon tab', () =>
+    <TabSearchCard
+      storybook={true}
+      {...testTab3}
+      providerName='Saved Tab'
+    />)
