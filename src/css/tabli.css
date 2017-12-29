@@ -215,7 +215,8 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 :root {
-  --newtab-content-width: 600px;
+  --newtab-content-width: 615px;
+  --tabSearchCard-width: 600px;
   --tabSearchCard-height: 60px;
 }
 
@@ -269,20 +270,25 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .newtab-search-results {
-  display: flex;
-  flex-direction: column;
   margin: auto;
   width: var(--newtab-content-width);
+  max-height: 415px;
+  overflow-x: none;
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  border-radius: 3px;
 }
 
 
 .tabSearchCard-card {
   display: flex;
-  width: var(--newtab-content-width);
+  width: var(--tabSearchCard-width);
   height: var(--tabSearchcard-height);
-  border: 1px solid #ccc;
   border-radius: 3px;
-  margin: auto;
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-top: 4px;
+  margin-bottom: 4px;
   font-size: 12px;
   overflow:hidden;
   margin-top: 4px;

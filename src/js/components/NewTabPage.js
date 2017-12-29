@@ -64,12 +64,17 @@ class NewTabPage extends React.Component {
   render () {
     let ret
     const tipStr = 'Search Tabs, History, Bookmarks, ...'
-    const openWindows = this.state.sortedWindows.filter(tw => tw.open)
+    const openWindows = this.state.sortedWindows
     const filteredWindows = searchOps.filterTabWindows(openWindows, this.state.searchRE)
     const windowList = immutable.List(filteredWindows)
     console.log('windowList: ', windowList.toJS())
-    const matchingTabs = windowList.flatMap(ftw => ftw.itemMatches.map(item => item.tabItem))
-    const openMatchingTabs = matchingTabs.filter(ti => ti.open)
+
+    const openWindowList = windowList.filter(ftw => ftw.tabWindow.open)
+    const openWinMatchingTabs = openWindowList.flatMap(ftw => ftw.itemMatches.map(item => item.tabItem))
+    console.log('openWinMatchingTabs: ', openWinMatchingTabs.toJS())
+
+    // openMatchTabs require both tab AND window to be open:
+    const openMatchingTabs = openWinMatchingTabs.filter(ti => ti.open)
     const openElems = openMatchingTabs.map(ti => (
       <TabSearchCard
         open={true}
@@ -78,7 +83,11 @@ class NewTabPage extends React.Component {
         url={ti.url}
         providerName='Open Tab'
       />))
-    const closedMatchingTabs = matchingTabs.filter(ti => !ti.open)
+    // closed tabs will be comprises of closed tabs in open windows
+    // and tabs in closed windows:
+    const openWinClosedMatchingTabs = openWinMatchingTabs.filter(ti => !ti.open)
+    const closedWinMatchingTabs = windowList.filter(ftw => !ftw.open).flatMap(ftw => ftw.itemMatches.map(item => item.tabItem))
+    const closedMatchingTabs = openWinClosedMatchingTabs.concat(closedWinMatchingTabs)
     const closedElems = closedMatchingTabs.map(ti => (
       <TabSearchCard
         open={false}
