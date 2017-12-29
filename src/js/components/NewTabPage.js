@@ -86,7 +86,7 @@ class NewTabPage extends React.Component {
     // closed tabs will be comprises of closed tabs in open windows
     // and tabs in closed windows:
     const openWinClosedMatchingTabs = openWinMatchingTabs.filter(ti => !ti.open)
-    const closedWinMatchingTabs = windowList.filter(ftw => !ftw.open).flatMap(ftw => ftw.itemMatches.map(item => item.tabItem))
+    const closedWinMatchingTabs = windowList.filter(ftw => !(ftw.tabWindow.open)).flatMap(ftw => ftw.itemMatches.map(item => item.tabItem))
     const closedMatchingTabs = openWinClosedMatchingTabs.concat(closedWinMatchingTabs)
     const closedElems = closedMatchingTabs.map(ti => (
       <TabSearchCard
