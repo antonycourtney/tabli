@@ -201,7 +201,7 @@ export function activateTab (
   lastFocusedTabWindow: TabWindow,
   targetTabWindow: TabWindow,
   tab: TabItem,
-  tabIndex: number,
+  tabIndex: ?number,
   storeRef: TMSRef
 ) {
   // console.log("activateTab: ", tabWindow, tab )
@@ -225,8 +225,10 @@ export function activateTab (
       var createOpts = {
         windowId: targetTabWindow.openWindowId,
         url: tab.url,
-        index: tabIndex,
         active: true
+      }
+      if (tabIndex) {
+        createOpts.index = tabIndex
       }
 
       // console.log("restoring bookmarked tab")

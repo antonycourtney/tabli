@@ -50,8 +50,10 @@ export default class TabSearchCard extends React.Component<Props> {
     const tabTitle = this.props.title
     const tabURL = this.props.url
 
+    const tabSelectedStyle = this.props.selected ? 'tabSearchCard-selected' : ''
+
     return (
-      <div className={Util.mergeCSS('tabSearchCard-card', tabOpenStyle)}>
+      <div className={Util.mergeCSS('tabSearchCard-card', tabOpenStyle, tabSelectedStyle)}>
         {tabCheckItem}
         {tabFavIcon}
         <div className='tabSearchCard-text-info'>
