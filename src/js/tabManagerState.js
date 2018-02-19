@@ -8,6 +8,8 @@ import * as _ from 'lodash'
 import * as Immutable from 'immutable'
 import * as TabWindow from './tabWindow'
 import * as prefs from './preferences'
+import * as searchOps from './searchOps'
+import escapeStringRegexp from 'escape-string-regexp'
 
 function validChromeWindow (cw, normalOnly) {
   if (!cw) {
@@ -57,9 +59,7 @@ export default class TabManagerState extends Immutable.Record({
      * bookmarkIdMap.
      */
     const closedWindowIdMap = this.windowIdMap.delete(tabWindow.openWindowId)
-
     const closedWindow = TabWindow.removeOpenWindowState(tabWindow)
-
     return this.set('windowIdMap',
       closedWindowIdMap).registerTabWindow(closedWindow)
   }
@@ -120,7 +120,7 @@ export default class TabManagerState extends Immutable.Record({
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */
   attachChromeWindow (tabWindow, chromeWindow) {
-    // console.log("attachChromeWindow: ", tabWindow.toJS(), chromeWindow)
+    // console.log('attachChromeWindow: ', tabWindow.toJS(), chromeWindow)
 
     // Was this Chrome window id previously associated with some other tab window?
     const oldTabWindow = this.windowIdMap.get(chromeWindow.id)
@@ -307,5 +307,28 @@ export default class TabManagerState extends Immutable.Record({
       return popupTabWindows.get(0)
     }
     return null
+  }
+
+  /**
+   * find tabs matching a given URL
+   *
+   * returns: Array<[TabWindow, TabItem]>
+   */
+  findURL (url: string) {
+    // TODO: && !url.startsWith('chrome-extension://')
+    if (url !== 'chrome://newtab/') {
+      const urlRE = new RegExp('^' + escapeStringRegexp(url) + '$')
+      const openWindows = this.getOpen().toArray()
+      const filteredWindows = searchOps.filterTabWindows(openWindows,
+        urlRE, {matchUrl: true, matchTitle: false, openOnly: true})
+      // expand to a simple array of [TabWindow,TabItem] pairs:
+      const matchPairs = _.flatten(filteredWindows.map(ftw => {
+        const {tabWindow: targetTabWindow, itemMatches} = ftw
+        return itemMatches.map(match => [targetTabWindow, match.tabItem]).toArray()
+      }))
+      return matchPairs
+    } else {
+      return []
+    }
   }
 }

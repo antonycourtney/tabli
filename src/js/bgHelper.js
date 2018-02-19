@@ -14,8 +14,6 @@ import TabManagerState from './tabManagerState'
 import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
-import * as searchOps from './searchOps'
-import escapeStringRegexp from 'escape-string-regexp'
 import ChromePromise from 'chrome-promise'
 const chromep = new ChromePromise()
 
@@ -191,17 +189,9 @@ function onTabRemoved (storeRef, windowId, tabId) {
 
 const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
   const url = changeInfo.url
-  if ((url != null) && (url !== 'chrome://newtab/')) {
+  if (url != null) {
     const st = storeRef.getValue()
-    const urlRE = new RegExp('^' + escapeStringRegexp(changeInfo.url) + '$')
-    const openWindows = st.getOpen().toArray()
-    const filteredWindows = searchOps.filterTabWindows(openWindows,
-      urlRE, {matchUrl: true, matchTitle: false, openOnly: true})
-    // expand to a simple array of [TabWindow,TabItem] pairs:
-    const matchPairs = _.flatten(filteredWindows.map(ftw => {
-      const {tabWindow: targetTabWindow, itemMatches} = ftw
-      return itemMatches.map(match => [targetTabWindow, match.tabItem]).toArray()
-    }))
+    const matchPairs = st.findURL(url)
     // and filter out the tab we're checking:
     const isSelf = (tw, ti) => (
       tw.open && tw.openWindowId === tab.windowId &&
@@ -210,7 +200,6 @@ const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
     const filteredMatchPairs = matchPairs.filter(([tw, ti]) => !isSelf(tw, ti))
     if (filteredMatchPairs.length > 0) {
       const [origTabWindow, origTab] = filteredMatchPairs[0]
-      console.log('dedupeTab: duplicate url detected - closing duplicate. url: ', url)
       // if we wanted to programatically go back instead of closing:
       // (required <all_urls> permission in manifest)
       // const revertScript = {code: 'history.back();'}
@@ -218,7 +207,6 @@ const dedupeTab = async (storeRef, tabId, changeInfo, tab) => {
 
       const tabWindow = st.getTabWindowByChromeId(tab.windowId)
       const tabClosedSt = await actions.closeTab(tabWindow, tabId, storeRef)
-      console.log('dedupeTab: switching to existing tab:')
       const currentWindow = tabClosedSt.getCurrentWindow()
       actions.activateTab(currentWindow, origTabWindow, origTab, 0, storeRef)
     }
@@ -353,7 +341,6 @@ function registerEventHandlers (storeRef) {
   chrome.windows.onRemoved.addListener((windowId) => {
     storeRef.update((state) => {
       const tabWindow = state.getTabWindowByChromeId(windowId)
-      console.log('got window closed event')
       const st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state
       return st
     })

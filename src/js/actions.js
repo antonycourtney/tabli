@@ -70,9 +70,10 @@ export const syncCurrent = async (storeRef: TMSRef): TabManagerState => {
  */
 const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
   revertOnOpen: boolean, storeRef: TMSRef) => {
-  function cf (chromeWindow) {
+  const attachWindow = (chromeWindow) => {
     storeRef.update((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
+
   /*
    * special case handling of replacing the contents of a fresh window
    */
@@ -108,7 +109,7 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
         }
       }
 
-      chrome.windows.get(currentChromeWindow.id, { populate: true }, cf)
+      chrome.windows.get(currentChromeWindow.id, { populate: true }, attachWindow)
     } else {
       // normal case -- create a new window for these urls:
       var createData = {
@@ -122,7 +123,8 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
         createData.width = lastFocusedTabWindow.width
         createData.height = lastFocusedTabWindow.height
       }
-      chrome.windows.create(createData, cf)
+      console.log('restoreFromAppState: creating windows: ', createData)
+      chrome.windows.create(createData, attachWindow)
     }
   })
 }
@@ -150,11 +152,15 @@ export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: Ta
   }
 }
 
-export const closeTab = async (tabWindow: TabWindow, tabId: TabId, storeRef: TMSRef): TabManagerState => {
-  const openTabCount = tabWindow.openTabCount
+export const closeTab = async (origTabWindow: TabWindow, tabId: TabId, storeRef: TMSRef): TabManagerState => {
+  const origTabCount = origTabWindow.openTabCount
+  const chromeWindowId = origTabWindow.openWindowId
   await chromep.tabs.remove(tabId)
-  if (openTabCount === 1) {
-    storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
+  if (origTabCount === 1) {
+    storeRef.update((state) => {
+      const tabWindow = state.getTabWindowByChromeId(chromeWindowId)
+      return state.handleTabWindowClosed(tabWindow)
+    })
   } else {
     /*
      * We'd like to do a full chrome.windows.get here so that we get the currently active tab
@@ -164,8 +170,12 @@ export const closeTab = async (tabWindow: TabWindow, tabId: TabId, storeRef: TMS
       winStore.syncChromeWindow(chromeWindow)
     })
     */
-    storeRef.update((state) => state.handleTabClosed(tabWindow, tabId))
+    storeRef.update((state) => {
+      const tabWindow = state.getTabWindowByChromeId(chromeWindowId)
+      return state.handleTabClosed(tabWindow, tabId)
+    })
   }
+  console.log('actions.closeTab: returning')
   return storeRef.getValue()
 }
 

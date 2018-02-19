@@ -81,7 +81,8 @@
     "leaktest": "babel-node --expose-gc --presets es2015,react,stage-3 ./test/leakTest.js | tap-spec",
     "lint": "eslint .",
     "lintfix": "eslint --fix .",
-    "test": "eslint . && babel-node ./test/runAllTests.js | tap-spec"
+    "test": "eslint . && babel-node ./test/runAllTests.js | tap-spec",
+    "watch": "webpack --env=dev --watch"
   },
   "standard": {
     "globals": [
