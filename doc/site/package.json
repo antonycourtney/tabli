@@ -5,9 +5,10 @@
   "scripts": {
     "build-cname": "cp ./CNAME dist",
     "build-mock-assets": "cp -r mock/impl/css mock/impl/fonts mock/impl/images mock/impl/js dist",
+    "build-app-assets": "cp -r ../../src/assets/* ./dist/assets",
     "build-lightbox": "cp ../../node_modules/ekko-lightbox/dist/*.css dist/css && cp ../../node_modules/ekko-lightbox/dist/*.js dist/js",
     "build-favicon": "cp tabli-favicon.ico/* dist/favicon",
-    "build-assets": "npm run build-mock-assets && npm run build-lightbox && npm run build-favicon",
+    "build-assets": "npm run build-mock-assets && npm run build-app-assets && npm run build-lightbox && npm run build-favicon",
     "build-site-dirs": "mkdirp dist && mkdirp dist/assets && mkdirp dist/css && mkdirp dist/favicon && mkdirp dist/fonts && mkdirp dist/images && mkdirp dist/js",
     "build-html-include": "html-includes --src src --dest dist",
     "build-site": "npm run build-site-dirs && npm run build-cname && npm run build-assets && npm run build-html-include",
