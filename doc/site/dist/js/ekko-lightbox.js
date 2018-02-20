@@ -20,7 +20,10 @@ var Lightbox = (function ($) {
 	var Default = {
 		title: '',
 		footer: '',
+		maxWidth: 9999,
+		maxHeight: 9999,
 		showArrows: true, //display the left / right arrows or not
+		wrapping: true, //if true, gallery loops infinitely
 		type: null, //force the lightbox into image / youtube mode. if null, or not image|youtube|vimeo; detect it
 		alwaysShowClose: false, //always show the close button, even if there is no title
 		loadingMessage: '<div class="ekko-lightbox-loader"><div><div></div><div></div></div></div>', // http://tobiasahlin.com/spinkit/
@@ -45,10 +48,8 @@ var Lightbox = (function ($) {
 			key: 'Default',
 
 			/**
-    
-      Class properties:
-    
-    _$element: null -> the <a> element currently being displayed
+       Class properties:
+   	 _$element: null -> the <a> element currently being displayed
     _$modal: The bootstrap modal generated
        _$modalDialog: The .modal-dialog
        _$modalContent: The .modal-content
@@ -87,6 +88,9 @@ var Lightbox = (function ($) {
 			this._footerIsShown = false;
 			this._wantedWidth = 0;
 			this._wantedHeight = 0;
+			this._touchstartX = 0;
+			this._touchendX = 0;
+
 			this._modalId = 'ekkoLightbox-' + Math.floor(Math.random() * 1000 + 1);
 			this._$element = $element instanceof jQuery ? $element : $($element);
 
@@ -95,8 +99,8 @@ var Lightbox = (function ($) {
 			var h4 = '<h4 class="modal-title">' + (this._config.title || "&nbsp;") + '</h4>';
 			var btn = '<button type="button" class="close" data-dismiss="modal" aria-label="' + this._config.strings.close + '"><span aria-hidden="true">&times;</span></button>';
 
-			var header = '<div class="modal-header"' + (this._config.title || this._config.alwaysShowClose ? '' : ' style="display:none"') + '>' + (this._isBootstrap3 ? btn + h4 : h4 + btn) + '</div>';
-			var footer = '<div class="modal-footer"' + (this._config.footer ? '' : ' style="display:none"') + '>' + (this._config.footer || "&nbsp;") + '</div>';
+			var header = '<div class="modal-header' + (this._config.title || this._config.alwaysShowClose ? '' : ' hide') + '">' + (this._isBootstrap3 ? btn + h4 : h4 + btn) + '</div>';
+			var footer = '<div class="modal-footer' + (this._config.footer ? '' : ' hide') + '">' + (this._config.footer || "&nbsp;") + '</div>';
 			var body = '<div class="modal-body"><div class="ekko-lightbox-container"><div class="ekko-lightbox-item fade in show"></div><div class="ekko-lightbox-item fade"></div></div></div>';
 			var dialog = '<div class="modal-dialog" role="document"><div class="modal-content">' + header + body + footer + '</div></div>';
 			$(this._config.doc.body).append('<div id="' + this._modalId + '" class="ekko-lightbox modal fade" tabindex="-1" tabindex="-1" role="dialog" aria-hidden="true">' + dialog + '</div>');
@@ -133,6 +137,7 @@ var Lightbox = (function ($) {
 						event.preventDefault();
 						return _this.navigateRight();
 					});
+					this.updateNavigation();
 				}
 			}
 
@@ -151,6 +156,12 @@ var Lightbox = (function ($) {
 
 			$(window).on('resize.ekkoLightbox', function () {
 				_this._resize(_this._wantedWidth, _this._wantedHeight);
+			});
+			this._$lightboxContainer.on('touchstart', function () {
+				_this._touchstartX = event.changedTouches[0].screenX;
+			}).on('touchend', function () {
+				_this._touchendX = event.changedTouches[0].screenX;
+				_this._swipeGesure();
 			});
 		}
 
@@ -172,6 +183,8 @@ var Lightbox = (function ($) {
 
 				this._galleryIndex = index;
 
+				this.updateNavigation();
+
 				this._$element = $(this._$galleryItems.get(this._galleryIndex));
 				this._handle();
 			}
@@ -179,9 +192,13 @@ var Lightbox = (function ($) {
 			key: 'navigateLeft',
 			value: function navigateLeft() {
 
+				if (!this._$galleryItems) return;
+
 				if (this._$galleryItems.length === 1) return;
 
-				if (this._galleryIndex === 0) this._galleryIndex = this._$galleryItems.length - 1;else //circular
+				if (this._galleryIndex === 0) {
+					if (this._config.wrapping) this._galleryIndex = this._$galleryItems.length - 1;else return;
+				} else //circular
 					this._galleryIndex--;
 
 				this._config.onNavigate.call(this, 'left', this._galleryIndex);
@@ -191,13 +208,27 @@ var Lightbox = (function ($) {
 			key: 'navigateRight',
 			value: function navigateRight() {
 
+				if (!this._$galleryItems) return;
+
 				if (this._$galleryItems.length === 1) return;
 
-				if (this._galleryIndex === this._$galleryItems.length - 1) this._galleryIndex = 0;else //circular
+				if (this._galleryIndex === this._$galleryItems.length - 1) {
+					if (this._config.wrapping) this._galleryIndex = 0;else return;
+				} else //circular
 					this._galleryIndex++;
 
 				this._config.onNavigate.call(this, 'right', this._galleryIndex);
 				return this.navigateTo(this._galleryIndex);
+			}
+		}, {
+			key: 'updateNavigation',
+			value: function updateNavigation() {
+				if (!this._config.wrapping) {
+					var $nav = this._$lightboxContainer.find('div.ekko-lightbox-nav-overlay');
+					if (this._galleryIndex === 0) $nav.find('a:first-child').addClass('disabled');else $nav.find('a:first-child').removeClass('disabled');
+
+					if (this._galleryIndex === this._$galleryItems.length - 1) $nav.find('a:last-child').addClass('disabled');else $nav.find('a:last-child').removeClass('disabled');
+				}
 			}
 		}, {
 			key: 'close',
@@ -386,7 +417,7 @@ var Lightbox = (function ($) {
 		}, {
 			key: '_showVimeoVideo',
 			value: function _showVimeoVideo(id, $containerForElement) {
-				var width = 500;
+				var width = this._$element.data('width') || 500;
 				var height = this._$element.data('height') || width / (560 / 315);
 				return this._showVideoIframe(id + '?autoplay=1', width, height, $containerForElement);
 			}
@@ -537,6 +568,16 @@ var Lightbox = (function ($) {
 				return img;
 			}
 		}, {
+			key: '_swipeGesure',
+			value: function _swipeGesure() {
+				if (this._touchendX < this._touchstartX) {
+					return this.navigateRight();
+				}
+				if (this._touchendX > this._touchstartX) {
+					return this.navigateLeft();
+				}
+			}
+		}, {
 			key: '_resize',
 			value: function _resize(width, height) {
 
@@ -544,11 +585,19 @@ var Lightbox = (function ($) {
 				this._wantedWidth = width;
 				this._wantedHeight = height;
 
+				var imageAspecRatio = width / height;
+
 				// if width > the available space, scale down the expected width and height
 				var widthBorderAndPadding = this._padding.left + this._padding.right + this._border.left + this._border.right;
-				var maxWidth = Math.min(width + widthBorderAndPadding, this._config.doc.body.clientWidth);
+
+				// force 10px margin if window size > 575px
+				var addMargin = this._config.doc.body.clientWidth > 575 ? 20 : 0;
+				var discountMargin = this._config.doc.body.clientWidth > 575 ? 0 : 20;
+
+				var maxWidth = Math.min(width + widthBorderAndPadding, this._config.doc.body.clientWidth - addMargin, this._config.maxWidth);
+
 				if (width + widthBorderAndPadding > maxWidth) {
-					height = (maxWidth - widthBorderAndPadding) / width * height;
+					height = (maxWidth - widthBorderAndPadding - discountMargin) / imageAspecRatio;
 					width = maxWidth;
 				} else width = width + widthBorderAndPadding;
 
@@ -566,23 +615,24 @@ var Lightbox = (function ($) {
 				//calculated each time as resizing the window can cause them to change due to Bootstraps fluid margins
 				var margins = parseFloat(this._$modalDialog.css('margin-top')) + parseFloat(this._$modalDialog.css('margin-bottom'));
 
-				var maxHeight = Math.min(height, $(window).height() - borderPadding - margins - headerHeight - footerHeight);
+				var maxHeight = Math.min(height, $(window).height() - borderPadding - margins - headerHeight - footerHeight, this._config.maxHeight - borderPadding - headerHeight - footerHeight);
+
 				if (height > maxHeight) {
 					// if height > the available height, scale down the width
-					var factor = Math.min(maxHeight / height, 1);
-					width = Math.ceil(factor * width);
+					width = Math.ceil(maxHeight * imageAspecRatio) + widthBorderAndPadding;
 				}
 
 				this._$lightboxContainer.css('height', maxHeight);
-				this._$modalDialog.css('width', 'auto').css('maxWidth', width);
+				this._$modalDialog.css('flex', 1).css('maxWidth', width);
 
-				if (!this._isBootstrap3) {
+				var modal = this._$modal.data('bs.modal');
+				if (modal) {
 					// v4 method is mistakenly protected
-					var modal = this._$modal.data('bs.modal');
-					if (modal) modal._handleUpdate();
-				} else {
-					var modal = this._$modal.data('bs.modal');
-					if (modal) modal.handleUpdate();
+					try {
+						modal._handleUpdate();
+					} catch (Exception) {
+						modal.handleUpdate();
+					}
 				}
 				return this;
 			}
