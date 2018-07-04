@@ -93,7 +93,6 @@ class PreferencesModal extends React.Component {
                 type='button'
                 className='btn btn-primary btn-sm tabli-dialog-button'
                 onClick={e => this.handleSubmit(e)}
-                ref='okButton'
                 tabIndex={0}
                 onKeyDown={this.handleKeyDown}>
                 OK

@@ -6,7 +6,7 @@ import PreferencesModal from './components/PreferencesModal'
 import * as actions from './actions'
 
 import ChromePromise from 'chrome-promise'
-const chromep = new ChromePromise()
+const chromep = ChromePromise
 
 const onClose = async () => {
   console.log('onClose')

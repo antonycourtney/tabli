@@ -8,7 +8,7 @@ import { TabItem, TabWindow} from './tabWindow' // eslint-disable-line
 import type { Ref } from 'oneref'
 import TabManagerState from './tabManagerState'
 import ChromePromise from 'chrome-promise'
-const chromep = new ChromePromise()
+const chromep = ChromePromise
 
 type TabId = number
 

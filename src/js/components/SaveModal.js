@@ -14,14 +14,17 @@ class SaveModal extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault()
-    const titleStr = this.refs.titleInput.value
-    console.log('handleSubmit: title: ', titleStr)
-    this.props.onSubmit(titleStr)
+    var ic = this.titleInput
+    if (ic) {
+      const titleStr = ic.value
+      console.log('handleSubmit: title: ', titleStr)
+      this.props.onSubmit(titleStr)
+    }
   };
 
   render () {
     return (
-      <Modal.Dialog title='Save Tabs' focusRef='titleInput' onClose={this.props.onClose}>
+      <Modal.Dialog title='Save Tabs' onClose={this.props.onClose}>
         <Modal.Info>
           <span>Save all tabs in this window</span>
         </Modal.Info>
@@ -36,7 +39,7 @@ class SaveModal extends React.Component {
                   type='text'
                   name='title'
                   id='title'
-                  ref='titleInput'
+                  ref={(c) => { this.titleInput = c }}
                   autoFocus
                   defaultValue={this.props.initialTitle}
                   onKeyDown={this.handleKeyDown} />
@@ -50,13 +53,17 @@ class SaveModal extends React.Component {
 
   componentDidMount () {
     console.log('SaveModal: did mount')
-    var titleElem = this.refs.titleInput
+    var titleElem = this.titleInput
     /* titleElem.val(this.props.initialTitle); */
     const titleLen = this.props.initialTitle.length
-    window.setTimeout(() => {
-      console.log('timer func')
-      titleElem.setSelectionRange(0, titleLen)
-    }, 0)
+    if (titleElem) {
+      window.setTimeout(() => {
+        console.log('timer func')
+        titleElem.setSelectionRange(0, titleLen)
+      }, 0)
+    } else {
+      console.warn('SaveModal: no titleInput element')
+    }
   }
 }
 

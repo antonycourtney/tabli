@@ -10,7 +10,7 @@
   },
   "background": {
     "scripts": [
-      "js/common.js",
+      "js/common.bundle.js",
       "js/bgHelper.bundle.js"
     ],
     "persistent": true

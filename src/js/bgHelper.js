@@ -15,7 +15,7 @@ import * as utils from './utils'
 import * as actions from './actions'
 import ViewRef from './viewRef'
 import ChromePromise from 'chrome-promise'
-const chromep = new ChromePromise()
+const chromep = ChromePromise
 
 const tabliFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'

@@ -45,7 +45,6 @@ class WindowHeader extends React.PureComponent {
           type='checkbox'
           title='Save all tabs in this window'
           onClick={this.handleManageClick}
-          ref='managedCheckbox'
           value={false} />)
     }
 

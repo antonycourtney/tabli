@@ -174,7 +174,7 @@ class SearchBar extends React.Component {
     const menuButton = (
       <button
         type='button'
-        className='btn btn-default btn-xs dropdown-toggle'
+        className='btn btn-default btn-sm dropdown-toggle'
         data-toggle='dropdown'
         aria-haspopup='true'
         aria-expanded='false'
@@ -195,7 +195,7 @@ class SearchBar extends React.Component {
     const popoutButton = (
       <button
         type='button'
-        className='btn btn-default btn-xs'
+        className='btn btn-default btn-sm btn-outline-dark'
         title={popDesc}
         onClick={this.handlePopoutClick}>
         <img className='popout-img' src={popImgPath} />
@@ -205,7 +205,7 @@ class SearchBar extends React.Component {
     const expandAllButton = (
       <button
         type='button'
-        className='btn btn-default btn-xs'
+        className='btn btn-default btn-sm'
         title='Expand/Collapse All Window Summaries'
         onClick={this.handleExpandToggleClick}>
         <span className='glyphicon glyphicon-collapse-down' aria-hidden='true' />
@@ -216,7 +216,7 @@ class SearchBar extends React.Component {
       <button
         id='copyButton'
         type='button'
-        className='btn btn-default btn-xs'
+        className='btn btn-default btn-sm'
         title='Copy All to Clipboard'
         onClick={this.handleCopyClick}>
         <i className='fa fa-clipboard' aria-hidden='true' />
@@ -250,7 +250,11 @@ class SearchBar extends React.Component {
         </li>
       </ul>
     )
-
+    /*
+ before popoutButton:
+*/
+    /* after popoutButton:
+*/
     return (
       <div className='header-container'>
         <div className='header-toolbar'>

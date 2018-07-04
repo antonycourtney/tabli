@@ -112,7 +112,7 @@ class RevertModal extends React.Component {
               type='button'
               className='btn btn-primary btn-sm tabli-dialog-button'
               onClick={this.handleSubmit}
-              ref='okButton'
+              ref={(c) => { this.okButton = c }}
               tabIndex={0}
               onKeyDown={this.handleKeyDown}>
               OK
@@ -132,8 +132,9 @@ class RevertModal extends React.Component {
 
   /* HACK - get focus to the OK button, because tabIndex getting ignored. */
   componentDidMount () {
-    console.log('revertModal: did mount')
-    this.refs.okButton.focus()
+    if (this.okButton) {
+      this.okButton.focus()
+    }
   }
 }
 

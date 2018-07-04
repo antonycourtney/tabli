@@ -24,7 +24,7 @@ function config(nodeEnv) {
         filename: "[name].bundle.js"
     },
     module: {
-        loaders: [
+        rules: [
           { test: /\.(js|jsx)$/,
             exclude: /node_modules/,
             loader: "babel-loader?presets[]=es2015,presets[]=react,presets[]=stage-3,plugins[]=transform-class-properties"
@@ -54,17 +54,21 @@ function config(nodeEnv) {
           }
         ]
     },
+    optimization: {
+      splitChunks: {
+        name: "common",
+        chunks: "initial",
+        minChunks: 2
+        // (the commons chunk name)
+        // filename: "common.js",
+        // (the filename of the commons chunk)
+      }
+    },
     plugins: [
       new webpack.DefinePlugin({
         'process.env': {
           NODE_ENV: JSON.stringify(nodeEnv)
         }
-      }),
-      new webpack.optimize.CommonsChunkPlugin({
-        name: "common",
-        // (the commons chunk name)
-        filename: "common.js",
-        // (the filename of the commons chunk)
       })
     ]
   }
@@ -78,14 +82,14 @@ function development() {
 function production () {
   var prod = config('production')
   prod.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(true))
-  prod.plugins.push(new webpack.optimize.UglifyJsPlugin({
+  prod.optimization.minimize = {
     compress: {
       warnings: false
     },
     mangle: {
       except: ['module', 'exports', 'require']
     }
-  }))
+  }
   return prod
 }
 
