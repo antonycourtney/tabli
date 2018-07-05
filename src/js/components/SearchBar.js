@@ -1,5 +1,6 @@
 import * as React from 'react'
-
+import {Button, ButtonDropdown, DropdownToggle, DropdownMenu,
+  DropdownItem, Input} from 'reactstrap'
 import * as Constants from './constants'
 import * as actions from '../actions'
 import * as Util from './util'
@@ -17,6 +18,21 @@ function copyTextToClipboard (text) {
 }
 
 class SearchBar extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.toggle = this.toggle.bind(this)
+    this.state = {
+      dropdownOpen: false
+    }
+  }
+
+  toggle () {
+    this.setState(prevState => ({
+      dropdownOpen: !prevState.dropdownOpen
+    }))
+  }
+
   handleChange = () => {
     const searchStr = this.searchInputRef.value
     this.props.onSearchInput(searchStr)
@@ -171,103 +187,82 @@ class SearchBar extends React.Component {
   };
 
   render () {
-    const menuButton = (
-      <button
-        type='button'
-        className='btn btn-default btn-sm dropdown-toggle'
-        data-toggle='dropdown'
-        aria-haspopup='true'
-        aria-expanded='false'
-        title='Open Tabli Menu'
-      >
-        <span className='glyphicon glyphicon-menu-hamburger' aria-hidden='true' />
-      </button>
-    )
-
     // We'll rotate 270 degrees to point upper left for popout,
     // 90 degrees to point lower right for pop-in:
     const popImgName = this.props.isPopout ? 'popin' : 'popout'
     const popImgPath = '../images/' + popImgName + '.png'
+    const menuImgPath = '../images/hamburger-menu.png'
+    const expandAllImgPath = '../images/triangle-small-1-01.png'
 
     const popVerb = this.props.isPopout ? 'Hide' : 'Show'
     const popDesc = popVerb + ' Tabli Popout Window'
 
     const popoutButton = (
-      <button
-        type='button'
-        className='btn btn-default btn-sm btn-outline-dark'
+      <Button
+        className='btn-xs'
+        outline
+        color='dark'
         title={popDesc}
         onClick={this.handlePopoutClick}>
         <img className='popout-img' src={popImgPath} />
-      </button>
+      </Button>
     )
 
     const expandAllButton = (
-      <button
-        type='button'
-        className='btn btn-default btn-sm'
+      <Button
+        className='btn-xs'
+        outline
+        color='dark'
         title='Expand/Collapse All Window Summaries'
         onClick={this.handleExpandToggleClick}>
-        <span className='glyphicon glyphicon-collapse-down' aria-hidden='true' />
-      </button>
+        <img className='expand-all-img' src={expandAllImgPath} />
+      </Button>
     )
 
     const copyButton = (
-      <button
-        id='copyButton'
-        type='button'
-        className='btn btn-default btn-sm'
+      <Button
+        className='btn-xs'
+        outline
+        color='dark'
         title='Copy All to Clipboard'
         onClick={this.handleCopyClick}>
         <i className='fa fa-clipboard' aria-hidden='true' />
-      </button>
+      </Button>
     )
 
     const dropdownMenu = (
-      <ul className='dropdown-menu'>
-        <li>
-          <a className='help-button' href='#' onClick={this.handleHelpClick}>Help (Manual)</a>
-        </li>
-        <li>
-          <a href='#' onClick={this.handleAboutClick}>About Tabli</a>
-        </li>
-        <li>
-          <a href='#' onClick={this.handleRelNotesClick}>Release Notes</a>
-        </li>
-        <li role='separator' className='divider' />
-        <li>
-          <a href='#' onClick={this.handlePreferencesClick}>Preferences...</a>
-        </li>
-        <li>
-          <a href='#' onClick={this.handleReloadClick}>Reload</a>
-        </li>
-        <li role='separator' className='divider' />
-        <li>
-          <a href='#' onClick={this.handleReviewClick}>Review Tabli</a>
-        </li>
-        <li>
-          <a href='#' onClick={this.handleFeedbackClick}>Send Feedback</a>
-        </li>
-      </ul>
+      <DropdownMenu className='tabli-menu'>
+        <DropdownItem className='help-button' onClick={this.handleHelpClick}>Help (Manual)</DropdownItem>
+        <DropdownItem onClick={this.handleAboutClick}>About Tabli</DropdownItem>
+        <DropdownItem onClick={this.handleRelNotesClick}>Release Notes</DropdownItem>
+        <DropdownItem divider />
+        <DropdownItem onClick={this.handlePreferencesClick}>Preferences...</DropdownItem>
+        <DropdownItem onClick={this.handleReloadClick}>Reload</DropdownItem>
+        <DropdownItem divider />
+        <DropdownItem onClick={this.handleReviewClick}>Review Tabli</DropdownItem>
+        <DropdownItem onClick={this.handleFeedbackClick}>Send Feedback</DropdownItem>
+      </DropdownMenu>
     )
-    /*
- before popoutButton:
-*/
-    /* after popoutButton:
-*/
+
     return (
       <div className='header-container'>
         <div className='header-toolbar'>
-          <div className='dropdown'>
-            {menuButton}
+          <ButtonDropdown
+            className='btn-group-xs'
+            isOpen={this.state.dropdownOpen}
+            toggle={this.toggle}>
+            <DropdownToggle outline >
+              <img src={menuImgPath} />
+            </DropdownToggle>
             {dropdownMenu}
-          </div>
+          </ButtonDropdown>
           {popoutButton}
-          <input
+          <Input
+            bsSize='sm'
             className='search-input'
             type='search'
             tabIndex={1}
-            ref={this.setInputRef}
+            innerRef={this.setInputRef}
             id='searchBox'
             placeholder='Search...'
             onChange={this.handleChange}

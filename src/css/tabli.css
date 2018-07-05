@@ -46,6 +46,11 @@ fieldset { padding:0; border:0; }
   min-height: 100px;
   margin-top: 40px;
 }
+.tabli-menu {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42;
+}
 .main-container {
   height: 100%;
   width: 100%;
@@ -105,6 +110,14 @@ fieldset { padding:0; border:0; }
   padding: 2px;
 }
 
+.btn-group-xs > .btn, .btn-xs {
+    padding  : 1px 5px;
+    font-size  : 12px;
+    line-height  : 1.5;
+    border-radius : 3px;
+    border: 1px solid #ccc;
+}
+
 .tabli-logo-icon {
   min-width: 24px;
   width: 24px;
@@ -125,6 +138,11 @@ fieldset { padding:0; border:0; }
 }
 
 .popout-img {
+  width: 14px;
+  height: 14px;
+}
+
+.expand-all-img {
   width: 14px;
   height: 14px;
 }
@@ -197,6 +215,10 @@ a.card-link {
   margin-left: 8px;
   margin-right: 12px;
   flex: 0 0 auto;
+  height: 22px;
+  line-height: 1.42;
+  padding: 1px;
+  font-size: 12px;
 }
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: searchfield-cancel-button;
