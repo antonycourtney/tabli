@@ -392,29 +392,48 @@ export function toggleExpandAll (winStore: TabManagerState, storeRef: TMSRef) {
 /*
  * move an open tab (in response to a drag event):
  */
-export function moveTabItem (
+export const moveTabItem = async (
   targetTabWindow: TabWindow,
   targetIndex: number,
-  sourceTabItem: TabItem,
+  movedTabItem: TabItem,
   storeRef: TMSRef
-) {
-  if (!sourceTabItem.open) {
-    console.log('moveTabItem: source tab not open, ignoring...')
+) => {
+  console.log('moveTabItem: enter: ', targetTabWindow.toJS())
+  if (!movedTabItem.open) {
+    console.log('moveTabItem: tab not open, ignoring...')
     return
   }
 
-  const tabId = sourceTabItem.safeOpenState.openTabId
+  const tabId = movedTabItem.safeOpenState.openTabId
   if (!targetTabWindow.open) {
     console.log('moveTabItem: target tab window not open, ignoring...')
     return
   }
   const targetWindowId = targetTabWindow.openWindowId
   const moveProps = { windowId: targetWindowId, index: targetIndex }
-  chrome.tabs.move(tabId, moveProps, (chromeTab) => {
-    // console.log("moveTabItem: tab move complete: ", chromeTab)
-    // Let's just refresh the whole window:
-    syncChromeWindowById(targetWindowId, storeRef)
-  })
+  const st0 = storeRef.getValue()
+  const srcTabWindow0 = st0.getTabWindowByChromeTabId(tabId)
+  console.log('moveTabItem: srcTabWindow0: ', srcTabWindow0)
+  const srcTabWindowId = srcTabWindow0.openWindowId
+  const chromeTab = await chromep.tabs.move(tabId, moveProps)
+  console.log('moveTabItem: Chrome tab move complete: ', chromeTab)
+  if (movedTabItem.saved && targetTabWindow.saved) {
+    console.log('moveTabItem: moving saved window bookmark')
+    const bookmarkId = movedTabItem.savedState.bookmarkId
+    const folderId = targetTabWindow.savedFolderId
+    const bmNode = await chromep.bookmarks.move(bookmarkId, { parentId: folderId })
+    console.log('moved bookmark ', bookmarkId, ' to folder ', folderId)
+    console.log('moved bmNode: ', bmNode)
+    storeRef.update(st => {
+      const srcTabWindow = st.getTabWindowByChromeId(srcTabWindowId)
+      console.log('moveTabItem update: srcTabWindow: ', srcTabWindow.toJS())
+      const updSt = st.handleSavedTabMoved(srcTabWindow, targetTabWindow, movedTabItem, chromeTab, bmNode)
+      console.log('updated moved tab state')
+      return updSt
+    })
+  }
+  // Let's just refresh the whole window:
+  syncChromeWindowById(targetWindowId, storeRef)
 }
 
 export function hideRelNotes (winStore: TabManagerState, storeRef: TMSRef) {

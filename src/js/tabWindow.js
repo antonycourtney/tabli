@@ -597,6 +597,17 @@ export function createTab (tabWindow: TabWindow, tab: any): TabWindow {
 }
 
 /**
+ * Update a TabWindow by adding a saved tab
+ * (called when moving saved tabs between windows)
+ *
+ * @param {TabWindow} tabWindow - TabWindow to be updated
+ * @param {Tab} tab - newly created Chrome tab
+ */
+export function createSavedTab (tabWindow: TabWindow, tab: any, bmNode: any): TabWindow {
+  return mergeTabWindowTabItems(tabWindow, tab, bmNode)
+}
+
+/**
  * Update a TabWindow by adding a newly created bookmark
  *
  * @param {TabWindow} tabWindow - TabWindow to be updated
@@ -635,11 +646,11 @@ export function updateWindow (tabWindow: TabWindow, chromeWindow: any): TabWindo
  * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
  */
 export function closeTab (tabWindow: TabWindow, tabId: number): TabWindow {
-  // console.log("closeTab: ", tabWindow, tabId)
+  console.log('TabWindow.closeTab: ', tabWindow.toJS(), tabId)
   const entry = tabWindow.findChromeTabId(tabId)
 
   if (!entry) {
-    // console.warn("closeTab: could not find closed tab id ", tabId)
+    console.warn('TabWindow.closeTab: could not find closed tab id ', tabId)
     return tabWindow
   }
   const [index, tabItem] = entry
@@ -693,13 +704,19 @@ export function saveTab (tabWindow: TabWindow,
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem) {
+  console.log('unsaveTab: ', tabWindow.toJS(), tabItem.toJS())
   const entry = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.safeSavedState.bookmarkId === tabItem.safeSavedState.bookmarkId)
   if (!entry) {
-    console.error('saveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
+    console.error('unsaveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
     return tabWindow
   }
-  var [index] = entry
-  const updTabItem = resetOpenItem(tabItem)
+  // Note: We extract sourceTabItem from entry to
+  // correctly handle the case of a moved tabItem,
+  // where tabItem passed in has already been moved
+  var [index, sourceTabItem] = entry
+  console.log('unsavedTab: sourceTabItem: ', sourceTabItem.toJS())
+  const updTabItem = resetOpenItem(sourceTabItem)
+  console.log('unsavedTab: sourceTabItem after reset: ', updTabItem.toJS())
 
   var updItems
   if (updTabItem.open) {
@@ -709,7 +726,9 @@ export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem) {
     updItems = tabWindow.tabItems.splice(index, 1)
   }
 
-  return tabWindow.setTabItems(updItems)
+  const updWindow = tabWindow.setTabItems(updItems)
+  console.log('unsaveTab: updated window: ', updWindow.toJS())
+  return updWindow
 }
 
 /**

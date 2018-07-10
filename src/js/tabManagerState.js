@@ -71,8 +71,9 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   handleTabClosed (tabWindow, tabId) {
-    // console.log('handleTabClosed: ', tabId)
+    console.log('handleTabClosed: closing tab id ', tabId)
     var updWindow = TabWindow.closeTab(tabWindow, tabId)
+    console.log('handleTabClosed: updWindow: ', updWindow.toJS())
     return this.registerTabWindow(updWindow)
   }
 
@@ -84,6 +85,12 @@ export default class TabManagerState extends Immutable.Record({
   handleTabUnsaved (tabWindow, tabItem) {
     var updWindow = TabWindow.unsaveTab(tabWindow, tabItem)
     return this.registerTabWindow(updWindow)
+  }
+
+  handleSavedTabMoved (srcTabWindow, dstTabWindow, tabItem, chromeTab, bmNode) {
+    const st1 = this.handleTabUnsaved(srcTabWindow, tabItem)
+    const updWindow = TabWindow.createSavedTab(dstTabWindow, chromeTab, bmNode)
+    return st1.registerTabWindow(updWindow)
   }
 
   handleTabActivated (tabWindow, tabId) {

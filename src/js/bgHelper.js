@@ -177,6 +177,7 @@ function onTabCreated (storeRef, tab, markActive) {
 }
 
 function onTabRemoved (storeRef, windowId, tabId) {
+  console.log('onTabRemoved: ', windowId, tabId)
   storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(windowId)
     if (!tabWindow) {
@@ -268,6 +269,7 @@ const onBookmarkCreated = (storeRef, id, bookmark) => {
  */
 
 const handleBookmarkUpdate = (storeRef, parentId, bookmark, handleTab, handleTabWindow) => {
+  console.log('got bookmark update: ', bookmark)
   storeRef.update(state => {
     let nextSt = state
     /* is this bookmark a folder? */
