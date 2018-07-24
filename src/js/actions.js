@@ -398,42 +398,51 @@ export const moveTabItem = async (
   movedTabItem: TabItem,
   storeRef: TMSRef
 ) => {
-  console.log('moveTabItem: enter: ', targetTabWindow.toJS())
-  if (!movedTabItem.open) {
-    console.log('moveTabItem: tab not open, ignoring...')
-    return
-  }
+  /* The tab being moved can be in 4 possible states based
+  * on open and saved flags, same for target window...
+  */
+  let chromeTab = null
+  // Let's first handle whether tab being moved is open,
+  // and if so either move or close it:
+  if (movedTabItem.open) {
+    const openTabId = movedTabItem.safeOpenState.openTabId
+    if (targetTabWindow.open) {
+      const targetWindowId = targetTabWindow.openWindowId
+      const moveProps = { windowId: targetWindowId, index: targetIndex }
+      chromeTab = await chromep.tabs.move(openTabId, moveProps)
+    } else {
+      // Not entirely clear what to do in this case;
+      // We'll only remove the tab if tab is saved, since
+      // it will at least be available in the target window
+      // This means that dragging an (open, !saved) tab to a
+      // closed window is a NOP.
 
-  const tabId = movedTabItem.safeOpenState.openTabId
-  if (!targetTabWindow.open) {
-    console.log('moveTabItem: target tab window not open, ignoring...')
-    return
+      if (movedTabItem.saved && targetTabWindow.saved) {
+        // Also need to check to ensure the source window is
+        // actually open, since the tab being in the open state
+        // may just indicate that the tab was open when window
+        // was last open:
+        const bookmarkId = movedTabItem.savedState.bookmarkId
+        const st = storeRef.getValue()
+        const srcTabWindow = st.getSavedWindowByTabBookmarkId(bookmarkId)
+        if (srcTabWindow.open) {
+          await chromep.tabs.remove(openTabId)
+        }
+      }
+    }
   }
-  const targetWindowId = targetTabWindow.openWindowId
-  const moveProps = { windowId: targetWindowId, index: targetIndex }
-  const st0 = storeRef.getValue()
-  const srcTabWindow0 = st0.getTabWindowByChromeTabId(tabId)
-  console.log('moveTabItem: srcTabWindow0: ', srcTabWindow0)
-  const srcTabWindowId = srcTabWindow0.openWindowId
-  const chromeTab = await chromep.tabs.move(tabId, moveProps)
-  console.log('moveTabItem: Chrome tab move complete: ', chromeTab)
   if (movedTabItem.saved && targetTabWindow.saved) {
-    console.log('moveTabItem: moving saved window bookmark')
     const bookmarkId = movedTabItem.savedState.bookmarkId
     const folderId = targetTabWindow.savedFolderId
     const bmNode = await chromep.bookmarks.move(bookmarkId, { parentId: folderId })
-    console.log('moved bookmark ', bookmarkId, ' to folder ', folderId)
-    console.log('moved bmNode: ', bmNode)
     storeRef.update(st => {
-      const srcTabWindow = st.getTabWindowByChromeId(srcTabWindowId)
-      console.log('moveTabItem update: srcTabWindow: ', srcTabWindow.toJS())
+      const srcTabWindow = st.getSavedWindowByTabBookmarkId(bookmarkId)
       const updSt = st.handleSavedTabMoved(srcTabWindow, targetTabWindow, movedTabItem, chromeTab, bmNode)
-      console.log('updated moved tab state')
       return updSt
     })
   }
   // Let's just refresh the whole window:
-  syncChromeWindowById(targetWindowId, storeRef)
+  // syncChromeWindowById(targetWindowId, storeRef)
 }
 
 export function hideRelNotes (winStore: TabManagerState, storeRef: TMSRef) {

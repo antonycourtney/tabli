@@ -272,8 +272,13 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   // returns a tabWindow or undefined
+  // Note: this is the bookmark id of the folder, not saved tab
   getSavedWindowByBookmarkId (bookmarkId) {
     return this.bookmarkIdMap.get(bookmarkId)
+  }
+
+  getSavedWindowByTabBookmarkId (bookmarkId) {
+    return this.bookmarkIdMap.find(w => w.findChromeBookmarkId(bookmarkId))
   }
 
   countOpenWindows () {
