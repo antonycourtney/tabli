@@ -41,6 +41,7 @@ class SaveModal extends React.Component {
                   id='title'
                   ref={(c) => { this.titleInput = c }}
                   autoFocus
+                  autoComplete='off'
                   defaultValue={this.props.initialTitle}
                   onKeyDown={this.handleKeyDown} />
               </fieldset>
@@ -52,7 +53,6 @@ class SaveModal extends React.Component {
   }
 
   componentDidMount () {
-    console.log('SaveModal: did mount')
     var titleElem = this.titleInput
     /* titleElem.val(this.props.initialTitle); */
     const titleLen = this.props.initialTitle.length

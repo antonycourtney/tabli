@@ -99,6 +99,33 @@ fieldset { padding:0; border:0; }
   /* background-color: #cb716c; */
 }
 
+.windowHeader .editButton {
+  visibility: hidden;
+}
+.windowHeader:hover .editButton {
+  visibility: visible;
+}
+/* from styles.headerButton */
+.headerButton {
+  outline: none;
+  border: none;
+  backgroundRepeat: no-repeat;
+  width: 16px;
+  height: 16px;
+  marginLeft: 1px;
+  marginRight: 1px;
+  flex: none;
+}
+.editButton {
+  -webkit-mask-image: url('../images/Edition-30.png');
+  background-color: #888888;
+  margin-left: 2px;
+  margin-right: 8px;
+}
+.editButton:hover {
+  background-color: #000000;
+}
+
 .toolbar-btn-square {
   width: 24px;
   height: 24px;

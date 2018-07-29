@@ -335,6 +335,18 @@ export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, s
   })
 }
 
+export async function setWindowTitle (title: string, tabWindow: TabWindow, storeRef: TMSRef) {
+  if (!tabWindow.saved) {
+    console.error('attempt to set window title on unsaved window: ', tabWindow.toJS())
+  }
+  try {
+    await chromep.bookmarks.update(tabWindow.savedFolderId, {title})
+    console.log('setWindowTitle: updated window title')
+  } catch (err) {
+    console.error('error updating window title: ', err)
+  }
+}
+
 export function showHelp () {
   chrome.tabs.create({ url: TABLI_HELP_URL })
 }
