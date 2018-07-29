@@ -127,8 +127,6 @@ fieldset { padding:0; border:0; }
   background-color: #888888;
   margin-left: 4px;
   margin-right: 12px;
-  padding-top: 0px;
-  border: 1px solid #ff0000;
 }
 .editButton:hover {
   background-color: #000000;
