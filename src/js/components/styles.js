@@ -251,13 +251,12 @@ const styles = {
   windowTitle: {
     fontWeight: 'bold',
     minWidth: Constants.WINDOW_TITLE_MIN_WIDTH,
-    maxWidth: Constants.WINDOW_TITLE_MAX_WIDTH,
+    /* NOPE -- let flexbox do it: maxWidth: Constants.WINDOW_TITLE_MAX_WIDTH, */
     flexGrow: 1
   },
   windowTitleInput: {
     fontWeight: 'bold',
     minWidth: Constants.WINDOW_TITLE_MIN_WIDTH,
-    maxWidth: Constants.WINDOW_TITLE_MAX_WIDTH,
     flexGrow: 1
   },
   modalTitle: {

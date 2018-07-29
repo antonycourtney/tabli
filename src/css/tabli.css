@@ -88,6 +88,12 @@ fieldset { padding:0; border:0; }
   visibility: visible;
 }
 
+.rowItems-fixed-width {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto
+}
+
 .closeButton {
   -webkit-mask-image: url('../images/Interface-77.png');
   background-color: #888888;
@@ -119,8 +125,10 @@ fieldset { padding:0; border:0; }
 .editButton {
   -webkit-mask-image: url('../images/Edition-30.png');
   background-color: #888888;
-  margin-left: 2px;
-  margin-right: 8px;
+  margin-left: 4px;
+  margin-right: 12px;
+  padding-top: 0px;
+  border: 1px solid #ff0000;
 }
 .editButton:hover {
   background-color: #000000;

@@ -151,12 +151,19 @@ class WindowHeader extends React.PureComponent {
         onMouseOver={this.handleMouseOver}
         onMouseOut={this.handleMouseOut}
         onClick={this.props.onOpen}>
-        {windowCheckItem}
-        <ExpanderButton winStore={this.props.winStore} expanded={this.props.expanded} onClick={this.props.onExpand} />
+        <div className='rowItems-fixed-width'>
+          {windowCheckItem}
+          <ExpanderButton
+            winStore={this.props.winStore}
+            expanded={this.props.expanded}
+            onClick={this.props.onExpand} />
+        </div>
         {titleSpan}
-        {editButton}
-        {revertButton}
-        {closeButton}
+        <div className='rowItems-fixed-width'>
+          {editButton}
+          {revertButton}
+          {closeButton}
+        </div>
       </div>
     )
   }
