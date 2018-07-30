@@ -99,7 +99,7 @@ class PreferencesModal extends React.Component {
               </button>
               <button
                 type='button'
-                className='btn btn-default btn-sm tabli-dialog-button'
+                className='btn btn-default btn-light btn-sm tabli-dialog-button'
                 onClick={e => this.props.onClose(e)}
                 tabIndex={0}>
                 Cancel

@@ -119,7 +119,7 @@ class RevertModal extends React.Component {
             </button>
             <button
               type='button'
-              className='btn btn-default btn-sm tabli-dialog-button'
+              className='btn btn-default btn-light btn-sm tabli-dialog-button'
               onClick={this.props.onClose}
               tabIndex={0}>
               Cancel
