@@ -177,9 +177,10 @@ class TabItem extends React.PureComponent {
         {tabCheckItem}
         {tabFavIcon}
         <span style={tabTitleStyles} title={tooltipContent}>{tabTitle}</span>
-        <div style={Styles.spacer} />
-        {audibleIcon}
-        {closeButton}
+        <div className='rowItems-fixed-width'>
+          {audibleIcon}
+          {closeButton}
+        </div>
       </div>))
   }
 }

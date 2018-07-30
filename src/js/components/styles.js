@@ -98,7 +98,6 @@ const styles = {
   },
   tabTitle: {
     minWidth: Constants.TAB_TITLE_MIN_WIDTH,
-    maxWidth: Constants.TAB_TITLE_MAX_WIDTH,
     flexGrow: 1
   },
   // for use in revert modal:
