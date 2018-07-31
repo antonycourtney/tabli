@@ -11,7 +11,7 @@ import * as RenderCommon from './renderCommon'
  *
  */
 function main () {
-  window.onload = () => RenderCommon.getFocusedAndRender(false)
+  window.onload = () => RenderCommon.getFocusedAndRender(false, false)
 }
 
 main()
