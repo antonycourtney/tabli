@@ -4,12 +4,18 @@
  * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
  * and then retrieve the instance from the background window in the popup
  */
-import * as _ from 'lodash'
+import filter from 'lodash/filter'
+import flatten from 'lodash/flatten'
+import get from 'lodash/get'
+import map from 'lodash/map'
+import reduce from 'lodash/reduce'
 import * as Immutable from 'immutable'
 import * as TabWindow from './tabWindow'
 import * as prefs from './preferences'
 import * as searchOps from './searchOps'
 import escapeStringRegexp from 'escape-string-regexp'
+
+const _ = { filter, flatten, get, map, reduce }
 
 function validChromeWindow (cw, normalOnly) {
   if (!cw) {

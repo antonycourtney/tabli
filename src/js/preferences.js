@@ -3,8 +3,10 @@
  * Serializable, immutable user preferences
  */
 
-import * as _ from 'lodash'
+import defaultsDeep from 'lodash/defaultsDeep'
 import * as Immutable from 'immutable'
+
+const _ = { defaultsDeep }
 
 type VersionedObject = { version: number, contents: any }
 

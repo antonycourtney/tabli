@@ -12,7 +12,9 @@ import SelectablePopup from './SelectablePopup'
 import * as Util from './util'
 import { DragDropContext } from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
-import * as _ from 'lodash'
+import debounce from 'lodash/debounce'
+
+const _ = { debounce }
 
 /**
  * send message to BGhelper

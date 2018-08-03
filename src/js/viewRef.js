@@ -1,5 +1,7 @@
 import * as OneRef from 'oneref'
-import * as _ from 'lodash'
+import throttle from 'lodash/throttle'
+
+const _ = { throttle }
 
 /**
  * A wrapper around OneRef.Ref that tracks listeners by numeric id

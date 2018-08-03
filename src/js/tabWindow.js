@@ -2,8 +2,14 @@
 /**
  * Representation of tabbed windows using Immutable.js
  */
-import * as _ from 'lodash'
+import get from 'lodash/get'
+import has from 'lodash/has'
+import keys from 'lodash/keys'
+import intersection from 'lodash/intersection'
+import reduce from 'lodash/reduce'
 import * as Immutable from 'immutable'
+
+const _ = { get, has, keys, intersection, reduce }
 
 /**
  * Tab state that is persisted as a bookmark

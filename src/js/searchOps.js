@@ -2,9 +2,12 @@
 /**
  * Search and filter operations on TabWindows
  */
-import * as _ from 'lodash'
+import map from 'lodash/map'
+import filter from 'lodash/filter'
 import * as Immutable from 'immutable'
 import * as TW from './tabWindow'
+
+const _ = { map, filter }
 
 type SearchSpec = string | RegExp
 /*

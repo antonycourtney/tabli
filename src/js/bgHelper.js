@@ -6,7 +6,9 @@
  */
 /* global Blob, URL */
 
-import * as _ from 'lodash'
+// import * as _ from 'lodash'
+import has from 'lodash/has'
+import fromPairs from 'lodash/fromPairs'
 import * as Immutable from 'immutable'
 import * as semver from 'semver'
 import * as TabWindow from './tabWindow'
@@ -16,6 +18,8 @@ import * as actions from './actions'
 import ViewRef from './viewRef'
 import ChromePromise from 'chrome-promise'
 const chromep = ChromePromise
+
+const _ = { has, fromPairs }
 
 const tabliFolderTitle = 'Tabli Saved Windows'
 const archiveFolderTitle = '_Archive'
