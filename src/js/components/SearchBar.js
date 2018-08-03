@@ -1,6 +1,10 @@
 import * as React from 'react'
-import {Button, ButtonDropdown, DropdownToggle, DropdownMenu,
-  DropdownItem, Input} from 'reactstrap'
+import Button from 'reactstrap/lib/Button'
+import ButtonDropdown from 'reactstrap/lib/ButtonDropdown'
+import DropdownToggle from 'reactstrap/lib/DropdownToggle'
+import DropdownMenu from 'reactstrap/lib/DropdownMenu'
+import DropdownItem from 'reactstrap/lib/DropdownItem'
+import Input from 'reactstrap/lib/Input'
 import * as Constants from './constants'
 import * as actions from '../actions'
 import * as Util from './util'
