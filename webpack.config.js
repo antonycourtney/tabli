@@ -64,13 +64,7 @@ function config(nodeEnv) {
         // (the filename of the commons chunk)
       }
     },
-    plugins: [
-      new webpack.DefinePlugin({
-        'process.env': {
-          NODE_ENV: JSON.stringify(nodeEnv)
-        }
-      })
-    ]
+    plugins: []
   }
 }
 
@@ -81,6 +75,11 @@ function development() {
 
 function production () {
   var prod = config('production')
+  prod.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production')
+    })
+  )
   prod.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(true))
   prod.optimization.minimize = {
     compress: {

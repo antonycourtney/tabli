@@ -580,7 +580,7 @@ async function loadSnapState (bmStore) {
 
 async function main () {
   try {
-    console.log('bgHelper started...')
+    console.log('bgHelper started, env: ', process.env.NODE_ENV)
     actions.setReloadHandler(main)
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)

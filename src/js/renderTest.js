@@ -18,12 +18,17 @@ function makeTabWindow (jsWin) { // eslint-disable-line no-unused-vars
 }
 
 function renderPage (testData) {
+  const tPreSync = performance.now()
   const testChromeWindows = testData.chromeWindows
 
-  console.log('renderPage: testData: ', testData)
+  // console.log('renderPage: testData: ', testData)
 
   const emptyWinStore = new TabManagerState()
   const mockWinStore = emptyWinStore.syncWindowList(testChromeWindows).set('showRelNotes', false)
+
+  const tPostSync = performance.now()
+
+  console.log('syncing window state took ', tPostSync - tPreSync, ' ms')
 
   console.log('Created mockWinStore and registered test windows')
   console.log('mock winStore: ', mockWinStore.toJS())
@@ -43,11 +48,16 @@ function renderPage (testData) {
 var testStateUrl = 'testData/renderTest-chromeWindowSnap.json'
 
 function loadTestData (callback) {
+  var tPreLoad = performance.now()
   var request = new XMLHttpRequest()
   request.open('GET', testStateUrl, true)
   request.onload = () => {
     if (request.status >= 200 && request.status < 400) {
+      const tPostLoad = performance.now()
       var data = JSON.parse(request.responseText)
+      const tPostParse = performance.now()
+      console.log('loading test data took ', tPostLoad - tPreLoad, ' ms')
+      console.log('parsing test data took ', tPostParse - tPostLoad, ' ms')
       callback(data)
     } else {
       // We reached our target server, but it returned an error
@@ -76,6 +86,7 @@ function renderTest () {
  *
  */
 function main () {
+  console.log('render test, environment: ', process.env.NODE_ENV)
   window.onload = renderTest
 }
 
