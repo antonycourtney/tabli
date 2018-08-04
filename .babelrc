@@ -1,8 +1,13 @@
 {
-  "presets": [
+  "presets":
+  [
     "es2015",
     "react",
-    "stage-3"
+    "stage-3",
+    [ "env", {
+        "targets": "last 2 Chrome versions"
+      }
+    ]    
   ],
   "plugins": [
     "transform-class-properties",

@@ -13,11 +13,11 @@ function config(nodeEnv) {
         extensions: [".webpack.js", ".web.js", ".js"]
     },
     entry: {
-      prefsPage: ["babel-polyfill", "./src/js/prefsPage.js"],
-      renderTest: ["babel-polyfill", "./src/js/renderTest.js"],
-      tabliPopup: ["babel-polyfill", "./src/js/tabliPopup.js"],
-      tabliPopout: ["babel-polyfill", "./src/js/tabliPopout.js"],
-      bgHelper: ["babel-polyfill", "./src/js/bgHelper.js"]
+      prefsPage: ["./src/js/prefsPage.js"],
+      renderTest: ["./src/js/renderTest.js"],
+      tabliPopup: [ "./src/js/tabliPopup.js"],
+      tabliPopout: [ "./src/js/tabliPopout.js"],
+      bgHelper: [ "./src/js/bgHelper.js"]
     },
     output: {
         path: __dirname + '/build/js',
