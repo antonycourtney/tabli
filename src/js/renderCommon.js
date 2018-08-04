@@ -17,7 +17,8 @@ export async function renderPopup (
   storeRef: oneref.Ref<TabManagerState>,
   currentChromeWindow: Object,
   isPopout: boolean,
-  doSync: boolean
+  doSync: boolean,
+  renderTest: boolean = false
 ) {
   try {
     console.log('renderPopup: isPopout: ', isPopout)
@@ -26,7 +27,13 @@ export async function renderPopup (
 
     var parentNode = document.getElementById('windowList-region')
 
-    var appElement = <Popup storeRef={storeRef} initialWinStore={storeRef.getValue()} isPopout={isPopout} />
+    var appElement = (
+      <Popup
+        storeRef={storeRef}
+        initialWinStore={storeRef.getValue()}
+        isPopout={isPopout}
+        noListener={renderTest}
+      />)
     ReactDOM.render(appElement, parentNode, () => { // eslint-disable-line no-unused-vars
       const searchBoxElem = document.getElementById('searchBox')
       if (searchBoxElem) {

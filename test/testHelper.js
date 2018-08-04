@@ -1,5 +1,7 @@
 import jsdom from 'jsdom'
-const dom = new jsdom.JSDOM('<!doctype html><html><body></body></html>')
+const dom = new jsdom.JSDOM('<!doctype html><html><body></body></html>', {
+  url: 'http://localhost'
+})
 const win = dom.window
 
 global.document = win.document

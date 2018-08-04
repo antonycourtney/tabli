@@ -39,7 +39,7 @@ function renderPage (testData) {
   var tPreRender = performance.now()
 
   // N.B. false last arg to prevent sync'ing current chrome windows
-  RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false)
+  RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false, true)
 
   var tPostRender = performance.now()
   console.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
