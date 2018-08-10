@@ -176,8 +176,10 @@ class TabItem extends React.PureComponent {
         onMouseOut={this.handleMouseOut}
         onMouseOver={this.handleMouseOver}
         onClick={this.handleClick}>
-        {tabCheckItem}
-        {tabFavIcon}
+        <div className='rowItems-fixed-width'>
+          {tabCheckItem}
+          {tabFavIcon}
+        </div>
         <a
           href={tab.url}
           style={tabTitleStyles}
