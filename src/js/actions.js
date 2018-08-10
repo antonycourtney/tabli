@@ -68,8 +68,12 @@ export const syncCurrent = async (storeRef: TMSRef): TabManagerState => {
  * Restore a saved window using only App state.
  * Fallback for when no session id available or session restore fails
  */
-const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
-  revertOnOpen: boolean, storeRef: TMSRef) => {
+const restoreFromAppState = (
+  lastFocusedTabWindow: TabWindow,
+  tabWindow: TabWindow,
+  revertOnOpen: boolean,
+  mbTab: ?TabItem,
+  storeRef: TMSRef) => {
   const attachWindow = (chromeWindow) => {
     storeRef.update((state) => state.attachChromeWindow(tabWindow, chromeWindow))
   }
@@ -78,22 +82,27 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
    * special case handling of replacing the contents of a fresh window
    */
   chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
-    const tabItems = tabWindow.tabItems
-    // If a snapshot, only use tabItems that were previously open:
-    let targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
+    let urls
+    if (mbTab) {
+      console.log('restore saved window: restoring single tab: ', mbTab.toJS())
+      urls = [ mbTab.url ]
+    } else {
+      const tabItems = tabWindow.tabItems
+      // If a snapshot, only use tabItems that were previously open:
+      let targetItems = tabWindow.snapshot ? tabItems.filter(ti => ti.open) : tabItems
 
-    if (revertOnOpen) {
-      // So revertOnOpen something of a misnomer. If a snapshot available,
-      // limits what's opened to what was previously open and
-      // explicitly saved, to minimize the number of tabs we load.
-      targetItems = targetItems.filter(ti => ti.saved)
-      if (targetItems.count() === 0) {
-        // No saved items open, full revert:
-        targetItems = tabItems.filter(ti => ti.saved)
+      if (revertOnOpen) {
+        // So revertOnOpen something of a misnomer. If a snapshot available,
+        // limits what's opened to what was previously open and
+        // explicitly saved, to minimize the number of tabs we load.
+        targetItems = targetItems.filter(ti => ti.saved)
+        if (targetItems.count() === 0) {
+          // No saved items open, full revert:
+          targetItems = tabItems.filter(ti => ti.saved)
+        }
       }
+      urls = targetItems.map((ti) => ti.url).toArray()
     }
-    const urls = targetItems.map((ti) => ti.url).toArray()
-
     if (currentChromeWindow.tabs &&
       (currentChromeWindow.tabs.length === 1) &&
       (currentChromeWindow.tabs[0].url === 'chrome://newtab/') &&
@@ -139,13 +148,21 @@ const restoreFromAppState = (lastFocusedTabWindow, tabWindow: TabWindow,
  *
  * N.B.: NOT exported; called from openWindow
  */
-function restoreBookmarkWindow (lastFocusedTabWindow, tabWindow: TabWindow, storeRef: TMSRef) {
+function restoreBookmarkWindow (
+  lastFocusedTabWindow: TabWindow,
+  tabWindow: TabWindow,
+  mbTab: ?TabItem,
+  storeRef: TMSRef) {
   console.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
   const st = storeRef.getValue()
-  restoreFromAppState(lastFocusedTabWindow, tabWindow, st.preferences.revertOnOpen, storeRef)
+  restoreFromAppState(lastFocusedTabWindow, tabWindow, st.preferences.revertOnOpen, mbTab, storeRef)
 }
 
-export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: TabWindow, storeRef: TMSRef) {
+export function openWindow (
+  lastFocusedTabWindow: TabWindow,
+  targetTabWindow: TabWindow,
+  storeRef: TMSRef
+) {
   if (targetTabWindow.open) {
     // existing, open window -- just transfer focus
     chrome.windows.update(targetTabWindow.openWindowId, { focused: true })
@@ -153,7 +170,7 @@ export function openWindow (lastFocusedTabWindow: TabWindow, targetTabWindow: Ta
   // TODO: update focus in winStore
   } else {
     // bookmarked window -- need to open it!
-    restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, storeRef)
+    restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, null, storeRef)
   }
 }
 
@@ -249,9 +266,9 @@ export function activateTab (
       })
     }
   } else {
-    // console.log("activateTab: opening non-open window")
+    console.log('activateTab: opening single tab of saved window')
     // TODO: insert our own callback so we can activate chosen tab after opening window!
-    openWindow(lastFocusedTabWindow, targetTabWindow, storeRef)
+    restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, tab, storeRef)
   }
 }
 

@@ -54,6 +54,8 @@ class TabItem extends React.PureComponent {
   };
 
   handleClick = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
     var tabWindow = this.props.tabWindow
     var tab = this.props.tab
     var tabIndex = this.props.tabIndex
@@ -176,7 +178,11 @@ class TabItem extends React.PureComponent {
         onClick={this.handleClick}>
         {tabCheckItem}
         {tabFavIcon}
-        <span style={tabTitleStyles} title={tooltipContent}>{tabTitle}</span>
+        <a
+          href={tab.url}
+          style={tabTitleStyles}
+          title={tooltipContent}
+          onClick={this.handleClick}>{tabTitle}</a>
         <div className='rowItems-fixed-width'>
           {audibleIcon}
           {closeButton}

@@ -59,7 +59,7 @@ async function ensureChildFolder (parentNode, childFolderName) {
       var childFolder = parentNode.children[i]
       if (childFolder.title.toLowerCase() === childFolderName.toLowerCase()) {
         // exists
-        console.log('found target child folder: ', childFolderName)
+        // console.log('found target child folder: ', childFolderName)
         return childFolder
       }
     }
@@ -160,13 +160,28 @@ function dumpChromeWindows () { // eslint-disable-line no-unused-vars
 }
 
 function onTabCreated (storeRef, tab, markActive) {
-  // console.log('onTabCreated: url: ', tab.url)
+  console.log('onTabCreated: ', tab)
   storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(tab.windowId)
     if (!tabWindow) {
       console.warn('tabs.onCreated: window id not found: ', tab.windowId)
       return state
     }
+    /*
+     * This snippet tries to catch the "Open in New Window" context
+     * menu action and attach it to the relevant saved window.
+     * But instead we're going with the simpler, more predictable
+     * UX that clicking on a saved tab in a closed, saved window
+     * will open just that saved tab and attach to the window.
+     *
+        const firstTab = (tabWindow.openTabCount === 0)
+        if (firstTab && tabWindow.windowType !== 'popup') {
+          console.log('detected first tab in newly opened window')
+          window.setTimeout(() => {
+            maybeAttachNewWindow(storeRef, tab.windowId)
+          }, 300)
+        }
+    */
     const st = state.handleTabCreated(tabWindow, tab)
     const nw = st.getTabWindowByChromeId(tab.windowId)
     const ast = markActive ? st.handleTabActivated(nw, tab.id) : st
@@ -428,10 +443,50 @@ function registerEventHandlers (storeRef) {
     onBookmarkChanged(storeRef, id, changeInfo))
 }
 
+const MATCH_THRESHOLD = 0.25
+// type constructor for match info:
+const MatchInfo = Immutable.Record({windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0})
+
+const getWindowMatchInfo = (bmStore, urlIdMap, w) => {
+  // matches :: Array<Set<BookmarkId>>
+  const matchSets = w.tabs.map(t => urlIdMap.get(t.url, null)).filter(x => x)
+  // countMaps :: Array<Map<BookmarkId,Num>>
+  const countMaps = matchSets.map(s => s.countBy(v => v))
+
+  // Now let's reduce array, merging all maps into a single map, aggregating counts:
+  const aggMerge = (mA, mB) => mA.mergeWith((prev, next) => prev + next, mB)
+
+  // matchMap :: Map<BookmarkId,Num>
+  const matchMap = countMaps.reduce(aggMerge, Immutable.Map())
+
+  /*
+   * The logic here is convoluted but seems to work OK
+   * in practice.
+   */
+  // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
+  function aboveMatchThreshold (matchCount, bookmarkId) {
+    const tabCount = w.tabs.length
+    const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId)
+    const savedUrlCount = savedTabWindow.tabItems.count()
+    const matchRatio = matchCount / savedUrlCount
+    // console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
+    return ((matchCount > 1) ||
+            (savedUrlCount === 1 && matchCount === 1) ||
+            (matchCount === tabCount) ||
+            (matchRatio >= MATCH_THRESHOLD))
+  }
+
+  const threshMap = matchMap.filter(aboveMatchThreshold)
+
+  const bestMatch = utils.bestMatch(threshMap)
+
+  return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length })
+}
+
 /**
  * Heuristic scan to find any open windows that seem to have come from saved windows
  * and re-attach them on initial load of the background page. Mainly useful for
- * development and for re-starting Tablie.
+ * development and for re-starting Tabli.
  *
  * Heuristics here are imperfect; only way to get this truly right would be with a proper
  * session management API.
@@ -439,49 +494,8 @@ function registerEventHandlers (storeRef) {
  * return: Promise<TabManagerState>
  *
  */
-async function reattachWindows (bmStore) {
-  const MATCH_THRESHOLD = 0.25
-
+function attachWindowList (bmStore, windowList) {
   const urlIdMap = bmStore.getUrlBookmarkIdMap()
-
-  // type constructor for match info:
-  const MatchInfo = Immutable.Record({windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0})
-
-  const windowList = await chromep.windows.getAll({ populate: true })
-
-  function getMatchInfo (w) {
-    // matches :: Array<Set<BookmarkId>>
-    const matchSets = w.tabs.map(t => urlIdMap.get(t.url, null)).filter(x => x)
-    // countMaps :: Array<Map<BookmarkId,Num>>
-    const countMaps = matchSets.map(s => s.countBy(v => v))
-
-    // Now let's reduce array, merging all maps into a single map, aggregating counts:
-    const aggMerge = (mA, mB) => mA.mergeWith((prev, next) => prev + next, mB)
-
-    // matchMap :: Map<BookmarkId,Num>
-    const matchMap = countMaps.reduce(aggMerge, Immutable.Map())
-
-    /*
-     * The logic here is convoluted but seems to work OK
-     * in practice.
-     */
-    // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
-    function aboveMatchThreshold (matchCount, bookmarkId) {
-      const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId)
-      const savedUrlCount = savedTabWindow.tabItems.count()
-      const matchRatio = matchCount / savedUrlCount
-      return ((matchCount > 1) ||
-              (savedUrlCount === 1 && matchCount === 1) ||
-              (matchRatio >= MATCH_THRESHOLD))
-      //      console.log("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
-    }
-
-    const threshMap = matchMap.filter(aboveMatchThreshold)
-
-    const bestMatch = utils.bestMatch(threshMap)
-
-    return new MatchInfo({ windowId: w.id, matches: matchMap, bestMatch, tabCount: w.tabs.length })
-  }
 
   /**
    * We could come up with better heuristics here, but for now we'll be conservative
@@ -489,7 +503,9 @@ async function reattachWindows (bmStore) {
    */
   // Only look at windows that match exactly one bookmark folder
   // (Could be improved by sorting entries on number of matches and picking best (if there is one))
-  const windowMatchInfo = Immutable.Seq(windowList).map(getMatchInfo).filter(mi => mi.bestMatch)
+  const windowMatchInfo = Immutable.Seq(windowList)
+    .map(w => getWindowMatchInfo(bmStore, urlIdMap, w))
+    .filter(mi => mi.bestMatch)
 
   // console.log("windowMatchInfo: ", windowMatchInfo.toJS())
 
@@ -533,6 +549,40 @@ async function reattachWindows (bmStore) {
   const attachedStore = bestBMMatches.reduce(attacher, bmStore)
 
   return attachedStore
+}
+
+/**
+ * get all Chrome windows and attach to best match:
+ */
+async function reattachWindows (bmStore) {
+  const windowList = await chromep.windows.getAll({ populate: true })
+
+  return attachWindowList(bmStore, windowList)
+}
+
+/**
+ * For a newly created window, check if we should attach it to an existing
+ * closed, saved window.  Intended primarily for "Open in New Window" on
+ * a saved tab.
+ * NOTE: This is fully functional, but is no longer actually used.
+ * After building this out, decided a simpler an more flexible UX
+ * is to attach a saved window when single-clicking on a saved, closed tab,
+ * but allow the "Open in New Window" context menu action to remain detached.
+ */
+async function maybeAttachNewWindow (stRef, windowId) { // eslint-disable-line no-unused-vars
+  try {
+    const chromeWindow = await chromep.windows.get(windowId, { populate: true, windowTypes: ['normal'] })
+    if (!chromeWindow) {
+      console.warn('maybeAttachNewWindow: null window, ignoring....')
+      return
+    }
+
+    stRef.update(st => {
+      return attachWindowList(st, [chromeWindow])
+    })
+  } catch (e) {
+    console.warn('caught error getting chrome window (ignoring...): ', e)
+  }
 }
 
 /**
