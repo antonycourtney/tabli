@@ -1,7 +1,5 @@
 import * as Constants from './constants'
-import * as BC from './browserConstants'
-
-const mkUrl = relPath => 'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")'
+import { mkUrl } from './util'
 
 const selectedBorder = '2px solid #a0a0a0'
 
@@ -116,15 +114,6 @@ const styles = {
   expandablePanelContentOpen: {
     marginTop: 0
   },
-  windowExpand: {
-    WebkitMaskImage: mkUrl('images/triangle-small-4-01.png'),
-    backgroundColor: '#606060'
-  },
-  windowCollapse: {
-    WebkitMaskImage: mkUrl('images/triangle-small-1-01.png'),
-    backgroundColor: '#606060'
-  },
-
   // Hmmm, we use this as a common base for both
   //
   headerButton: {

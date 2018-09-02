@@ -7,9 +7,10 @@
     [ "env", {
         "targets": "last 2 Chrome versions"
       }
-    ]    
+    ]
   ],
   "plugins": [
+    [ "emotion", { "sourceMap": true, "autoLabel": true } ],
     "transform-class-properties",
     [
       "transform-runtime",

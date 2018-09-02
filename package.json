@@ -8,12 +8,14 @@
   "license": "MIT",
   "dependencies": {
     "babel-core": "^6.26.3",
+    "babel-plugin-emotion": "^9.2.6",
     "babel-polyfill": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-3": "^6.24.1",
     "babel-runtime": "^6.26.0",
     "chrome-promise": "^3.0.2",
+    "emotion": "^9.2.6",
     "escape-string-regexp": "^1.0.5",
     "events": "^3.0.0",
     "flow-bin": "^0.75.0",
@@ -29,6 +31,7 @@
     "react-dnd": "^5.0.0",
     "react-dnd-html5-backend": "^5.0.1",
     "react-dom": "^16.4.1",
+    "react-emotion": "^9.2.6",
     "reactstrap": "^6.2.0",
     "semver": "^5.5.0"
   },

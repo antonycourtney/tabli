@@ -1,3 +1,7 @@
+import * as BC from './browserConstants'
+
+export const mkUrl = relPath => 'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")'
+
 /**
  * Object merge operator from the original css-in-js presentation
  */
