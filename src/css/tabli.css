@@ -77,13 +77,6 @@ fieldset { padding:0; border:0; }
   visibility: visible;
 }
 
-.windowHeader .windowCheck {
-  visibility: hidden;
-}
-.windowHeader:hover .windowCheck {
-  visibility: visible;
-}
-
 .windowHeader .closeButton {
   visibility: hidden;
 }

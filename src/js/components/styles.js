@@ -9,6 +9,20 @@ const styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   },
+  windowHeader: {
+    backgroundColor: '#ebe9eb',
+    borderBottom: '1px solid #bababa',
+    height: Constants.WINDOW_HEADER_HEIGHT,
+    maxHeight: Constants.WINDOW_HEADER_HEIGHT,
+    paddingLeft: 3,
+    paddingRight: 3,
+
+    // marginBottom: 3,
+    display: 'inline-flex',
+
+    // justifyContent: 'space-between',
+    alignItems: 'center'
+  },
   // This is the container for a single tabWindow, consisting of its
   // header and tabs:
   tabWindow: {
@@ -59,20 +73,6 @@ const styles = {
   },
   tabWindowFocused: {
     boxShadow: '0px 0px 5px 2px #7472ff'
-  },
-  windowHeader: {
-    backgroundColor: '#ebe9eb',
-    borderBottom: '1px solid #bababa',
-    height: Constants.WINDOW_HEADER_HEIGHT,
-    maxHeight: Constants.WINDOW_HEADER_HEIGHT,
-    paddingLeft: 3,
-    paddingRight: 3,
-
-    // marginBottom: 3,
-    display: 'inline-flex',
-
-    // justifyContent: 'space-between',
-    alignItems: 'center'
   },
   tabItem: {
     height: 20,

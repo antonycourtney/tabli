@@ -4,6 +4,9 @@ import * as Util from './util'
 import * as actions from '../actions'
 import * as Constants from './constants'
 
+import { cx } from 'emotion'
+import { headerButton, headerCheckBox, headerHoverVisible, windowManagedButton, windowHeader, noWrap } from './cssStyles'
+
 import HeaderButton from './HeaderButton'
 import ExpanderButton from './ExpanderButton'
 
@@ -67,13 +70,11 @@ class WindowHeader extends React.PureComponent {
 
     if (managed) {
       windowCheckItem = (
-        <button style={Util.merge(Styles.headerButton, Styles.windowManagedButton)} title='Stop managing this window' onClick={this.handleUnmanageClick} />)
+        <button className={cx(headerButton, windowManagedButton, headerHoverVisible)} title='Stop managing this window' onClick={this.handleUnmanageClick} />)
     } else {
-      var checkStyle = Util.merge(Styles.headerButton, Styles.headerCheckBox)
       windowCheckItem = (
         <input
-          className='windowCheck'
-          style={checkStyle}
+          className={cx(headerButton, headerCheckBox, headerHoverVisible)}
           type='checkbox'
           title='Save all tabs in this window'
           onClick={this.handleManageClick}
@@ -144,10 +145,12 @@ class WindowHeader extends React.PureComponent {
       </div>
     )
 
+    // Note explicit global css class name windowHeaderHoverContainer here
+    // Due to limitation of nested class selectors with composition;
+    // see https://emotion.sh/docs/nested for more info.
     return (
       <div
-        className='windowHeader'
-        style={Util.merge(Styles.windowHeader, Styles.noWrap)}
+        className={cx(windowHeader, noWrap) + ' windowHeaderHoverContainer'}
         onMouseOver={this.handleMouseOver}
         onMouseOut={this.handleMouseOut}
         onClick={this.props.onOpen}>
