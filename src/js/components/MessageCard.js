@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Util from './util'
 import FlatButton from './FlatButton'
 
@@ -10,13 +10,13 @@ import FlatButton from './FlatButton'
  */
 class MessageCard extends React.Component {
   render () {
-    const cardStyle = Util.merge(Styles.tabWindow, Styles.tabWindowFocused, Styles.messageCard)
+    const cardStyle = Util.merge(OldStyles.tabWindow, OldStyles.tabWindowFocused, OldStyles.messageCard)
     const rawMarkup = { __html: this.props.content }
 
     return (
       <div style={cardStyle}>
         <div className='cardContent' dangerouslySetInnerHTML={rawMarkup} />
-        <div style={Styles.cardActions}>
+        <div style={OldStyles.cardActions}>
           <FlatButton label='GOT IT' onClick={this.props.onClick} />
         </div>
       </div>

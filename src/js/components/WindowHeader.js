@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Util from './util'
 import * as actions from '../actions'
 import * as Constants from './constants'
@@ -81,12 +81,12 @@ class WindowHeader extends React.PureComponent {
           value={false} />)
     }
 
-    var openStyle = tabWindow.open ? Styles.open : Styles.closed
-    var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.windowTitle, openStyle)
+    var openStyle = tabWindow.open ? OldStyles.open : OldStyles.closed
+    var titleStyle = Util.merge(OldStyles.text, OldStyles.noWrap, OldStyles.windowTitle, openStyle)
 
     var revertButton = (
       <HeaderButton
-        baseStyle={Util.merge(Styles.headerButton, Styles.revertButton)}
+        baseStyle={Util.merge(OldStyles.headerButton, OldStyles.revertButton)}
         visible={managed && tabWindow.open}
         title='Revert to bookmarked tabs (Close other tabs)'
         onClick={this.props.onRevert} />)
@@ -101,7 +101,7 @@ class WindowHeader extends React.PureComponent {
     var closeButton = (
       <HeaderButton
         className='closeButton'
-        baseStyle={Styles.headerButton}
+        baseStyle={OldStyles.headerButton}
         visible={tabWindow.open}
         title='Close Window'
         onClick={this.props.onClose} />)
@@ -109,7 +109,7 @@ class WindowHeader extends React.PureComponent {
     // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded)
     let titleComponent = null
     if (this.state.editingTitle) {
-      var titleInputStyle = Util.merge(Styles.text, Styles.noWrap, Styles.windowTitleInput)
+      var titleInputStyle = Util.merge(OldStyles.text, OldStyles.noWrap, OldStyles.windowTitleInput)
       titleComponent = (
         <form onSubmit={this.handleTitleSubmit}>
           <input

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Constants from './constants'
 import * as Modal from './Modal'
 
@@ -29,7 +29,7 @@ class SaveModal extends React.Component {
           <span>Save all tabs in this window</span>
         </Modal.Info>
         <Modal.Body>
-          <div style={Styles.centerContents}>
+          <div style={OldStyles.centerContents}>
             <form className='dialog-form save-form' onSubmit={this.handleSubmit}>
               <fieldset>
                 <label htmlFor='title'>

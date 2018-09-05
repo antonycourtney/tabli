@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Util from './util'
 import * as Constants from './constants'
 
@@ -260,8 +260,8 @@ class SelectablePopup extends React.Component {
     const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.'
 
     return (
-      <div style={Styles.popupInner}>
-        <div style={Styles.popupHeader}>
+      <div style={OldStyles.popupInner}>
+        <div style={OldStyles.popupHeader}>
           <SearchBar
             winStore={this.props.winStore}
             storeRef={this.props.storeRef}
@@ -275,7 +275,7 @@ class SelectablePopup extends React.Component {
             setInputRef={this.setSearchInputRef}
             isPopout={this.props.isPopout} />
         </div>
-        <div style={Styles.popupBody} ref={this.setBodyRef}>
+        <div style={OldStyles.popupBody} ref={this.setBodyRef}>
           <TabWindowList
             winStore={this.props.winStore}
             storeRef={this.props.storeRef}
@@ -288,8 +288,8 @@ class SelectablePopup extends React.Component {
             setFocusedTabWindowRef={this.setFocusedTabWindowRef}
             onItemSelected={this.handleItemSelected} />
         </div>
-        <div style={Styles.popupFooter}>
-          <span style={Util.merge(Styles.closed, Styles.summarySpan)}>{summarySentence}</span>
+        <div style={OldStyles.popupFooter}>
+          <span style={Util.merge(OldStyles.closed, OldStyles.summarySpan)}>{summarySentence}</span>
         </div>
       </div>
     )

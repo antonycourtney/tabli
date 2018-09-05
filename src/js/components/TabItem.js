@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Util from './util'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'
@@ -112,14 +112,14 @@ class TabItem extends React.PureComponent {
 
     if (managed) {
       if (!tab.open) {
-        tabOpenStyle = Styles.closed
-        favIconOpenStyle = Styles.favIconClosed
-        checkOpenStyle = Styles.imageButtonClosed
+        tabOpenStyle = OldStyles.closed
+        favIconOpenStyle = OldStyles.favIconClosed
+        checkOpenStyle = OldStyles.imageButtonClosed
       }
 
       if (tab.saved) {
         tabCheckItem = (
-          <button style={Util.merge(Styles.headerButton, Styles.tabManagedButton, checkOpenStyle)} title='Remove bookmark for this tab' onClick={this.handleUnbookmarkTabItem} />)
+          <button style={Util.merge(OldStyles.headerButton, OldStyles.tabManagedButton, checkOpenStyle)} title='Remove bookmark for this tab' onClick={this.handleUnbookmarkTabItem} />)
 
       // TODO: callback
       } else {
@@ -128,14 +128,14 @@ class TabItem extends React.PureComponent {
         tabCheckItem = (
           <input
             className='tabCheck'
-            style={Util.merge(Styles.headerButton, Styles.tabCheckItem)}
+            style={Util.merge(OldStyles.headerButton, OldStyles.tabCheckItem)}
             type='checkbox'
             title='Bookmark this tab'
             onClick={this.handleBookmarkTabItem} />)
       }
     } else {
       // insert a spacer:
-      tabCheckItem = <div style={Styles.headerButton} />
+      tabCheckItem = <div style={OldStyles.headerButton} />
     }
 
     // const favIconUrl = tab.open ? tab.openState.favIconUrl : null
@@ -147,31 +147,31 @@ class TabItem extends React.PureComponent {
       fiSrc = ''
     }
 
-    const emptyFavIcon = <div style={Util.merge(Styles.headerButton, Styles.emptyFavIcon)} />
+    const emptyFavIcon = <div style={Util.merge(OldStyles.headerButton, OldStyles.emptyFavIcon)} />
 
-    const favIconStyle = Util.merge(Styles.favIcon, favIconOpenStyle)
+    const favIconStyle = Util.merge(OldStyles.favIcon, favIconOpenStyle)
 
     var tabFavIcon = (fiSrc.length > 0) ? <img style={favIconStyle} src={fiSrc} /> : emptyFavIcon
 
-    var tabActiveStyle = (tab.open && tab.openState.active) ? Styles.activeSpan : null
-    var tabTitleStyles = Util.merge(Styles.text, Styles.tabTitle, Styles.noWrap, tabOpenStyle, tabActiveStyle)
-    var selectedStyle = this.props.isSelected ? Styles.tabItemSelected : null
+    var tabActiveStyle = (tab.open && tab.openState.active) ? OldStyles.activeSpan : null
+    var tabTitleStyles = Util.merge(OldStyles.text, OldStyles.tabTitle, OldStyles.noWrap, tabOpenStyle, tabActiveStyle)
+    var selectedStyle = this.props.isSelected ? OldStyles.tabItemSelected : null
 
-    var dropStyle = isOver ? Styles.tabItemDropOver : null
+    var dropStyle = isOver ? OldStyles.tabItemDropOver : null
 
-    const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(Styles.headerButton, Styles.audibleIcon)} /> : null
+    const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(OldStyles.headerButton, OldStyles.audibleIcon)} /> : null
 
     var closeButton = (
       <HeaderButton
         className='closeButton'
-        baseStyle={Styles.headerButton}
+        baseStyle={OldStyles.headerButton}
         visible={tab.open}
         title='Close Tab'
         onClick={this.handleClose} />)
 
     return connectDropTarget(connectDragSource(
       <div
-        style={Util.merge(Styles.noWrap, Styles.tabItem, selectedStyle, dropStyle)}
+        style={Util.merge(OldStyles.noWrap, OldStyles.tabItem, selectedStyle, dropStyle)}
         className='tabItem'
         onMouseOut={this.handleMouseOut}
         onMouseOver={this.handleMouseOver}

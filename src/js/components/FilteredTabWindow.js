@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as Immutable from 'immutable'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Util from './util'
 
 import * as actions from '../actions'
@@ -68,8 +68,8 @@ class FilteredTabWindow extends React.Component {
     }
 
     var expanded = this.getExpandedState()
-    var expandableContentStyle = expanded ? Styles.expandablePanelContentOpen : Styles.expandablePanelContentClosed
-    var tabListStyle = Util.merge(Styles.tabList, expandableContentStyle)
+    var expandableContentStyle = expanded ? OldStyles.expandablePanelContentOpen : OldStyles.expandablePanelContentClosed
+    var tabListStyle = Util.merge(OldStyles.tabList, expandableContentStyle)
     return (
       <div style={tabListStyle}>
         {items}
@@ -115,9 +115,9 @@ class FilteredTabWindow extends React.Component {
         appComponent={this.props.appComponent}
         onItemSelected={this.props.onItemSelected} />)
 
-    var selectedStyle = this.props.isSelected ? Styles.tabWindowSelected : null
-    var focusedStyle = this.props.isFocused ? Styles.tabWindowFocused : null
-    var windowStyles = Util.merge(Styles.tabWindow, Styles.expandablePanel, selectedStyle, focusedStyle)
+    var selectedStyle = this.props.isSelected ? OldStyles.tabWindowSelected : null
+    var focusedStyle = this.props.isFocused ? OldStyles.tabWindowFocused : null
+    var windowStyles = Util.merge(OldStyles.tabWindow, OldStyles.expandablePanel, selectedStyle, focusedStyle)
 
     var windowDivProps = {
       style: windowStyles,

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 
 class FlatButton extends React.Component {
   handleClick = (event) => {
@@ -15,7 +15,7 @@ class FlatButton extends React.Component {
 
   render () {
     return (
-      <a onClick={this.handleClick} href='javascript:;' style={Styles.flatButton}>
+      <a onClick={this.handleClick} href='javascript:;' style={OldStyles.flatButton}>
         {this.props.label}
       </a>
     )

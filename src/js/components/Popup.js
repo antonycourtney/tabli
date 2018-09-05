@@ -4,7 +4,7 @@ import * as React from 'react'
 import * as actions from '../actions'
 import * as searchOps from '../searchOps'
 
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import PreferencesModal from './PreferencesModal'
 import RevertModal from './RevertModal'
 import SaveModal from './SaveModal'
@@ -161,7 +161,7 @@ class Popup extends React.Component {
       const revertModal = this.renderRevertModal()
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
       ret = (
-        <div style={Styles.popupOuter}>
+        <div style={OldStyles.popupOuter}>
           <SelectablePopup
             onSearchInput={this.handleSearchInput}
             winStore={this.state.winStore}

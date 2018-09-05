@@ -1,7 +1,7 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 
-const buttonSpacer = <div style={Styles.headerButton} />
+const buttonSpacer = <div style={OldStyles.headerButton} />
 
 class HeaderButton extends React.PureComponent {
   handleClick = (event) => {
@@ -20,7 +20,7 @@ class HeaderButton extends React.PureComponent {
       return buttonSpacer
     }
 
-    // const visibilityStyle = this.props.visible ? Styles.visible : Styles.hidden
+    // const visibilityStyle = this.props.visible ? OldStyles.visible : OldStyles.hidden
     var buttonStyle = this.props.baseStyle
     return (
       <button

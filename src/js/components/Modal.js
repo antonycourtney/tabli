@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './oldStyles'
+import OldStyles from './oldStyles'
 import * as Util from './util'
 
 import HeaderButton from './HeaderButton'
@@ -20,20 +20,20 @@ export class Dialog extends React.PureComponent {
   render () {
     var modalDiv = null
 
-    var titleStyle = Util.merge(Styles.text, Styles.noWrap, Styles.modalTitle, Styles.open)
+    var titleStyle = Util.merge(OldStyles.text, OldStyles.noWrap, OldStyles.modalTitle, OldStyles.open)
     var closeButton = (
       <HeaderButton
         className='closeButton'
-        baseStyle={Styles.headerButton}
+        baseStyle={OldStyles.headerButton}
         visible
         title='Close Window'
         onClick={this.handleClose} />)
     modalDiv = (
-      <div style={Styles.modalOverlay}>
-        <div style={Styles.modalContainer}>
-          <div style={Util.merge(Styles.windowHeader, Styles.noWrap)}>
+      <div style={OldStyles.modalOverlay}>
+        <div style={OldStyles.modalContainer}>
+          <div style={Util.merge(OldStyles.windowHeader, OldStyles.noWrap)}>
             <span style={titleStyle}>{this.props.title}</span>
-            <div style={Styles.spacer} />
+            <div style={OldStyles.spacer} />
             {closeButton}
           </div>
           {this.props.children}
@@ -46,8 +46,8 @@ export class Dialog extends React.PureComponent {
 export class Info extends React.Component {
   render () {
     return (
-      <div style={Styles.dialogInfo}>
-        <div style={Styles.dialogInfoContents}>
+      <div style={OldStyles.dialogInfo}>
+        <div style={OldStyles.dialogInfoContents}>
           {this.props.children}
         </div>
       </div>
@@ -58,7 +58,7 @@ export class Info extends React.Component {
 export class Body extends React.Component {
   render () {
     return (
-      <div style={Styles.modalBodyContainer}>
+      <div style={OldStyles.modalBodyContainer}>
         {this.props.children}
       </div>
     )
