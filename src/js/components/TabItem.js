@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import * as React from 'react'
-import Styles from './styles'
+import Styles from './oldStyles'
 import * as Util from './util'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'

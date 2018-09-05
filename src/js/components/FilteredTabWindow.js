@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as Immutable from 'immutable'
-import Styles from './styles'
+import Styles from './oldStyles'
 import * as Util from './util'
 
 import * as actions from '../actions'

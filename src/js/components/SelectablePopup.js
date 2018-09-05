@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './styles'
+import Styles from './oldStyles'
 import * as Util from './util'
 import * as Constants from './constants'
 

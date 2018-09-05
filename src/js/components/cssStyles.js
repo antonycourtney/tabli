@@ -5,7 +5,7 @@
  * Eventually want to migrate all shared style defs
  * to here
  */
-import Styles from './styles'
+import Styles from './oldStyles'
 
 import { css } from 'emotion'
 

@@ -4,7 +4,7 @@ import * as React from 'react'
 import * as actions from '../actions'
 import * as searchOps from '../searchOps'
 
-import Styles from './styles'
+import Styles from './oldStyles'
 import PreferencesModal from './PreferencesModal'
 import RevertModal from './RevertModal'
 import SaveModal from './SaveModal'

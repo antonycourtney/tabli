@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './styles'
+import Styles from './oldStyles'
 
 class FlatButton extends React.Component {
   handleClick = (event) => {

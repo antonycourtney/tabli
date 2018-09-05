@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Styles from './styles'
+import Styles from './oldStyles'
 
 const buttonSpacer = <div style={Styles.headerButton} />
 
