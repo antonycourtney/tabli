@@ -10,6 +10,10 @@ import * as styles from './cssStyles'
 import HeaderButton from './HeaderButton'
 import ExpanderButton from './ExpanderButton'
 
+const titleBaseStyle = cx(styles.text, styles.noWrap, styles.windowTitle)
+const titleOpenStyle = cx(titleBaseStyle, styles.open)
+const titleClosedStyle = cx(titleBaseStyle, styles.closed)
+
 class WindowHeader extends React.PureComponent {
   state = {
     editingTitle: false
@@ -81,10 +85,9 @@ class WindowHeader extends React.PureComponent {
           value={false} />)
     }
 
-    var openStyle = tabWindow.open ? OldStyles.open : OldStyles.closed
-    var titleStyle = Util.merge(OldStyles.text, OldStyles.noWrap, OldStyles.windowTitle, openStyle)
+    const titleStyle = tabWindow.open ? titleOpenStyle : titleClosedStyle
 
-    var revertButton = (
+    const revertButton = (
       <HeaderButton
         baseStyle={Util.merge(OldStyles.headerButton, OldStyles.revertButton)}
         visible={managed && tabWindow.open}
@@ -140,7 +143,7 @@ class WindowHeader extends React.PureComponent {
     }
 
     const titleSpan = (
-      <div style={titleStyle}>
+      <div className={titleStyle}>
         {titleComponent}
       </div>
     )
