@@ -5,7 +5,7 @@ import * as actions from '../actions'
 import * as Constants from './constants'
 
 import { cx } from 'emotion'
-import { headerButton, headerCheckBox, headerHoverVisible, windowManagedButton, windowHeader, noWrap } from './cssStyles'
+import * as styles from './cssStyles'
 
 import HeaderButton from './HeaderButton'
 import ExpanderButton from './ExpanderButton'
@@ -70,11 +70,11 @@ class WindowHeader extends React.PureComponent {
 
     if (managed) {
       windowCheckItem = (
-        <button className={cx(headerButton, windowManagedButton, headerHoverVisible)} title='Stop managing this window' onClick={this.handleUnmanageClick} />)
+        <button className={cx(styles.headerButton, styles.windowManagedButton, styles.headerHoverVisible)} title='Stop managing this window' onClick={this.handleUnmanageClick} />)
     } else {
       windowCheckItem = (
         <input
-          className={cx(headerButton, headerCheckBox, headerHoverVisible)}
+          className={cx(styles.headerButton, styles.headerCheckBox, styles.headerHoverVisible)}
           type='checkbox'
           title='Save all tabs in this window'
           onClick={this.handleManageClick}
@@ -150,7 +150,7 @@ class WindowHeader extends React.PureComponent {
     // see https://emotion.sh/docs/nested for more info.
     return (
       <div
-        className={cx(windowHeader, noWrap) + ' windowHeaderHoverContainer'}
+        className={cx(styles.windowHeader, styles.noWrap) + ' windowHeaderHoverContainer'}
         onMouseOver={this.handleMouseOver}
         onMouseOut={this.handleMouseOut}
         onClick={this.props.onOpen}>
