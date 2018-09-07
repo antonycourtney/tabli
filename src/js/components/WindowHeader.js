@@ -4,15 +4,35 @@ import * as Util from './util'
 import * as actions from '../actions'
 import * as Constants from './constants'
 
-import { cx } from 'emotion'
+import { cx, css } from 'emotion'
 import * as styles from './cssStyles'
 
 import HeaderButton from './HeaderButton'
 import ExpanderButton from './ExpanderButton'
 
+const mkUrl = Util.mkUrl
+
 const titleBaseStyle = cx(styles.text, styles.noWrap, styles.windowTitle)
 const titleOpenStyle = cx(titleBaseStyle, styles.open)
 const titleClosedStyle = cx(titleBaseStyle, styles.closed)
+
+const revertButtonBaseStyle = css({
+  maskImage: mkUrl('images/chevron-double-mix-1-01.png'),
+  backgroundColor: '#7472ff',
+  marginRight: '20px'
+})
+const revertButtonStyle = cx(styles.headerButton, revertButtonBaseStyle)
+
+const editButtonBaseStyle = css`
+  -webkit-mask-image: url('../images/Edition-30.png');
+  background-color: #888888;
+  margin-left: 4px;
+  margin-right: 12px;
+  &:hover {
+    background-color: #000000;
+  }
+`
+const editButtonStyle = cx(styles.headerButton, styles.headerHoverVisible, editButtonBaseStyle)
 
 class WindowHeader extends React.PureComponent {
   state = {
@@ -85,18 +105,16 @@ class WindowHeader extends React.PureComponent {
           value={false} />)
     }
 
-    const titleStyle = tabWindow.open ? titleOpenStyle : titleClosedStyle
-
     const revertButton = (
       <HeaderButton
-        baseStyle={Util.merge(OldStyles.headerButton, OldStyles.revertButton)}
+        className={revertButtonStyle}
         visible={managed && tabWindow.open}
         title='Revert to bookmarked tabs (Close other tabs)'
         onClick={this.props.onRevert} />)
 
     const editButton = (
       <HeaderButton
-        className='headerButton editButton'
+        className={editButtonStyle}
         visible={managed && !this.state.edititingTitle}
         title='Edit saved window title'
         onClick={this.handleTitleRename} />)
@@ -142,6 +160,7 @@ class WindowHeader extends React.PureComponent {
       )
     }
 
+    const titleStyle = tabWindow.open ? titleOpenStyle : titleClosedStyle
     const titleSpan = (
       <div className={titleStyle}>
         {titleComponent}

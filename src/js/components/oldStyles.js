@@ -222,11 +222,6 @@ const styles = {
     WebkitMaskImage: mkUrl('images/Status-9.png'),
     backgroundColor: '#7472ff'
   },
-  revertButton: {
-    WebkitMaskImage: mkUrl('images/chevron-double-mix-1-01.png'),
-    backgroundColor: '#7472ff',
-    marginRight: '20px'
-  },
   helpButton: {
     color: '#7472ff'
   },
