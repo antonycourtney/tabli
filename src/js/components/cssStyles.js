@@ -18,6 +18,7 @@ export const open = css(OldStyles.open)
 export const closed = css(OldStyles.closed)
 export const text = css(OldStyles.text)
 export const windowTitle = css(OldStyles.windowTitle)
+export const windowTitleInput = css(OldStyles.windowTitleInput)
 
 // Note explicit global css class name windowHeaderHoverContainer here
 // Due to limitation of nested class selectors with composition;

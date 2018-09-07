@@ -313,22 +313,6 @@ const styles = {
     marginTop: 4,
     marginBottom: 0
   },
-  windowListSection: {
-    borderBottom: '1px solid #bababa',
-    paddingLeft: 12,
-    paddingRight: 24,
-    paddingTop: 10,
-    paddingBottom: 4,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'stretch'
-  },
-  windowListSectionHeader: {
-    minWidth: Constants.WINDOW_MIN_WIDTH,
-    maxWidth: Constants.WINDOW_MAX_WIDTH,
-    fontWeight: 'bold',
-    marginBottom: 5
-  },
   // entire popup window container, including modals:
   popupOuter: {
     minWidth: 352,
