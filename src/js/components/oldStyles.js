@@ -248,47 +248,9 @@ const styles = {
     minWidth: Constants.WINDOW_TITLE_MIN_WIDTH,
     flexGrow: 1
   },
-  modalTitle: {
-    fontWeight: 'bold',
-    paddingLeft: 7,
-    maxWidth: 243
-  },
   headerCheckBox: {
     width: 13,
     height: 13
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    background: 'rgba(0,0,0,0.6)',
-    zIndex: 5,
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'column'
-  },
-  modalContainer: {
-    minWidth: 300,
-    maxWidth: 480,
-    maxHeight: '80%',
-    position: 'relative',
-    zIndex: 10,
-    borderRadius: 3,
-    background: '#fff',
-    margin: 'auto',
-    border: selectedBorder,
-    flexGrow: 0,
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  modalBodyContainer: {
-    display: 'flex',
-    minHeight: 50,
-    maxHeight: Constants.MODAL_BODY_MAX_HEIGHT,
-    overflow: 'auto',
-    flexDirection: 'column'
   },
   simpleTabContainer: {
     width: 250,
@@ -303,15 +265,6 @@ const styles = {
   },
   centerContents: {
     margin: 'auto'
-  },
-  dialogInfo: {
-    borderBottom: '1px solid #bababa',
-    paddingLeft: 3
-  },
-  dialogInfoContents: {
-    marginLeft: 10,
-    marginTop: 4,
-    marginBottom: 0
   },
   // entire popup window container, including modals:
   popupOuter: {

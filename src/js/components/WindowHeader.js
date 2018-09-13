@@ -11,10 +11,6 @@ import ExpanderButton from './ExpanderButton'
 
 const mkUrl = Util.mkUrl
 
-const titleBaseStyle = cx(styles.text, styles.noWrap, styles.windowTitle)
-const titleOpenStyle = cx(titleBaseStyle, styles.open)
-const titleClosedStyle = cx(titleBaseStyle, styles.closed)
-
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput)
 
 const revertButtonBaseStyle = css({
@@ -34,16 +30,6 @@ const editButtonBaseStyle = css`
   }
 `
 const editButtonStyle = cx(styles.headerButton, styles.headerHoverVisible, editButtonBaseStyle)
-
-const closeButtonBaseStyle = css`
-  -webkit-mask-image: url('../images/Interface-77.png');
-  background-color: #888888;
-  &:hover {
-    -webkit-mask-image: url('../images/Interface-74.png');
-    background-color: #000000;
-  }
-`
-const closeButtonStyle = cx(styles.headerButton, styles.headerHoverVisible, closeButtonBaseStyle)
 
 class WindowHeader extends React.PureComponent {
   state = {
@@ -132,7 +118,7 @@ class WindowHeader extends React.PureComponent {
 
     var closeButton = (
       <HeaderButton
-        className={closeButtonStyle}
+        className={styles.headerCloseButton}
         visible={tabWindow.open}
         title='Close Window'
         onClick={this.props.onClose} />)
@@ -169,7 +155,7 @@ class WindowHeader extends React.PureComponent {
       )
     }
 
-    const titleStyle = tabWindow.open ? titleOpenStyle : titleClosedStyle
+    const titleStyle = tabWindow.open ? styles.titleOpen : styles.titleClosed
     const titleSpan = (
       <div className={titleStyle}>
         {titleComponent}

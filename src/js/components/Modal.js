@@ -1,7 +1,7 @@
+import * as Constants from './constants'
 import * as React from 'react'
-import OldStyles from './oldStyles'
-import * as Util from './util'
-
+import * as styles from './cssStyles'
+import { css, cx } from 'emotion'
 import HeaderButton from './HeaderButton'
 
 /*
@@ -10,6 +10,60 @@ import HeaderButton from './HeaderButton'
 
 /* Allow multiple components in this file: */
 /* eslint react/no-multi-comp:0 */
+
+const modalOverlayStyle = css({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  background: 'rgba(0,0,0,0.6)',
+  zIndex: 5,
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  flexDirection: 'column'
+})
+const selectedBorder = '2px solid #a0a0a0'
+const modalContainerStyle = css({
+  minWidth: 300,
+  maxWidth: 480,
+  maxHeight: '80%',
+  position: 'relative',
+  zIndex: 10,
+  borderRadius: 3,
+  background: '#fff',
+  margin: 'auto',
+  border: selectedBorder,
+  flexGrow: 0,
+  display: 'flex',
+  flexDirection: 'column'
+})
+const modalBodyContainerStyle = css({
+  display: 'flex',
+  minHeight: 50,
+  maxHeight: Constants.MODAL_BODY_MAX_HEIGHT,
+  overflow: 'auto',
+  flexDirection: 'column',
+  margin: 8
+})
+
+const modalTitleBase = css({
+  fontWeight: 'bold',
+  paddingLeft: 7,
+  maxWidth: 243
+})
+
+const titleStyle = cx(styles.text, styles.noWrap, modalTitleBase, styles.open)
+
+const dialogInfoStyle = css({
+  borderBottom: '1px solid #bababa',
+  paddingLeft: 3
+})
+const dialogInfoContentsStyle = css({
+  marginLeft: 10,
+  marginTop: 4,
+  marginBottom: 0
+})
 
 export class Dialog extends React.PureComponent {
   handleClose = (event) => {
@@ -20,20 +74,21 @@ export class Dialog extends React.PureComponent {
   render () {
     var modalDiv = null
 
-    var titleStyle = Util.merge(OldStyles.text, OldStyles.noWrap, OldStyles.modalTitle, OldStyles.open)
     var closeButton = (
       <HeaderButton
-        className='closeButton'
-        baseStyle={OldStyles.headerButton}
+        className={styles.headerCloseButton}
         visible
         title='Close Window'
         onClick={this.handleClose} />)
+    // Note explicit global css class name windowHeaderHoverContainer here
+    // Due to limitation of nested class selectors with composition;
+    // see https://emotion.sh/docs/nested for more info.
     modalDiv = (
-      <div style={OldStyles.modalOverlay}>
-        <div style={OldStyles.modalContainer}>
-          <div style={Util.merge(OldStyles.windowHeader, OldStyles.noWrap)}>
-            <span style={titleStyle}>{this.props.title}</span>
-            <div style={OldStyles.spacer} />
+      <div className={modalOverlayStyle}>
+        <div className={modalContainerStyle}>
+          <div className={cx(styles.windowHeader, styles.noWrap) + ' windowHeaderHoverContainer'} >
+            <span className={titleStyle}>{this.props.title}</span>
+            <div className={styles.spacer} />
             {closeButton}
           </div>
           {this.props.children}
@@ -46,8 +101,8 @@ export class Dialog extends React.PureComponent {
 export class Info extends React.Component {
   render () {
     return (
-      <div style={OldStyles.dialogInfo}>
-        <div style={OldStyles.dialogInfoContents}>
+      <div className={dialogInfoStyle}>
+        <div className={dialogInfoContentsStyle}>
           {this.props.children}
         </div>
       </div>
@@ -58,7 +113,7 @@ export class Info extends React.Component {
 export class Body extends React.Component {
   render () {
     return (
-      <div style={OldStyles.modalBodyContainer}>
+      <div className={modalBodyContainerStyle}>
         {this.props.children}
       </div>
     )
