@@ -150,10 +150,6 @@ const styles = {
     backgroundColor: '#1678c2',
     color: '#fff'
   },
-  dialogButtonRow: {
-    flexShrink: 0,
-    marginRight: 22
-  },
   spacer: {
     // backgroundColor: 'red', // for debugging
     // height: 8, // for debugging
@@ -263,9 +259,6 @@ const styles = {
     border: '1px solid #bababa',
     borderRadius: 3
   },
-  centerContents: {
-    margin: 'auto'
-  },
   // entire popup window container, including modals:
   popupOuter: {
     minWidth: 352,
@@ -316,11 +309,6 @@ const styles = {
   },
   summarySpan: {
     marginRight: 5
-  },
-  alignRight: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'center'
   },
   tabTileContainer: {
     display: 'flex',

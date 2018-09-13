@@ -1,8 +1,7 @@
 import * as React from 'react'
-import OldStyles from './oldStyles'
+import * as styles from './cssStyles'
 import * as Constants from './constants'
 import * as Modal from './Modal'
-import * as Util from './util'
 
 class PreferencesModal extends React.Component {
   constructor (props) {
@@ -88,7 +87,7 @@ class PreferencesModal extends React.Component {
               </div>
             </form>
             <hr />
-            <div style={Util.merge(OldStyles.alignRight, OldStyles.dialogButtonRow)}>
+            <div className={styles.dialogButtonRow} >
               <button
                 type='button'
                 className='btn btn-primary btn-sm tabli-dialog-button'

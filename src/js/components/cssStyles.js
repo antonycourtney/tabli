@@ -20,6 +20,17 @@ export const text = css(OldStyles.text)
 export const windowTitle = css(OldStyles.windowTitle)
 export const windowTitleInput = css(OldStyles.windowTitleInput)
 export const spacer = css(OldStyles.spacer)
+export const alignRight = css(OldStyles.alignRight)
+export const dialogButtonRow = css({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  flexShrink: 0,
+  marginRight: 22
+})
+export const centerContents = css({
+  margin: 'auto'
+})
 
 // Note explicit global css class name windowHeaderHoverContainer here
 // Due to limitation of nested class selectors with composition;

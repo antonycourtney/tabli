@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as Immutable from 'immutable'
 import OldStyles from './oldStyles'
+import * as styles from './cssStyles'
 import * as Util from './util'
 
 import * as Constants from './constants'
@@ -107,7 +108,7 @@ class RevertModal extends React.Component {
               This action can not be undone.
             </p>
           </div>
-          <div style={Util.merge(OldStyles.alignRight, OldStyles.dialogButtonRow)}>
+          <div className={styles.dialogButtonRow} >
             <button
               type='button'
               className='btn btn-primary btn-sm tabli-dialog-button'
