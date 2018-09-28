@@ -1,11 +1,19 @@
 import PropTypes from 'prop-types'
 import * as React from 'react'
 import OldStyles from './oldStyles'
+import * as styles from './cssStyles'
+
 import * as Util from './util'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
 import HeaderButton from './HeaderButton'
+import HeaderCheckbox from './HeaderCheckbox'
+import { cx } from 'emotion'
+
+const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon)
+const favIconOpenStyle = styles.favIcon
+const favIconClosedStyle = cx(styles.favIcon, styles.favIconClosed)
 
 const tabItemSource = {
   beginDrag (props) {
@@ -105,37 +113,27 @@ class TabItem extends React.PureComponent {
 
     // span style depending on whether open or closed window
     var tabOpenStyle = null
-    var favIconOpenStyle = null
-    var checkOpenStyle = null
+
+    const favIconStyle = tab.open ? favIconOpenStyle : favIconClosedStyle
 
     var tabCheckItem
 
     if (managed) {
       if (!tab.open) {
-        tabOpenStyle = OldStyles.closed
-        favIconOpenStyle = OldStyles.favIconClosed
-        checkOpenStyle = OldStyles.imageButtonClosed
+        tabOpenStyle = styles.closed
       }
+      const checkTitle = tab.saved ? 'Remove bookmark for this tab' : 'Bookmark this tab'
+      const checkOnClick = tab.saved ? this.handleUnbookmarkTabItem : this.handleBookmarkTabItem
 
-      if (tab.saved) {
-        tabCheckItem = (
-          <button style={Util.merge(OldStyles.headerButton, OldStyles.tabManagedButton, checkOpenStyle)} title='Remove bookmark for this tab' onClick={this.handleUnbookmarkTabItem} />)
-
-      // TODO: callback
-      } else {
-        // We used to include headerCheckbox, but that only set width and height
-        // to something to 13x13; we want 16x16 from headerButton
-        tabCheckItem = (
-          <input
-            className='tabCheck'
-            style={Util.merge(OldStyles.headerButton, OldStyles.tabCheckItem)}
-            type='checkbox'
-            title='Bookmark this tab'
-            onClick={this.handleBookmarkTabItem} />)
-      }
+      tabCheckItem = (
+        <HeaderCheckbox
+          title={checkTitle}
+          onClick={checkOnClick}
+          value={tab.saved}
+        />)
     } else {
       // insert a spacer:
-      tabCheckItem = <div style={OldStyles.headerButton} />
+      tabCheckItem = <div className={styles.headerButton} />
     }
 
     // const favIconUrl = tab.open ? tab.openState.favIconUrl : null
@@ -147,11 +145,9 @@ class TabItem extends React.PureComponent {
       fiSrc = ''
     }
 
-    const emptyFavIcon = <div style={Util.merge(OldStyles.headerButton, OldStyles.emptyFavIcon)} />
+    const emptyFavIcon = <div className={emptyFavIconStyle} />
 
-    const favIconStyle = Util.merge(OldStyles.favIcon, favIconOpenStyle)
-
-    var tabFavIcon = (fiSrc.length > 0) ? <img style={favIconStyle} src={fiSrc} /> : emptyFavIcon
+    var tabFavIcon = (fiSrc.length > 0) ? <img className={favIconStyle} src={fiSrc} /> : emptyFavIcon
 
     var tabActiveStyle = (tab.open && tab.openState.active) ? OldStyles.activeSpan : null
     var tabTitleStyles = Util.merge(OldStyles.text, OldStyles.tabTitle, OldStyles.noWrap, tabOpenStyle, tabActiveStyle)
@@ -173,8 +169,6 @@ class TabItem extends React.PureComponent {
       <div
         style={Util.merge(OldStyles.noWrap, OldStyles.tabItem, selectedStyle, dropStyle)}
         className='tabItem'
-        onMouseOut={this.handleMouseOut}
-        onMouseOver={this.handleMouseOver}
         onClick={this.handleClick}>
         <div className='rowItems-fixed-width'>
           {tabCheckItem}

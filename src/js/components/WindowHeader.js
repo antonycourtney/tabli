@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as Util from './util'
+import { mkUrl } from './util'
 import * as actions from '../actions'
 import * as Constants from './constants'
 
@@ -8,8 +8,7 @@ import * as styles from './cssStyles'
 
 import HeaderButton from './HeaderButton'
 import ExpanderButton from './ExpanderButton'
-
-const mkUrl = Util.mkUrl
+import HeaderCheckbox from './HeaderCheckbox'
 
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput)
 
@@ -87,20 +86,14 @@ class WindowHeader extends React.PureComponent {
     var managed = tabWindow.saved
     var windowTitle = tabWindow.title
 
-    var windowCheckItem
-
-    if (managed) {
-      windowCheckItem = (
-        <button className={cx(styles.headerButton, styles.windowManagedButton, styles.headerHoverVisible)} title='Stop managing this window' onClick={this.handleUnmanageClick} />)
-    } else {
-      windowCheckItem = (
-        <input
-          className={cx(styles.headerButton, styles.headerCheckBox, styles.headerHoverVisible)}
-          type='checkbox'
-          title='Save all tabs in this window'
-          onClick={this.handleManageClick}
-          value={false} />)
-    }
+    const checkTitle = managed ? 'Stop managing this window' : 'Save all tabs in this window'
+    const checkOnClick = managed ? this.handleUnmanageClick : this.handleManageClick
+    const checkItem = (
+      <HeaderCheckbox
+        title={checkTitle}
+        onClick={checkOnClick}
+        value={managed}
+      />)
 
     const revertButton = (
       <HeaderButton
@@ -168,11 +161,9 @@ class WindowHeader extends React.PureComponent {
     return (
       <div
         className={cx(styles.windowHeader, styles.noWrap) + ' windowHeaderHoverContainer'}
-        onMouseOver={this.handleMouseOver}
-        onMouseOut={this.handleMouseOut}
         onClick={this.props.onOpen}>
         <div className='rowItems-fixed-width'>
-          {windowCheckItem}
+          {checkItem}
           <ExpanderButton
             winStore={this.props.winStore}
             expanded={this.props.expanded}

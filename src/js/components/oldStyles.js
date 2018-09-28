@@ -2,6 +2,7 @@ import * as Constants from './constants'
 import { mkUrl } from './util'
 
 const selectedBorder = '2px solid #a0a0a0'
+// const debugBorder = '1px solid #ff0000'
 
 const styles = {
   noWrap: {
@@ -175,16 +176,6 @@ const styles = {
   closed: {
     color: '#979ca0'
   },
-  tabManagedButton: {
-    WebkitMaskImage: mkUrl('images/Status-9.png'),
-    backgroundColor: '#7472ff',
-    paddingLeft: '0px',
-    paddingRight: '0px',
-    width: '16px',
-    marginLeft: '0px',
-    marginRight: '0px',
-    flex: 'none'
-  },
   imageButtonClosed: {
     backgroundColor: '#979ca0'
   },
@@ -204,15 +195,6 @@ const styles = {
     marginRight: 3,
     WebkitMaskImage: mkUrl('images/Files-26.png'),
     backgroundColor: '#969696'
-  },
-  /* checkboxes seems to obey width and height, but ignore padding
-   * so we'll hack margin instead.
-   */
-  tabCheckItem: {
-    width: 10,
-    height: 13,
-    margin: '3px 3px 3px 3px',
-    flex: 'none'
   },
   windowManagedButton: {
     WebkitMaskImage: mkUrl('images/Status-9.png'),
@@ -245,8 +227,9 @@ const styles = {
     flexGrow: 1
   },
   headerCheckBox: {
-    width: 13,
-    height: 13
+    width: 16,
+    height: 16,
+    padding: 2
   },
   simpleTabContainer: {
     width: 250,

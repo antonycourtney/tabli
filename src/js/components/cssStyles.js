@@ -10,7 +10,6 @@ import OldStyles from './oldStyles'
 import { css, cx } from 'emotion'
 
 export const headerButton = css(OldStyles.headerButton)
-export const headerCheckBox = css(OldStyles.headerCheckBox)
 export const noWrap = css(OldStyles.noWrap)
 export const windowHeader = css(OldStyles.windowHeader)
 export const windowManagedButton = css(OldStyles.windowManagedButton)
@@ -21,9 +20,13 @@ export const windowTitle = css(OldStyles.windowTitle)
 export const windowTitleInput = css(OldStyles.windowTitleInput)
 export const spacer = css(OldStyles.spacer)
 export const alignRight = css(OldStyles.alignRight)
+export const favIcon = css(OldStyles.favIcon)
+export const favIconClosed = css(OldStyles.favIconClosed)
+export const imageButtonClosed = css(OldStyles.imageButtonClosed)
+
+export const headerCheckboxInput = css({})
 export const dialogButtonRow = css({
   display: 'flex',
-  justifyContent: 'flex-end',
   alignItems: 'center',
   flexShrink: 0,
   marginRight: 22
@@ -32,7 +35,7 @@ export const centerContents = css({
   margin: 'auto'
 })
 
-// Note explicit global css class name windowHeaderHoverContainer here
+// Note explicit global css class name windowHeaderHoverContainer there
 // Due to limitation of nested class selectors with composition;
 // see https://emotion.sh/docs/nested for more info.
 export const headerHoverVisible = css`

@@ -121,8 +121,6 @@ class FilteredTabWindow extends React.Component {
 
     var windowDivProps = {
       style: windowStyles,
-      onMouseOver: this.handleMouseOver,
-      onMouseOut: this.handleMouseOut,
       ref: wdiv => { this.windowDivRef = wdiv }
     }
     return (
