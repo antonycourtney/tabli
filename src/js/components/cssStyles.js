@@ -9,6 +9,11 @@ import OldStyles from './oldStyles'
 
 import { css, cx } from 'emotion'
 
+export const activeSpan = css(OldStyles.activeSpan)
+export const tabTitle = css(OldStyles.tabTitle)
+export const tabItemSelected = css(OldStyles.tabItemSelected)
+export const audibleIcon = css(OldStyles.audibleIcon)
+export const tabItem = css(OldStyles.tabItem)
 export const headerButton = css(OldStyles.headerButton)
 export const noWrap = css(OldStyles.noWrap)
 export const windowHeader = css(OldStyles.windowHeader)
@@ -45,7 +50,7 @@ export const headerHoverVisible = css`
   }
 `
 
-const closeButtonBaseStyle = css`
+export const closeButtonBaseStyle = css`
   -webkit-mask-image: url('../images/Interface-77.png');
   background-color: #888888;
   &:hover {

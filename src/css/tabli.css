@@ -31,9 +31,6 @@ h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px }
 hr {margin-top: 0in; padding: 0px}
 ul {margin-top: .05in; padding-left: 20px;}
 p {margin-top: 4px; margin-bottom: 4px; }
-A:link {text-decoration: none; color: black }
-A:visited {text-decoration: none; color: black }
-A:hover {text-decoration: none; color: black }
 // For dialogs:
 label, input { display:block; }
 fieldset { padding:0; border:0; }

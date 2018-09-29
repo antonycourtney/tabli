@@ -8,6 +8,7 @@ import * as React from 'react'
 
 import { cx, css } from 'emotion'
 import * as styles from './cssStyles'
+import get from 'lodash/get'
 
 const containerBaseStyle = css({
   display: 'flex',
@@ -19,15 +20,20 @@ class HeaderCheckbox extends React.PureComponent {
   render () {
     const checked = !!(this.props.value)
 
+    // defaults to rendering in open state:
+    const isOpen = get(this.props, 'open', true)
+
     let checkboxComponent
 
     if (checked) {
+      const openStateStyle = isOpen ? null : styles.imageButtonClosed
       checkboxComponent = (
-        <button className={cx(styles.headerButton, styles.windowManagedButton)} title='Stop managing this window' onClick={this.props.onClick} />)
+        <button className={cx(styles.headerButton, styles.windowManagedButton, openStateStyle)} title='Stop managing this window' onClick={this.props.onClick} />)
     } else {
+      const extraUncheckedStyle = get(this.props, 'extraUncheckedStyle', null)
       checkboxComponent = (
         <input
-          className={styles.headerCheckBoxInput}
+          className={cx(styles.headerCheckBoxInput, extraUncheckedStyle)}
           type='checkbox'
           title='Save all tabs in this window'
           onClick={this.props.onClick}

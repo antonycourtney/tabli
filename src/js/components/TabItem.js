@@ -1,19 +1,31 @@
 import PropTypes from 'prop-types'
 import * as React from 'react'
-import OldStyles from './oldStyles'
 import * as styles from './cssStyles'
 
-import * as Util from './util'
+import * as colors from './colors'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
 import HeaderButton from './HeaderButton'
 import HeaderCheckbox from './HeaderCheckbox'
-import { cx } from 'emotion'
+import { cx, css } from 'emotion'
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon)
 const favIconOpenStyle = styles.favIcon
 const favIconClosedStyle = cx(styles.favIcon, styles.favIconClosed)
+
+// Note explicit global css class name tabItemHoverContainer
+// Due to limitation of nested class selectors with composition;
+// see https://emotion.sh/docs/nested for more info.
+const tabItemHoverVisible = css`
+  visibility: hidden;
+  .tabItemHoverContainer:hover & {
+    visibility: visible;
+  }
+`
+const tabItemCloseButtonStyle = cx(styles.headerButton, tabItemHoverVisible, styles.closeButtonBaseStyle)
+
+const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon)
 
 const tabItemSource = {
   beginDrag (props) {
@@ -112,22 +124,31 @@ class TabItem extends React.PureComponent {
     const tooltipContent = tabTitle + '\n' + tab.url
 
     // span style depending on whether open or closed window
-    var tabOpenStyle = null
+    var tabOpenStateStyle = null
 
     const favIconStyle = tab.open ? favIconOpenStyle : favIconClosedStyle
 
     var tabCheckItem
 
     if (managed) {
+      const tabTitleClosedHover = css({
+        '&:hover': {
+          color: colors.closedGray
+        },
+      })
+      const tabTitleClosed = cx(styles.closed, tabTitleClosedHover)
+
       if (!tab.open) {
-        tabOpenStyle = styles.closed
+        tabOpenStateStyle = tabTitleClosed
       }
       const checkTitle = tab.saved ? 'Remove bookmark for this tab' : 'Bookmark this tab'
       const checkOnClick = tab.saved ? this.handleUnbookmarkTabItem : this.handleBookmarkTabItem
 
       tabCheckItem = (
         <HeaderCheckbox
+          extraUncheckedStyle={tabItemHoverVisible}
           title={checkTitle}
+          open={tab.open}
           onClick={checkOnClick}
           value={tab.saved}
         />)
@@ -135,7 +156,6 @@ class TabItem extends React.PureComponent {
       // insert a spacer:
       tabCheckItem = <div className={styles.headerButton} />
     }
-
     // const favIconUrl = tab.open ? tab.openState.favIconUrl : null
     // var fiSrc = favIconUrl ? favIconUrl : ''
     var fiSrc = 'chrome://favicon/size/16/' + tab.url
@@ -149,26 +169,30 @@ class TabItem extends React.PureComponent {
 
     var tabFavIcon = (fiSrc.length > 0) ? <img className={favIconStyle} src={fiSrc} /> : emptyFavIcon
 
-    var tabActiveStyle = (tab.open && tab.openState.active) ? OldStyles.activeSpan : null
-    var tabTitleStyles = Util.merge(OldStyles.text, OldStyles.tabTitle, OldStyles.noWrap, tabOpenStyle, tabActiveStyle)
-    var selectedStyle = this.props.isSelected ? OldStyles.tabItemSelected : null
+    var tabActiveStyle = (tab.open && tab.openState.active) ? styles.activeSpan : null
+    var tabTitleStyle = cx(styles.text, styles.tabTitle, styles.noWrap, tabOpenStateStyle, tabActiveStyle)
+    var selectedStyle = this.props.isSelected ? styles.tabItemSelected : null
 
-    var dropStyle = isOver ? OldStyles.tabItemDropOver : null
+    var dropStyle = isOver ? styles.tabItemDropOver : null
 
-    const audibleIcon = (tab.open && tab.openState.audible) ? <div style={Util.merge(OldStyles.headerButton, OldStyles.audibleIcon)} /> : null
+    const audibleIcon = (tab.open && tab.openState.audible) ? <div className={audibleIconStyle} /> : null
 
-    var closeButton = (
+    const closeButton = (
       <HeaderButton
-        className='closeButton'
-        baseStyle={OldStyles.headerButton}
+        className={tabItemCloseButtonStyle}
         visible={tab.open}
-        title='Close Tab'
+        title='Close Window'
         onClick={this.handleClose} />)
+
+    // Note explicit global css class name tabItemHoverContainer here
+    // Due to limitation of nested class selectors with composition;
+    // see https://emotion.sh/docs/nested for more info.
+
+    const tabItemStyle = cx(styles.noWrap, styles.tabItem, selectedStyle, dropStyle)
 
     return connectDropTarget(connectDragSource(
       <div
-        style={Util.merge(OldStyles.noWrap, OldStyles.tabItem, selectedStyle, dropStyle)}
-        className='tabItem'
+        className = {tabItemStyle + ' tabItemHoverContainer'}
         onClick={this.handleClick}>
         <div className='rowItems-fixed-width'>
           {tabCheckItem}
@@ -176,7 +200,7 @@ class TabItem extends React.PureComponent {
         </div>
         <a
           href={tab.url}
-          style={tabTitleStyles}
+          className={tabTitleStyle}
           title={tooltipContent}
           onClick={this.handleClick}>{tabTitle}</a>
         <div className='rowItems-fixed-width'>

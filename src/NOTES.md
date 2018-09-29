@@ -373,3 +373,19 @@ Bunnytab should be an extension that takes over the New Tab and offers unified s
     - History
     - External bookmark sources (like Bunny)
     - Google
+
+------
+Notes / TODO porting to emotion.js:
+
+TabItem:
+   X Need to recover top/bottom border on hover
+   X Audible icon no longer appearing
+   X Current does prod behavior for:
+      X color of checkbox? (gray)
+      X hover color of title text of closed tabs? (gray)
+   - Checkbox only on hover on TabItem
+
+TODO:
+   - Might be nice to apply a lighten filter on black and white FavIcons for closed tabs
+     (github)
+   -

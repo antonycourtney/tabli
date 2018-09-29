@@ -1,4 +1,5 @@
 import * as Constants from './constants'
+import * as colors from './colors'
 import { mkUrl } from './util'
 
 const selectedBorder = '2px solid #a0a0a0'
@@ -81,7 +82,11 @@ const styles = {
     paddingLeft: 3,
     paddingRight: 3,
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    '&:hover': {
+      borderTop: '1px solid #cacaca',
+      borderBottom: '1px solid #cacaca'
+    }
   },
   tabItemSelected: {
     backgroundColor: '#dadada'
@@ -97,7 +102,13 @@ const styles = {
   },
   tabTitle: {
     minWidth: Constants.TAB_TITLE_MIN_WIDTH,
-    flexGrow: 1
+    color: 'black',
+    textDecoration: 'none',
+    flexGrow: 1,
+    '&:hover': {
+      color: 'black',
+      textDecoration: 'none'
+    }
   },
   // for use in revert modal:
   simpleTabTitle: {
@@ -174,10 +185,10 @@ const styles = {
   open: {
   },
   closed: {
-    color: '#979ca0'
+    color: colors.closedGray
   },
   imageButtonClosed: {
-    backgroundColor: '#979ca0'
+    backgroundColor: colors.closedGray
   },
   logoImage: {
     width: 24,
@@ -210,7 +221,7 @@ const styles = {
     overflow: 'auto'
   },
   spanClosed: {
-    color: '#979ca0'
+    color: colors.closedGray
   },
   activeSpan: {
     fontWeight: 'bold'
