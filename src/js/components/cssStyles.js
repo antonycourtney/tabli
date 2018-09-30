@@ -29,12 +29,12 @@ export const alignRight = css(OldStyles.alignRight)
 export const favIcon = css(OldStyles.favIcon)
 export const favIconClosed = css(OldStyles.favIconClosed)
 export const imageButtonClosed = css(OldStyles.imageButtonClosed)
-
 export const tabList = css(OldStyles.tabList)
-
+export const simpleTabContainer = css(OldStyles.simpleTabContainer)
 export const tabWindowFocused = css(OldStyles.tabWindowFocused)
 export const tabWindow = css(OldStyles.tabWindow)
 export const expandablePanel = css(OldStyles.expandablePanel)
+export const dialogInfoContents = css(OldStyles.dialogInfoContents)
 
 export const headerCheckboxInput = css({})
 export const dialogButtonRow = css({

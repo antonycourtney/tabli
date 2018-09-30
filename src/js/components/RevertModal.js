@@ -1,8 +1,7 @@
 import * as React from 'react'
 import * as Immutable from 'immutable'
-import OldStyles from './oldStyles'
 import * as styles from './cssStyles'
-import * as Util from './util'
+import { cx } from 'emotion'
 
 import * as Constants from './constants'
 
@@ -38,16 +37,16 @@ class RevertModal extends React.Component {
       fiSrc = ''
     }
 
-    var tabFavIcon = <img style={OldStyles.favIcon} src={fiSrc} />
-    const tabOpenStyle = tabItem.open ? null : OldStyles.closed
-    var tabActiveStyle = tabItem.active ? OldStyles.activeSpan : null
-    var tabTitleStyles = Util.merge(OldStyles.text, OldStyles.simpleTabTitle, OldStyles.noWrap, tabOpenStyle, tabActiveStyle)
+    var tabFavIcon = <img className={styles.favIcon} src={fiSrc} />
+    const tabOpenStyle = tabItem.open ? null : styles.closed
+    var tabActiveStyle = tabItem.active ? styles.activeSpan : null
+    var tabTitleStyles = cx(styles.text, styles.simpleTabTitle, styles.noWrap, tabOpenStyle, tabActiveStyle)
     const id = 'tabItem-' + idx
     return (
-      <div key={id} style={Util.merge(OldStyles.noWrap, OldStyles.tabItem)}>
+      <div key={id} className={cx(styles.noWrap, styles.tabItem)}>
         {tabFavIcon}
-        <span style={tabTitleStyles}>{tabItem.title}</span>
-        <div style={OldStyles.spacer} />
+        <span className={tabTitleStyles}>{tabItem.title}</span>
+        <div className={styles.spacer} />
       </div>
     )
   };
@@ -55,7 +54,7 @@ class RevertModal extends React.Component {
   renderTabItems = (tabItems) => {
     const itemElems = tabItems.map(this.renderItem)
     return (
-      <div style={OldStyles.tabList}>
+      <div className={styles.tabList}>
         {itemElems}
       </div>
     )
@@ -81,7 +80,7 @@ class RevertModal extends React.Component {
           <p>
             The following tabs will be closed:
           </p>
-          <div style={OldStyles.simpleTabContainer}>
+          <div className={styles.simpleTabContainer}>
             {closeItemsElem}
           </div>
           <br />
@@ -89,18 +88,15 @@ class RevertModal extends React.Component {
       )
     }
 
-    /*             style={Util.merge(OldStyles.dialogButton, OldStyles.primaryButton)}
-    style={OldStyles.dialogButton}
-    */
     return (
       <Modal.Dialog title='Revert Saved Window?' onClose={this.props.onClose}>
         <Modal.Body>
-          <div style={OldStyles.dialogInfoContents}>
+          <div className={styles.dialogInfoContents}>
             {closeSection}
             <p>
               The following tabs will be reloaded:
             </p>
-            <div style={OldStyles.simpleTabContainer}>
+            <div className={styles.simpleTabContainer}>
               {reloadItemsElem}
             </div>
             <br />
