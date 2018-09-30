@@ -20,10 +20,8 @@ class HeaderButton extends React.PureComponent {
       return buttonSpacer
     }
 
-    var buttonStyle = this.props.baseStyle
     return (
       <button
-        style={buttonStyle}
         className={this.props.className}
         title={this.props.title}
         onClick={this.handleClick} />
