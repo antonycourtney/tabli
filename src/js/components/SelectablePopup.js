@@ -1,6 +1,6 @@
 import * as React from 'react'
-import OldStyles from './oldStyles'
-import * as Util from './util'
+import * as styles from './cssStyles'
+import { cx, css } from 'emotion'
 import * as Constants from './constants'
 
 import * as actions from '../actions'
@@ -25,6 +25,51 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
   var filteredItem = filteredTabWindow.itemMatches.get(tabIndex)
   return filteredItem.tabItem
 }
+
+// inner popup container, consisting of just header,body and footer:
+const popupInnerStyle = css({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  flexWrap: 'nowrap'
+})
+const popupHeaderStyle = css({
+  minWidth: 350,
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  height: Constants.POPUP_HEADER_HEIGHT,
+  background: '#ffffff',
+  borderBottom: '1px solid #bababa',
+  padding: 0,
+  flex: '0 0 auto'
+})
+const popupBodyStyle = css({
+  minHeight: Constants.POPUP_BODY_HEIGHT,
+  position: 'relative',
+  overflow: 'auto',
+  flex: '1 1 auto'
+})
+const popupFooterStyle = css({
+  minWidth: 350,
+  height: Constants.POPUP_FOOTER_HEIGHT,
+  background: '#ffffff',
+  borderTop: '1px solid #bababa',
+  paddingLeft: 10,
+  paddingRight: 16,
+  paddingTop: 4,
+  paddingBottom: 4,
+  fontSize: 11,
+  flex: '0 0 auto',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  margin: 0
+})
+const summarySpanBaseStyle = css({
+  marginRight: 5
+})
+const summarySpanStyle = cx(styles.closed, summarySpanBaseStyle)
 
 /**
  * An element that manages the selection.
@@ -260,8 +305,8 @@ class SelectablePopup extends React.Component {
     const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.'
 
     return (
-      <div style={OldStyles.popupInner}>
-        <div style={OldStyles.popupHeader}>
+      <div className={popupInnerStyle}>
+        <div className={popupHeaderStyle}>
           <SearchBar
             winStore={this.props.winStore}
             storeRef={this.props.storeRef}
@@ -275,7 +320,7 @@ class SelectablePopup extends React.Component {
             setInputRef={this.setSearchInputRef}
             isPopout={this.props.isPopout} />
         </div>
-        <div style={OldStyles.popupBody} ref={this.setBodyRef}>
+        <div className={popupBodyStyle} ref={this.setBodyRef}>
           <TabWindowList
             winStore={this.props.winStore}
             storeRef={this.props.storeRef}
@@ -288,8 +333,8 @@ class SelectablePopup extends React.Component {
             setFocusedTabWindowRef={this.setFocusedTabWindowRef}
             onItemSelected={this.handleItemSelected} />
         </div>
-        <div style={OldStyles.popupFooter}>
-          <span style={Util.merge(OldStyles.closed, OldStyles.summarySpan)}>{summarySentence}</span>
+        <div className={popupFooterStyle}>
+          <span className={summarySpanStyle}>{summarySentence}</span>
         </div>
       </div>
     )

@@ -225,49 +225,6 @@ const styles = {
     border: '1px solid #bababa',
     borderRadius: 3
   },
-  // inner popup container, consisting of just header,body and footer:
-  popupInner: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    flexWrap: 'nowrap'
-  },
-  popupHeader: {
-    minWidth: 350,
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    height: Constants.POPUP_HEADER_HEIGHT,
-    background: '#ffffff',
-    borderBottom: '1px solid #bababa',
-    padding: 0,
-    flex: '0 0 auto'
-  },
-  popupBody: {
-    minHeight: Constants.POPUP_BODY_HEIGHT,
-    position: 'relative',
-    overflow: 'auto',
-    flex: '1 1 auto'
-  },
-  popupFooter: {
-    minWidth: 350,
-    height: Constants.POPUP_FOOTER_HEIGHT,
-    background: '#ffffff',
-    borderTop: '1px solid #bababa',
-    paddingLeft: 10,
-    paddingRight: 16,
-    paddingTop: 4,
-    paddingBottom: 4,
-    fontSize: 11,
-    flex: '0 0 auto',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    margin: 0
-  },
-  summarySpan: {
-    marginRight: 5
-  },
   tabTileContainer: {
     display: 'flex',
     flexDirection: 'row',
