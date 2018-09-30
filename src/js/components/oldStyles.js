@@ -2,7 +2,6 @@ import * as Constants from './constants'
 import * as colors from './colors'
 import { mkUrl } from './util'
 
-const selectedBorder = '2px solid #a0a0a0'
 // const debugBorder = '1px solid #ff0000'
 
 const styles = {
@@ -70,9 +69,6 @@ const styles = {
     maxHeight: 180,
     margin: 10
   },
-  tabWindowSelected: {
-    border: selectedBorder
-  },
   tabWindowFocused: {
     boxShadow: '0px 0px 5px 2px #7472ff'
   },
@@ -119,12 +115,6 @@ const styles = {
     position: 'relative',
     minHeight: Constants.WINDOW_HEADER_HEIGHT,
     overflow: 'hidden'
-  },
-  expandablePanelContentClosed: {
-    marginTop: '-999px'
-  },
-  expandablePanelContentOpen: {
-    marginTop: 0
   },
   // Hmmm, we use this as a common base for both
   //

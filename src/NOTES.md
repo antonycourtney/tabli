@@ -383,9 +383,10 @@ TabItem:
    X Current does prod behavior for:
       X color of checkbox? (gray)
       X hover color of title text of closed tabs? (gray)
-   - Checkbox only on hover on TabItem
+   X Checkbox only on hover on TabItem
+
 
 TODO:
    - Might be nice to apply a lighten filter on black and white FavIcons for closed tabs
-     (github)
-   -
+     (github, which is mostly black)
+   - Move edit pencil next to title!

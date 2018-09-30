@@ -1,13 +1,21 @@
 import * as React from 'react'
 import * as Immutable from 'immutable'
-import OldStyles from './oldStyles'
-import * as Util from './util'
-import { cx } from 'emotion'
+import { cx, css } from 'emotion'
 import * as styles from './cssStyles'
 import * as actions from '../actions'
-
+import * as Constants from './constants'
 import WindowHeader from './WindowHeader'
 import TabItem from './TabItem'
+
+const expandablePanelContentOpenStyle = css({
+  marginTop: 0
+})
+const expandablePanelContentClosedStyle = css({
+  marginTop: '-999px'
+})
+const tabWindowSelectedStyle = css({
+  border: Constants.selectedBorder
+})
 
 class FilteredTabWindow extends React.Component {
   componentWillReceiveProps (nextProps) {
@@ -69,7 +77,7 @@ class FilteredTabWindow extends React.Component {
     }
 
     var expanded = this.getExpandedState()
-    var expandableContentStyle = expanded ? styles.expandablePanelContentOpen : styles.expandablePanelContentClosed
+    var expandableContentStyle = expanded ? expandablePanelContentOpenStyle : expandablePanelContentClosedStyle
     var tabListStyle = cx(styles.tabList, expandableContentStyle)
     return (
       <div className={tabListStyle}>
@@ -116,12 +124,12 @@ class FilteredTabWindow extends React.Component {
         appComponent={this.props.appComponent}
         onItemSelected={this.props.onItemSelected} />)
 
-    var selectedStyle = this.props.isSelected ? OldStyles.tabWindowSelected : null
-    var focusedStyle = this.props.isFocused ? OldStyles.tabWindowFocused : null
-    var windowStyles = Util.merge(OldStyles.tabWindow, OldStyles.expandablePanel, selectedStyle, focusedStyle)
+    var selectedStyle = this.props.isSelected ? tabWindowSelectedStyle : null
+    var focusedStyle = this.props.isFocused ? styles.tabWindowFocused : null
+    var windowStyles = cx(styles.tabWindow, styles.expandablePanel, selectedStyle, focusedStyle)
 
     var windowDivProps = {
-      style: windowStyles,
+      class: windowStyles,
       ref: wdiv => { this.windowDivRef = wdiv }
     }
     return (

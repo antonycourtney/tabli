@@ -31,3 +31,5 @@ export const KEY_P = 80
 export const DragItemTypes = {
   TAB_ITEM: 'tabItem'
 }
+
+export const selectedBorder = '2px solid #a0a0a0'
