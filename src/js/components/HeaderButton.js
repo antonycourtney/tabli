@@ -1,7 +1,7 @@
 import * as React from 'react'
-import OldStyles from './oldStyles'
+import * as styles from './cssStyles'
 
-const buttonSpacer = <div style={OldStyles.headerButton} />
+const buttonSpacer = <div className={styles.headerButton} />
 
 class HeaderButton extends React.PureComponent {
   handleClick = (event) => {
