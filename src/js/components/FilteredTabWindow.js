@@ -2,7 +2,8 @@ import * as React from 'react'
 import * as Immutable from 'immutable'
 import OldStyles from './oldStyles'
 import * as Util from './util'
-
+import { cx } from 'emotion'
+import * as styles from './cssStyles'
 import * as actions from '../actions'
 
 import WindowHeader from './WindowHeader'
@@ -68,10 +69,10 @@ class FilteredTabWindow extends React.Component {
     }
 
     var expanded = this.getExpandedState()
-    var expandableContentStyle = expanded ? OldStyles.expandablePanelContentOpen : OldStyles.expandablePanelContentClosed
-    var tabListStyle = Util.merge(OldStyles.tabList, expandableContentStyle)
+    var expandableContentStyle = expanded ? styles.expandablePanelContentOpen : styles.expandablePanelContentClosed
+    var tabListStyle = cx(styles.tabList, expandableContentStyle)
     return (
-      <div style={tabListStyle}>
+      <div className={tabListStyle}>
         {items}
       </div>)
   };
