@@ -35,9 +35,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column'
   },
-  messageCard: {
-    padding: 0
-  },
   card: {
     paddingLeft: 16,
     paddingRight: 16,
@@ -46,13 +43,6 @@ const styles = {
   cardBody: {
     paddingLeft: 16,
     paddingRight: 16
-  },
-  cardActions: {
-    display: 'inline-flex',
-    flexDirection: 'row-reverse',
-    paddingRight: 16,
-    paddingBottom: 16,
-    position: 'relative'
   },
   tabWindowTile: {
     width: 270,

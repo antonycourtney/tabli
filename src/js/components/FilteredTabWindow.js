@@ -129,7 +129,7 @@ class FilteredTabWindow extends React.Component {
     var windowStyles = cx(styles.tabWindow, styles.expandablePanel, selectedStyle, focusedStyle)
 
     var windowDivProps = {
-      class: windowStyles,
+      className: windowStyles,
       ref: wdiv => { this.windowDivRef = wdiv }
     }
     return (
