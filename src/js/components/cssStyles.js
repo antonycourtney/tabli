@@ -1,3 +1,4 @@
+// @flow
 /**
  * Wrappers around styles with explicit calls to css()
  * for easier use and re-use with emotion and cx().

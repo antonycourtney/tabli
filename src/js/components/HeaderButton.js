@@ -20,7 +20,6 @@ class HeaderButton extends React.PureComponent {
       return buttonSpacer
     }
 
-    // const visibilityStyle = this.props.visible ? OldStyles.visible : OldStyles.hidden
     var buttonStyle = this.props.baseStyle
     return (
       <button

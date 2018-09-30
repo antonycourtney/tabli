@@ -11,4 +11,3 @@ interfaces/
 node_modules/flow-interfaces-chrome/interfaces/
 
 [options]
-unsafe.enable_getters_and_setters=true

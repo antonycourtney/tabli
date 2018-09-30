@@ -225,14 +225,6 @@ const styles = {
     border: '1px solid #bababa',
     borderRadius: 3
   },
-  // entire popup window container, including modals:
-  popupOuter: {
-    minWidth: 352,
-    width: '100%',
-    height: '100%'
-  /* adding this border is useful for debugging styling issues: */
-    // border: '1px solid #bababa'
-  },
   // inner popup container, consisting of just header,body and footer:
   popupInner: {
     height: '100%',

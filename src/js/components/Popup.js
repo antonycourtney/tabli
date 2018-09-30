@@ -4,7 +4,7 @@ import * as React from 'react'
 import * as actions from '../actions'
 import * as searchOps from '../searchOps'
 
-import OldStyles from './oldStyles'
+import { css } from 'emotion'
 import PreferencesModal from './PreferencesModal'
 import RevertModal from './RevertModal'
 import SaveModal from './SaveModal'
@@ -15,6 +15,15 @@ import HTML5Backend from 'react-dnd-html5-backend'
 import debounce from 'lodash/debounce'
 
 const _ = { debounce }
+
+// entire popup window container, including modals:
+const popupOuterStyle = css({
+  minWidth: 352,
+  width: '100%',
+  height: '100%'
+  // adding this border is useful for debugging styling issues:
+  // border: '1px solid #bababa'
+})
 
 /**
  * send message to BGhelper
@@ -161,7 +170,7 @@ class Popup extends React.Component {
       const revertModal = this.renderRevertModal()
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
       ret = (
-        <div style={OldStyles.popupOuter}>
+        <div className={popupOuterStyle}>
           <SelectablePopup
             onSearchInput={this.handleSearchInput}
             winStore={this.state.winStore}
