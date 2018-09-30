@@ -59,11 +59,6 @@ const dialogInfoStyle = css({
   borderBottom: '1px solid #bababa',
   paddingLeft: 3
 })
-const dialogInfoContentsStyle = css({
-  marginLeft: 10,
-  marginTop: 4,
-  marginBottom: 0
-})
 
 export class Dialog extends React.PureComponent {
   handleClose = (event) => {
@@ -102,7 +97,7 @@ export class Info extends React.Component {
   render () {
     return (
       <div className={dialogInfoStyle}>
-        <div className={dialogInfoContentsStyle}>
+        <div className={styles.dialogInfoContents}>
           {this.props.children}
         </div>
       </div>

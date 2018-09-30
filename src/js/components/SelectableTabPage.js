@@ -1,7 +1,6 @@
 import * as React from 'react'
-import OldStyles from './oldStyles'
-import * as Util from './util'
-
+import * as styles from './cssStyles'
+import { cx } from 'emotion'
 import * as actions from '../actions'
 import SearchBar from './SearchBar'
 import TabTileList from './TabTileList'
@@ -142,8 +141,8 @@ class SelectableTabPage extends React.Component {
               selectedTabIndex={this.state.selectedTabIndex} />
           </div>
         </div>
-        <div style={OldStyles.tabPageFooter}>
-          <span style={Util.merge(OldStyles.closed, OldStyles.summarySpan)}>{summarySentence}</span>
+        <div className={styles.tabPageFooter}>
+          <span className={cx(styles.closed, styles.summarySpan)}>{summarySentence}</span>
         </div>
       </div>
     )
