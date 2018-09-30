@@ -1,5 +1,17 @@
 import * as React from 'react'
-import OldStyles from './oldStyles'
+import { css } from 'emotion'
+
+const flatButtonStyle = css({
+  border: '0px',
+  display: 'inline-block',
+  backgroundColor: 'rgba(0,0,0,0)',
+  fontFamily: 'Roboto, sans-serif',
+  fontSize: 14,
+  color: '#4285f4',
+  '&:hover': {
+    textDecoration: 'none'
+  }
+})
 
 class FlatButton extends React.Component {
   handleClick = (event) => {
@@ -15,7 +27,9 @@ class FlatButton extends React.Component {
 
   render () {
     return (
-      <a onClick={this.handleClick} href='javascript:;' style={OldStyles.flatButton}>
+      <a
+        className={flatButtonStyle}
+        onClick={this.handleClick} href='javascript:;'>
         {this.props.label}
       </a>
     )

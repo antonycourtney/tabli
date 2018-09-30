@@ -54,14 +54,6 @@ const styles = {
     paddingBottom: 16,
     position: 'relative'
   },
-  flatButton: {
-    border: '0px',
-    display: 'inline-block',
-    backgroundColor: 'rgba(0,0,0,0)',
-    fontFamily: 'Roboto, sans-serif',
-    fontSize: 14,
-    color: '#4285f4'
-  },
   tabWindowTile: {
     width: 270,
     maxWidth: 270,
