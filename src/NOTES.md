@@ -387,7 +387,7 @@ TabItem:
 
 
 TODO:
-   - Might be nice to apply a lighten filter on black and white FavIcons for closed tabs
+   X Might be nice to apply a lighten filter on black and white FavIcons for closed tabs
      (github, which is mostly black)
-   - Move edit pencil next to title!
-   - Always show close x on modal dialog window header
+   X Move edit pencil next to title!
+   X Always show close x on modal dialog window header

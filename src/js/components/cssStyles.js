@@ -115,7 +115,7 @@ export const favIcon = css({
   flex: 'none'
 })
 export const favIconClosed = css({
-  WebkitFilter: 'grayscale(1)'
+  WebkitFilter: 'grayscale(1) opacity(50%)'
 })
 export const imageButtonClosed = css({
   backgroundColor: colors.closedGray
