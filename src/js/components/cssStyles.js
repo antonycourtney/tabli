@@ -179,6 +179,10 @@ export const headerHoverVisible = css`
   }
 `
 
+export const hidden = css`
+  visibility: hidden;
+`
+
 export const closeButtonBaseStyle = css`
   -webkit-mask-image: url('../images/Interface-77.png');
   background-color: #888888;

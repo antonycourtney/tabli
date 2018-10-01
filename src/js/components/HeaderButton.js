@@ -1,7 +1,8 @@
 import * as React from 'react'
 import * as styles from './cssStyles'
+import { cx } from 'emotion'
 
-const buttonSpacer = <div className={styles.headerButton} />
+const buttonSpacer = <button className={cx(styles.headerButton, styles.hidden)} />
 
 class HeaderButton extends React.PureComponent {
   handleClick = (event) => {

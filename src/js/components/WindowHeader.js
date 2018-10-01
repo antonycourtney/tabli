@@ -152,6 +152,7 @@ class WindowHeader extends React.PureComponent {
     const titleSpan = (
       <div className={titleStyle}>
         {titleComponent}
+        {editButton}
       </div>
     )
 
@@ -171,7 +172,6 @@ class WindowHeader extends React.PureComponent {
         </div>
         {titleSpan}
         <div className={styles.rowItemsFixedWidth}>
-          {editButton}
           {revertButton}
           {closeButton}
         </div>
