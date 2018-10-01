@@ -187,7 +187,8 @@ export const closeButtonBaseStyle = css`
     background-color: #000000;
   }
 `
-export const headerCloseButton = cx(headerButton, headerHoverVisible, closeButtonBaseStyle)
+export const headerCloseButton = cx(headerButton, closeButtonBaseStyle, headerHoverVisible)
+export const modalCloseButton = cx(headerButton, closeButtonBaseStyle)
 
 const titleBaseStyle = cx(text, noWrap, windowTitle)
 export const titleOpen = cx(titleBaseStyle, open)
