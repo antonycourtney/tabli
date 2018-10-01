@@ -194,7 +194,7 @@ class TabItem extends React.PureComponent {
       <div
         className = {tabItemStyle + ' tabItemHoverContainer'}
         onClick={this.handleClick}>
-        <div className='rowItems-fixed-width'>
+        <div className={styles.rowItemsFixedWidth}>
           {tabCheckItem}
           {tabFavIcon}
         </div>
@@ -203,7 +203,7 @@ class TabItem extends React.PureComponent {
           className={tabTitleStyle}
           title={tooltipContent}
           onClick={this.handleClick}>{tabTitle}</a>
-        <div className='rowItems-fixed-width'>
+        <div className={styles.rowItemsFixedWidth}>
           {audibleIcon}
           {closeButton}
         </div>

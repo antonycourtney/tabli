@@ -11,6 +11,12 @@ import { mkUrl } from './util'
  */
 import { css, cx } from 'emotion'
 
+export const rowItemsFixedWidth = css`
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto
+`
+
 export const activeSpan = css({
   fontWeight: 'bold'
 })

@@ -162,7 +162,7 @@ class WindowHeader extends React.PureComponent {
       <div
         className={cx(styles.windowHeader, styles.noWrap) + ' windowHeaderHoverContainer'}
         onClick={this.props.onOpen}>
-        <div className='rowItems-fixed-width'>
+        <div className={styles.rowItemsFixedWidth}>
           {checkItem}
           <ExpanderButton
             winStore={this.props.winStore}
@@ -170,7 +170,7 @@ class WindowHeader extends React.PureComponent {
             onClick={this.props.onExpand} />
         </div>
         {titleSpan}
-        <div className='rowItems-fixed-width'>
+        <div className={styles.rowItemsFixedWidth}>
           {editButton}
           {revertButton}
           {closeButton}

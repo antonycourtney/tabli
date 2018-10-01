@@ -55,46 +55,6 @@ fieldset { padding:0; border:0; }
   height: 100%;
   width: 100%;
 }
-.tabItem:hover {
-  border-top: 1px solid #cacaca;
-  border-bottom: 1px solid #cacaca;
-}
-
-.tabItem .tabCheck {
-  visibility: hidden;
-}
-.tabItem:hover .tabCheck {
-  visibility: visible;
-}
-
-.tabItem .closeButton {
-  visibility: hidden;
-}
-.tabItem:hover .closeButton {
-  visibility: visible;
-}
-
-.windowHeader .closeButton {
-  visibility: hidden;
-}
-.windowHeader:hover .closeButton {
-  visibility: visible;
-}
-
-.rowItems-fixed-width {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto
-}
-
-.closeButton {
-  -webkit-mask-image: url('../images/Interface-77.png');
-  background-color: #888888;
-}
-.closeButton:hover {
-  -webkit-mask-image: url('../images/Interface-74.png');
-  background-color: #000000;
-}
 
 /* from styles.headerButton */
 .headerButton {
@@ -107,7 +67,6 @@ fieldset { padding:0; border:0; }
   marginRight: 1px;
   flex: none;
 }
-
 .toolbar-btn-square {
   width: 24px;
   height: 24px;
