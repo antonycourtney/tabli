@@ -130,6 +130,7 @@ export function tabItemFromJS (js: Object) {
  * open tab items don't maintain openTabIndex in response to tab events.
  */
 export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
+  console.log('tabItemCompare: ', tiA, tiB, tiA.toJS(), tiB.toJS())
   // open items before non-open items:
   if (tiA.open !== tiB.open) {
     if (tiA.open) {
@@ -149,9 +150,15 @@ export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
   let sret = 0
   if (tiA.savedState && tiB.savedState) {
     sret = tiA.savedState.bookmarkIndex - tiB.savedState.bookmarkIndex
+    if (sret === 0) {
+      console.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex)
+    }
+  } else {
+    console.warn('saved states (accessors): ', tiA.get('savedState'), tiB.get('savedState'))
+    console.warn('unexpected null saved states: ', tiA.savedState, tiB.savedState)
   }
   if (sret === 0) {
-    console.warn('unexpected equal bookmarkIndex vals:', tiA.toJS(), tiB.toJS())
+    console.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex, tiA.toJS(), tiB.toJS())
   }
   return sret
 }
@@ -183,7 +190,7 @@ function makeBookmarkedTabItem (bm) {
 
   const tabItem = new TabItem({
     saved: true,
-    savedState})
+    savedState })
   return tabItem
 }
 
@@ -208,12 +215,12 @@ function makeOpenTabState (tab) {
 /**
  * Initialize a TabItem from an open Chrome tab
  */
-function makeOpenTabItem (tab) {
+export function makeOpenTabItem (tab) {
   const openState = makeOpenTabState(tab)
 
   const tabItem = new TabItem({
     open: true,
-    openState})
+    openState })
   return tabItem
 }
 

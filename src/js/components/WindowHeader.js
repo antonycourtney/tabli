@@ -55,13 +55,13 @@ class WindowHeader extends React.PureComponent {
 
   handleTitleRename = (event) => {
     event.preventDefault()
-    this.setState({editingTitle: true})
+    this.setState({ editingTitle: true })
     event.stopPropagation()
   }
 
   handleTitleSubmit = (event) => {
     event.preventDefault()
-    this.setState({editingTitle: false})
+    this.setState({ editingTitle: false })
     const ic = this.titleInput
     if (ic) {
       const titleStr = ic.value
@@ -76,7 +76,7 @@ class WindowHeader extends React.PureComponent {
     if (e.keyCode === Constants.KEY_ESC) {
       // ESC key
       e.preventDefault()
-      this.setState({editingTitle: false})
+      this.setState({ editingTitle: false })
     }
   };
 

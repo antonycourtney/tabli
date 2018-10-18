@@ -338,10 +338,10 @@ export default class TabManagerState extends Immutable.Record({
       const urlRE = new RegExp('^' + escapeStringRegexp(url) + '$')
       const openWindows = this.getOpen().toArray()
       const filteredWindows = searchOps.filterTabWindows(openWindows,
-        urlRE, {matchUrl: true, matchTitle: false, openOnly: true})
+        urlRE, { matchUrl: true, matchTitle: false, openOnly: true })
       // expand to a simple array of [TabWindow,TabItem] pairs:
       const matchPairs = _.flatten(filteredWindows.map(ftw => {
-        const {tabWindow: targetTabWindow, itemMatches} = ftw
+        const { tabWindow: targetTabWindow, itemMatches } = ftw
         return itemMatches.map(match => [targetTabWindow, match.tabItem]).toArray()
       }))
       return matchPairs

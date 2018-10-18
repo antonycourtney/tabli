@@ -30,19 +30,19 @@ class PreferencesModal extends React.Component {
   handlePopStartChange (e) {
     const oldPrefs = this.state.prefs
     const nextPrefs = oldPrefs.set('popoutOnStart', !oldPrefs.popoutOnStart)
-    this.setState({prefs: nextPrefs})
+    this.setState({ prefs: nextPrefs })
   }
 
   handleTabDedupeChange (e) {
     const oldPrefs = this.state.prefs
     const nextPrefs = oldPrefs.set('dedupeTabs', !oldPrefs.dedupeTabs)
-    this.setState({prefs: nextPrefs})
+    this.setState({ prefs: nextPrefs })
   }
 
   handleRevertOnOpenChange (e) {
     const oldPrefs = this.state.prefs
     const nextPrefs = oldPrefs.set('revertOnOpen', !oldPrefs.revertOnOpen)
-    this.setState({prefs: nextPrefs})
+    this.setState({ prefs: nextPrefs })
   }
 
   render () {

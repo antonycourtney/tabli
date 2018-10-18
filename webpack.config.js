@@ -3,7 +3,6 @@
 var webpack = require('webpack');
 var path = require('path');
 var fs = require('fs');
-
 process.traceDeprecation = true
 
 function config(nodeEnv) {
@@ -27,7 +26,7 @@ function config(nodeEnv) {
         rules: [
           { test: /\.(js|jsx)$/,
             exclude: /node_modules/,
-            loader: "babel-loader?presets[]=es2015,presets[]=react,presets[]=stage-3,plugins[]=transform-class-properties"
+            loader: 'babel-loader'
           },
           { test: /\.(json)$/, loader: "json-loader" },
           {

@@ -105,10 +105,10 @@ const initWinStore = async () => {
   archiveFolderId = archiveFolder.id
   const subTreeNodes = await chromep.bookmarks.getSubTree(tabliFolder.id)
   // console.log("bookmarks.getSubTree for tabliFolder: ", subTreeNodes)
-  const baseWinStore = new TabManagerState({folderId: tabliFolderId, archiveFolderId})
+  const baseWinStore = new TabManagerState({ folderId: tabliFolderId, archiveFolderId })
   const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0])
 
-  const items = await chromep.storage.local.get({readRelNotesVersion: ''})
+  const items = await chromep.storage.local.get({ readRelNotesVersion: '' })
   const relNotesStore = initRelNotes(loadedWinStore, items.readRelNotesVersion)
 
   return relNotesStore
@@ -445,7 +445,7 @@ function registerEventHandlers (storeRef) {
 
 const MATCH_THRESHOLD = 0.25
 // type constructor for match info:
-const MatchInfo = Immutable.Record({windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0})
+const MatchInfo = Immutable.Record({ windowId: -1, matches: Immutable.Map(), bestMatch: null, tabCount: 0 })
 
 const getWindowMatchInfo = (bmStore, urlIdMap, w) => {
   // matches :: Array<Set<BookmarkId>>
@@ -632,9 +632,36 @@ async function loadSnapState (bmStore) {
   return nextStore
 }
 
+const testChromeTab =  {
+  "active": false,
+  "audible": false,
+  "favIconUrl": "https://facebook.github.io/immutable-js/static/favicon.png",
+  "height": 862,
+  "highlighted": false,
+  "id": 240,
+  "incognito": false,
+  "index": 0,
+  "muted": false,
+  "mutedCause": "",
+  "pinned": false,
+  "selected": false,
+  "status": "complete",
+  "title": "Immutable.js",
+  "url": "https://facebook.github.io/immutable-js/",
+  "width": 1258,
+  "windowId": 239
+}
+
 async function main () {
   try {
     console.log('bgHelper started, env: ', process.env.NODE_ENV)
+    let obj = { a: 20 }
+    Object.defineProperty(obj, 'x', { value: 27 })
+    Object.defineProperty(Object.getPrototypeOf(obj), 'y', { get: function () { return this.x + 10 } })
+    console.log('obj: ', obj, ', obj.x: ', obj.x, 'obj.y: ', obj.y)
+    const tab = TabWindow.makeOpenTabItem(testChromeTab)
+    console.log('test tab: ', tab.toJS())
+    console.log('test tab openState: ', tab.get('openState').toJS())
     actions.setReloadHandler(main)
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)

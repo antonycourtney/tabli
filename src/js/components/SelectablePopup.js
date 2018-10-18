@@ -176,7 +176,7 @@ class SelectablePopup extends React.Component {
     actions.openWindow(curWindow, curWindow, this.props.storeRef)
   };
 
-  componentWillReceiveProps (nextProps) {
+  UNSAFE_componentWillReceiveProps (nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex
     var nextFilteredWindows = nextProps.filteredWindows
 

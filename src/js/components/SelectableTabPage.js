@@ -87,7 +87,7 @@ class SelectableTabPage extends React.Component {
     actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeRef)
   };
 
-  componentWillReceiveProps (nextProps) {
+  UNSAFE_componentWillReceiveProps (nextProps) {
     var selectedWindowIndex = this.state.selectedWindowIndex
     var nextFilteredWindows = nextProps.filteredWindows
 

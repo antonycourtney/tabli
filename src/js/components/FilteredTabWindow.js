@@ -18,7 +18,7 @@ const tabWindowSelectedStyle = css({
 })
 
 class FilteredTabWindow extends React.Component {
-  componentWillReceiveProps (nextProps) {
+  UNSAFE_componentWillReceiveProps (nextProps) {
     if (nextProps.isSelected && !this.props.isSelected) {
       // If this window becomes selected:
       if (this.windowDivRef) {

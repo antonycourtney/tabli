@@ -311,7 +311,7 @@ export function manageWindow (
     alert('Could not save bookmarks -- no tab manager folder')
   }
 
-  var windowFolder = {parentId: tabliFolderId, title}
+  var windowFolder = { parentId: tabliFolderId, title }
   chrome.bookmarks.create(windowFolder, (windowFolderNode) => {
     // console.log( "succesfully created bookmarks folder ", windowFolderNode )
     // console.log( "for window: ", tabWindow )
@@ -362,7 +362,7 @@ export async function setWindowTitle (title: string, tabWindow: TabWindow, store
     console.error('attempt to set window title on unsaved window: ', tabWindow.toJS())
   }
   try {
-    await chromep.bookmarks.update(tabWindow.savedFolderId, {title})
+    await chromep.bookmarks.update(tabWindow.savedFolderId, { title })
     console.log('setWindowTitle: updated window title')
   } catch (err) {
     console.error('error updating window title: ', err)
@@ -385,7 +385,7 @@ export function sendFeedback () {
 
 export function showPreferences () {
   const prefsURL = chrome.runtime.getURL('preferences.html')
-  console.log({prefsURL})
+  console.log({ prefsURL })
   chrome.tabs.create({ url: prefsURL })
 }
 

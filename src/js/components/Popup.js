@@ -57,7 +57,7 @@ class Popup extends React.Component {
 
     return {
       winStore,
-      sortedWindows}
+      sortedWindows }
   };
 
   handleSearchInput = (rawSearchStr) => {
@@ -194,7 +194,7 @@ class Popup extends React.Component {
     return ret
   }
 
-  componentWillMount () {
+  componentDidMount () {
     if (this.props.noListener) {
       return
     }
@@ -213,7 +213,7 @@ class Popup extends React.Component {
 
     var listenerId = storeRef.addViewListener(throttledListener)
 
-    console.log('componentWillMount: added view listener: ', listenerId)
+    console.log('componentDidMount: added view listener: ', listenerId)
     sendHelperMessage({ listenerId })
   }
 }

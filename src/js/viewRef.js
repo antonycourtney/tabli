@@ -52,6 +52,7 @@ const saveState = () => {
   const serBookmarkIdMap = latestBookmarkIdMap.map(tw => tw.remove('chromeSessionId'))
   const savedWindowState = JSON.stringify(serBookmarkIdMap, null, 2)
   const savedState = { savedWindowStateVersion, savedWindowState }
+  console.log('saveState: about to save: ', savedState)
   chrome.storage.local.set(savedState, () => {
     console.log((new Date()).toString() + ' succesfully wrote window state')
   })

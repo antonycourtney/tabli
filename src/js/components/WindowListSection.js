@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as Constants from './constants'
-import {css} from 'emotion'
+import { css } from 'emotion'
 const windowListSectionStyle = css({
   borderBottom: '1px solid #bababa',
   paddingLeft: 12,
