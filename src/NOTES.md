@@ -391,3 +391,16 @@ TODO:
      (github, which is mostly black)
    X Move edit pencil next to title!
    X Always show close x on modal dialog window header
+
+---
+=======
+Notes, attempted port to Immer (on `immer` branch):
+
+TabWindow currently uses `._id` as lazily evaluated cache.
+How will we deal with this in Immer??
+Hmmm, we could just make id an explicit property and calculate
+eagerly instead of lazily.
+
+Unnngh. It turns out a big "Caveat" of immer is that it doesn't work with ES6 classes
+at all. :-(
+See: https://github.com/mweststrate/immer/issues/202

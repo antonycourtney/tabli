@@ -130,7 +130,6 @@ export function tabItemFromJS (js: Object) {
  * open tab items don't maintain openTabIndex in response to tab events.
  */
 export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
-  console.log('tabItemCompare: ', tiA, tiB, tiA.toJS(), tiB.toJS())
   // open items before non-open items:
   if (tiA.open !== tiB.open) {
     if (tiA.open) {

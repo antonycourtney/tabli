@@ -632,36 +632,9 @@ async function loadSnapState (bmStore) {
   return nextStore
 }
 
-const testChromeTab =  {
-  "active": false,
-  "audible": false,
-  "favIconUrl": "https://facebook.github.io/immutable-js/static/favicon.png",
-  "height": 862,
-  "highlighted": false,
-  "id": 240,
-  "incognito": false,
-  "index": 0,
-  "muted": false,
-  "mutedCause": "",
-  "pinned": false,
-  "selected": false,
-  "status": "complete",
-  "title": "Immutable.js",
-  "url": "https://facebook.github.io/immutable-js/",
-  "width": 1258,
-  "windowId": 239
-}
-
 async function main () {
   try {
     console.log('bgHelper started, env: ', process.env.NODE_ENV)
-    let obj = { a: 20 }
-    Object.defineProperty(obj, 'x', { value: 27 })
-    Object.defineProperty(Object.getPrototypeOf(obj), 'y', { get: function () { return this.x + 10 } })
-    console.log('obj: ', obj, ', obj.x: ', obj.x, 'obj.y: ', obj.y)
-    const tab = TabWindow.makeOpenTabItem(testChromeTab)
-    console.log('test tab: ', tab.toJS())
-    console.log('test tab openState: ', tab.get('openState').toJS())
     actions.setReloadHandler(main)
     const rawBMStore = await initWinStore()
     const attachBMStore = await reattachWindows(rawBMStore)
