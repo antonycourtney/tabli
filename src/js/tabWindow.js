@@ -153,7 +153,6 @@ export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
       console.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex)
     }
   } else {
-    console.warn('saved states (accessors): ', tiA.get('savedState'), tiB.get('savedState'))
     console.warn('unexpected null saved states: ', tiA.savedState, tiB.savedState)
   }
   if (sret === 0) {
