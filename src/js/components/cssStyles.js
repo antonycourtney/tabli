@@ -30,6 +30,9 @@ export const tabTitle = css({
     textDecoration: 'none'
   }
 })
+export const simpleTabTitle = css({
+  width: Constants.SIMPLE_TAB_TITLE_WIDTH
+})
 export const tabItemSelected = css({
   backgroundColor: '#dadada'
 })
@@ -48,6 +51,9 @@ export const tabItem = css({
     borderTop: '1px solid #cacaca',
     borderBottom: '1px solid #cacaca'
   }
+})
+export const tabItemDropOver = css({
+  borderBottom: '2px solid #333333'
 })
 export const headerButton = css({
   outline: 'none',
@@ -114,6 +120,12 @@ export const favIcon = css({
   marginRight: 3,
   flex: 'none'
 })
+export const emptyFavIcon = css({
+  width: 18,
+  marginRight: 3,
+  WebkitMaskImage: mkUrl('images/Files-26.png'),
+  backgroundColor: '#969696'
+})
 export const favIconClosed = css({
   WebkitFilter: 'grayscale(1) opacity(50%)'
 })
@@ -157,8 +169,13 @@ export const dialogInfoContents = css({
   marginTop: 4,
   marginBottom: 0
 })
-
-export const headerCheckboxInput = css({})
+export const headerCheckBoxInput = css({
+  width: 12,
+  height: 12,
+})
+export const headerCheckboxContainer = css({
+  paddingLeft: 4
+})
 export const dialogButtonRow = css({
   display: 'flex',
   alignItems: 'center',

@@ -32,12 +32,14 @@ class HeaderCheckbox extends React.PureComponent {
     } else {
       const extraUncheckedStyle = get(this.props, 'extraUncheckedStyle', null)
       checkboxComponent = (
-        <input
-          className={cx(styles.headerCheckBoxInput, extraUncheckedStyle)}
-          type='checkbox'
-          title={this.props.title}
-          onClick={this.props.onClick}
-          value={false} />)
+        <div className={styles.headerCheckboxContainer}>
+          <input
+            className={cx(styles.headerCheckBoxInput, extraUncheckedStyle)}
+            type='checkbox'
+            title={this.props.title}
+            onClick={this.props.onClick}
+            value={false} />
+        </div>)
     }
     return (
       <div className={containerStyle}>
