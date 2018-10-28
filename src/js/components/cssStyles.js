@@ -178,6 +178,7 @@ export const headerCheckboxContainer = css({
 })
 export const dialogButtonRow = css({
   display: 'flex',
+  justifyContent: 'flex-end',
   alignItems: 'center',
   flexShrink: 0,
   marginRight: 22
