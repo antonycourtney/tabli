@@ -1,5 +1,6 @@
 /* globals XMLHttpRequest */
 
+import * as log from 'loglevel'
 import * as Immutable from 'immutable'
 import * as RenderCommon from './renderCommon'
 
@@ -21,17 +22,17 @@ function renderPage (testData) {
   const tPreSync = performance.now()
   const testChromeWindows = testData.chromeWindows
 
-  // console.log('renderPage: testData: ', testData)
+  // log.log('renderPage: testData: ', testData)
 
   const emptyWinStore = new TabManagerState()
   const mockWinStore = emptyWinStore.syncWindowList(testChromeWindows).set('showRelNotes', false)
 
   const tPostSync = performance.now()
 
-  console.log('syncing window state took ', tPostSync - tPreSync, ' ms')
+  log.log('syncing window state took ', tPostSync - tPreSync, ' ms')
 
-  console.log('Created mockWinStore and registered test windows')
-  console.log('mock winStore: ', mockWinStore.toJS())
+  log.log('Created mockWinStore and registered test windows')
+  log.log('mock winStore: ', mockWinStore.toJS())
   const storeRef = new ViewRef(mockWinStore)
 
   const currentChromeWindow = testChromeWindows[0]
@@ -42,7 +43,7 @@ function renderPage (testData) {
   RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false, true)
 
   var tPostRender = performance.now()
-  console.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
+  log.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
 }
 
 var testStateUrl = 'testData/renderTest-chromeWindowSnap.json'
@@ -56,12 +57,12 @@ function loadTestData (callback) {
       const tPostLoad = performance.now()
       var data = JSON.parse(request.responseText)
       const tPostParse = performance.now()
-      console.log('loading test data took ', tPostLoad - tPreLoad, ' ms')
-      console.log('parsing test data took ', tPostParse - tPostLoad, ' ms')
+      log.log('loading test data took ', tPostLoad - tPreLoad, ' ms')
+      log.log('parsing test data took ', tPostParse - tPostLoad, ' ms')
       callback(data)
     } else {
       // We reached our target server, but it returned an error
-      console.error('request failed, error: ', request.status, request)
+      log.error('request failed, error: ', request.status, request)
     }
   }
 
@@ -86,7 +87,7 @@ function renderTest () {
  *
  */
 function main () {
-  console.log('render test, environment: ', process.env.NODE_ENV)
+  log.log('render test, environment: ', process.env.NODE_ENV)
   window.onload = renderTest
 }
 

@@ -4,6 +4,11 @@
   "plugins": [
     "standard", "flowtype", "react"
   ],
+  "settings": {
+    "react": {
+      "version": "16.5"
+    }
+  },
   "env": {
     "browser": true,
     "node": true,

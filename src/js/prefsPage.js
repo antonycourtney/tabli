@@ -1,4 +1,5 @@
 // @flow
+import * as log from 'loglevel'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import PreferencesModal from './components/PreferencesModal'
@@ -9,14 +10,14 @@ import ChromePromise from 'chrome-promise'
 const chromep = ChromePromise
 
 const onClose = async () => {
-  console.log('onClose')
+  log.log('onClose')
   const tab = await chromep.tabs.getCurrent()
-  console.log('onClose tab: ', tab)
+  log.log('onClose tab: ', tab)
   chrome.tabs.remove(tab.id)
 }
 
 const onUpdatePreferences = (storeRef, newPrefs) => {
-  console.log('update preferences: ', newPrefs.toJS())
+  log.log('update preferences: ', newPrefs.toJS())
   actions.savePreferences(newPrefs, storeRef)
   onClose()
 }
@@ -35,8 +36,8 @@ const renderPrefs = async () => {
         onSubmit={(prefs) => onUpdatePreferences(storeRef, prefs)} />)
     ReactDOM.render(modal, parentNode)
   } catch (e) {
-    console.error('caught exception rendering preferences page:')
-    console.error(e.stack)
+    log.error('caught exception rendering preferences page:')
+    log.error(e.stack)
     throw e
   }
 }

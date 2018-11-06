@@ -1,3 +1,4 @@
+import * as log from 'loglevel'
 import * as OneRef from 'oneref'
 import throttle from 'lodash/throttle'
 
@@ -53,7 +54,7 @@ const saveState = () => {
   const savedWindowState = JSON.stringify(serBookmarkIdMap, null, 2)
   const savedState = { savedWindowStateVersion, savedWindowState }
   chrome.storage.local.set(savedState, () => {
-    console.log((new Date()).toString() + ' succesfully wrote window state')
+    log.log((new Date()).toString() + ' succesfully wrote window state')
   })
 }
 
@@ -91,12 +92,12 @@ export default class ViewRef extends OneRef.Ref {
   }
 
   removeViewListener (id) {
-    // console.log("removeViewListener: removing listener id ", id)
+    // log.log("removeViewListener: removing listener id ", id)
     var listener = this.viewListeners[id]
     if (listener) {
       this.removeListener('change', listener)
     } else {
-      console.warn('removeViewListener: No listener found for id ', id)
+      log.warn('removeViewListener: No listener found for id ', id)
     }
 
     delete this.viewListeners[id]

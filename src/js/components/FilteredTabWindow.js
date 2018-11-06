@@ -1,3 +1,4 @@
+import * as log from 'loglevel' // eslint-disable-line no-unused-vars
 import * as React from 'react'
 import * as Immutable from 'immutable'
 import { cx, css } from 'emotion'
@@ -35,7 +36,7 @@ class FilteredTabWindow extends React.Component {
   };
 
   handleClose = (event) => { // eslint-disable-line no-unused-vars
-    // console.log("handleClose")
+    // log.log("handleClose")
     actions.closeWindow(this.props.filteredTabWindow.tabWindow, this.props.storeRef)
   };
 

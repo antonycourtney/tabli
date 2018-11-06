@@ -2,6 +2,7 @@
 /**
  * Search and filter operations on TabWindows
  */
+import * as log from 'loglevel'
 import map from 'lodash/map'
 import filter from 'lodash/filter'
 import * as Immutable from 'immutable'
@@ -58,7 +59,7 @@ export function matchTabItem (tabItem: TW.TabItem,
   if (urlMatches === null && titleMatches === null) {
     return null
   }
-  // console.log('matchTabItem: ', urlMatches, titleMatches)
+  log.log('matchTabItem: ', urlMatches, titleMatches)
   return new FilteredTabItem({ tabItem, urlMatches, titleMatches })
 }
 

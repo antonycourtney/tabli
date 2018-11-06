@@ -1,3 +1,4 @@
+import * as log from 'loglevel' // eslint-disable-line no-unused-vars
 import * as React from 'react'
 import * as styles from './cssStyles'
 import * as Constants from './constants'
@@ -9,7 +10,7 @@ class PreferencesModal extends React.Component {
     this.state = {
       prefs: props.initialPrefs
     }
-    console.log('PreferencesModal: initialPrefs: ', props.initialPrefs.toJS())
+    log.log('PreferencesModal: initialPrefs: ', props.initialPrefs.toJS())
   }
 
   handleKeyDown (e) {

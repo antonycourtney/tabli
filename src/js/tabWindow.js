@@ -2,6 +2,7 @@
 /**
  * Representation of tabbed windows using Immutable.js
  */
+import * as log from 'loglevel'
 import get from 'lodash/get'
 import has from 'lodash/has'
 import keys from 'lodash/keys'
@@ -141,7 +142,7 @@ export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
     // both open, use openTabIndex for comparison:
     const ret = tiA.openState.openTabIndex - tiB.openState.openTabIndex
     if (ret === 0) {
-      console.warn('unexpected equal openTabIndex vals: ', tiA.toJS(), tiB.toJS())
+      log.warn('unexpected equal openTabIndex vals: ', tiA.toJS(), tiB.toJS())
     }
     return ret
   }
@@ -150,13 +151,13 @@ export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
   if (tiA.savedState && tiB.savedState) {
     sret = tiA.savedState.bookmarkIndex - tiB.savedState.bookmarkIndex
     if (sret === 0) {
-      console.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex)
+      log.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex)
     }
   } else {
-    console.warn('unexpected null saved states: ', tiA.savedState, tiB.savedState)
+    log.warn('unexpected null saved states: ', tiA.savedState, tiB.savedState)
   }
   if (sret === 0) {
-    console.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex, tiA.toJS(), tiB.toJS())
+    log.warn('unexpected equal bookmarkIndex vals:', tiA.savedState.bookmarkIndex, tiB.savedState.bookmarkIndex, tiA.toJS(), tiB.toJS())
   }
   return sret
 }
@@ -167,7 +168,7 @@ export function tabItemCompare (tiA: TabItem, tiB: TabItem): number {
 function makeSavedTabState (bm) {
   const url = _.get(bm, 'url', '')
   if (url.length === 0) {
-    console.warn('makeSavedTabState: malformed bookmark: missing URL!: ', bm)
+    log.warn('makeSavedTabState: malformed bookmark: missing URL!: ', bm)
   }
   const ts = new SavedTabState({
     url,
@@ -332,7 +333,7 @@ export class TabWindow extends Immutable.Record({
 
     if (!activeTab) {
       // shouldn't happen!
-      console.warn('TabWindow.get title(): No active tab found: ', this.toJS())
+      log.warn('TabWindow.get title(): No active tab found: ', this.toJS())
 
       var openTabItem = this.tabItems.find((t) => t.open)
       if (!openTabItem) {
@@ -399,7 +400,7 @@ export class TabWindow extends Immutable.Record({
   setTabItems (nextItems: Immutable.List<TabItem>): TabWindow {
     /* HACK: debugging only check; get rid of this! */
     if (!nextItems) {
-      console.error('setTabItems: bad nextItems: ', nextItems)
+      log.error('setTabItems: bad nextItems: ', nextItems)
     }
     return this.set('tabItems', nextItems)
   }
@@ -486,7 +487,7 @@ export function makeFolderTabWindow (bookmarkFolder: any): TabWindow {
   const tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem))
   var fallbackTitle = ''
   if (bookmarkFolder.title === undefined) {
-    console.error('makeFolderTabWindow: malformed bookmarkFolder -- missing title: ', bookmarkFolder)
+    log.error('makeFolderTabWindow: malformed bookmarkFolder -- missing title: ', bookmarkFolder)
     if (tabItems.count() > 0) {
       fallbackTitle = tabItems.get(0).title
     }
@@ -657,11 +658,11 @@ export function updateWindow (tabWindow: TabWindow, chromeWindow: any): TabWindo
  * @return {TabWindow} tabWindow with tabItems updated to reflect tab closure
  */
 export function closeTab (tabWindow: TabWindow, tabId: number): TabWindow {
-  console.log('TabWindow.closeTab: ', tabWindow.toJS(), tabId)
+  log.log('TabWindow.closeTab: ', tabWindow.toJS(), tabId)
   const entry = tabWindow.findChromeTabId(tabId)
 
   if (!entry) {
-    console.warn('TabWindow.closeTab: could not find closed tab id ', tabId)
+    log.warn('TabWindow.closeTab: could not find closed tab id ', tabId)
     return tabWindow
   }
   const [index, tabItem] = entry
@@ -691,7 +692,7 @@ export function saveTab (tabWindow: TabWindow,
   tabItem: TabItem, tabNode: any): TabWindow {
   const entry = tabWindow.findChromeTabId(tabItem.safeOpenState.openTabId)
   if (!entry) {
-    console.error('saveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
+    log.error('saveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
     return tabWindow
   }
   const [index] = entry
@@ -715,19 +716,19 @@ export function saveTab (tabWindow: TabWindow,
  * @return {TabWindow} tabWindow with tabItems updated to reflect saved state
  */
 export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem) {
-  console.log('unsaveTab: ', tabWindow.toJS(), tabItem.toJS())
+  log.log('unsaveTab: ', tabWindow.toJS(), tabItem.toJS())
   const entry = tabWindow.tabItems.findEntry((ti) => ti.saved && ti.safeSavedState.bookmarkId === tabItem.safeSavedState.bookmarkId)
   if (!entry) {
-    console.error('unsaveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
+    log.error('unsaveTab: could not find tab id for ', tabItem.toJS(), ' in tabWindow ', tabWindow.toJS())
     return tabWindow
   }
   // Note: We extract sourceTabItem from entry to
   // correctly handle the case of a moved tabItem,
   // where tabItem passed in has already been moved
   var [index, sourceTabItem] = entry
-  console.log('unsavedTab: sourceTabItem: ', sourceTabItem.toJS())
+  log.log('unsavedTab: sourceTabItem: ', sourceTabItem.toJS())
   const updTabItem = resetOpenItem(sourceTabItem)
-  console.log('unsavedTab: sourceTabItem after reset: ', updTabItem.toJS())
+  log.log('unsavedTab: sourceTabItem after reset: ', updTabItem.toJS())
 
   var updItems
   if (updTabItem.open) {
@@ -738,7 +739,7 @@ export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem) {
   }
 
   const updWindow = tabWindow.setTabItems(updItems)
-  console.log('unsaveTab: updated window: ', updWindow.toJS())
+  log.log('unsaveTab: updated window: ', updWindow.toJS())
   return updWindow
 }
 
@@ -754,13 +755,13 @@ export function setActiveTab (tabWindow: TabWindow, tabId: number) {
   const tabPos = tabWindow.findChromeTabId(tabId)
 
   if (!tabPos) {
-    console.log('setActiveTab -- tab id not found: ', tabId)
+    log.log('setActiveTab -- tab id not found: ', tabId)
     return tabWindow
   }
 
   const [index, tabItem] = tabPos
   if (tabItem.active) {
-    console.log('setActiveTab: tab was already active, igoring')
+    log.log('setActiveTab: tab was already active, igoring')
     return tabWindow
   }
 
@@ -793,14 +794,14 @@ export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: 
   const tabPos = tabWindow.findChromeTabId(tabId)
 
   if (!tabPos) {
-    // console.warn("updateTabItem: Got update for unknown tab id ", tabId)
-    // console.log("updateTabItem: changeInfo: ", changeInfo)
+    // log.warn("updateTabItem: Got update for unknown tab id ", tabId)
+    // log.log("updateTabItem: changeInfo: ", changeInfo)
     return tabWindow
   }
   const [index, prevTabItem] = tabPos
   const prevOpenState = prevTabItem.openState
   if (prevOpenState == null) {
-    console.error('updateTabItem: unexpected null open state: ', prevTabItem)
+    log.error('updateTabItem: unexpected null open state: ', prevTabItem)
     return tabWindow
   }
   const updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo))
@@ -812,7 +813,7 @@ export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: 
 
   const updTabItem = (updKeys.length > 0) ? prevTabItem.set('openState', updOpenState) : prevTabItem
 
-  // console.log("updateTabItem: ", index, updTabItem.toJS())
+  // log.log("updateTabItem: ", index, updTabItem.toJS())
   const updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
   const updWindow = tabWindow.setTabItems(updItems)
 
@@ -837,7 +838,7 @@ export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: 
 export function updateTabBookmark (tabWindow: TabWindow, tabItem: TabItem, changeInfo: Object) {
   const index = tabWindow.indexOf(tabItem)
   if (!index) {
-    console.error('tabItem not found in TabWindow: ', tabWindow.toJS(), tabItem.toJS())
+    log.error('tabItem not found in TabWindow: ', tabWindow.toJS(), tabItem.toJS())
     return tabWindow
   }
   const prevTabItem = tabItem
@@ -854,7 +855,7 @@ export function updateTabBookmark (tabWindow: TabWindow, tabItem: TabItem, chang
 
   const updTabItem = (updKeys.length > 0) ? prevTabItem.set('savedState', updSavedState) : prevTabItem
 
-  // console.log("updateTabItem: ", index, updTabItem.toJS())
+  // log.log("updateTabItem: ", index, updTabItem.toJS())
   const updItems = tabWindow.tabItems.splice(index, 1, updTabItem)
 
   const updWindow = tabWindow.setTabItems(updItems)

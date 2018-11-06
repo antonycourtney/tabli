@@ -1,3 +1,4 @@
+import * as log from 'loglevel'
 // This function creates a new anchor element and uses location
 // properties (inherent) to get the desired URL data. Some String
 // operations are used (to normalize results across browsers).
@@ -100,8 +101,8 @@ export function logWrap (f) {
     try {
       ret = f.apply(this, arguments)
     } catch (e) {
-      console.error('logWrap: caught exception invoking function: ')
-      console.error(e.stack)
+      log.error('logWrap: caught exception invoking function: ')
+      log.error(e.stack)
       throw e
     }
 

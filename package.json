@@ -18,6 +18,7 @@
     "immutable": "^3.8.2",
     "jquery": "^3.3.1",
     "lodash": "^4.17.11",
+    "loglevel": "^1.6.1",
     "object-assign": "^4.1.1",
     "oneref": "^0.3.2",
     "popper": "^1.0.1",

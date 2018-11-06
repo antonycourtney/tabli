@@ -1,3 +1,4 @@
+import * as log from 'loglevel'
 import * as React from 'react'
 import { mkUrl } from './util'
 import * as actions from '../actions'
@@ -36,7 +37,7 @@ class WindowHeader extends React.PureComponent {
   }
 
   handleUnmanageClick = (event) => {
-    console.log('unamange: ', this.props.tabWindow)
+    log.log('unamange: ', this.props.tabWindow)
     event.preventDefault()
     const archiveFolderId = this.props.winStore.archiveFolderId
     actions.unmanageWindow(archiveFolderId, this.props.tabWindow, this.props.storeRef)
@@ -44,7 +45,7 @@ class WindowHeader extends React.PureComponent {
   };
 
   handleManageClick = (event) => {
-    console.log('manage: ', this.props.tabWindow)
+    log.log('manage: ', this.props.tabWindow)
     event.preventDefault()
     var tabWindow = this.props.tabWindow
     var appComponent = this.props.appComponent
@@ -116,7 +117,7 @@ class WindowHeader extends React.PureComponent {
         title='Close Window'
         onClick={this.props.onClose} />)
 
-    // console.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded)
+    // log.log("WindowHeader: ", windowTitle, openStyle, managed, this.props.expanded)
     let titleComponent = null
     if (this.state.editingTitle) {
       titleComponent = (
@@ -188,11 +189,11 @@ class WindowHeader extends React.PureComponent {
     const titleLen = this.props.initialTitle.length
     if (titleElem) {
       window.setTimeout(() => {
-        console.log('timer func')
+        log.log('timer func')
         titleElem.setSelectionRange(0, titleLen)
       }, 0)
     } else {
-      console.warn('SaveModal: no titleInput element')
+      log.warn('SaveModal: no titleInput element')
     }
   }
 }

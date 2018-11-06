@@ -1,3 +1,4 @@
+import * as log from 'loglevel'
 import PropTypes from 'prop-types'
 import * as React from 'react'
 import * as styles from './cssStyles'
@@ -80,7 +81,7 @@ class TabItem extends React.PureComponent {
     var tab = this.props.tab
     var tabIndex = this.props.tabIndex
 
-    // console.log("TabItem: handleClick: tab: ", tab)
+    // log.log("TabItem: handleClick: tab: ", tab)
 
     actions.activateTab(this.props.winStore.getCurrentWindow(), tabWindow, tab, tabIndex, this.props.storeRef)
 
@@ -102,13 +103,13 @@ class TabItem extends React.PureComponent {
 
   handleBookmarkTabItem = (event) => {
     event.stopPropagation()
-    console.log('bookmark tab: ', this.props.tab.toJS())
+    log.log('bookmark tab: ', this.props.tab.toJS())
     actions.saveTab(this.props.tabWindow, this.props.tab, this.props.storeRef)
   };
 
   handleUnbookmarkTabItem = (event) => {
     event.stopPropagation()
-    console.log('unbookmark tab: ', this.props.tab.toJS())
+    log.log('unbookmark tab: ', this.props.tab.toJS())
     actions.unsaveTab(this.props.tabWindow, this.props.tab, this.props.storeRef)
   };
 

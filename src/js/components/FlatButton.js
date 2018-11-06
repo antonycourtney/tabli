@@ -1,3 +1,4 @@
+import * as log from 'loglevel' // eslint-disable-line no-unused-vars
 import * as React from 'react'
 import { css } from 'emotion'
 
@@ -15,13 +16,13 @@ const flatButtonStyle = css({
 
 class FlatButton extends React.Component {
   handleClick = (event) => {
-    console.log('FlatButton.handleClick: ', this.props)
+    log.log('FlatButton.handleClick: ', this.props)
     event.stopPropagation()
     event.preventDefault()
     if (this.props.onClick) {
       this.props.onClick(event)
     }
-    console.log('FlatButton.handleClick: returning false')
+    log.log('FlatButton.handleClick: returning false')
     return false
   };
 

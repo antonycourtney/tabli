@@ -1,3 +1,4 @@
+import * as log from 'loglevel'
 import * as React from 'react'
 import * as styles from './cssStyles'
 import * as Constants from './constants'
@@ -17,7 +18,7 @@ class SaveModal extends React.Component {
     var ic = this.titleInput
     if (ic) {
       const titleStr = ic.value
-      console.log('handleSubmit: title: ', titleStr)
+      log.log('handleSubmit: title: ', titleStr)
       this.props.onSubmit(titleStr)
     }
   };
@@ -58,11 +59,11 @@ class SaveModal extends React.Component {
     const titleLen = this.props.initialTitle.length
     if (titleElem) {
       window.setTimeout(() => {
-        console.log('timer func')
+        log.log('timer func')
         titleElem.setSelectionRange(0, titleLen)
       }, 0)
     } else {
-      console.warn('SaveModal: no titleInput element')
+      log.warn('SaveModal: no titleInput element')
     }
   }
 }

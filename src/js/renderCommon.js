@@ -2,6 +2,7 @@
 /**
  * common rendering entry point for popup and popout
  */
+import * as log from 'loglevel'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import Popup from './components/Popup'
@@ -21,7 +22,7 @@ export async function renderPopup (
   renderTest: boolean = false
 ) {
   try {
-    console.log('renderPopup: isPopout: ', isPopout)
+    log.log('renderPopup: isPopout: ', isPopout)
 
     var tPreRender = performance.now()
 
@@ -42,28 +43,28 @@ export async function renderPopup (
     })
 
     var tPostRender = performance.now()
-    console.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)')
+    log.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)')
 
     // And sync our window state, which may update the UI...
     if (doSync) {
       const syncStore = await actions.syncChromeWindows(storeRef)
-      console.log('postLoadRender: window sync complete: ', syncStore)
+      log.log('postLoadRender: window sync complete: ', syncStore)
       // And set current focused window:
-      console.log('renderPopup: setting current window to ', currentChromeWindow)
+      log.log('renderPopup: setting current window to ', currentChromeWindow)
       const nextStore = syncStore.setCurrentWindow(currentChromeWindow)
       if (!(nextStore.equals(syncStore))) {
         storeRef.setValue(nextStore)
       } else {
-        console.log('doRender: nextStore.equals(savedStore) -- skipping setValue')
+        log.log('doRender: nextStore.equals(savedStore) -- skipping setValue')
       }
 
       // logHTML("Updated savedHTML", renderedString)
       var tPostSyncUpdate = performance.now()
-      console.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms')
+      log.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms')
     }
   } catch (e) {
-    console.error('renderPopup: caught exception invoking function: ')
-    console.error(e.stack)
+    log.error('renderPopup: caught exception invoking function: ')
+    log.error(e.stack)
     throw e
   }
 }

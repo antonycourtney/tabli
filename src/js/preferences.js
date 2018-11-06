@@ -3,6 +3,7 @@
  * Serializable, immutable user preferences
  */
 
+import * as log from 'loglevel'
 import defaultsDeep from 'lodash/defaultsDeep'
 import * as Immutable from 'immutable'
 
@@ -46,7 +47,7 @@ export const defaultPrefsJS = (new Preferences()).toJS()
  */
 export const migrate = (storedPrefs: VersionedObject): Object => {
   if (storedPrefs.version < 2) {
-    console.log('prefs.migrate: reverting v1 preferences')
+    log.log('prefs.migrate: reverting v1 preferences')
     return defaultPrefsJS
   }
   // otherwise, just grab contents, which should be a JS store of preferences:

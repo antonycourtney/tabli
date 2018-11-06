@@ -4,6 +4,7 @@
  * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
  * and then retrieve the instance from the background window in the popup
  */
+import * as log from 'loglevel'
 import filter from 'lodash/filter'
 import flatten from 'lodash/flatten'
 import get from 'lodash/get'
@@ -58,7 +59,7 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   handleTabWindowClosed (tabWindow) {
-    // console.log("handleTabWindowClosed: ", tabWindow.toJS())
+    log.log('handleTabWindowClosed: ', tabWindow.toJS())
     /*
      * We remove window from map of open windows (windowIdMap) but then we re-register
      * closed window to ensure that a version of saved window stays in
@@ -77,9 +78,9 @@ export default class TabManagerState extends Immutable.Record({
   }
 
   handleTabClosed (tabWindow, tabId) {
-    console.log('handleTabClosed: closing tab id ', tabId)
+    log.log('handleTabClosed: closing tab id ', tabId)
     var updWindow = TabWindow.closeTab(tabWindow, tabId)
-    console.log('handleTabClosed: updWindow: ', updWindow.toJS())
+    log.log('handleTabClosed: updWindow: ', updWindow.toJS())
     return this.registerTabWindow(updWindow)
   }
 
@@ -133,7 +134,7 @@ export default class TabManagerState extends Immutable.Record({
    * attach a Chrome window to a specific tab window (after opening a saved window)
    */
   attachChromeWindow (tabWindow, chromeWindow) {
-    // console.log('attachChromeWindow: ', tabWindow.toJS(), chromeWindow)
+    // log.log('attachChromeWindow: ', tabWindow.toJS(), chromeWindow)
 
     // Was this Chrome window id previously associated with some other tab window?
     const oldTabWindow = this.windowIdMap.get(chromeWindow.id)
@@ -143,7 +144,7 @@ export default class TabManagerState extends Immutable.Record({
 
     const attachedTabWindow = TabWindow.updateWindow(tabWindow, chromeWindow).remove('expanded')
 
-    // console.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS())
+    // log.log('attachChromeWindow: attachedTabWindow: ', attachedTabWindow.toJS())
 
     return rmStore.registerTabWindow(attachedTabWindow)
   }
@@ -158,7 +159,7 @@ export default class TabManagerState extends Immutable.Record({
     const prevTabWindow = this.windowIdMap.get(chromeWindow.id)
     /*
     if (!prevTabWindow) {
-      console.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow)
+      log.log("syncChromeWindow: detected new chromeWindow: ", chromeWindow)
     }
     */
     const tabWindow = prevTabWindow ? TabWindow.updateWindow(prevTabWindow, chromeWindow) : TabWindow.makeChromeTabWindow(chromeWindow)
@@ -169,7 +170,7 @@ export default class TabManagerState extends Immutable.Record({
     const st = updCurrent ? stReg.set('currentWindowId', chromeWindow.id) : stReg
 
     if (updCurrent) {
-      console.log('syncChromeWindow: updated current window to: ', chromeWindow.id)
+      log.log('syncChromeWindow: updated current window to: ', chromeWindow.id)
     }
 
     return st

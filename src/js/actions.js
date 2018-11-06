@@ -1,5 +1,6 @@
 // @flow
 /* globals alert */
+import * as log from 'loglevel'
 import * as utils from './utils'
 import * as prefs from './preferences'
 import tabliBrowser from './chromeBrowser'
@@ -40,11 +41,11 @@ export const syncChromeWindows = async (storeRef: TMSRef): TabManagerState => {
   var tPreGet = performance.now()
   const windowList = await chromep.windows.getAll({ populate: true })
   var tPostGet = performance.now()
-  console.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
+  log.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
   var tPreSync = performance.now()
   const nextSt = storeRef.update((state) => state.syncWindowList(windowList))
   var tPostSync = performance.now()
-  console.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
+  log.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
   return nextSt
 }
 
@@ -57,8 +58,8 @@ export const syncCurrent = async (storeRef: TMSRef): TabManagerState => {
     storeRef.update(st => st.setCurrentWindow(currentChromeWindow))
     return storeRef.getValue()
   } catch (e) {
-    console.error('syncCurrent: ', e)
-    console.log('(ignoring exception)')
+    log.error('syncCurrent: ', e)
+    log.log('(ignoring exception)')
     return storeRef.getValue()
   }
 }
@@ -84,7 +85,7 @@ const restoreFromAppState = (
   chrome.windows.getLastFocused({ populate: true }, (currentChromeWindow) => {
     let urls
     if (mbTab) {
-      console.log('restore saved window: restoring single tab: ', mbTab.toJS())
+      log.log('restore saved window: restoring single tab: ', mbTab.toJS())
       urls = [ mbTab.url ]
     } else {
       const tabItems = tabWindow.tabItems
@@ -108,7 +109,7 @@ const restoreFromAppState = (
       (currentChromeWindow.tabs[0].url === 'chrome://newtab/') &&
       (currentChromeWindow.id != null) &&
       (currentChromeWindow.tabs[0].id != null)) {
-      // console.log("found new window -- replacing contents")
+      // log.log("found new window -- replacing contents")
       var origTabId = currentChromeWindow.tabs[0].id
 
       // new window -- replace contents with urls:
@@ -137,7 +138,7 @@ const restoreFromAppState = (
         createData.width = lastFocusedTabWindow.width
         createData.height = lastFocusedTabWindow.height
       }
-      console.log('restoreFromAppState: creating windows: ', createData)
+      log.log('restoreFromAppState: creating windows: ', createData)
       chrome.windows.create(createData, attachWindow)
     }
   })
@@ -153,7 +154,7 @@ function restoreBookmarkWindow (
   tabWindow: TabWindow,
   mbTab: ?TabItem,
   storeRef: TMSRef) {
-  console.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
+  log.log('restoreBookmarkWindow: restoring "' + tabWindow.title + '"')
   const st = storeRef.getValue()
   restoreFromAppState(lastFocusedTabWindow, tabWindow, st.preferences.revertOnOpen, mbTab, storeRef)
 }
@@ -188,7 +189,7 @@ export const closeTab = async (origTabWindow: TabWindow, tabId: TabId, storeRef:
      * We'd like to do a full chrome.windows.get here so that we get the currently active tab
      * but amazingly we still see the closed tab when we do that!
     chrome.windows.get( tabWindow.openWindowId, { populate: true }, function ( chromeWindow ) {
-      console.log("closeTab: got window state: ", chromeWindow)
+      log.log("closeTab: got window state: ", chromeWindow)
       winStore.syncChromeWindow(chromeWindow)
     })
     */
@@ -197,7 +198,7 @@ export const closeTab = async (origTabWindow: TabWindow, tabId: TabId, storeRef:
       return state.handleTabClosed(tabWindow, tabId)
     })
   }
-  console.log('actions.closeTab: returning')
+  log.log('actions.closeTab: returning')
   return storeRef.getValue()
 }
 
@@ -216,7 +217,7 @@ export function unsaveTab (tabWindow: TabWindow, tabItem: TabItem, storeRef: TMS
 
 export const closeWindow = async (tabWindow: TabWindow, storeRef: TMSRef): TabManagerState => {
   if (!tabWindow.open) {
-    console.log('closeWindow: request to close non-open window, ignoring...')
+    log.log('closeWindow: request to close non-open window, ignoring...')
   } else {
     await chromep.windows.remove(tabWindow.openWindowId)
     storeRef.update((state) => state.handleTabWindowClosed(tabWindow))
@@ -236,16 +237,16 @@ export function activateTab (
   tabIndex: number,
   storeRef: TMSRef
 ) {
-  // console.log("activateTab: ", tabWindow, tab )
+  // log.log("activateTab: ", tabWindow, tab )
 
   if (targetTabWindow.open) {
     // OK, so we know this window is open.  What about the specific tab?
     if (tab.open) {
       // Tab is already open, just make it active:
-      // console.log("making tab active")
+      // log.log("making tab active")
       /*
             chrome.tabs.update(tab.openTabId, { active: true }, () => {
-              // console.log("making tab's window active")
+              // log.log("making tab's window active")
               chrome.windows.update(tabWindow.openWindowId, { focused: true })
             })
       */
@@ -261,12 +262,12 @@ export function activateTab (
         active: true
       }
 
-      // console.log("restoring bookmarked tab")
+      // log.log("restoring bookmarked tab")
       chrome.tabs.create(createOpts, () => {
       })
     }
   } else {
-    console.log('activateTab: opening single tab of saved window')
+    log.log('activateTab: opening single tab of saved window')
     // TODO: insert our own callback so we can activate chosen tab after opening window!
     restoreBookmarkWindow(lastFocusedTabWindow, targetTabWindow, tab, storeRef)
   }
@@ -313,8 +314,8 @@ export function manageWindow (
 
   var windowFolder = { parentId: tabliFolderId, title }
   chrome.bookmarks.create(windowFolder, (windowFolderNode) => {
-    // console.log( "succesfully created bookmarks folder ", windowFolderNode )
-    // console.log( "for window: ", tabWindow )
+    // log.log( "succesfully created bookmarks folder ", windowFolderNode )
+    // log.log( "for window: ", tabWindow )
 
     // We'll groupBy and then take the first item of each element of the sequence:
     const uniqTabItems = tabWindow.tabItems.groupBy((ti) => ti.url).toIndexedSeq().map((vs) => vs.get(0)).toArray()
@@ -344,7 +345,7 @@ export function manageWindow (
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
 export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, storeRef: TMSRef) {
-  // console.log("unmanageWindow: ", tabWindow.toJS())
+  // log.log("unmanageWindow: ", tabWindow.toJS())
   if (!archiveFolderId) {
     alert('could not move managed window folder to archive -- no archive folder')
     return
@@ -352,20 +353,20 @@ export function unmanageWindow (archiveFolderId: string, tabWindow: TabWindow, s
 
   // Could potentially disambiguate names in archive folder...
   chrome.bookmarks.move(tabWindow.savedFolderId, { parentId: archiveFolderId }, () => {
-    // console.log("unmanageWindow: bookmark folder moved to archive folder")
+    // log.log("unmanageWindow: bookmark folder moved to archive folder")
     storeRef.update((state) => state.unmanageWindow(tabWindow))
   })
 }
 
 export async function setWindowTitle (title: string, tabWindow: TabWindow, storeRef: TMSRef) {
   if (!tabWindow.saved) {
-    console.error('attempt to set window title on unsaved window: ', tabWindow.toJS())
+    log.error('attempt to set window title on unsaved window: ', tabWindow.toJS())
   }
   try {
     await chromep.bookmarks.update(tabWindow.savedFolderId, { title })
-    console.log('setWindowTitle: updated window title')
+    log.log('setWindowTitle: updated window title')
   } catch (err) {
-    console.error('error updating window title: ', err)
+    log.error('error updating window title: ', err)
   }
 }
 
@@ -385,7 +386,7 @@ export function sendFeedback () {
 
 export function showPreferences () {
   const prefsURL = chrome.runtime.getURL('preferences.html')
-  console.log({ prefsURL })
+  log.log({ prefsURL })
   chrome.tabs.create({ url: prefsURL })
 }
 
@@ -492,10 +493,10 @@ export function showRelNotes (winStore: TabManagerState, storeRef: TMSRef) {
 
 export const loadPreferences = async (storeRef: TMSRef): TabManagerState => {
   const items = await chromep.storage.local.get(USER_PREFS_KEY)
-  console.log('loadPreferences: read: ', items)
+  log.log('loadPreferences: read: ', items)
   const prefsStr = items[USER_PREFS_KEY]
   const userPrefs = prefs.Preferences.deserialize(prefsStr)
-  console.log('loadPreferences: userPrefs: ', userPrefs.toJS())
+  log.log('loadPreferences: userPrefs: ', userPrefs.toJS())
   storeRef.update(st => st.set('preferences', userPrefs))
   return storeRef.getValue()
 }
@@ -504,7 +505,7 @@ export const savePreferences = async (userPrefs: prefs.Preferences, storeRef: TM
   let saveObj = {}
   saveObj[USER_PREFS_KEY] = userPrefs.serialize()
   await chromep.storage.local.set(saveObj)
-  console.log('wrote preferences to local storage: ', saveObj)
+  log.log('wrote preferences to local storage: ', saveObj)
   // and update application state:
   storeRef.update(st => st.set('preferences', userPrefs))
   return storeRef.getValue()

@@ -1,3 +1,4 @@
+import * as log from 'loglevel'
 import * as React from 'react'
 import * as styles from './cssStyles'
 import { cx } from 'emotion'
@@ -83,7 +84,7 @@ class SelectableTabPage extends React.Component {
 
     const selectedWindow = this.props.filteredWindows[this.state.selectedWindowIndex]
     const selectedTabItem = selectedTab(selectedWindow, this.props.searchStr, this.state.selectedTabIndex)
-    console.log('opening: ', selectedTabItem.toJS())
+    log.log('opening: ', selectedTabItem.toJS())
     actions.activateTab(selectedWindow.tabWindow, selectedTabItem, this.state.selectedTabIndex, this.props.storeRef)
   };
 
@@ -94,7 +95,7 @@ class SelectableTabPage extends React.Component {
     if (selectedWindowIndex >= nextFilteredWindows.length) {
       if (nextFilteredWindows.length === 0) {
         this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 })
-        console.log('resetting indices')
+        log.log('resetting indices')
       } else {
         var lastWindow = nextFilteredWindows[nextFilteredWindows.length - 1]
         this.setState({ selectedWindowIndex: nextFilteredWindows.length - 1, selectedTabIndex: matchingTabCount(this.props.searchStr, lastWindow) - 1 })

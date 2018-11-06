@@ -1,3 +1,4 @@
+import * as log from 'loglevel' // eslint-disable-line
 import * as React from 'react'
 import * as styles from './cssStyles'
 import { cx, css } from 'emotion'
@@ -212,9 +213,9 @@ class SelectablePopup extends React.Component {
       (this.state.scrolledToTabId !== this.props.winStore.getActiveTabId())
 
     /*
-      console.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId,
+      log.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId,
                   ", currentWindowId: ", this.props.winStore.currentWindowId );
-      console.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
+      log.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
                   ", activeTabId: ", this.props.winStore.getActiveTabId(),
                   ", needScroll: ", needScrollUpdate)
     */
@@ -229,11 +230,11 @@ class SelectablePopup extends React.Component {
       const windowTop = windowRef.offsetTop
       const windowHeight = windowRef.scrollHeight
 
-      // console.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } )
+      // log.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } )
       if ((windowTop < viewportTop) ||
         ((windowTop + windowHeight) > (viewportTop + viewportHeight)) ||
         isPopup) {
-        // console.log("updateScrollPos: setting scroll position")
+        // log.log("updateScrollPos: setting scroll position")
 
         if ((windowHeight > viewportHeight) || isPopup) {
           bodyRef.scrollTop = windowRef.offsetTop - bodyRef.offsetTop - Constants.FOCUS_SCROLL_BASE
@@ -261,7 +262,7 @@ class SelectablePopup extends React.Component {
         selectedTabIndex: activeTabIndex
       }
 
-      // console.log("updateScrollPos: udpating State: ", updState)
+      // log.log("updateScrollPos: udpating State: ", updState)
       this.setState(updState)
     }
   };

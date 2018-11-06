@@ -1,3 +1,4 @@
+import * as log from 'loglevel' // eslint-disable-line no-unused-vars
 import * as React from 'react'
 import Button from 'reactstrap/lib/Button'
 import ButtonDropdown from 'reactstrap/lib/ButtonDropdown'
@@ -167,7 +168,7 @@ class SearchBar extends React.Component {
 
   handleReloadClick = (e) => {
     e.preventDefault()
-    console.log('handleReloadClick')
+    log.log('handleReloadClick')
     actions.reload()
   };
 

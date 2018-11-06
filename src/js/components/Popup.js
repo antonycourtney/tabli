@@ -1,5 +1,6 @@
 // @flow
 /* globals chrome */
+import * as log from 'loglevel' // eslint-disable-line no-unused-vars
 import * as React from 'react'
 import * as actions from '../actions'
 import * as searchOps from '../searchOps'
@@ -32,7 +33,7 @@ function sendHelperMessage (msg) {
   var port = (chrome.runtime.connect : any)({ name: 'popup' })
   port.postMessage(msg)
   port.onMessage.addListener((response) => {
-    console.log('Got response message: ', response)
+    log.log('Got response message: ', response)
   })
 }
 
@@ -89,7 +90,7 @@ class Popup extends React.Component {
   };
 
   openPreferencesModal = () => {
-    console.log('openPreferencesModal')
+    log.log('openPreferencesModal')
     this.setState({ prefsModalIsOpen: true })
   };
 
@@ -112,7 +113,7 @@ class Popup extends React.Component {
   };
 
   doUpdatePreferences = (newPrefs) => {
-    console.log('update preferences: ', newPrefs.toJS())
+    log.log('update preferences: ', newPrefs.toJS())
     actions.savePreferences(newPrefs, this.props.storeRef)
     this.closePreferencesModal()
   };
@@ -186,8 +187,8 @@ class Popup extends React.Component {
         </div>
       )
     } catch (e) {
-      console.error('App Component: caught exception during render: ')
-      console.error(e.stack)
+      log.error('App Component: caught exception during render: ')
+      log.error(e.stack)
       throw e
     }
 
@@ -213,7 +214,7 @@ class Popup extends React.Component {
 
     var listenerId = storeRef.addViewListener(throttledListener)
 
-    console.log('componentDidMount: added view listener: ', listenerId)
+    log.log('componentDidMount: added view listener: ', listenerId)
     sendHelperMessage({ listenerId })
   }
 }
