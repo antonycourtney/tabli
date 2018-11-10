@@ -114,7 +114,8 @@ test('chromeTabWindow', (t) => {
           "openTabIndex": 3,
           "title": "Flux | Application Architecture for Building User Interfaces",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "favIconUrl": ""
         }
       },
       {
@@ -340,7 +341,7 @@ test('attachChromeWindow', (t) => {
   const updTabWindow = TabWindow.updateWindow(tabWindow, testData.d3OpenedChromeWindow)
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()))
 
-/*
+
     console.log("updateTabWindow returned:")
     console.log(">>>>>>>")
     console.log(JSON.stringify(updTabWindowJS,null,2))
@@ -348,7 +349,6 @@ test('attachChromeWindow', (t) => {
 
     console.log("diffs between updTabWindow (actual) and expected:")
     dumpDiffs(updTabWindowJS, testData.d3AttachedExpectedTabWindow)
-*/
 
   t.deepEqual(updTabWindowJS, testData.d3AttachedExpectedTabWindow, 'updateWindow -- after attach')
 

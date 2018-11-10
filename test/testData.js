@@ -728,7 +728,8 @@ export const d3AttachedExpectedTabWindow =
         'openTabIndex': 1,
         'title': 'D3.js - Data-Driven Documents',
         'audible': false,
-        'pinned': false
+        'pinned': false,
+        'favIconUrl': ''
       }
     },
     {
