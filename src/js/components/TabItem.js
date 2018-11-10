@@ -9,6 +9,7 @@ import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
 import HeaderButton from './HeaderButton'
 import HeaderCheckbox from './HeaderCheckbox'
+import { ThemeContext } from './themeContext'
 import { cx, css } from 'emotion'
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon)
@@ -73,7 +74,7 @@ class TabItem extends React.PureComponent {
     isOver: PropTypes.bool.isRequired,
     onItemSelected: PropTypes.func
   };
-
+  static contextType = ThemeContext
   handleClick = (event) => {
     event.preventDefault()
     event.stopPropagation()
@@ -114,6 +115,8 @@ class TabItem extends React.PureComponent {
   };
 
   render () {
+    // let theme = this.context
+    // log.log('TabItem: theme: ', theme)
     const { connectDragSource, connectDropTarget, isOver } = this.props
     var tabWindow = this.props.tabWindow
     var tab = this.props.tab
@@ -211,7 +214,6 @@ class TabItem extends React.PureComponent {
       </div>))
   }
 }
-
 const DropWrap = DropTarget(DragItemTypes.TAB_ITEM, tabItemTarget, collectDropTarget)
 const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect)
 

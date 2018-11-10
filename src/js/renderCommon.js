@@ -8,7 +8,6 @@ import * as ReactDOM from 'react-dom'
 import Popup from './components/Popup'
 import TabManagerState from './tabManagerState'
 import * as actions from './actions'
-
 import * as oneref from 'oneref'
 
 /**
