@@ -9,6 +9,7 @@ import Input from 'reactstrap/lib/Input'
 import * as Constants from './constants'
 import * as actions from '../actions'
 import * as Util from './util'
+import { ThemeContext } from './themeContext'
 
 // The dreaded routine copied from SO
 // http://stackoverflow.com/a/18455088/3272482
@@ -191,6 +192,10 @@ class SearchBar extends React.Component {
   };
 
   render () {
+    let theme = this.context
+    log.log('SearchBar: theme: ', theme)
+    log.log('SearchBar: contextType: ', SearchBar.contextType)
+
     // We'll rotate 270 degrees to point upper left for popout,
     // 90 degrees to point lower right for pop-in:
     const popImgName = this.props.isPopout ? 'popin' : 'popout'
@@ -279,5 +284,6 @@ class SearchBar extends React.Component {
     )
   }
 }
+SearchBar.contextType = ThemeContext
 
 export default SearchBar

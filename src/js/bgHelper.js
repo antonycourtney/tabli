@@ -652,7 +652,7 @@ async function main () {
     chromeEventLog.setLevel('info')
     if (nodeEnv === 'development') {
       // more detail, generally:
-      // log.setLevel('debug')
+      log.setLevel('debug')
 
       // Enable to see every Chrome event:
       // chromeEventLog.setLevel('debug')

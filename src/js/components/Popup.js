@@ -10,6 +10,7 @@ import PreferencesModal from './PreferencesModal'
 import RevertModal from './RevertModal'
 import SaveModal from './SaveModal'
 import SelectablePopup from './SelectablePopup'
+import { ThemeContext, themes } from './themeContext'
 import * as Util from './util'
 import { DragDropContext } from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
@@ -48,6 +49,8 @@ class Popup extends React.Component {
     st.revertTabWindow = null
     st.searchStr = ''
     st.searchRE = null
+    st.theme = themes.light
+    log.log('Popup ctor: theme: ', themes.light, st.theme)
     this.state = st
   }
 
@@ -166,25 +169,29 @@ class Popup extends React.Component {
   render () {
     var ret
     try {
+      console.log('Popup: state: ', this.state)
+      console.log('Popup: theme: ', this.state.theme)
       const PreferencesModal = this.renderPreferencesModal()
       const saveModal = this.renderSaveModal()
       const revertModal = this.renderRevertModal()
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
       ret = (
-        <div className={popupOuterStyle}>
-          <SelectablePopup
-            onSearchInput={this.handleSearchInput}
-            winStore={this.state.winStore}
-            storeRef={this.props.storeRef}
-            filteredWindows={filteredWindows}
-            appComponent={this}
-            searchStr={this.state.searchStr}
-            searchRE={this.state.searchRE}
-            isPopout={this.props.isPopout} />
-          {PreferencesModal}
-          {saveModal}
-          {revertModal}
-        </div>
+        <ThemeContext.Provider value={this.state.theme} >
+          <div className={popupOuterStyle}>
+            <SelectablePopup
+              onSearchInput={this.handleSearchInput}
+              winStore={this.state.winStore}
+              storeRef={this.props.storeRef}
+              filteredWindows={filteredWindows}
+              appComponent={this}
+              searchStr={this.state.searchStr}
+              searchRE={this.state.searchRE}
+              isPopout={this.props.isPopout} />
+            {PreferencesModal}
+            {saveModal}
+            {revertModal}
+          </div>
+        </ThemeContext.Provider>
       )
     } catch (e) {
       log.error('App Component: caught exception during render: ')
