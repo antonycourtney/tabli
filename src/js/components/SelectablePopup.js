@@ -7,6 +7,7 @@ import * as Constants from './constants'
 import * as actions from '../actions'
 import SearchBar from './SearchBar'
 import TabWindowList from './TabWindowList'
+import { ThemeContext } from './themeContext'
 
 function matchingTabs (searchStr, filteredTabWindow) {
   var ret = (searchStr.length > 0) ? filteredTabWindow.itemMatches : filteredTabWindow.tabWindow.tabItems
@@ -34,13 +35,13 @@ const popupInnerStyle = css({
   flexDirection: 'column',
   flexWrap: 'nowrap'
 })
-const popupHeaderStyle = css({
+const popupHeaderStyle = theme => css({
   minWidth: 350,
   width: '100%',
   display: 'flex',
   justifyContent: 'center',
   height: Constants.POPUP_HEADER_HEIGHT,
-  background: '#ffffff',
+  background: theme.background,
   borderBottom: '1px solid #bababa',
   padding: 0,
   flex: '0 0 auto'
@@ -80,6 +81,7 @@ const summarySpanStyle = cx(styles.closed, summarySpanBaseStyle)
  * filtered windows that we receive from above
  */
 class SelectablePopup extends React.Component {
+  static contextType = ThemeContext
   state = {
     selectedWindowIndex: 0,
     selectedTabIndex: 0,
@@ -297,6 +299,7 @@ class SelectablePopup extends React.Component {
   }
 
   render () {
+    let theme = this.context
     const winStore = this.props.winStore
     const openTabCount = winStore.countOpenTabs()
     const openWinCount = winStore.countOpenWindows()
@@ -307,7 +310,7 @@ class SelectablePopup extends React.Component {
 
     return (
       <div className={popupInnerStyle}>
-        <div className={popupHeaderStyle}>
+        <div className={popupHeaderStyle(theme)}>
           <SearchBar
             winStore={this.props.winStore}
             storeRef={this.props.storeRef}

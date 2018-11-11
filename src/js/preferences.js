@@ -11,16 +11,18 @@ const _ = { defaultsDeep }
 
 type VersionedObject = { version: number, contents: any }
 
-export const PREFS_VERSION = 5
+export const PREFS_VERSION = 6
 
 export class Preferences extends Immutable.Record({
   popoutOnStart: false, // show popout on startup?
   dedupeTabs: false, // close tab if URL matches existing tab
-  revertOnOpen: true // revert to anchor tabs when opening saved window
+  revertOnOpen: true, // revert to anchor tabs when opening saved window
+  theme: 'light'
 }) {
   popoutOnStart: boolean
   dedupeTabs: boolean
   revertOnOpen: boolean
+  theme: string
 
   static deserialize (blob: ?string): Preferences {
     let jsPrefs = defaultPrefsJS

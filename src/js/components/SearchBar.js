@@ -10,6 +10,13 @@ import * as Constants from './constants'
 import * as actions from '../actions'
 import * as Util from './util'
 import { ThemeContext } from './themeContext'
+import { css } from 'emotion'
+
+const buttonImgStyle = theme => css`
+  width: 14px;
+  height: 14px;
+  background-color: {theme.background};
+`
 
 // The dreaded routine copied from SO
 // http://stackoverflow.com/a/18455088/3272482
@@ -24,6 +31,7 @@ function copyTextToClipboard (text) {
 }
 
 class SearchBar extends React.Component {
+  static contextType = ThemeContext
   constructor (props) {
     super(props)
 
@@ -194,7 +202,6 @@ class SearchBar extends React.Component {
   render () {
     let theme = this.context
     log.log('SearchBar: theme: ', theme)
-    log.log('SearchBar: contextType: ', SearchBar.contextType)
 
     // We'll rotate 270 degrees to point upper left for popout,
     // 90 degrees to point lower right for pop-in:
@@ -213,7 +220,7 @@ class SearchBar extends React.Component {
         color='dark'
         title={popDesc}
         onClick={this.handlePopoutClick}>
-        <img className='popout-img' src={popImgPath} />
+        <img className={buttonImgStyle(theme)} src={popImgPath} />
       </Button>
     )
 
@@ -284,6 +291,5 @@ class SearchBar extends React.Component {
     )
   }
 }
-SearchBar.contextType = ThemeContext
 
 export default SearchBar

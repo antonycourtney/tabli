@@ -49,8 +49,6 @@ class Popup extends React.Component {
     st.revertTabWindow = null
     st.searchStr = ''
     st.searchRE = null
-    st.theme = themes.light
-    log.log('Popup ctor: theme: ', themes.light, st.theme)
     this.state = st
   }
 
@@ -169,14 +167,16 @@ class Popup extends React.Component {
   render () {
     var ret
     try {
-      console.log('Popup: state: ', this.state)
-      console.log('Popup: theme: ', this.state.theme)
+      let themeName = this.state.winStore.preferences.theme
+      console.log('Popup: theme name(from prefs): ', themeName)
+      const theme = themes[themeName]
+      console.log('theme: ', theme)
       const PreferencesModal = this.renderPreferencesModal()
       const saveModal = this.renderSaveModal()
       const revertModal = this.renderRevertModal()
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
       ret = (
-        <ThemeContext.Provider value={this.state.theme} >
+        <ThemeContext.Provider value={theme} >
           <div className={popupOuterStyle}>
             <SelectablePopup
               onSearchInput={this.handleSearchInput}
