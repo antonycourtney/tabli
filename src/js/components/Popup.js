@@ -49,6 +49,8 @@ class Popup extends React.Component {
     st.revertTabWindow = null
     st.searchStr = ''
     st.searchRE = null
+    st.theme = themes.light
+    log.log('Popup ctor: theme: ', themes.light, st.theme)
     this.state = st
   }
 

@@ -227,5 +227,6 @@ class SearchBar extends React.Component {
     )
   }
 }
+SearchBar.contextType = ThemeContext
 
 export default SearchBar
