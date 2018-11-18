@@ -5,8 +5,10 @@ import * as actions from '../actions'
 import * as Util from './util'
 import * as styles from './cssStyles'
 import { ThemeContext } from './themeContext'
-import { css } from 'emotion'
+import { css, cx } from 'emotion'
 import MenuButton from './menuButton'
+
+const mkUrl = Util.mkUrl
 
 const toolbarOuterContainerStyle = css`
   display: flex;
@@ -34,6 +36,10 @@ const searchInputStyle = css`
   padding: 1px;
   font-size: 12px;
 `
+
+export const expandAllIconStyle = css({
+  WebkitMaskImage: mkUrl('images/triangle-small-1-01.png')
+})
 
 // The dreaded routine copied from SO
 // http://stackoverflow.com/a/18455088/3272482
@@ -172,8 +178,10 @@ class SearchBar extends React.Component {
     // We'll rotate 270 degrees to point upper left for popout,
     // 90 degrees to point lower right for pop-in:
     const popImgName = this.props.isPopout ? 'popin' : 'popout'
-    const popImgPath = '../images/' + popImgName + '.png'
-    const expandAllImgPath = '../images/triangle-small-1-01.png'
+    const popImgPath = 'images/' + popImgName + '.png'
+    const popIconStyle = css({
+      WebkitMaskImage: mkUrl(popImgPath)
+    })
 
     const popVerb = this.props.isPopout ? 'Hide' : 'Show'
     const popDesc = popVerb + ' Tabli Popout Window'
@@ -183,7 +191,7 @@ class SearchBar extends React.Component {
         className={styles.toolbarButton(theme)}
         title={popDesc}
         onClick={this.handlePopoutClick}>
-        <img className={styles.toolbarButtonImg(theme)} src={popImgPath} />
+        <div className={cx(styles.toolbarButtonIcon(theme), popIconStyle)}/>
       </button>
     )
 
@@ -192,7 +200,7 @@ class SearchBar extends React.Component {
         className={styles.toolbarButton(theme)}
         title='Expand/Collapse All Window Summaries'
         onClick={this.handleExpandToggleClick}>
-        <img className={styles.toolbarButtonImg(theme)} src={expandAllImgPath} />
+        <div className={cx(styles.toolbarButtonIcon(theme), expandAllIconStyle)}/>
       </button>
     )
 

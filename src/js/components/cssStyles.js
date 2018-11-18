@@ -231,8 +231,8 @@ export const toolbarButton = (theme: Object) => css`
   background-color: ${theme.buttonBackground};
 `
 
-export const toolbarButtonImg = (theme: Object) => css`
+export const toolbarButtonIcon = (theme: Object) => css`
   width: 14px;
   height: 14px;
-  background-color: inherit;
+  background-color: ${theme.foreground};
 `

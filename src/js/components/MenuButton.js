@@ -4,6 +4,7 @@ import * as styles from './cssStyles'
 import { ThemeContext } from './themeContext'
 import { Manager, Reference, Popper } from 'react-popper'
 import { css, cx } from 'emotion'
+import { mkUrl } from './util'
 import * as actions from '../actions'
 
 const popperBaseStyle = (theme: Object) => css({
@@ -23,6 +24,10 @@ const menuItemStyle = theme => css({
   '&:hover': {
     backgroundColor: theme.menuItemHover,
   }
+})
+
+const menuIconStyle = css({
+  WebkitMaskImage: mkUrl('images/hamburger-menu.png')
 })
 
 class MenuButton extends React.Component {
@@ -114,7 +119,6 @@ class MenuButton extends React.Component {
 
   render () {
     let theme = this.context
-    const menuImgPath = '../images/hamburger-menu.png'
     const popperVisStyle = this.state.dropdownOpen ? styles.visible : styles.hidden
     const popperStyle = cx(popperVisStyle, popperBaseStyle(theme))
     const menu = this.renderMenu()
@@ -133,7 +137,7 @@ class MenuButton extends React.Component {
               ref={ref}
               title='Tabli Menu'
               onClick={e => this.toggleDropDown(e)}>
-              <img className={styles.toolbarButtonImg(theme)} src={menuImgPath} />
+              <div className={cx(styles.toolbarButtonIcon(theme), menuIconStyle)}/>
             </button>
           )}
         </Reference>
