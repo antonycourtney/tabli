@@ -200,6 +200,9 @@ export const headerHoverVisible = css`
 export const hidden = css`
   visibility: hidden;
 `
+export const visible = css`
+  visibility: visible;
+`
 
 export const closeButtonBaseStyle = css`
   -webkit-mask-image: url('../images/Interface-77.png');
@@ -215,3 +218,24 @@ export const modalCloseButton = cx(headerButton, closeButtonBaseStyle)
 const titleBaseStyle = cx(text, noWrap, windowTitle)
 export const titleOpen = cx(titleBaseStyle, open)
 export const titleClosed = cx(titleBaseStyle, closed)
+
+export const toolbarButton = (theme: Object) => css`
+  padding  : 1px 5px;
+  font-size  : 12px;
+  line-height  : 1.5;
+  border-radius : 3px;
+  border: 1px solid #ccc;
+  &:hover {
+    background-color: ${theme.buttonHover};
+  }
+  background-color: ${theme.buttonBackground};
+`
+
+export const toolbarButtonImg = (theme: Object) => css`
+  width: 14px;
+  height: 14px;
+  background-color: ${theme.buttonBackground};
+  &:hover {
+    background-color: ${theme.buttonHover};
+  }
+`

@@ -105,16 +105,6 @@ fieldset { padding:0; border:0; }
   background-position: center center;
 }
 
-.popout-img {
-  width: 14px;
-  height: 14px;
-}
-
-.expand-all-img {
-  width: 14px;
-  height: 14px;
-}
-
 /*
  * The following now mostly come from reactstrap, but not entirely.
  * Note that we can't easily get rid of this explicit CSS because of

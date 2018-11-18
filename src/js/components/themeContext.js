@@ -4,12 +4,18 @@ export const themes = {
   light: {
     foreground: '#000000',
     background: '#ffffff',
-    buttonBackground: '#ffffff'
+    buttonBackground: '#ffffff',
+    lightBorder: '#cacaca',
+    menuItemHover: '#f8f9fa',
+    buttonHover: '#999999'
   },
   dark: {
     foreground: '#ffffff',
     background: '#222222',
-    buttonBackground: '#aaaaaa'
+    buttonBackground: '#aaaaaa',
+    lightBorder: '#cacaca',
+    menuItemHover: '#f8f9fa',
+    buttonHover: '#999999'
   },
 }
 

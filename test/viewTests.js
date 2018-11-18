@@ -12,6 +12,7 @@ import TabliPopup from '../src/js/components/Popup'
 import SelectablePopup from '../src/js/components/SelectablePopup'
 import SearchBar from '../src/js/components/SearchBar'
 import TabItem from '../src/js/components/TabItem'
+import * as popperJS from 'popper.js'
 import * as sinon from 'sinon'
 
 function getWindowSnap () {
@@ -55,7 +56,10 @@ test('basic window state', (t) => {
   t.end()
 })
 
+
 test('basic render test', (t) => {
+  window.isTesting = true
+
   const winStore = initialWinStore()
 
   t.notEqual(winStore, null, 'initial winStore is not null')
@@ -69,8 +73,9 @@ test('basic render test', (t) => {
 })
 
 /*
- *
-
+ * disabling because menu is now handled by our
+ * custom MenuButton, which uses Popper.js, which doesn't
+ * play nicely with our fake dom setup. :-(
 test('basic event test', (t) => {
 
   // Let's stub out all the stubs in actions libs:
@@ -100,7 +105,6 @@ test('basic event test', (t) => {
 })
 */
 
-
 test('isearch test', (t) => {
   // Let's stub out all the stubs in actions libs:
   var actionsMock = sinon.mock(actions)
@@ -123,26 +127,15 @@ test('isearch test', (t) => {
 
   searchInput.value = 'git'
 
-  /*
-    const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar)
+  // const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar)
+  // const searchInput = searchBar.refs.searchInput
+  // searchInput.value = 'git'
 
-    const searchInput = searchBar.refs.searchInput
 
-    searchInput.value = 'git'
-  */
-
-  /*
-   * This also works:
-  const inputComponents = ReactTestUtils.scryRenderedDOMComponentsWithTag(searchBar,'input')
-  console.log("inputComponents: ", inputComponents)
-    */
+  // const inputComponents = ReactTestUtils.scryRenderedDOMComponentsWithTag(searchBar,'input')
+  // console.log("inputComponents: ", inputComponents)
 
   ReactTestUtils.Simulate.change(searchInput); //  {target: { value: 'git'}})
-  /*
-  ReactTestUtils.Simulate.keyDown(searchInput, {key: "g", keyCode: 103})
-  ReactTestUtils.Simulate.keyDown(searchInput, {key: "i", keyCode: 105})
-  ReactTestUtils.Simulate.keyDown(searchInput, {key: "t", keyCode: 116})
-  */
 
   const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(component, TabItem)
 
@@ -153,6 +146,7 @@ test('isearch test', (t) => {
   actionsMock.restore()
   t.end()
 })
+
 
 test('search and open test', (t) => {
   // Let's stub out all the stubs in actions libs:

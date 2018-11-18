@@ -1,21 +1,38 @@
 import * as log from 'loglevel' // eslint-disable-line no-unused-vars
 import * as React from 'react'
-import Button from 'reactstrap/lib/Button'
-import ButtonDropdown from 'reactstrap/lib/ButtonDropdown'
-import DropdownToggle from 'reactstrap/lib/DropdownToggle'
-import DropdownMenu from 'reactstrap/lib/DropdownMenu'
-import DropdownItem from 'reactstrap/lib/DropdownItem'
-import Input from 'reactstrap/lib/Input'
 import * as Constants from './constants'
 import * as actions from '../actions'
 import * as Util from './util'
+import * as styles from './cssStyles'
 import { ThemeContext } from './themeContext'
 import { css } from 'emotion'
+import MenuButton from './menuButton'
 
-const buttonImgStyle = theme => css`
-  width: 14px;
-  height: 14px;
-  background-color: {theme.background};
+const toolbarOuterContainerStyle = css`
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  min-width: 340px;
+  justify: center;
+`
+const toolbarInnerContainerStyle = css`
+  display: flex;
+  justify-content: space-around;
+  width: 340px;
+`
+const searchInputStyle = css`
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  width: 200px;
+  max-width: 200px;
+  margin-left: 8px;
+  margin-right: 12px;
+  flex: 0 0 auto;
+  height: 22px;
+  line-height: 1.42;
+  padding: 1px;
+  font-size: 12px;
 `
 
 // The dreaded routine copied from SO
@@ -32,20 +49,6 @@ function copyTextToClipboard (text) {
 
 class SearchBar extends React.Component {
   static contextType = ThemeContext
-  constructor (props) {
-    super(props)
-
-    this.toggle = this.toggle.bind(this)
-    this.state = {
-      dropdownOpen: false
-    }
-  }
-
-  toggle () {
-    this.setState(prevState => ({
-      dropdownOpen: !prevState.dropdownOpen
-    }))
-  }
 
   handleChange = () => {
     const searchStr = this.searchInputRef.value
@@ -133,16 +136,6 @@ class SearchBar extends React.Component {
     }
   };
 
-  handleHelpClick = (e) => {
-    e.preventDefault()
-    actions.showHelp()
-  };
-
-  handleAboutClick = (e) => {
-    e.preventDefault()
-    actions.showAbout()
-  };
-
   handlePopoutClick = (e) => {
     if (this.props.isPopout) {
       actions.hidePopout(this.props.winStore, this.props.storeRef)
@@ -151,34 +144,8 @@ class SearchBar extends React.Component {
     }
   };
 
-  handleReviewClick = (e) => {
-    e.preventDefault()
-    actions.showReview(this.props.winStore, this.props.storeRef)
-  };
-
-  handleFeedbackClick = (e) => {
-    e.preventDefault()
-    actions.sendFeedback(this.props.winStore, this.props.storeRef)
-  };
-
-  handleRelNotesClick = (e) => {
-    e.preventDefault()
-    actions.showRelNotes(this.props.winStore, this.props.storeRef)
-  };
-
   handleExpandToggleClick = () => {
     actions.toggleExpandAll(this.props.winStore, this.props.storeRef)
-  };
-
-  handlePreferencesClick = (e) => {
-    e.preventDefault()
-    actions.showPreferences()
-  };
-
-  handleReloadClick = (e) => {
-    e.preventDefault()
-    log.log('handleReloadClick')
-    actions.reload()
   };
 
   handleCopyClick = () => {
@@ -201,84 +168,53 @@ class SearchBar extends React.Component {
 
   render () {
     let theme = this.context
-    log.log('SearchBar: theme: ', theme)
 
     // We'll rotate 270 degrees to point upper left for popout,
     // 90 degrees to point lower right for pop-in:
     const popImgName = this.props.isPopout ? 'popin' : 'popout'
     const popImgPath = '../images/' + popImgName + '.png'
-    const menuImgPath = '../images/hamburger-menu.png'
     const expandAllImgPath = '../images/triangle-small-1-01.png'
 
     const popVerb = this.props.isPopout ? 'Hide' : 'Show'
     const popDesc = popVerb + ' Tabli Popout Window'
 
     const popoutButton = (
-      <Button
-        className='btn-xs'
-        outline
-        color='dark'
+      <button
+        className={styles.toolbarButton(theme)}
         title={popDesc}
         onClick={this.handlePopoutClick}>
-        <img className={buttonImgStyle(theme)} src={popImgPath} />
-      </Button>
+        <img className={styles.toolbarButtonImg(theme)} src={popImgPath} />
+      </button>
     )
 
     const expandAllButton = (
-      <Button
-        className='btn-xs'
-        outline
-        color='dark'
+      <button
+        className={styles.toolbarButton(theme)}
         title='Expand/Collapse All Window Summaries'
         onClick={this.handleExpandToggleClick}>
-        <img className='expand-all-img' src={expandAllImgPath} />
-      </Button>
+        <img className={styles.toolbarButtonImg(theme)} src={expandAllImgPath} />
+      </button>
     )
 
     const copyButton = (
-      <Button
-        className='btn-xs'
-        outline
-        color='dark'
+      <button
+        className={styles.toolbarButton(theme)}
         title='Copy All to Clipboard'
         onClick={this.handleCopyClick}>
         <i className='fa fa-clipboard' aria-hidden='true' />
-      </Button>
-    )
-
-    const dropdownMenu = (
-      <DropdownMenu className='tabli-menu'>
-        <DropdownItem className='help-button' onClick={this.handleHelpClick}>Help (Manual)</DropdownItem>
-        <DropdownItem onClick={this.handleAboutClick}>About Tabli</DropdownItem>
-        <DropdownItem onClick={this.handleRelNotesClick}>Release Notes</DropdownItem>
-        <DropdownItem divider />
-        <DropdownItem onClick={this.handlePreferencesClick}>Preferences...</DropdownItem>
-        <DropdownItem onClick={this.handleReloadClick}>Reload</DropdownItem>
-        <DropdownItem divider />
-        <DropdownItem onClick={this.handleReviewClick}>Review Tabli</DropdownItem>
-        <DropdownItem onClick={this.handleFeedbackClick}>Send Feedback</DropdownItem>
-      </DropdownMenu>
+      </button>
     )
 
     return (
-      <div className='header-container'>
-        <div className='header-toolbar'>
-          <ButtonDropdown
-            className='btn-group-xs'
-            isOpen={this.state.dropdownOpen}
-            toggle={this.toggle}>
-            <DropdownToggle outline >
-              <img src={menuImgPath} />
-            </DropdownToggle>
-            {dropdownMenu}
-          </ButtonDropdown>
+      <div className={toolbarOuterContainerStyle}>
+        <div className={toolbarInnerContainerStyle}>
+          <MenuButton winStore={this.props.winStore} storeRef={this.props.storeRef} />
           {popoutButton}
-          <Input
-            bsSize='sm'
-            className='search-input'
+          <input
+            className={searchInputStyle}
             type='search'
             tabIndex={1}
-            innerRef={this.setInputRef}
+            ref={this.setInputRef}
             id='searchBox'
             placeholder='Search...'
             onChange={this.handleChange}
