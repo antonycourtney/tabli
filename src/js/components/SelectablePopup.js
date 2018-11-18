@@ -42,6 +42,7 @@ const popupHeaderStyle = theme => css({
   justifyContent: 'center',
   height: Constants.POPUP_HEADER_HEIGHT,
   background: theme.background,
+  color: theme.foreground,
   borderBottom: '1px solid #bababa',
   padding: 0,
   flex: '0 0 auto'

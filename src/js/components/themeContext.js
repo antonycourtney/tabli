@@ -12,9 +12,9 @@ export const themes = {
   dark: {
     foreground: '#ffffff',
     background: '#222222',
-    buttonBackground: '#aaaaaa',
+    buttonBackground: '#333333',
     lightBorder: '#cacaca',
-    menuItemHover: '#f8f9fa',
+    menuItemHover: '#555555',
     buttonHover: '#999999'
   },
 }
