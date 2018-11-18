@@ -29,20 +29,20 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
 }
 
 // inner popup container, consisting of just header,body and footer:
-const popupInnerStyle = css({
+const popupInnerStyle = theme => css({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  flexWrap: 'nowrap'
+  flexWrap: 'nowrap',
+  background: theme.background,
+  color: theme.foreground
 })
-const popupHeaderStyle = theme => css({
+const popupHeaderStyle = css({
   minWidth: 350,
   width: '100%',
   display: 'flex',
   justifyContent: 'center',
   height: Constants.POPUP_HEADER_HEIGHT,
-  background: theme.background,
-  color: theme.foreground,
   borderBottom: '1px solid #bababa',
   padding: 0,
   flex: '0 0 auto'
@@ -72,7 +72,6 @@ const popupFooterStyle = css({
 const summarySpanBaseStyle = css({
   marginRight: 5
 })
-const summarySpanStyle = cx(styles.closed, summarySpanBaseStyle)
 
 /**
  * An element that manages the selection.
@@ -309,9 +308,11 @@ class SelectablePopup extends React.Component {
     // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
     const summarySentence = 'Tabs: ' + openTabCount + ' Open. Windows: ' + openWinCount + ' Open, ' + savedCount + ' Saved.'
 
+    const summarySpanStyle = cx(styles.closed(theme), summarySpanBaseStyle)
+
     return (
-      <div className={popupInnerStyle}>
-        <div className={popupHeaderStyle(theme)}>
+      <div className={popupInnerStyle(theme)}>
+        <div className={popupHeaderStyle}>
           <SearchBar
             winStore={this.props.winStore}
             storeRef={this.props.storeRef}

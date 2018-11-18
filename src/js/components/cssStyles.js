@@ -1,6 +1,5 @@
 // @flow
 import * as Constants from './constants'
-import * as colors from './colors'
 import { mkUrl } from './util'
 /**
  * Wrappers around styles with explicit calls to css()
@@ -22,19 +21,19 @@ export const activeSpan = css({
 })
 export const tabTitle = css({
   minWidth: Constants.TAB_TITLE_MIN_WIDTH,
-  color: 'black',
+  color: 'inherit',
   textDecoration: 'none',
   flexGrow: 1,
   '&:hover': {
-    color: 'black',
+    color: 'inherit',
     textDecoration: 'none'
   }
 })
 export const simpleTabTitle = css({
   width: Constants.SIMPLE_TAB_TITLE_WIDTH
 })
-export const tabItemSelected = css({
-  backgroundColor: '#dadada'
+export const tabItemSelected = (theme: Object) => css({
+  backgroundColor: theme.tabItemSelected
 })
 export const audibleIcon = css({
   WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
@@ -70,8 +69,8 @@ export const noWrap = css({
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 })
-export const windowHeader = css({
-  backgroundColor: '#ebe9eb',
+export const windowHeader = (theme: Object) => css({
+  backgroundColor: theme.headerBackground,
   borderBottom: '1px solid #bababa',
   height: Constants.WINDOW_HEADER_HEIGHT,
   maxHeight: Constants.WINDOW_HEADER_HEIGHT,
@@ -89,8 +88,8 @@ export const windowManagedButton = css({
   backgroundColor: '#7472ff'
 })
 export const open = css({})
-export const closed = css({
-  color: colors.closedGray
+export const closed = (theme: Object) => css({
+  color: theme.closedGray
 })
 export const text = css({
   fontSize: 12,
@@ -129,8 +128,8 @@ export const emptyFavIcon = css({
 export const favIconClosed = css({
   WebkitFilter: 'grayscale(1) opacity(50%)'
 })
-export const imageButtonClosed = css({
-  backgroundColor: colors.closedGray
+export const imageButtonClosed = (theme: Object) => css({
+  backgroundColor: theme.closedGray
 })
 export const tabList = css({
   marginLeft: 0
@@ -217,7 +216,7 @@ export const modalCloseButton = cx(headerButton, closeButtonBaseStyle)
 
 const titleBaseStyle = cx(text, noWrap, windowTitle)
 export const titleOpen = cx(titleBaseStyle, open)
-export const titleClosed = cx(titleBaseStyle, closed)
+export const titleClosed = (theme: Object) => cx(titleBaseStyle, closed(theme))
 
 export const toolbarButton = (theme: Object) => css`
   padding  : 1px 5px;

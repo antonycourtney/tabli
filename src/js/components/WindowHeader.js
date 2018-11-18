@@ -3,6 +3,7 @@ import * as React from 'react'
 import { mkUrl } from './util'
 import * as actions from '../actions'
 import * as Constants from './constants'
+import { ThemeContext } from './themeContext'
 
 import { cx, css } from 'emotion'
 import * as styles from './cssStyles'
@@ -32,6 +33,8 @@ const editButtonBaseStyle = css`
 const editButtonStyle = cx(styles.headerButton, styles.headerHoverVisible, editButtonBaseStyle)
 
 class WindowHeader extends React.PureComponent {
+  static contextType = ThemeContext
+
   state = {
     editingTitle: false
   }
@@ -82,6 +85,7 @@ class WindowHeader extends React.PureComponent {
   };
 
   render () {
+    let theme = this.context
     var tabWindow = this.props.tabWindow
 
     var managed = tabWindow.saved
@@ -149,7 +153,7 @@ class WindowHeader extends React.PureComponent {
       )
     }
 
-    const titleStyle = tabWindow.open ? styles.titleOpen : styles.titleClosed
+    const titleStyle = tabWindow.open ? styles.titleOpen : styles.titleClosed(theme)
     const titleSpan = (
       <div className={titleStyle}>
         {titleComponent}
@@ -162,7 +166,7 @@ class WindowHeader extends React.PureComponent {
     // see https://emotion.sh/docs/nested for more info.
     return (
       <div
-        className={cx(styles.windowHeader, styles.noWrap) + ' windowHeaderHoverContainer'}
+        className={cx(styles.windowHeader(theme), styles.noWrap) + ' windowHeaderHoverContainer'}
         onClick={this.props.onOpen}>
         <div className={styles.rowItemsFixedWidth}>
           {checkItem}

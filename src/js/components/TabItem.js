@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import * as React from 'react'
 import * as styles from './cssStyles'
 
-import * as colors from './colors'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
@@ -115,7 +114,7 @@ class TabItem extends React.PureComponent {
   };
 
   render () {
-    // let theme = this.context
+    let theme = this.context
     // log.log('TabItem: theme: ', theme)
     const { connectDragSource, connectDropTarget, isOver } = this.props
     var tabWindow = this.props.tabWindow
@@ -137,10 +136,10 @@ class TabItem extends React.PureComponent {
     if (managed) {
       const tabTitleClosedHover = css({
         '&:hover': {
-          color: colors.closedGray
+          color: theme.closedGray
         },
       })
-      const tabTitleClosed = cx(styles.closed, tabTitleClosedHover)
+      const tabTitleClosed = cx(styles.closed(theme), tabTitleClosedHover)
 
       if (!tab.open) {
         tabOpenStateStyle = tabTitleClosed
@@ -175,7 +174,7 @@ class TabItem extends React.PureComponent {
 
     var tabActiveStyle = (tab.open && tab.openState.active) ? styles.activeSpan : null
     var tabTitleStyle = cx(styles.text, styles.tabTitle, styles.noWrap, tabOpenStateStyle, tabActiveStyle)
-    var selectedStyle = this.props.isSelected ? styles.tabItemSelected : null
+    var selectedStyle = this.props.isSelected ? styles.tabItemSelected(theme) : null
 
     var dropStyle = isOver ? styles.tabItemDropOver : null
 

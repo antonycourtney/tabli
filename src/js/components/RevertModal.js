@@ -8,11 +8,14 @@ import * as Constants from './constants'
 import * as Modal from './Modal'
 
 import * as TabWindow from '../tabWindow'
+import { ThemeContext } from './themeContext'
 
 /*
  * Modal dialog for reverting a bookmarked window
  */
 class RevertModal extends React.Component {
+  static contextType = ThemeContext
+
   handleKeyDown = (e) => {
     if (e.keyCode === Constants.KEY_ESC) {
       // ESC key
@@ -29,6 +32,7 @@ class RevertModal extends React.Component {
   };
 
   renderItem = (tabItem, idx) => {
+    let theme = this.context
     const favIconUrl = tabItem.open ? tabItem.openState.favIconUrl : null
     var fiSrc = favIconUrl || ''
 
@@ -38,7 +42,7 @@ class RevertModal extends React.Component {
     }
 
     var tabFavIcon = <img className={styles.favIcon} src={fiSrc} />
-    const tabOpenStyle = tabItem.open ? null : styles.closed
+    const tabOpenStyle = tabItem.open ? null : styles.closed(theme)
     var tabActiveStyle = tabItem.active ? styles.activeSpan : null
     var tabTitleStyles = cx(styles.text, styles.simpleTabTitle, styles.noWrap, tabOpenStyle, tabActiveStyle)
     const id = 'tabItem-' + idx

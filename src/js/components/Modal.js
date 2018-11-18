@@ -2,6 +2,7 @@ import * as Constants from './constants'
 import * as React from 'react'
 import * as styles from './cssStyles'
 import { css, cx } from 'emotion'
+import { ThemeContext } from './themeContext'
 import HeaderButton from './HeaderButton'
 
 /*
@@ -61,12 +62,14 @@ const dialogInfoStyle = css({
 })
 
 export class Dialog extends React.PureComponent {
+  static contextType = ThemeContext
   handleClose = (event) => {
     event.preventDefault()
     this.props.onClose(event)
   };
 
   render () {
+    let theme = this.context
     var modalDiv = null
 
     var closeButton = (
@@ -81,7 +84,7 @@ export class Dialog extends React.PureComponent {
     modalDiv = (
       <div className={modalOverlayStyle}>
         <div className={modalContainerStyle}>
-          <div className={cx(styles.windowHeader, styles.noWrap) + ' windowHeaderHoverContainer'} >
+          <div className={cx(styles.windowHeader(theme), styles.noWrap) + ' windowHeaderHoverContainer'} >
             <span className={titleStyle}>{this.props.title}</span>
             <div className={styles.spacer} />
             {closeButton}

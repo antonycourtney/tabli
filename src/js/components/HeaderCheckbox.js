@@ -8,6 +8,7 @@ import * as React from 'react'
 
 import { cx, css } from 'emotion'
 import * as styles from './cssStyles'
+import { ThemeContext } from './themeContext'
 import get from 'lodash/get'
 
 const containerBaseStyle = css({
@@ -17,7 +18,9 @@ const containerBaseStyle = css({
 const containerStyle = cx(styles.headerButton, containerBaseStyle)
 
 class HeaderCheckbox extends React.PureComponent {
+  static contextType = ThemeContext
   render () {
+    let theme = this.context
     const checked = !!(this.props.value)
 
     // defaults to rendering in open state:
@@ -26,7 +29,7 @@ class HeaderCheckbox extends React.PureComponent {
     let checkboxComponent
 
     if (checked) {
-      const openStateStyle = isOpen ? null : styles.imageButtonClosed
+      const openStateStyle = isOpen ? null : styles.imageButtonClosed(theme)
       checkboxComponent = (
         <button className={cx(styles.headerButton, styles.windowManagedButton, openStateStyle)} title={this.props.title} onClick={this.props.onClick} />)
     } else {
