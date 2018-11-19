@@ -29,13 +29,11 @@ function selectedTab (filteredTabWindow, searchStr, tabIndex) {
 }
 
 // inner popup container, consisting of just header,body and footer:
-const popupInnerStyle = theme => css({
+const popupInnerStyle = css({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  flexWrap: 'nowrap',
-  background: theme.background,
-  color: theme.foreground
+  flexWrap: 'nowrap'
 })
 const popupHeaderStyle = css({
   minWidth: 350,
@@ -311,7 +309,7 @@ class SelectablePopup extends React.Component {
     const summarySpanStyle = cx(styles.closed(theme), summarySpanBaseStyle)
 
     return (
-      <div className={popupInnerStyle(theme)}>
+      <div className={popupInnerStyle}>
         <div className={popupHeaderStyle}>
           <SearchBar
             winStore={this.props.winStore}

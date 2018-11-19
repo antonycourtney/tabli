@@ -9,6 +9,7 @@ import * as Modal from './Modal'
 
 import * as TabWindow from '../tabWindow'
 import { ThemeContext } from './themeContext'
+import * as tabItemUtil from './tabItemUtil'
 
 /*
  * Modal dialog for reverting a bookmarked window
@@ -33,15 +34,8 @@ class RevertModal extends React.Component {
 
   renderItem = (tabItem, idx) => {
     let theme = this.context
-    const favIconUrl = tabItem.open ? tabItem.openState.favIconUrl : null
-    var fiSrc = favIconUrl || ''
 
-    // Skip the chrome FAVICONs; they just throw when accessed.
-    if (fiSrc.indexOf('chrome://theme/') === 0) {
-      fiSrc = ''
-    }
-
-    var tabFavIcon = <img className={styles.favIcon} src={fiSrc} />
+    const tabFavIcon = tabItemUtil.mkFavIcon(tabItem)
     const tabOpenStyle = tabItem.open ? null : styles.closed(theme)
     var tabActiveStyle = tabItem.active ? styles.activeSpan : null
     var tabTitleStyles = cx(styles.text, styles.simpleTabTitle, styles.noWrap, tabOpenStyle, tabActiveStyle)

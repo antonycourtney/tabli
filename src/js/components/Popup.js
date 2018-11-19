@@ -19,12 +19,14 @@ import debounce from 'lodash/debounce'
 const _ = { debounce }
 
 // entire popup window container, including modals:
-const popupOuterStyle = css({
+const popupOuterStyle = theme => css({
   minWidth: 352,
   width: '100%',
-  height: '100%'
+  height: '100%',
   // adding this border is useful for debugging styling issues:
   // border: '1px solid #bababa'
+  background: theme.background,
+  color: theme.foreground
 })
 
 /**
@@ -179,7 +181,7 @@ class Popup extends React.Component {
       const filteredWindows = searchOps.filterTabWindows(this.state.sortedWindows, this.state.searchRE)
       ret = (
         <ThemeContext.Provider value={theme} >
-          <div className={popupOuterStyle}>
+          <div className={popupOuterStyle(theme)}>
             <SelectablePopup
               onSearchInput={this.handleSearchInput}
               winStore={this.state.winStore}

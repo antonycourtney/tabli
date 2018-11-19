@@ -2,18 +2,14 @@ import * as log from 'loglevel'
 import PropTypes from 'prop-types'
 import * as React from 'react'
 import * as styles from './cssStyles'
-
+import { cx, css } from 'emotion'
 import * as actions from '../actions'
 import { DragItemTypes } from './constants'
 import { DragSource, DropTarget } from 'react-dnd'
 import HeaderButton from './HeaderButton'
 import HeaderCheckbox from './HeaderCheckbox'
 import { ThemeContext } from './themeContext'
-import { cx, css } from 'emotion'
-
-const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon)
-const favIconOpenStyle = styles.favIcon
-const favIconClosedStyle = cx(styles.favIcon, styles.favIconClosed)
+import * as tabItemUtil from './tabItemUtil'
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -128,8 +124,6 @@ class TabItem extends React.PureComponent {
     // span style depending on whether open or closed window
     var tabOpenStateStyle = null
 
-    const favIconStyle = tab.open ? favIconOpenStyle : favIconClosedStyle
-
     var tabCheckItem
 
     if (managed) {
@@ -158,19 +152,8 @@ class TabItem extends React.PureComponent {
       // insert a spacer:
       tabCheckItem = <div className={styles.headerButton} />
     }
-    // const favIconUrl = tab.open ? tab.openState.favIconUrl : null
-    // var fiSrc = favIconUrl ? favIconUrl : ''
-    var fiSrc = 'chrome://favicon/size/16/' + tab.url
 
-    // Skip the chrome FAVICONs; they just throw when accessed.
-    if (fiSrc.indexOf('chrome://theme/') === 0) {
-      fiSrc = ''
-    }
-
-    const emptyFavIcon = <div className={emptyFavIconStyle} />
-
-    var tabFavIcon = (fiSrc.length > 0) ? <img className={favIconStyle} src={fiSrc} /> : emptyFavIcon
-
+    const tabFavIcon = tabItemUtil.mkFavIcon(tab)
     var tabActiveStyle = (tab.open && tab.openState.active) ? styles.activeSpan : null
     var tabTitleStyle = cx(styles.text, styles.tabTitle, styles.noWrap, tabOpenStateStyle, tabActiveStyle)
     var selectedStyle = this.props.isSelected ? styles.tabItemSelected(theme) : null

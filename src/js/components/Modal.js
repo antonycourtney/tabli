@@ -25,14 +25,14 @@ const modalOverlayStyle = css({
   flexDirection: 'column'
 })
 const selectedBorder = '2px solid #a0a0a0'
-const modalContainerStyle = css({
+const modalContainerStyle = theme => css({
   minWidth: 300,
   maxWidth: 480,
   maxHeight: '80%',
   position: 'relative',
   zIndex: 10,
   borderRadius: 3,
-  background: '#fff',
+  background: theme.background,
   margin: 'auto',
   border: selectedBorder,
   flexGrow: 0,
@@ -83,7 +83,7 @@ export class Dialog extends React.PureComponent {
     // see https://emotion.sh/docs/nested for more info.
     modalDiv = (
       <div className={modalOverlayStyle}>
-        <div className={modalContainerStyle}>
+        <div className={modalContainerStyle(theme)}>
           <div className={cx(styles.windowHeader(theme), styles.noWrap) + ' windowHeaderHoverContainer'} >
             <span className={titleStyle}>{this.props.title}</span>
             <div className={styles.spacer} />
