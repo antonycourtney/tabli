@@ -21,16 +21,15 @@ const revertButtonBaseStyle = css({
 })
 const revertButtonStyle = cx(styles.headerButton, revertButtonBaseStyle)
 
-const editButtonBaseStyle = css`
+const editButtonBaseStyle = (theme: Object) => css`
   -webkit-mask-image: url('../images/Edition-30.png');
-  background-color: #888888;
+  background-color: ${theme.headerButtonColor};
   margin-left: 4px;
   margin-right: 12px;
   &:hover {
-    background-color: #000000;
+    background-color: ${theme.headerButtonHover};
   }
 `
-const editButtonStyle = cx(styles.headerButton, styles.headerHoverVisible, editButtonBaseStyle)
 
 class WindowHeader extends React.PureComponent {
   static contextType = ThemeContext
@@ -107,6 +106,8 @@ class WindowHeader extends React.PureComponent {
         title='Revert to bookmarked tabs (Close other tabs)'
         onClick={this.props.onRevert} />)
 
+    const editButtonStyle = cx(styles.headerButton, styles.headerHoverVisible, editButtonBaseStyle(theme))
+
     const editButton = (
       <HeaderButton
         className={editButtonStyle}
@@ -116,7 +117,7 @@ class WindowHeader extends React.PureComponent {
 
     var closeButton = (
       <HeaderButton
-        className={styles.headerCloseButton}
+        className={styles.headerCloseButton(theme)}
         visible={tabWindow.open}
         title='Close Window'
         onClick={this.props.onClose} />)

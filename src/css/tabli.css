@@ -9,7 +9,7 @@ html {
   height: 600px;
 }
 body {
-      background: white;
+      /* background: white; */
       font-family: sans-serif;
       /* max-width: 400px; */
       /* overflow-x: hidden; */
@@ -112,6 +112,7 @@ fieldset { padding:0; border:0; }
  */
 .card {
   font-family: sans-serif;
+  background-color: inherit;
 }
 .card-header {
   padding-left: 16px;
@@ -127,7 +128,7 @@ fieldset { padding:0; border:0; }
 }
 .card-subtitle {
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.541176);
+  /* color: rgba(0, 0, 0, 0.541176); */
 }
 .card-body {
   padding-left: 16px;
@@ -194,7 +195,7 @@ input[type="search"]::-webkit-search-cancel-button {
 .preferences-form input[type="checkbox"] {
   margin: 8px;
 }
-button, input, input[type="search"] {
+button, input, input[type="search"], input[type="checkbox"] {
   background-color: inherit;
   color: inherit;
 }

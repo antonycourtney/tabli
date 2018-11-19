@@ -10,7 +10,9 @@ export const themes = {
     menuItemHover: '#f8f9fa',
     buttonHover: '#999999',
     headerBackground: '#ebe9eb',
-    closedGray: '#979ca0'
+    closedGray: '#979ca0',
+    headerButtonColor: '#888888',
+    headerButtonHover: '#000000'
   },
   dark: {
     foreground: '#ffffff',
@@ -21,7 +23,9 @@ export const themes = {
     menuItemHover: '#555555',
     buttonHover: '#999999',
     headerBackground: '#141414',
-    closedGray: '#777777'
+    closedGray: '#777777',
+    headerButtonColor: '#888888',
+    headerButtonHover: '#dddddd'
   },
 }
 

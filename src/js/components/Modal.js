@@ -74,7 +74,7 @@ export class Dialog extends React.PureComponent {
 
     var closeButton = (
       <HeaderButton
-        className={styles.modalCloseButton}
+        className={styles.modalCloseButton(theme)}
         visible
         title='Close Window'
         onClick={this.handleClose} />)

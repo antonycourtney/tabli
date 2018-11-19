@@ -53,11 +53,11 @@ const popupBodyStyle = css({
   overflow: 'auto',
   flex: '1 1 auto'
 })
-const popupFooterStyle = css({
+const popupFooterStyle = theme => css({
   minWidth: 350,
   height: Constants.POPUP_FOOTER_HEIGHT,
-  background: '#ffffff',
-  borderTop: '1px solid #bababa',
+  background: theme.background,
+  borderTop: '1px solid ' + theme.lightBorder,
   paddingLeft: 10,
   paddingRight: 16,
   paddingTop: 4,
@@ -339,7 +339,7 @@ class SelectablePopup extends React.Component {
             setFocusedTabWindowRef={this.setFocusedTabWindowRef}
             onItemSelected={this.handleItemSelected} />
         </div>
-        <div className={popupFooterStyle}>
+        <div className={popupFooterStyle(theme)}>
           <span className={summarySpanStyle}>{summarySentence}</span>
         </div>
       </div>

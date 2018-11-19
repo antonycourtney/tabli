@@ -169,7 +169,7 @@ export const dialogInfoContents = css({
   marginBottom: 0
 })
 export const headerCheckBoxInput = css({
-  width: 12,
+  width: 10,
   height: 12,
 })
 export const headerCheckboxContainer = css({
@@ -203,16 +203,16 @@ export const visible = css`
   visibility: visible;
 `
 
-export const closeButtonBaseStyle = css`
+export const closeButtonBaseStyle = (theme: Object) => css`
   -webkit-mask-image: url('../images/Interface-77.png');
-  background-color: #888888;
+  background-color: ${theme.headerButtonColor};
   &:hover {
     -webkit-mask-image: url('../images/Interface-74.png');
-    background-color: #000000;
+    background-color: ${theme.headerButtonHover};
   }
 `
-export const headerCloseButton = cx(headerButton, closeButtonBaseStyle, headerHoverVisible)
-export const modalCloseButton = cx(headerButton, closeButtonBaseStyle)
+export const headerCloseButton = (theme: Object) => cx(headerButton, closeButtonBaseStyle(theme), headerHoverVisible)
+export const modalCloseButton = (theme: Object) => cx(headerButton, closeButtonBaseStyle(theme))
 
 const titleBaseStyle = cx(text, noWrap, windowTitle)
 export const titleOpen = cx(titleBaseStyle, open)

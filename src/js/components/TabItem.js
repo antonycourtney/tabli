@@ -24,7 +24,6 @@ const tabItemHoverVisible = css`
     visibility: visible;
   }
 `
-const tabItemCloseButtonStyle = cx(styles.headerButton, tabItemHoverVisible, styles.closeButtonBaseStyle)
 
 const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon)
 
@@ -179,6 +178,8 @@ class TabItem extends React.PureComponent {
     var dropStyle = isOver ? styles.tabItemDropOver : null
 
     const audibleIcon = (tab.open && tab.openState.audible) ? <div className={audibleIconStyle} /> : null
+
+    const tabItemCloseButtonStyle = cx(styles.headerButton, tabItemHoverVisible, styles.closeButtonBaseStyle(theme))
 
     const closeButton = (
       <HeaderButton
