@@ -7,6 +7,7 @@ import * as RenderCommon from './renderCommon'
 import * as TabWindow from './tabWindow'
 import TabManagerState from './tabManagerState'
 import ViewRef from './viewRef'
+import testData from '../../test/renderTest-chromeWindowSnap'
 
 // make a TabWindow from its JSON
 function makeTabWindow (jsWin) { // eslint-disable-line no-unused-vars
@@ -46,6 +47,7 @@ function renderPage (testData) {
   log.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
 }
 
+/*
 var testStateUrl = 'testData/renderTest-chromeWindowSnap.json'
 
 function loadTestData (callback) {
@@ -68,12 +70,14 @@ function loadTestData (callback) {
 
   request.send()
 }
+*/
 
 /**
  * Main entry point to rendering the popup window
  */
 function renderTest () {
-  loadTestData(renderPage)
+  // loadTestData(renderPage)
+  renderPage(testData)
 }
 
 /*

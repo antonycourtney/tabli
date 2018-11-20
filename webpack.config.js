@@ -28,7 +28,7 @@ function config(nodeEnv) {
             exclude: /node_modules/,
             loader: 'babel-loader'
           },
-          { test: /\.(json)$/, loader: "json-loader" },
+          { test: /\.(json)$/, loader: "raw-loader" },
           {
             test: /\.less$/,
             loader: 'style-loader!css-loader!less-loader'

@@ -61,6 +61,7 @@
     "jsdom": "^13.0.0",
     "json-loader": "^0.5.7",
     "pre-commit": "^1.2.2",
+    "raw-loader": "^0.5.1",
     "react-addons-perf": "^15.4.2",
     "react-addons-test-utils": "^15.6.2",
     "sinon": "^7.1.1",
