@@ -22,6 +22,7 @@
     "object-assign": "^4.1.1",
     "oneref": "^0.3.2",
     "popper": "^1.0.1",
+    "prop-types": "^15.6.2",
     "react": "^16.6.3",
     "react-addons-pure-render-mixin": "^15.6.2",
     "react-dnd": "^6.0.0",
