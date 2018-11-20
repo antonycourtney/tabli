@@ -11,7 +11,7 @@ module.exports = function (api) {
   const plugins = [
     [ "@babel/plugin-transform-flow-strip-types"],
     [ "@babel/plugin-proposal-class-properties", { "loose": false }],
-    [ "emotion", { "sourceMap": true, "autoLabel": true } ],
+    [ "emotion" ],
     "@babel/plugin-transform-runtime"
   ];
   return {

@@ -172,9 +172,7 @@ class Popup extends React.Component {
     var ret
     try {
       let themeName = this.state.winStore.preferences.theme
-      console.log('Popup: theme name(from prefs): ', themeName)
       const theme = themes[themeName]
-      console.log('theme: ', theme)
       const PreferencesModal = this.renderPreferencesModal()
       const saveModal = this.renderSaveModal()
       const revertModal = this.renderRevertModal()
