@@ -4,9 +4,10 @@
 import * as log from 'loglevel' // eslint-disable-line
 
 const SUSPEND_PREFIX = 'chrome-extension://klbibkeccnjlkjkiokjodocebajanakg/suspended.html#'
+const ALT_SUSPEND_PREFIX = 'chrome-extension://lehkeldejnkfomdefgfhkhihdocphbdg/suspended.html#'
 const SUSPEND_PREFIX_LEN = SUSPEND_PREFIX.length
 
-const isSuspended = url => url.startsWith(SUSPEND_PREFIX)
+const isSuspended = url => (url.startsWith(SUSPEND_PREFIX) || url.startsWith(ALT_SUSPEND_PREFIX))
 
 /*
  * given a URI, return a [URI, Bool] pair with true URI and
