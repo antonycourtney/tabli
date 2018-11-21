@@ -41,11 +41,11 @@ export const syncChromeWindows = async (storeRef: TMSRef): TabManagerState => {
   var tPreGet = performance.now()
   const windowList = await chromep.windows.getAll({ populate: true })
   var tPostGet = performance.now()
-  log.log('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
+  log.info('syncChromeWindows: chrome.windows.getAll took ', tPostGet - tPreGet, ' ms')
   var tPreSync = performance.now()
   const nextSt = storeRef.update((state) => state.syncWindowList(windowList))
   var tPostSync = performance.now()
-  log.log('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
+  log.info('syncChromeWindows: syncWindowList took ', tPostSync - tPreSync, ' ms')
   return nextSt
 }
 

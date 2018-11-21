@@ -23,17 +23,17 @@ function renderPage (testData) {
   const tPreSync = performance.now()
   const testChromeWindows = testData.chromeWindows
 
-  // log.log('renderPage: testData: ', testData)
+  // log.info('renderPage: testData: ', testData)
 
   const emptyWinStore = new TabManagerState()
   const mockWinStore = emptyWinStore.syncWindowList(testChromeWindows).set('showRelNotes', false)
 
   const tPostSync = performance.now()
 
-  log.log('syncing window state took ', tPostSync - tPreSync, ' ms')
+  log.info('syncing window state took ', tPostSync - tPreSync, ' ms')
 
-  log.log('Created mockWinStore and registered test windows')
-  log.log('mock winStore: ', mockWinStore.toJS())
+  log.info('Created mockWinStore and registered test windows')
+  log.info('mock winStore: ', mockWinStore.toJS())
   const storeRef = new ViewRef(mockWinStore)
 
   const currentChromeWindow = testChromeWindows[0]
@@ -44,7 +44,7 @@ function renderPage (testData) {
   RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false, true)
 
   var tPostRender = performance.now()
-  log.log('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
+  log.info('initial render complete. render time: (', tPostRender - tPreRender, ' ms)')
 }
 
 /*
@@ -59,8 +59,8 @@ function loadTestData (callback) {
       const tPostLoad = performance.now()
       var data = JSON.parse(request.responseText)
       const tPostParse = performance.now()
-      log.log('loading test data took ', tPostLoad - tPreLoad, ' ms')
-      log.log('parsing test data took ', tPostParse - tPostLoad, ' ms')
+      log.info('loading test data took ', tPostLoad - tPreLoad, ' ms')
+      log.info('parsing test data took ', tPostParse - tPostLoad, ' ms')
       callback(data)
     } else {
       // We reached our target server, but it returned an error
@@ -77,6 +77,7 @@ function loadTestData (callback) {
  */
 function renderTest () {
   // loadTestData(renderPage)
+  log.setLevel('info')
   renderPage(testData)
 }
 
@@ -91,7 +92,7 @@ function renderTest () {
  *
  */
 function main () {
-  log.log('render test, environment: ', process.env.NODE_ENV)
+  log.info('render test, environment: ', process.env.NODE_ENV)
   window.onload = renderTest
 }
 

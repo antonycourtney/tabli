@@ -669,7 +669,7 @@ export function closeTab (tabWindow: TabWindow, tabId: number): TabWindow {
   const entry = tabWindow.findChromeTabId(tabId)
 
   if (!entry) {
-    log.warn('TabWindow.closeTab: could not find closed tab id ', tabId)
+    log.info('TabWindow.closeTab: could not find closed tab id ', tabId)
     return tabWindow
   }
   const [index, tabItem] = entry

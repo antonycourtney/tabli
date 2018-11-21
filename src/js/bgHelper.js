@@ -206,7 +206,7 @@ function onTabRemoved (storeRef, windowId, tabId) {
   storeRef.update(state => {
     const tabWindow = state.getTabWindowByChromeId(windowId)
     if (!tabWindow) {
-      log.warn('tabs.onTabRemoved: window id not found: ', windowId)
+      log.info('tabs.onTabRemoved: window id not found: ', windowId)
       return state
     }
     return state.handleTabClosed(tabWindow, tabId)
@@ -421,7 +421,7 @@ function registerEventHandlers (storeRef) {
     storeRef.update(state => {
       const tabWindow = state.getTabWindowByChromeTabId(removedTabId)
       if (!tabWindow) {
-        log.warn('tabs.onReplaced: could not find window for removed tab: ', removedTabId)
+        log.info('tabs.onReplaced: could not find window for removed tab: ', removedTabId)
         return state
       }
       const nextSt = state.handleTabClosed(tabWindow, removedTabId)

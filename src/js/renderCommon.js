@@ -42,7 +42,7 @@ export async function renderPopup (
     })
 
     var tPostRender = performance.now()
-    log.log('full render complete. render time: (', tPostRender - tPreRender, ' ms)')
+    log.info('full render complete. render time: (', tPostRender - tPreRender, ' ms)')
 
     // And sync our window state, which may update the UI...
     if (doSync) {
@@ -59,7 +59,7 @@ export async function renderPopup (
 
       // logHTML("Updated savedHTML", renderedString)
       var tPostSyncUpdate = performance.now()
-      log.log('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms')
+      log.info('syncChromeWindows and update complete: ', tPostSyncUpdate - tPreRender, ' ms')
     }
   } catch (e) {
     log.error('renderPopup: caught exception invoking function: ')
