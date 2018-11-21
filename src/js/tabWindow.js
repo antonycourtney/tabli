@@ -9,6 +9,7 @@ import keys from 'lodash/keys'
 import intersection from 'lodash/intersection'
 import reduce from 'lodash/reduce'
 import * as Immutable from 'immutable'
+import * as suspender from './suspender'
 
 const _ = { get, has, keys, intersection, reduce }
 
@@ -38,7 +39,8 @@ export class OpenTabState extends Immutable.Record({
   favIconUrl: '',
   title: '',
   audible: false,
-  pinned: false
+  pinned: false,
+  isSuspended: false
 }) {
   url: string
   openTabId: number
@@ -48,6 +50,7 @@ export class OpenTabState extends Immutable.Record({
   title: string
   audible: boolean
   pinned: boolean
+  isSuspended: boolean
 }
 
 /**
@@ -197,7 +200,10 @@ function makeBookmarkedTabItem (bm) {
  * initialize OpenTabState from a browser tab
  */
 function makeOpenTabState (tab) {
-  const url = _.get(tab, 'url', '')
+  const rawURL = _.get(tab, 'url', '')
+
+  const [url, isSuspended] = suspender.getURI(rawURL)
+
   const ts = new OpenTabState({
     url,
     audible: tab.audible,
@@ -206,7 +212,8 @@ function makeOpenTabState (tab) {
     openTabId: tab.id,
     active: tab.active,
     openTabIndex: tab.index,
-    pinned: tab.pinned
+    pinned: tab.pinned,
+    isSuspended
   })
   return ts
 }
@@ -790,7 +797,7 @@ export function setActiveTab (tabWindow: TabWindow, tabId: number) {
  *
  * @return {TabWindow} tabWindow with updated tab state
  */
-export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: Object) {
+export function updateTabItem (tabWindow: TabWindow, tabId: number, chromeChangeInfo: Object) {
   const tabPos = tabWindow.findChromeTabId(tabId)
 
   if (!tabPos) {
@@ -804,6 +811,15 @@ export function updateTabItem (tabWindow: TabWindow, tabId: number, changeInfo: 
     log.error('updateTabItem: unexpected null open state: ', prevTabItem)
     return tabWindow
   }
+  let changeInfo = {}
+  let urlInfo = {}
+  let rawURL = chromeChangeInfo.url
+  if (rawURL) {
+    const [url, isSuspended] = suspender.getURI(rawURL)
+    urlInfo = { url, isSuspended }
+  }
+  Object.assign(changeInfo, chromeChangeInfo, urlInfo)
+
   const updKeys = _.intersection(_.keys(prevOpenState.toJS()), _.keys(changeInfo))
 
   if (updKeys.length === 0) {

@@ -160,6 +160,7 @@ class TabItem extends React.PureComponent {
 
     var dropStyle = isOver ? styles.tabItemDropOver : null
 
+    const suspendedIcon = (tab.open && tab.openState.isSuspended) ? <div className={styles.headerButton}>💤</div> : null
     const audibleIcon = (tab.open && tab.openState.audible) ? <div className={audibleIconStyle} /> : null
 
     const tabItemCloseButtonStyle = cx(styles.headerButton, tabItemHoverVisible, styles.closeButtonBaseStyle(theme))
@@ -191,6 +192,7 @@ class TabItem extends React.PureComponent {
           title={tooltipContent}
           onClick={this.handleClick}>{tabTitle}</a>
         <div className={styles.rowItemsFixedWidth}>
+          {suspendedIcon}
           {audibleIcon}
           {closeButton}
         </div>

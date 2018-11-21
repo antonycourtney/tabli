@@ -18,8 +18,7 @@ test('makeFolderTabWindow', (t) => {
 
   const tabWindow = TabWindow.makeFolderTabWindow(testData.d3BookmarkFolder)
   const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()))
-
-  /*
+/*
     console.log("makeFolderTabWindow returned:")
     console.log(">>>>>>>")
     console.log(JSON.stringify(tabWindowJS,null,2))
@@ -27,8 +26,7 @@ test('makeFolderTabWindow', (t) => {
 
     console.log('diffs between tabWindowJS and expected:')
     dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow)
-  */
-
+*/
   t.deepEqual(tabWindowJS, testData.d3InitialExpectedTabWindow, 'makeFolderTabWindow basic functionality')
 
   t.equal(tabWindow.title, 'd3 docs', 'saved window title matches bookmark folder')
@@ -70,7 +68,8 @@ test('chromeTabWindow', (t) => {
           "favIconUrl": "http://facebook.github.io/react/favicon.ico",
           "title": "Component API | React",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "isSuspended": false
         }
       },
       {
@@ -85,7 +84,8 @@ test('chromeTabWindow', (t) => {
           "favIconUrl": "http://facebook.github.io/react/favicon.ico",
           "title": "Tutorial | React",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "isSuspended": false
         }
       },
       {
@@ -100,7 +100,8 @@ test('chromeTabWindow', (t) => {
           "favIconUrl": "http://cdn.sstatic.net/stackoverflow/img/favicon.ico?v=4f32ecc8f43d",
           "title": "javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "isSuspended": false
         }
       },
       {
@@ -112,10 +113,11 @@ test('chromeTabWindow', (t) => {
           "openTabId": 449,
           "active": false,
           "openTabIndex": 3,
+          "favIconUrl": "",
           "title": "Flux | Application Architecture for Building User Interfaces",
           "audible": false,
           "pinned": false,
-          "favIconUrl": ""
+          "isSuspended": false
         }
       },
       {
@@ -130,7 +132,8 @@ test('chromeTabWindow', (t) => {
           "favIconUrl": "http://fluxxor.com/favicon.ico",
           "title": "Fluxxor - Home",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "isSuspended": false
         }
       },
       {
@@ -145,7 +148,8 @@ test('chromeTabWindow', (t) => {
           "favIconUrl": "http://facebook.github.io/fixed-data-table/images/favicon-b4fca2450cb5aa407a2e106f42a92838.png",
           "title": "FixedDataTable",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "isSuspended": false
         }
       },
       {
@@ -160,7 +164,8 @@ test('chromeTabWindow', (t) => {
           "favIconUrl": "https://www.google.com/images/icons/product/chrome-32.png",
           "title": "Declare Permissions - Google Chrome",
           "audible": false,
-          "pinned": false
+          "pinned": false,
+          "isSuspended": false
         }
       }
     ],
@@ -169,7 +174,7 @@ test('chromeTabWindow', (t) => {
     "expanded": null
   }
 
-  // dumpDiffs(tabWindowJS,expectedTabWindow)
+  dumpDiffs(tabWindowJS,expectedTabWindow)
 
   t.deepEqual(tabWindowJS, expectedTabWindow, 'chromeTabWindow basic functionality')
 
@@ -321,7 +326,7 @@ test('attachChromeWindow', (t) => {
   const tabWindow = TabWindow.makeFolderTabWindow(testData.d3BookmarkFolder)
   const tabWindowJS = JSON.parse(JSON.stringify(tabWindow.toJS()))
 
-/*
+
     console.log("makeFolderTabWindow returned:")
     console.log(">>>>>>>")
     console.log(JSON.stringify(tabWindowJS,null,2))
@@ -331,7 +336,6 @@ test('attachChromeWindow', (t) => {
 
   console.log('diffs between tabWindowJS and expected:')
   dumpDiffs(tabWindowJS, testData.d3InitialExpectedTabWindow)
-  */
 
   t.deepEqual(tabWindowJS, testData.d3InitialExpectedTabWindow, 'attachChromeWindow basic functionality')
 
@@ -341,7 +345,7 @@ test('attachChromeWindow', (t) => {
   const updTabWindow = TabWindow.updateWindow(tabWindow, testData.d3OpenedChromeWindow)
   const updTabWindowJS = JSON.parse(JSON.stringify(updTabWindow.toJS()))
 
-
+/*
     console.log("updateTabWindow returned:")
     console.log(">>>>>>>")
     console.log(JSON.stringify(updTabWindowJS,null,2))
@@ -349,6 +353,7 @@ test('attachChromeWindow', (t) => {
 
     console.log("diffs between updTabWindow (actual) and expected:")
     dumpDiffs(updTabWindowJS, testData.d3AttachedExpectedTabWindow)
+*/
 
   t.deepEqual(updTabWindowJS, testData.d3AttachedExpectedTabWindow, 'updateWindow -- after attach')
 

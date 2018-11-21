@@ -688,140 +688,146 @@ export const d3OpenedChromeWindow =
 
 export const d3AttachedExpectedTabWindow =
 {
-  'saved': true,
-  'savedTitle': 'd3 docs',
-  'savedFolderId': '431',
-  'open': true,
-  'openWindowId': 19,
-  'windowType': 'normal',
-  'width': 0,
-  'height': 0,
-  'tabItems': [
+  "saved": true,
+  "savedTitle": "d3 docs",
+  "savedFolderId": "431",
+  "open": true,
+  "openWindowId": 19,
+  "windowType": "normal",
+  "width": 0,
+  "height": 0,
+  "tabItems": [
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '432',
-        'bookmarkIndex': 0,
-        'title': 'API Reference · mbostock/d3 Wiki',
-        'url': 'https://github.com/mbostock/d3/wiki/API-Reference'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "432",
+        "bookmarkIndex": 0,
+        "title": "API Reference · mbostock/d3 Wiki",
+        "url": "https://github.com/mbostock/d3/wiki/API-Reference"
       },
-      'open': true,
-      'openState': {
-        'url': 'https://github.com/mbostock/d3/wiki/API-Reference',
-        'openTabId': 20,
-        'active': true,
-        'openTabIndex': 0,
-        'favIconUrl': 'https://assets-cdn.github.com/favicon.ico',
-        'title': 'API Reference · mbostock/d3 Wiki',
-        'audible': false,
-        'pinned': false
+      "open": true,
+      "openState": {
+        "url": "https://github.com/mbostock/d3/wiki/API-Reference",
+        "openTabId": 20,
+        "active": true,
+        "openTabIndex": 0,
+        "favIconUrl": "https://assets-cdn.github.com/favicon.ico",
+        "title": "API Reference · mbostock/d3 Wiki",
+        "audible": false,
+        "pinned": false,
+        "isSuspended": false
       }
     },
     {
-      'saved': false,
-      'savedState': null,
-      'open': true,
-      'openState': {
-        'url': 'https://d3js.org/',
-        'openTabId': 22,
-        'active': false,
-        'openTabIndex': 1,
-        'title': 'D3.js - Data-Driven Documents',
-        'audible': false,
-        'pinned': false,
-        'favIconUrl': ''
+      "saved": false,
+      "savedState": null,
+      "open": true,
+      "openState": {
+        "url": "https://d3js.org/",
+        "openTabId": 22,
+        "active": false,
+        "openTabIndex": 1,
+        "favIconUrl": "",
+        "title": "D3.js - Data-Driven Documents",
+        "audible": false,
+        "pinned": false,
+        "isSuspended": false
       }
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '535',
-        'bookmarkIndex': 2,
-        'title': 'Gallery · mbostock/d3 Wiki',
-        'url': 'https://github.com/mbostock/d3/wiki/Gallery'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "535",
+        "bookmarkIndex": 2,
+        "title": "Gallery · mbostock/d3 Wiki",
+        "url": "https://github.com/mbostock/d3/wiki/Gallery"
       },
-      'open': true,
-      'openState': {
-        'url': 'https://github.com/mbostock/d3/wiki/Gallery',
-        'openTabId': 24,
-        'active': false,
-        'openTabIndex': 2,
-        'favIconUrl': 'https://assets-cdn.github.com/favicon.ico',
-        'title': 'Gallery · mbostock/d3 Wiki',
-        'audible': false,
-        'pinned': false
+      "open": true,
+      "openState": {
+        "url": "https://github.com/mbostock/d3/wiki/Gallery",
+        "openTabId": 24,
+        "active": false,
+        "openTabIndex": 2,
+        "favIconUrl": "https://assets-cdn.github.com/favicon.ico",
+        "title": "Gallery · mbostock/d3 Wiki",
+        "audible": false,
+        "pinned": false,
+        "isSuspended": false
       }
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '536',
-        'bookmarkIndex': 3,
-        'title': 'Tutorials · mbostock/d3 Wiki',
-        'url': 'https://github.com/mbostock/d3/wiki/Tutorials'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "536",
+        "bookmarkIndex": 3,
+        "title": "Tutorials · mbostock/d3 Wiki",
+        "url": "https://github.com/mbostock/d3/wiki/Tutorials"
       },
-      'open': true,
-      'openState': {
-        'url': 'https://github.com/mbostock/d3/wiki/Tutorials',
-        'openTabId': 26,
-        'active': false,
-        'openTabIndex': 3,
-        'favIconUrl': 'https://assets-cdn.github.com/favicon.ico',
-        'title': 'Tutorials · mbostock/d3 Wiki',
-        'audible': false,
-        'pinned': false
+      "open": true,
+      "openState": {
+        "url": "https://github.com/mbostock/d3/wiki/Tutorials",
+        "openTabId": 26,
+        "active": false,
+        "openTabIndex": 3,
+        "favIconUrl": "https://assets-cdn.github.com/favicon.ico",
+        "title": "Tutorials · mbostock/d3 Wiki",
+        "audible": false,
+        "pinned": false,
+        "isSuspended": false
       }
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '537',
-        'bookmarkIndex': 4,
-        'title': 'Drag + Zoom',
-        'url': 'http://bl.ocks.org/mbostock/6123708'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "537",
+        "bookmarkIndex": 4,
+        "title": "Drag + Zoom",
+        "url": "http://bl.ocks.org/mbostock/6123708"
       },
-      'open': true,
-      'openState': {
-        'url': 'http://bl.ocks.org/mbostock/6123708',
-        'openTabId': 28,
-        'active': false,
-        'openTabIndex': 4,
-        'favIconUrl': 'http://bl.ocks.org/favicon.png',
-        'title': 'Drag + Zoom - bl.ocks.org',
-        'audible': false,
-        'pinned': false
+      "open": true,
+      "openState": {
+        "url": "http://bl.ocks.org/mbostock/6123708",
+        "openTabId": 28,
+        "active": false,
+        "openTabIndex": 4,
+        "favIconUrl": "http://bl.ocks.org/favicon.png",
+        "title": "Drag + Zoom - bl.ocks.org",
+        "audible": false,
+        "pinned": false,
+        "isSuspended": false
       }
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '613',
-        'bookmarkIndex': 5,
-        'title': 'Focus+Context via Brushing',
-        'url': 'http://bl.ocks.org/mbostock/1667367'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "613",
+        "bookmarkIndex": 5,
+        "title": "Focus+Context via Brushing",
+        "url": "http://bl.ocks.org/mbostock/1667367"
       },
-      'open': true,
-      'openState': {
-        'url': 'http://bl.ocks.org/mbostock/1667367',
-        'openTabId': 30,
-        'active': false,
-        'openTabIndex': 5,
-        'favIconUrl': 'http://bl.ocks.org/favicon.png',
-        'title': 'Focus+Context via Brushing - bl.ocks.org',
-        'audible': false,
-        'pinned': false
+      "open": true,
+      "openState": {
+        "url": "http://bl.ocks.org/mbostock/1667367",
+        "openTabId": 30,
+        "active": false,
+        "openTabIndex": 5,
+        "favIconUrl": "http://bl.ocks.org/favicon.png",
+        "title": "Focus+Context via Brushing - bl.ocks.org",
+        "audible": false,
+        "pinned": false,
+        "isSuspended": false
       }
     },
     {
-      'saved': true,
-      'savedState': {
-        'bookmarkId': '534',
-        'bookmarkIndex': 1,
-        'title': 'D3.js - Data-Driven Documents',
-        'url': 'http://d3js.org/'
+      "saved": true,
+      "savedState": {
+        "bookmarkId": "534",
+        "bookmarkIndex": 1,
+        "title": "D3.js - Data-Driven Documents",
+        "url": "http://d3js.org/"
       },
-      'open': false,
-      'openState': null
+      "open": false,
+      "openState": null
     }
   ],
   "snapshot": false,
