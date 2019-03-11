@@ -20,7 +20,7 @@
     "lodash": "^4.17.11",
     "loglevel": "^1.6.1",
     "object-assign": "^4.1.1",
-    "oneref": "^0.3.2",
+    "oneref": "0.3.2",
     "popper": "^1.0.1",
     "prop-types": "^15.6.2",
     "react": "^16.6.3",
