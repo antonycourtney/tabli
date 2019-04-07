@@ -3,102 +3,111 @@
 var webpack = require('webpack');
 var path = require('path');
 var fs = require('fs');
-process.traceDeprecation = true
+process.traceDeprecation = true;
 
 function config(nodeEnv) {
-  return {
-    devtool: "source-map",
-    resolve: {
-        extensions: [".webpack.js", ".web.js", ".js"]
-    },
-    entry: {
-      prefsPage: ["./src/js/prefsPage.js"],
+    return {
+        devtool: 'source-map',
+        resolve: {
+            extensions: ['.webpack.js', '.web.js', '.js', '.ts', '.tsx']
+        },
+        entry: {
+            /* prefsPage: ["./src/js/prefsPage.js"],
       renderTest: ["./src/js/renderTest.js"],
       tabliPopup: [ "./src/js/tabliPopup.js"],
       tabliPopout: [ "./src/js/tabliPopout.js"],
       bgHelper: [ "./src/js/bgHelper.js"]
-    },
-    output: {
-        path: __dirname + '/build/js',
-        filename: "[name].bundle.js"
-    },
-    module: {
-        rules: [
-          { test: /\.(js|jsx)$/,
-            exclude: /node_modules/,
-            loader: 'babel-loader'
-          },
-          { test: /\.(json)$/, loader: "raw-loader" },
-          {
-            test: /\.less$/,
-            loader: 'style-loader!css-loader!less-loader'
-          },
-          {
-            test: /\.css$/,
-            loader: 'style-loader!css-loader'
-          },
-          {
-            test: /\.(jpe?g|png|gif|svg)$/i,
-            loaders: [
-                'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
-                'image-webpack-loader?bypassOnDebug&optipng.optimizationLevel=7&gifsicle.interlaced=false'
+      */
+            bgHelper: ['./src/ts/bgHelper.ts']
+        },
+        output: {
+            path: __dirname + '/build/js',
+            filename: '[name].bundle.js'
+        },
+        module: {
+            rules: [
+                // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+                { test: /\.tsx?$/, loader: 'awesome-typescript-loader' },
+
+                // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+                { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
+                { test: /\.(json)$/, loader: 'raw-loader' },
+                {
+                    test: /\.less$/,
+                    loader: 'style-loader!css-loader!less-loader'
+                },
+                {
+                    test: /\.css$/,
+                    loader: 'style-loader!css-loader'
+                },
+                {
+                    test: /\.(jpe?g|png|gif|svg)$/i,
+                    loaders: [
+                        'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
+                        'image-webpack-loader?bypassOnDebug&optipng.optimizationLevel=7&gifsicle.interlaced=false'
+                    ]
+                },
+                {
+                    test: /\.(eot|svg|ttf|woff|woff2)$/,
+                    loader: 'file-loader?name=public/fonts/[name].[ext]'
+                },
+                { test: /\.html$/, loader: 'html-loader' }
             ]
-          },
-          {
-            test: /\.(eot|svg|ttf|woff|woff2)$/,
-            loader: 'file-loader?name=public/fonts/[name].[ext]'
-          },
-          { test: /\.html$/,
-            loader: "html-loader"
-          }
-        ]
-    },
-    optimization: {
-      splitChunks: {
-        name: "common",
-        chunks: "initial",
-        minChunks: 2
-        // (the commons chunk name)
-        // filename: "common.js",
-        // (the filename of the commons chunk)
-      }
-    },
-    plugins: []
-  }
+        },
+        optimization: {
+            splitChunks: {
+                name: 'common',
+                chunks: 'initial',
+                minChunks: 2
+                // (the commons chunk name)
+                // filename: "common.js",
+                // (the filename of the commons chunk)
+            }
+        },
+        // When importing a module whose path matches one of the following, just
+        // assume a corresponding global variable exists and use that instead.
+        // This is important because it allows us to avoid bundling all of our
+        // dependencies, which allows browsers to cache those libraries between builds.
+        externals: {
+            // react: 'React',
+            // 'react-dom': 'ReactDOM'
+        },
+        plugins: []
+    };
 }
 
 function development() {
-  var dev = config('development')
-  return dev;
+    var dev = config('development');
+    return dev;
 }
 
-function production () {
-  var prod = config('production')
-  prod.plugins.push(
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
-    })
-  )
-  prod.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(true))
-  prod.optimization.minimize = {
-    compress: {
-      warnings: false
-    },
-    mangle: {
-      except: ['module', 'exports', 'require']
-    }
-  }
-  return prod
+function production() {
+    var prod = config('production');
+    prod.plugins.push(
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify('production')
+        })
+    );
+    prod.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(true));
+    prod.optimization.minimize = {
+        compress: {
+            warnings: false
+        },
+        mangle: {
+            except: ['module', 'exports', 'require']
+        }
+    };
+    return prod;
 }
 
 const configMap = {
-  dev: development(),
-  prod: production()
-}
+    dev: development(),
+    prod: production()
+};
 
-module.exports = function (env) {
-  if (!env) {
-    env = 'dev'
-  }
-  return configMap[env]
-}
+module.exports = function(env) {
+    if (!env) {
+        env = 'dev';
+    }
+    return configMap[env];
+};
