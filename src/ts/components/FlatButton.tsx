@@ -1,0 +1,47 @@
+import log from 'loglevel';
+import * as React from 'react';
+import { css } from 'emotion';
+
+const flatButtonStyle = css({
+    border: '0px',
+    display: 'inline-block',
+    backgroundColor: 'rgba(0,0,0,0)',
+    fontFamily: 'Roboto, sans-serif',
+    fontSize: 14,
+    color: '#4285f4',
+    '&:hover': {
+        textDecoration: 'none'
+    }
+});
+
+interface FlatButtonProps {
+    label: string;
+    onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+}
+
+const FlatButton: React.FunctionComponent<FlatButtonProps> = ({
+    label,
+    onClick
+}: FlatButtonProps) => {
+    const handleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        log.debug('FlatButton.handleClick');
+        event.stopPropagation();
+        event.preventDefault();
+        if (onClick) {
+            onClick(event);
+        }
+        log.debug('FlatButton.handleClick: returning false');
+        return false;
+    };
+    return (
+        <a
+            className={flatButtonStyle}
+            onClick={handleClick}
+            href="javascript:;"
+        >
+            {label}
+        </a>
+    );
+};
+
+export default FlatButton;
