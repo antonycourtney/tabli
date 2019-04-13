@@ -312,13 +312,13 @@ export default class TabManagerState extends Immutable.Record(
         return nextSt;
     }
 
-    getCurrentWindow(): TabWindow | undefined {
+    getCurrentWindow(): TabWindow | null {
         return this.getTabWindowByChromeId(this.currentWindowId);
     }
 
-    getActiveTabId(): number | undefined {
+    getActiveTabId(): number | null {
         const cw = this.getCurrentWindow();
-        const tabId = cw ? cw.getActiveTabId() : undefined;
+        const tabId = cw ? cw.getActiveTabId() : null;
         return tabId;
     }
 
@@ -378,29 +378,35 @@ export default class TabManagerState extends Immutable.Record(
     getTabWindowsByType(windowType: string): Immutable.Seq.Indexed<TabWindow> {
         const openWindows = this.getOpen();
         return openWindows.filter(w => w.windowType === windowType);
-    } // returns a tabWindow or undefined
+    }
 
-    getTabWindowByChromeId(windowId: number): TabWindow | undefined {
-        return this.windowIdMap.get(windowId);
-    } // Find a tabWindow containing the given tab id (or undefined)
-    // Not terribly efficient!
+    getTabWindowByChromeId(windowId: number): TabWindow | null {
+        const ret = this.windowIdMap.get(windowId);
+        return ret ? ret : null;
+    }
 
-    getTabWindowByChromeTabId(tabId: number): TabWindow | undefined {
+    /**
+     * Find a tabWindow containing the given tab id (or null)
+     * Not terribly efficient!
+     */
+    getTabWindowByChromeTabId(tabId: number): TabWindow | null {
         const tw = this.windowIdMap.find(
-            w => w.findChromeTabId(tabId) !== undefined
+            w => w.findChromeTabId(tabId) !== null
         );
-        return tw;
+        return tw ? tw : null;
     } // returns a tabWindow or undefined
     // Note: this is the bookmark id of the folder, not saved tab
 
-    getSavedWindowByBookmarkId(bookmarkId: string): TabWindow | undefined {
-        return this.bookmarkIdMap.get(bookmarkId);
+    getSavedWindowByBookmarkId(bookmarkId: string): TabWindow | null {
+        const ret = this.bookmarkIdMap.get(bookmarkId);
+        return ret ? ret : null;
     }
 
-    getSavedWindowByTabBookmarkId(bookmarkId: string): TabWindow | undefined {
-        return this.bookmarkIdMap.find(
+    getSavedWindowByTabBookmarkId(bookmarkId: string): TabWindow | null {
+        const ret = this.bookmarkIdMap.find(
             w => w.findChromeBookmarkId(bookmarkId) !== undefined
         );
+        return ret ? ret : null;
     }
 
     countOpenWindows() {

@@ -1,4 +1,3 @@
-// @flow
 /**
  * common rendering entry point for popup and popout
  */
@@ -9,39 +8,39 @@ import { PopupBaseProps, Popup } from './components/Popup';
 import TabManagerState from './tabManagerState';
 import * as actions from './actions';
 import * as oneref from 'oneref';
+import { update, refContainer } from 'oneref';
 
 /**
  * Main entry point to rendering the popup window
  */
 export async function renderPopup(
-    storeRef: oneref.Ref<TabManagerState>,
-    currentChromeWindow: Object,
+    storeRef: oneref.StateRef<TabManagerState>,
+    currentChromeWindow: chrome.windows.Window,
     isPopout: boolean,
     doSync: boolean,
     renderTest: boolean = false
 ) {
     try {
-        log.log('renderPopup: isPopout: ', isPopout);
+        log.debug('renderPopup: isPopout: ', isPopout);
 
         var tPreRender = performance.now();
 
         var parentNode = document.getElementById('windowList-region');
 
-        var appElement = (
-            <Popup
-                storeRef={storeRef}
-                initialWinStore={storeRef.getValue()}
-                isPopout={isPopout}
-                noListener={renderTest}
-            />
+        const App = refContainer<TabManagerState, PopupBaseProps>(
+            storeRef,
+            Popup
         );
-        ReactDOM.render(appElement, parentNode, () => {
-            // eslint-disable-line no-unused-vars
-            const searchBoxElem = document.getElementById('searchBox');
-            if (searchBoxElem) {
-                searchBoxElem.focus();
+        ReactDOM.render(
+            <App isPopout={isPopout} noListener={renderTest} />,
+            parentNode,
+            () => {
+                const searchBoxElem = document.getElementById('searchBox');
+                if (searchBoxElem) {
+                    searchBoxElem.focus();
+                }
             }
-        });
+        );
 
         var tPostRender = performance.now();
         log.info(
@@ -53,17 +52,17 @@ export async function renderPopup(
         // And sync our window state, which may update the UI...
         if (doSync) {
             const syncStore = await actions.syncChromeWindows(storeRef);
-            log.log('postLoadRender: window sync complete: ', syncStore);
+            log.debug('postLoadRender: window sync complete: ', syncStore);
             // And set current focused window:
-            log.log(
+            log.debug(
                 'renderPopup: setting current window to ',
                 currentChromeWindow
             );
             const nextStore = syncStore.setCurrentWindow(currentChromeWindow);
             if (!nextStore.equals(syncStore)) {
-                storeRef.setValue(nextStore);
+                update(storeRef, st => nextStore);
             } else {
-                log.log(
+                log.debug(
                     'doRender: nextStore.equals(savedStore) -- skipping setValue'
                 );
             }
@@ -85,7 +84,7 @@ export async function renderPopup(
 
 export function getFocusedAndRender(isPopout: boolean, doSync: boolean = true) {
     var bgPage = chrome.extension.getBackgroundPage();
-    var storeRef = bgPage.storeRef;
+    var storeRef = (bgPage as any).stateRef;
     chrome.windows.getCurrent({}, currentChromeWindow => {
         renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
     });

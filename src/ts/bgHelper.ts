@@ -930,6 +930,7 @@ async function main() {
         await actions.loadPreferences(stateRef);
         await actions.syncChromeWindows(stateRef);
         log.debug('initial sync of chrome windows complete.');
+        log.debug('before sync: stateRef: ', stateRef);
         const syncedStore = await actions.syncCurrent(stateRef); // dumpAll(syncedStore)
         // dumpChromeWindows()
 

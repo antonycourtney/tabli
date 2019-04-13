@@ -85,7 +85,7 @@ export const syncCurrent = async (
  * Fallback for when no session id available or session restore fails
  */
 const restoreFromAppState = (
-    lastFocusedTabWindow: TabWindow,
+    lastFocusedTabWindow: TabWindow | null,
     tabWindow: TabWindow,
     revertOnOpen: boolean,
     mbTab: TabItem | null,
@@ -185,7 +185,7 @@ const restoreFromAppState = (
  */
 function restoreBookmarkWindow(
     st: TabManagerState,
-    lastFocusedTabWindow: TabWindow,
+    lastFocusedTabWindow: TabWindow | null,
     tabWindow: TabWindow,
     mbTab: TabItem | null,
     storeRef: TMSRef
@@ -314,7 +314,7 @@ export function expandWindow(
 // activate a specific tab:
 export function activateTab(
     st: TabManagerState,
-    lastFocusedTabWindow: TabWindow,
+    lastFocusedTabWindow: TabWindow | null,
     targetTabWindow: TabWindow,
     tab: TabItem,
     tabIndex: number,

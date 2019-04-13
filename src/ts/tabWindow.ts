@@ -238,33 +238,35 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
     }
 
     /*
-     * Returns [index,TabItem] pair if window contains chrome tab id or else undefined
+     * Returns [index,TabItem] pair if window contains chrome tab id or else null
      */
-    findChromeTabId(tabId: number): [number, TabItem] | undefined {
-        return this.tabItems.findEntry(
+    findChromeTabId(tabId: number): [number, TabItem] | null {
+        const ret = this.tabItems.findEntry(
             ti =>
                 !!ti.open &&
                 ti.openState !== null &&
                 ti.openState.openTabId === tabId
         );
+        return ret ? ret : null;
     }
     /*
-     * Returns [index,TabItem] pair if window contains chrome bookmark id or else undefined
+     * Returns [index,TabItem] pair if window contains chrome bookmark id or else null
      */
-    findChromeBookmarkId(bookmarkId: string): [number, TabItem] | undefined {
-        return this.tabItems.findEntry(
+    findChromeBookmarkId(bookmarkId: string): [number, TabItem] | null {
+        const ret = this.tabItems.findEntry(
             ti =>
                 !!ti.saved &&
                 ti.savedState !== null &&
                 ti.savedState.bookmarkId === bookmarkId
         );
+        return ret ? ret : null;
     }
 
-    getActiveTabId(): number | undefined {
+    getActiveTabId(): number | null {
         const activeTab = this.tabItems.find(
             t => t.open && t.openState!.active
         );
-        const tabId = activeTab ? activeTab.openState!.openTabId : undefined;
+        const tabId = activeTab ? activeTab.openState!.openTabId : null;
         return tabId;
     }
 

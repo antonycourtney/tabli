@@ -9,7 +9,7 @@ import * as TW from './tabWindow';
 
 const _ = { map, filter };
 
-type SearchSpec = string | RegExp;
+type SearchSpec = string | RegExp | null;
 /*
  * note that matchURL and matchTitle are effectively OR'ed -- if matchURL and
  * matchTitle are both true, a tab will match if either the url or title
@@ -57,6 +57,9 @@ export function matchTabItem(
     if (options.openOnly && tabItem.open === false) {
         return null;
     }
+    if (searchExp === null) {
+        return null;
+    }
     if (options.matchUrl) {
         urlMatches = tabItem.url.match(searchExp);
     }
@@ -87,7 +90,7 @@ const defaultFilteredTabWindowProps: FilteredTabWindowProps = {
 /**
  * A TabWindow augmented with search results
  */
-class FilteredTabWindow extends Immutable.Record(
+export class FilteredTabWindow extends Immutable.Record(
     defaultFilteredTabWindowProps
 ) {}
 
@@ -100,6 +103,9 @@ export function matchTabWindow(
     searchExp: SearchSpec,
     options: SearchOpts
 ): FilteredTabWindow | null {
+    if (searchExp === null) {
+        return null;
+    }
     const itemMatches = tabWindow.tabItems
         .map(ti => matchTabItem(ti, searchExp, options))
         .filter(fti => fti !== null) as Immutable.List<FilteredTabItem>;

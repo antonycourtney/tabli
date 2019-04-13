@@ -13,7 +13,7 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "preserve",
+        "jsx": "react",
         "downlevelIteration": true
     },
     "include": ["src/ts"],
