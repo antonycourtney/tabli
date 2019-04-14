@@ -305,11 +305,11 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     const filteredWindows = searchOps.filterTabWindows(sortedWindows, searchRE);
 
     const openSaveModal = (tabWindow: TabWindow) => {
-        console.debug('TODO: openSaveModal');
+        log.debug('TODO: openSaveModal');
     };
 
     const openRevertModal = (filteredTabWindow: FilteredTabWindow) => {
-        console.debug('TODO: openRevertModal');
+        log.debug('TODO: openRevertModal');
     };
 
     const modalActions: ModalActions = {

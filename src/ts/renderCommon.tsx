@@ -83,6 +83,7 @@ export async function renderPopup(
 }
 
 export function getFocusedAndRender(isPopout: boolean, doSync: boolean = true) {
+    log.setLevel('debug');
     var bgPage = chrome.extension.getBackgroundPage();
     var storeRef = (bgPage as any).stateRef;
     chrome.windows.getCurrent({}, currentChromeWindow => {

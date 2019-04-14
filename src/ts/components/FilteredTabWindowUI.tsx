@@ -83,6 +83,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     };
 
     const handleRevert = () => {
+        log.debug('FilteredTabWindowUI: handleRevert: ', modalActions);
         modalActions.openRevertModal(filteredTabWindow);
     };
 
