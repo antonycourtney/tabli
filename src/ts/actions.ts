@@ -202,7 +202,7 @@ function restoreBookmarkWindow(
 
 export function openWindow(
     st: TabManagerState,
-    lastFocusedTabWindow: TabWindow,
+    lastFocusedTabWindow: TabWindow | null,
     targetTabWindow: TabWindow,
     storeRef: TMSRef
 ) {

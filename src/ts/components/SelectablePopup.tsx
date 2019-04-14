@@ -6,13 +6,14 @@ import * as Constants from './constants';
 
 import * as actions from '../actions';
 import SearchBar from './SearchBar';
-// import TabWindowList from './TabWindowList'
+import TabWindowList from './TabWindowList';
 import { ThemeContext, Theme } from './themeContext';
 import { FilteredTabWindow } from '../searchOps';
 import TabManagerState from '../tabManagerState';
 import { StateRef } from 'oneref';
 import { useRef, useContext, useState, Ref, MutableRefObject } from 'react';
 import { TabItem } from '../tabWindow';
+import ModalActions from './modalActions';
 
 function matchingTabs(searchStr: string, filteredTabWindow: FilteredTabWindow) {
     var ret =
@@ -462,6 +463,7 @@ interface SelectablePopupProps {
     searchStr: string | null;
     searchRE: RegExp | null;
     isPopout: boolean;
+    modalActions: ModalActions;
 }
 
 const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
@@ -472,11 +474,13 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     filteredWindows,
     searchStr,
     searchRE,
-    isPopout
+    isPopout,
+    modalActions
 }: SelectablePopupProps) => {
     const bodyRef = useRef(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const theme = useContext(ThemeContext);
+    const focusedTabWindowRef = useRef<HTMLDivElement | null>(null);
 
     const [selectedWindowIndex, setSelectedWindowIndex] = useState(0);
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
@@ -602,6 +606,14 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         actions.openWindow(appState, curWindow, curWindow, stateRef);
     };
 
+    const handleItemSelected = () => {
+        if (searchInputRef.current) {
+            // And reset the search field:
+            searchInputRef.current.value = '';
+            onSearchInput('');
+        }
+    };
+
     const openTabCount = appState.countOpenTabs();
     const openWinCount = appState.countOpenWindows();
     const savedCount = appState.countSavedWindows();
@@ -635,7 +647,20 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                     isPopout={isPopout}
                 />
             </div>
-            <div className={popupBodyStyle} ref={bodyRef} />
+            <div className={popupBodyStyle} ref={bodyRef}>
+                <TabWindowList
+                    appState={appState}
+                    stateRef={stateRef}
+                    filteredWindows={filteredWindows}
+                    modalActions={modalActions}
+                    searchStr={searchStr}
+                    searchRE={searchRE}
+                    selectedWindowIndex={selectedWindowIndex}
+                    selectedTabIndex={selectedTabIndex}
+                    focusedTabWindowRef={focusedTabWindowRef}
+                    onItemSelected={handleItemSelected}
+                />
+            </div>
             <div className={popupFooterStyle(theme)}>
                 <span className={summarySpanStyle}>{summarySentence}</span>
             </div>

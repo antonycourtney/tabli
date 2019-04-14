@@ -1,0 +1,135 @@
+import * as React from 'react';
+import * as oneref from 'oneref';
+import FilteredTabWindowUI from './FilteredTabWindowUI';
+import WindowListSection from './WindowListSection';
+import MessageCard from './MessageCard';
+
+import * as actions from '../actions';
+
+import * as util from './util';
+import TabManagerState from '../tabManagerState';
+import ModalActions from './modalActions';
+import { FilteredTabWindow } from '../searchOps';
+
+var relNotesStr = '';
+if (!util.isNode) {
+    // in browser
+    relNotesStr = require('../../html/relnotes.html');
+}
+
+interface TabWindowListBaseProps {
+    filteredWindows: FilteredTabWindow[];
+    selectedWindowIndex: number;
+    selectedTabIndex: number;
+    searchStr: string | null;
+    searchRE: RegExp | null;
+    modalActions: ModalActions;
+    focusedTabWindowRef?: React.MutableRefObject<HTMLDivElement | null>;
+    onItemSelected: () => void;
+}
+
+type TabWindowListProps = TabWindowListBaseProps &
+    oneref.StateRefProps<TabManagerState>;
+
+const TabWindowList: React.FC<TabWindowListProps> = ({
+    appState,
+    stateRef,
+    filteredWindows,
+    selectedWindowIndex,
+    selectedTabIndex,
+    searchStr,
+    searchRE,
+    modalActions,
+    onItemSelected,
+    focusedTabWindowRef
+}) => {
+    /* acknowledge release notes (and hide them) */
+    const ackRelNotes = () => {
+        actions.hideRelNotes(appState, stateRef);
+    };
+
+    const showRelNotes = appState.showRelNotes;
+
+    var relNotesSection = null;
+    if (showRelNotes) {
+        relNotesSection = (
+            <WindowListSection>
+                <MessageCard content={relNotesStr} onClick={ackRelNotes} />
+            </WindowListSection>
+        );
+    }
+
+    var focusedWindowElem: JSX.Element[] = [];
+    var openWindows: JSX.Element[] = [];
+    var savedWindows: JSX.Element[] = [];
+
+    for (var i = 0; i < filteredWindows.length; i++) {
+        var filteredTabWindow = filteredWindows[i];
+        var tabWindow = filteredTabWindow.tabWindow;
+        var id = tabWindow.id;
+        var isOpen = tabWindow.open;
+        const isFocused =
+            isOpen && appState.currentWindowId === tabWindow.openWindowId;
+
+        // focused property will only be true if isFocused and no rel notes to display:
+        const focusedProp = !showRelNotes && isFocused;
+
+        var isSelected = i === selectedWindowIndex;
+        const trueSelectedTabIndex = isSelected ? selectedTabIndex : -1;
+        var windowElem = (
+            <FilteredTabWindowUI
+                appState={appState}
+                stateRef={stateRef}
+                filteredTabWindow={filteredTabWindow}
+                key={id}
+                searchStr={searchStr}
+                isSelected={isSelected}
+                isFocused={focusedProp}
+                selectedTabIndex={trueSelectedTabIndex}
+                modalActions={modalActions}
+                onItemSelected={onItemSelected}
+            />
+        );
+        if (isFocused) {
+            focusedWindowElem = [windowElem];
+        } else if (isOpen) {
+            openWindows.push(windowElem);
+        } else {
+            savedWindows.push(windowElem);
+        }
+    }
+
+    var otherOpenSection = null;
+    if (openWindows.length > 0) {
+        otherOpenSection = (
+            <WindowListSection title="Other Open Windows">
+                {openWindows}
+            </WindowListSection>
+        );
+    }
+
+    var savedSection = null;
+    if (savedWindows.length > 0) {
+        savedSection = (
+            <WindowListSection title="Saved Closed Windows">
+                {savedWindows}
+            </WindowListSection>
+        );
+    }
+
+    return (
+        <div>
+            {relNotesSection}
+            <WindowListSection
+                focusedRef={focusedTabWindowRef}
+                title="Current Window"
+            >
+                {focusedWindowElem}
+            </WindowListSection>
+            {otherOpenSection}
+            {savedSection}
+        </div>
+    );
+};
+
+export default TabWindowList;

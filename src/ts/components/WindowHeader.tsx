@@ -39,7 +39,7 @@ const editButtonBaseStyle = (theme: Theme) => css`
 interface WindowHeaderBaseProps {
     tabWindow: TabWindow;
     modalActions: ModalActions;
-    initialTitle: string;
+    initialTitle?: string;
     expanded: boolean;
     onExpand: (expand: boolean) => void;
     onClose: () => void;

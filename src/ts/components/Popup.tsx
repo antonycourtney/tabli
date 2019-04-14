@@ -19,6 +19,8 @@ import TabManagerState from '../tabManagerState';
 import { useState } from 'react';
 import { TabWindow } from '../tabWindow';
 import SelectablePopup from './SelectablePopup';
+import { FilteredTabWindow } from '../searchOps';
+import ModalActions from './modalActions';
 
 const _ = { debounce };
 
@@ -302,6 +304,19 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
 
     const filteredWindows = searchOps.filterTabWindows(sortedWindows, searchRE);
 
+    const openSaveModal = (tabWindow: TabWindow) => {
+        console.debug('TODO: openSaveModal');
+    };
+
+    const openRevertModal = (filteredTabWindow: FilteredTabWindow) => {
+        console.debug('TODO: openRevertModal');
+    };
+
+    const modalActions: ModalActions = {
+        openSaveModal,
+        openRevertModal
+    };
+
     return (
         <ThemeContext.Provider value={theme}>
             <div className={popupOuterStyle(theme)}>
@@ -311,7 +326,7 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
                     appState={appState}
                     stateRef={stateRef}
                     filteredWindows={filteredWindows}
-                    // appComponent={this}
+                    modalActions={modalActions}
                     searchStr={searchStr}
                     searchRE={searchRE}
                     isPopout={isPopout}
