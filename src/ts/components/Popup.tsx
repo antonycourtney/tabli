@@ -11,7 +11,7 @@ import SaveModal from './SaveModal'
 import SelectablePopup from './SelectablePopup'
 */
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
-import * as Util from './util';
+import * as utils from '../utils';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import debounce from 'lodash/debounce';
@@ -72,7 +72,7 @@ type PopupProps = PopupBaseProps & oneref.StateRefProps<TabManagerState>;
 
     storeAsState = winStore => {
         var tabWindows = winStore.getAll();
-        var cmpFn = Util.windowCmp(winStore.currentWindowId);
+        var cmpFn = utils.windowCmp(winStore.currentWindowId);
         var sortedWindows = tabWindows.sort(cmpFn);
 
         return {
@@ -279,7 +279,7 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     const theme = themes[themeName];
 
     const tabWindows = appState.getAll();
-    var cmpFn = Util.windowCmp(appState.currentWindowId);
+    var cmpFn = utils.windowCmp(appState.currentWindowId);
     const sortedWindows = tabWindows.sort(cmpFn);
 
     const [prefsModalIsOpen, setPrefsModalIsOpen] = useState(false);

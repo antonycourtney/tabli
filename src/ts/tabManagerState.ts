@@ -299,10 +299,11 @@ export default class TabManagerState extends Immutable.Record(
     }
 
     setCurrentWindowId(windowId: number) {
-        const nextSt = this.windowIdMap.has(windowId)
-            ? this.set('currentWindowId', windowId)
-            : this;
-        return nextSt;
+        const tabWindow = this.getTabWindowByChromeId(windowId);
+        if (!tabWindow || tabWindow.windowType === 'popup') {
+            return this;
+        }
+        return this.set('currentWindowId', windowId);
     }
 
     setCurrentWindow(chromeWindow: chrome.windows.Window) {

@@ -2,25 +2,25 @@
 
 X Modal confirmation dialog before reverting a saved window
 
-- Need a way to close a tab from the keyboard (DEL? Shift-Del? Ctrl-Del? )
+-   Need a way to close a tab from the keyboard (DEL? Shift-Del? Ctrl-Del? )
 
-- Need a button on top to link to help (usage manual)
+-   Need a button on top to link to help (usage manual)
 
 ========= After 0.8.2:
 
-- Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle expand on closed, saved windows
+-   Some other key sequence (Ctrl-/ maybe? ctrl-o ?) should toggle expand on closed, saved windows
 
-- Try to cache FavIcons of windows when opened and use them for closed tabs
+-   Try to cache FavIcons of windows when opened and use them for closed tabs
 
-- Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
+-   Try to set overflow:'hidden' on body when displaying modal to prevent scrolling
 
-- Carol feature req: Status bar showing numbers of Open Windows and Tabs (and maybe Saved winbows?)
+-   Carol feature req: Status bar showing numbers of Open Windows and Tabs (and maybe Saved winbows?)
 
-- KM req: Audible indicator! See "audible" in Tabs API
+-   KM req: Audible indicator! See "audible" in Tabs API
 
-- Don't show close button for closed windows
+-   Don't show close button for closed windows
 
-- Need a tabWindow test for what happens when we duplicate a tab with the same URL
+-   Need a tabWindow test for what happens when we duplicate a tab with the same URL
 
 ----- done:
 
@@ -69,40 +69,40 @@ X BUG: Revert causes window to temporarily disappear from window list
 
 =======
 
-- Re-run manual test of saving windows (changes around focused handling)
+-   Re-run manual test of saving windows (changes around focused handling)
 
-- Issue with selected tab and keyboard navigation: No longer starts with tab in "Current Window" or able to select Current Window tabs via up / down keys
+-   Issue with selected tab and keyboard navigation: No longer starts with tab in "Current Window" or able to select Current Window tabs via up / down keys
 
-- Need to transfer focus to Search... box on click in popout
+-   Need to transfer focus to Search... box on click in popout
 
-- Need a way to cancel search (essential for popout)
+-   Need a way to cancel search (essential for popout)
 
-- window.onRemoved or tabs.onRemoved handler behaving incorrectly on saved tabs -- re-opening a saved window after tabs are closed only shown New Tab.
+-   window.onRemoved or tabs.onRemoved handler behaving incorrectly on saved tabs -- re-opening a saved window after tabs are closed only shown New Tab.
 
-- Something going very wrong with focus indication -- seeing multiple tabs indicated as having focus.
-  (...clue: I def see this happening when opening links from TweetDeck.)
-  hypothesis: updateTabItem() getting called to set active to true, without calling setActiveTab().
-  Potential easy fix: call setActiveTab() if tab to be updated is active.
+-   Something going very wrong with focus indication -- seeing multiple tabs indicated as having focus.
+    (...clue: I def see this happening when opening links from TweetDeck.)
+    hypothesis: updateTabItem() getting called to set active to true, without calling setActiveTab().
+    Potential easy fix: call setActiveTab() if tab to be updated is active.
 
-- Should change TabItem.url into a property accessor
+-   Should change TabItem.url into a property accessor
 
-- on windowFocus change should set selectedWindow to focused window and selected tab to active tab
+-   on windowFocus change should set selectedWindow to focused window and selected tab to active tab
 
-- Should change scroll behavior to only adjust scroll position if body not 100% visible
+-   Should change scroll behavior to only adjust scroll position if body not 100% visible
 
-- FavIcons now missing in revert modal.
+-   FavIcons now missing in revert modal.
 
-- Getting error with bad argument when performing revert
+-   Getting error with bad argument when performing revert
 
-- Improve tab sorting: Use tab index
+-   Improve tab sorting: Use tab index
 
-- When opening windows from popout, need to use size of last normal window
-  X grab width and height in TabWindow
-  X pass last focused window to actions.activateTab and actions.openWindow
+-   When opening windows from popout, need to use size of last normal window
+    X grab width and height in TabWindow
+    X pass last focused window to actions.activateTab and actions.openWindow
 
-  - If there is no current window for pulling width and height, should use open window 0
+    -   If there is no current window for pulling width and height, should use open window 0
 
-- Searching for "fac" in popout seems to skip Facebook saved window when using arrow keys to navigate...
+-   Searching for "fac" in popout seems to skip Facebook saved window when using arrow keys to navigate...
 
 X FavIcon / title alignment looks off in Revert Dialog
 
@@ -110,8 +110,8 @@ X Keep track of popup window so we can close it on restart
 
 X Reset search field on Enter or ESC
 
-- Format source using 'standard'
-  https://www.npmjs.com/package/standard
+-   Format source using 'standard'
+    https://www.npmjs.com/package/standard
 
 X Right now we transfer selection to the active window and active tab when we get a window focus change event. For consistency we should also transfer when we get an active tab change event.
 
@@ -128,22 +128,22 @@ X(?) Getting exceptions in revert modal:
 
 X Need to clear search field after opening a window or tab. Current cleared on <Enter> key, but not on mouse click.
 
-- If we switch tabs when a search is active, the window / tab may not be displayed. We'll record that we've scrolled to that window and tab when in fact we haven't. We should probably force an updateScrollPos() in SelectablePopup when the selection is cleared.
+-   If we switch tabs when a search is active, the window / tab may not be displayed. We'll record that we've scrolled to that window and tab when in fact we haven't. We should probably force an updateScrollPos() in SelectablePopup when the selection is cleared.
 
-- Text in search box input no longer starts at top of open windows. (? artifact of starting from current open window?)
+-   Text in search box input no longer starts at top of open windows. (? artifact of starting from current open window?)
 
-- - Exception when re-starting Chrome because no current window. Test this.
+-   -   Exception when re-starting Chrome because no current window. Test this.
 
-- - Reverting when we have non-open saved tabs fails in RevertModal.renderItem() because tabItem.openState is null. Need to check for tabItem.open.
+-   -   Reverting when we have non-open saved tabs fails in RevertModal.renderItem() because tabItem.openState is null. Need to check for tabItem.open.
 
-- Opening link from email or external app results in scrolling to wrong window.
+-   Opening link from email or external app results in scrolling to wrong window.
 
-- - BUG: When opening a PDF, window has no title. Revert to URL if possible.
-    ( Not reproducible -- have opened some PDFs w/o issue)
+-   -   BUG: When opening a PDF, window has no title. Revert to URL if possible.
+        ( Not reproducible -- have opened some PDFs w/o issue)
 
-- Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
+-   Refactor: CloseButton should probably be its own component, but need to think carefully about how to deal with <container>:hover
 
-- If a Saved Tab is opened twice (duplicate) and one of those tabs is closed, it will stick around in the grayed out / closed state
+-   If a Saved Tab is opened twice (duplicate) and one of those tabs is closed, it will stick around in the grayed out / closed state
 
 X Checkbox on closed, saved tabs should be gray
 
@@ -152,13 +152,13 @@ TODO before 0.9beta:
 
 X Need to persist whether popout is open or closed and use it on a restart.
 
-- Add release notes inline
+-   Add release notes inline
 
-- Add command to manifest to open popout
+-   Add command to manifest to open popout
 
-- Need to avoid race condition and not persist anything for close event during reload.
-  What we have is something like:
-  action a = a -> ((St -> St) -> ()) -> ()
+-   Need to avoid race condition and not persist anything for close event during reload.
+    What we have is something like:
+    action a = a -> ((St -> St) -> ()) -> ()
 
 What we need is:
 Promise a
@@ -184,10 +184,10 @@ someAction a b :: a -> APST
 X Need to deal better with not having a current window (esp. on startup). Should
 (Seems to be better about using sensible default value for sizes now...)
 
-- pick 0th window (if there is one)
-- use "sensible" window width / height if no current window available
-  Easy repro: Reload in popout window. (Note: If we have a previously saved "current" window,
-  use that instead of updating current)
+-   pick 0th window (if there is one)
+-   use "sensible" window width / height if no current window available
+    Easy repro: Reload in popout window. (Note: If we have a previously saved "current" window,
+    use that instead of updating current)
 
 =======
 \*\*\* Critical issue, 2May16:
@@ -290,15 +290,15 @@ Instead of returning `void`, each action would now have to return a
 
 Questions:
 
-- Should wrapped type be: state => state, or (state => (state,a)) ?
-- How does 'async' (or possibly generator functions) fit here?
-  It seems somewhat tempting to have an action be an async function that
-  returns a State Transformer (state -> state function), but how will
-  that work with sequences of async calls in the body of the async
-  functions?
-  Can actions, which return State Transformers, directly call other actions?
-  How do we ensure that we are always operating on the latest state
-  after an async call to either a platform API or another action?
+-   Should wrapped type be: state => state, or (state => (state,a)) ?
+-   How does 'async' (or possibly generator functions) fit here?
+    It seems somewhat tempting to have an action be an async function that
+    returns a State Transformer (state -> state function), but how will
+    that work with sequences of async calls in the body of the async
+    functions?
+    Can actions, which return State Transformers, directly call other actions?
+    How do we ensure that we are always operating on the latest state
+    after an async call to either a platform API or another action?
 
 ---
 
@@ -320,33 +320,33 @@ same URL in the (!open,saved) state.
 
 The right definition of the merge process:
 
-- We start with:
-  - open tabs (from Chrome Window)
-  - saved tabs (from Bookmark)
-- We can determine two sets:
-  - the set of currently open URLs
-  - the set of saved (bookmarked) URLs.
-- Start with all open tabs, and the set of saved URLs for the window.
-  Partition into: (open,saved) tabs and (open,!saved)
-  These all go in to result set.
-- Now determine:
-  - The set of saved URLs that are not currently open:
-    savedNotOpenURLs := SavedURLs - OpenURLs
-    These go in result set.
-- Finally:
-  ClosedUnsavedURLs := RecentlyClosedURLs - SavedURLs  
-   These go in result set.
-  ======
-  Now let's consider the set of events we might have to deal with for a TabWindow, and
-- Close a tab (URL)
-- Open a tab at a specific URL
-- Un-save a saved tab
-- Save an unsaved tab
+-   We start with:
+    -   open tabs (from Chrome Window)
+    -   saved tabs (from Bookmark)
+-   We can determine two sets:
+    -   the set of currently open URLs
+    -   the set of saved (bookmarked) URLs.
+-   Start with all open tabs, and the set of saved URLs for the window.
+    Partition into: (open,saved) tabs and (open,!saved)
+    These all go in to result set.
+-   Now determine:
+    -   The set of saved URLs that are not currently open:
+        savedNotOpenURLs := SavedURLs - OpenURLs
+        These go in result set.
+-   Finally:
+    ClosedUnsavedURLs := RecentlyClosedURLs - SavedURLs  
+     These go in result set.
+    ======
+    Now let's consider the set of events we might have to deal with for a TabWindow, and
+-   Close a tab (URL)
+-   Open a tab at a specific URL
+-   Un-save a saved tab
+-   Save an unsaved tab
 
 Merging tabs is a little tricky because we must:
 
-- Take all open tabs and join with the saved URLs to determine which tabs are saved.
-- For closed tabs, ensure that we join with saved URLs
+-   Take all open tabs and join with the saved URLs to determine which tabs are saved.
+-   For closed tabs, ensure that we join with saved URLs
 
 ...and, although we don't support it today, we should really consider adding
 support for events on the bookmark folders.
@@ -416,3 +416,25 @@ See: https://github.com/mweststrate/immer/issues/202
 
 The time has come. A port to TypeScript and React Hooks, and the new ts-hooks based version
 of OneRef....
+
+4/13/19:
+
+TS port mostly complete, but I think I've spotted a mistake:
+
+I've been using
+
+```typescript
+type XProps = XBaseProps & oneref.StateRefProps<TabManagerState>;
+```
+
+in lots of places. This requires us to pass an entire appState down the component hierarchy.
+The problem with this is that it won't work well with memoization at all; the appState will change
+frequently, even though little should change as we move down the state tree. We'd like to be
+able to memoize TabItemUI and FilterWindowUI, which requires that those only take individual
+windows and tabs as props.
+
+It looks like the only reason I'm passing around `appState` is because several actions take
+`appState` as an argument. These should instead be passed just a stateRef, and we should
+provide a synchronous `read` or `get` (or perhaps `mutableGet` or `getLatest`) to read
+the current appState from the stateRef, but **we should only do this inside an action, never in a component.**
+So `mutableGet` seems like a good name...

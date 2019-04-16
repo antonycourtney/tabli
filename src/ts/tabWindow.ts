@@ -311,9 +311,9 @@ Title                                  | URL
     }
 
     // combine local expanded state with global expanded state to determine if expanded:
-    isExpanded(winStore: any): boolean {
+    isExpanded(expandAll: boolean): boolean {
         if (this.expanded === null) {
-            return winStore.expandAll && this.open;
+            return expandAll && this.open;
         }
         return this.expanded;
     }

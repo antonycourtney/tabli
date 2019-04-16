@@ -1,7 +1,7 @@
 import * as log from 'loglevel';
 import * as React from 'react';
 import * as oneref from 'oneref';
-import { mkUrl } from './util';
+import { mkUrl } from '../utils';
 import * as actions from '../actions';
 import * as Constants from './constants';
 import { ThemeContext, Theme } from './themeContext';
@@ -16,6 +16,7 @@ import TabManagerState from '../tabManagerState';
 import { TabWindow } from '../tabWindow';
 import ModalActions from './modalActions';
 import { useContext, useState, useCallback } from 'react';
+import { StateRef } from 'oneref';
 
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput);
 
@@ -36,7 +37,7 @@ const editButtonBaseStyle = (theme: Theme) => css`
     }
 `;
 
-interface WindowHeaderBaseProps {
+interface WindowHeaderProps {
     tabWindow: TabWindow;
     modalActions: ModalActions;
     initialTitle?: string;
@@ -46,13 +47,10 @@ interface WindowHeaderBaseProps {
     onOpen: () => void;
     onRevert: () => void;
     onItemSelected: () => void;
+    stateRef: StateRef<TabManagerState>;
 }
 
-type WindowHeaderProps = WindowHeaderBaseProps &
-    oneref.StateRefProps<TabManagerState>;
-
 const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
-    appState,
     stateRef,
     tabWindow,
     modalActions,
@@ -80,8 +78,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     ) => {
         log.debug('unamange: ', tabWindow);
         event.preventDefault();
-        const archiveFolderId = appState.archiveFolderId;
-        actions.unmanageWindow(archiveFolderId, tabWindow, stateRef);
+        actions.unmanageWindow(tabWindow, stateRef);
         event.stopPropagation();
     };
 

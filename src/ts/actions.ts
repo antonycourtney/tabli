@@ -4,7 +4,7 @@ import * as prefs from './preferences';
 import * as tabliBrowser from './chromeBrowser';
 import * as Constants from './components/constants';
 import { TabItem, TabWindow } from './tabWindow'; // eslint-disable-line
-import { StateRef, update, awaitableUpdate_ } from 'oneref';
+import { StateRef, update, awaitableUpdate_, mutableGet } from 'oneref';
 import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
 const chromep = ChromePromise;
@@ -184,15 +184,14 @@ const restoreFromAppState = (
  * N.B.: NOT exported; called from openWindow
  */
 function restoreBookmarkWindow(
-    st: TabManagerState,
-    lastFocusedTabWindow: TabWindow | null,
     tabWindow: TabWindow,
     mbTab: TabItem | null,
     storeRef: TMSRef
 ) {
     log.debug('restoreBookmarkWindow: restoring "' + tabWindow.title + '"');
+    const st = mutableGet(storeRef);
     restoreFromAppState(
-        lastFocusedTabWindow,
+        st.getCurrentWindow(),
         tabWindow,
         st.preferences.revertOnOpen,
         mbTab,
@@ -200,12 +199,7 @@ function restoreBookmarkWindow(
     );
 }
 
-export function openWindow(
-    st: TabManagerState,
-    lastFocusedTabWindow: TabWindow | null,
-    targetTabWindow: TabWindow,
-    storeRef: TMSRef
-) {
+export function openWindow(targetTabWindow: TabWindow, storeRef: TMSRef) {
     if (targetTabWindow.open) {
         // existing, open window -- just transfer focus
         chrome.windows.update(targetTabWindow.openWindowId, { focused: true });
@@ -213,13 +207,7 @@ export function openWindow(
         // TODO: update focus in winStore
     } else {
         // bookmarked window -- need to open it!
-        restoreBookmarkWindow(
-            st,
-            lastFocusedTabWindow,
-            targetTabWindow,
-            null,
-            storeRef
-        );
+        restoreBookmarkWindow(targetTabWindow, null, storeRef);
     }
 }
 
@@ -286,10 +274,10 @@ export function unsaveTab(
 }
 
 export const closeWindow = async (
-    st: TabManagerState,
     tabWindow: TabWindow,
     storeRef: TMSRef
 ): Promise<TabManagerState> => {
+    const st = mutableGet(storeRef);
     if (!tabWindow.open) {
         log.debug('closeWindow: request to close non-open window, ignoring...');
     } else {
@@ -313,14 +301,15 @@ export function expandWindow(
 
 // activate a specific tab:
 export function activateTab(
-    st: TabManagerState,
-    lastFocusedTabWindow: TabWindow | null,
     targetTabWindow: TabWindow,
     tab: TabItem,
     tabIndex: number,
     storeRef: TMSRef
 ) {
     // log.debug("activateTab: ", tabWindow, tab )
+
+    const st = mutableGet(storeRef);
+    const lastFocusedTabWindow = st.getCurrentWindow();
 
     if (targetTabWindow.open) {
         // OK, so we know this window is open.  What about the specific tab?
@@ -351,13 +340,7 @@ export function activateTab(
     } else {
         log.debug('activateTab: opening single tab of saved window');
         // TODO: insert our own callback so we can activate chosen tab after opening window!
-        restoreBookmarkWindow(
-            st,
-            lastFocusedTabWindow,
-            targetTabWindow,
-            tab,
-            storeRef
-        );
+        restoreBookmarkWindow(targetTabWindow, tab, storeRef);
     }
 }
 
@@ -461,11 +444,8 @@ export function manageWindow(
 }
 
 /* stop managing the specified window...move all bookmarks for this managed window to Recycle Bin */
-export function unmanageWindow(
-    archiveFolderId: string,
-    tabWindow: TabWindow,
-    storeRef: TMSRef
-) {
+export function unmanageWindow(tabWindow: TabWindow, storeRef: TMSRef) {
+    const archiveFolderId = mutableGet(storeRef).archiveFolderId;
     // log.debug("unmanageWindow: ", tabWindow.toJS())
     if (!archiveFolderId) {
         alert(
@@ -524,15 +504,12 @@ export function showPreferences() {
     chrome.tabs.create({ url: prefsURL });
 }
 
-export const showPopout = async (
-    winStore: TabManagerState,
-    storeRef: TMSRef
-): Promise<TabManagerState> => {
-    const ptw = winStore.getPopoutTabWindow();
+export const showPopout = (storeRef: TMSRef) => {
+    const ptw = mutableGet(storeRef).getPopoutTabWindow();
     if (ptw) {
         tabliBrowser.setFocusedWindow(ptw.openWindowId);
     } else {
-        await chromep.windows.create({
+        chromep.windows.create({
             url: 'popout.html',
             type: 'popup',
             left: 0,
@@ -541,22 +518,21 @@ export const showPopout = async (
             height: Constants.POPOUT_DEFAULT_HEIGHT
         });
     }
-    return winStore;
 };
 
 export const hidePopout = async (
-    winStore: TabManagerState,
     storeRef: TMSRef
 ): Promise<TabManagerState> => {
+    const winStore = mutableGet(storeRef);
     const ptw = winStore.getPopoutTabWindow();
     if (ptw) {
-        const nextSt = await closeWindow(winStore, ptw, storeRef);
+        const nextSt = await closeWindow(ptw, storeRef);
         return nextSt;
     }
     return winStore;
 };
 
-export function toggleExpandAll(winStore: TabManagerState, storeRef: TMSRef) {
+export function toggleExpandAll(storeRef: TMSRef) {
     update(storeRef, st => {
         const allWindows = st.getAll();
         const updWindows = allWindows.map(w => w.remove('expanded'));
@@ -567,16 +543,43 @@ export function toggleExpandAll(winStore: TabManagerState, storeRef: TMSRef) {
     });
 }
 
+// The dreaded routine copied from SO
+// http://stackoverflow.com/a/18455088/3272482
+function copyTextToClipboard(text: string) {
+    var copyFrom = document.createElement('textarea');
+    copyFrom.textContent = text;
+    var body = document.getElementsByTagName('body')[0];
+    body.appendChild(copyFrom);
+    copyFrom.select();
+    document.execCommand('copy');
+    body.removeChild(copyFrom);
+}
+
+export function copyWindowsToClipboard(stateRef: TMSRef) {
+    const appState = mutableGet(stateRef);
+    const openWindows = appState.getTabWindowsByType('normal');
+
+    var cmpFn = utils.windowCmp(appState.currentWindowId);
+    var sortedWindows = openWindows.sort(cmpFn);
+
+    const s = sortedWindows.reduce(
+        (rs, tw) => rs + '\n\n' + tw.exportStr(),
+        ''
+    );
+
+    copyTextToClipboard(s);
+}
+
 /*
  * move an open tab (in response to a drag event):
  */
 export const moveTabItem = async (
-    st: TabManagerState,
     targetTabWindow: TabWindow,
     targetIndex: number,
     movedTabItem: TabItem,
     storeRef: TMSRef
 ) => {
+    const st = mutableGet(storeRef);
     /* The tab being moved can be in 4 possible states based
      * on open and saved flags, same for target window...
      */
@@ -635,14 +638,14 @@ export const moveTabItem = async (
     // syncChromeWindowById(targetWindowId, storeRef)
 };
 
-export function hideRelNotes(winStore: TabManagerState, storeRef: TMSRef) {
+export function hideRelNotes(storeRef: TMSRef) {
     const manifest = chrome.runtime.getManifest();
     chrome.storage.local.set({ readRelNotesVersion: manifest.version }, () => {
         update(storeRef, st => st.set('showRelNotes', false));
     });
 }
 
-export function showRelNotes(winStore: TabManagerState, storeRef: TMSRef) {
+export function showRelNotes(storeRef: TMSRef) {
     update(storeRef, st => st.set('showRelNotes', true));
 }
 

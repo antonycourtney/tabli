@@ -4,9 +4,9 @@ import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
 import { Manager, Reference, Popper } from 'react-popper';
 import { css, cx } from 'emotion';
-import { mkUrl } from './util';
+import { mkUrl } from '../utils';
 import * as actions from '../actions';
-import { StateRefProps } from 'oneref';
+import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useState, useContext } from 'react';
 
@@ -69,7 +69,9 @@ const handleFeedbackClick: ClickHandler = e => {
     actions.sendFeedback();
 };
 
-type MenuButtonProps = StateRefProps<TabManagerState>;
+type MenuButtonProps = {
+    stateRef: StateRef<TabManagerState>;
+};
 
 const menuStyle = css({
     display: 'flex',
@@ -81,7 +83,6 @@ const menuStyle = css({
 });
 
 const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
-    appState,
     stateRef
 }: MenuButtonProps) => {
     const theme = useContext(ThemeContext);
@@ -92,7 +93,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
     };
     const handleRelNotesClick: ClickHandler = e => {
         e.preventDefault();
-        actions.showRelNotes(appState, stateRef);
+        actions.showRelNotes(stateRef);
     };
 
     const renderMenuItem = (handler: ClickHandler, label: string) => {

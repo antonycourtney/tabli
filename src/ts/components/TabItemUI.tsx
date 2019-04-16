@@ -25,6 +25,7 @@ import {
 import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
+import { StateRef } from 'oneref';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -38,7 +39,7 @@ const tabItemHoverVisible = css`
 
 const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon);
 
-export interface TabItemUIBaseProps {
+export interface TabItemUIProps {
     tabWindow: TabWindow;
     tab: TabItem;
     tabIndex: number;
@@ -54,10 +55,8 @@ export interface TabItemUIBaseProps {
     connectDropTarget?: ConnectDropTarget;
     isDragging?: boolean;
     isOver?: boolean;
+    stateRef: StateRef<TabManagerState>;
 }
-
-type TabItemUIProps = TabItemUIBaseProps &
-    oneref.StateRefProps<TabManagerState>;
 
 const tabItemSource = {
     beginDrag(props: TabItemUIProps) {
@@ -78,7 +77,6 @@ const tabItemTarget = {
     drop(props: TabItemUIProps, monitor: DropTargetMonitor) {
         const sourceItem = monitor.getItem();
         actions.moveTabItem(
-            props.appState,
             props.tabWindow,
             props.tabIndex + 1,
             sourceItem.sourceTab,
@@ -108,7 +106,6 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     isSelected,
     isOver,
     onItemSelected,
-    appState,
     stateRef
 }: TabItemUIProps) => {
     const theme = useContext(ThemeContext);
@@ -119,14 +116,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
         // log.debug("TabItem: handleClick: tab: ", tab)
 
-        actions.activateTab(
-            appState,
-            appState.getCurrentWindow(),
-            tabWindow,
-            tab,
-            tabIndex,
-            stateRef
-        );
+        actions.activateTab(tabWindow, tab, tabIndex, stateRef);
 
         if (onItemSelected) {
             onItemSelected(tab);

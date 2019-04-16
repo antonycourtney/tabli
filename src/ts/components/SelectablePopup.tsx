@@ -486,6 +486,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [scrolledToWindowId, setScrolledToWindowId] = useState(-1);
     const [scrolledToTabId, setScrolledToTabId] = useState(-1);
+    const expandAll = appState.expandAll;
 
     const handlePrevSelection = (byPage: boolean) => {
         if (filteredWindows.length === 0) {
@@ -495,7 +496,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
 
         // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count()
 
-        const isExpanded = selectedWindow.tabWindow.isExpanded(appState);
+        const isExpanded = selectedWindow.tabWindow.isExpanded(expandAll);
 
         if (isExpanded && selectedTabIndex > 0 && !byPage) {
             setSelectedTabIndex(selectedTabIndex - 1);
@@ -529,7 +530,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 ? selectedWindow.itemMatches.count()
                 : selectedWindow.tabWindow.tabItems.count();
 
-        const isExpanded = selectedWindow.tabWindow.isExpanded(appState);
+        const isExpanded = selectedWindow.tabWindow.isExpanded(expandAll);
 
         if (isExpanded && selectedTabIndex + 1 < tabCount && !byPage) {
             setSelectedTabIndex(selectedTabIndex + 1);
@@ -558,12 +559,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (selectedTabIndex === -1) {
             if (currentWindow) {
                 // no specific tab, but still active / open window
-                actions.openWindow(
-                    appState,
-                    currentWindow,
-                    selectedWindow.tabWindow,
-                    stateRef
-                );
+                actions.openWindow(selectedWindow.tabWindow, stateRef);
             }
         } else {
             const selectedTabItem = selectedTab(
@@ -572,8 +568,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 selectedTabIndex
             );
             actions.activateTab(
-                appState,
-                currentWindow,
                 selectedWindow.tabWindow,
                 selectedTabItem,
                 selectedTabIndex,
@@ -592,7 +586,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         const selectedWindow = filteredWindows[selectedWindowIndex];
         const tabWindow = selectedWindow.tabWindow;
         // technically the logical negation here isn't right, but it'll do.
-        const expanded = tabWindow.isExpanded(appState);
+        const expanded = tabWindow.isExpanded(expandAll);
 
         actions.expandWindow(tabWindow, !expanded, stateRef);
     };
@@ -603,7 +597,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (!curWindow) {
             return;
         }
-        actions.openWindow(appState, curWindow, curWindow, stateRef);
+        actions.openWindow(curWindow, stateRef);
     };
 
     const handleItemSelected = () => {
@@ -634,7 +628,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         <div className={popupInnerStyle}>
             <div className={popupHeaderStyle}>
                 <SearchBar
-                    appState={appState}
                     stateRef={stateRef}
                     onSearchInput={onSearchInput}
                     onSearchUp={handlePrevSelection}
@@ -649,7 +642,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             </div>
             <div className={popupBodyStyle} ref={bodyRef}>
                 <TabWindowList
-                    appState={appState}
                     stateRef={stateRef}
                     filteredWindows={filteredWindows}
                     modalActions={modalActions}
@@ -659,6 +651,9 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                     selectedTabIndex={selectedTabIndex}
                     focusedTabWindowRef={focusedTabWindowRef}
                     onItemSelected={handleItemSelected}
+                    expandAll={expandAll}
+                    showRelNotes={appState.showRelNotes}
+                    currentWindowId={appState.currentWindowId}
                 />
             </div>
             <div className={popupFooterStyle(theme)}>

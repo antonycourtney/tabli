@@ -1,10 +1,9 @@
 import * as React from 'react';
-import * as Util from './util';
+import { mkUrl } from '../utils';
 import { cx, css } from 'emotion';
 import { ThemeContext, Theme } from './themeContext';
 import * as styles from './cssStyles';
 import { useContext } from 'react';
-const { mkUrl } = Util;
 
 const expandIcon = mkUrl('images/triangle-small-4-01.png');
 const collapseIcon = mkUrl('images/triangle-small-1-01.png');

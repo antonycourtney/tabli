@@ -1,6 +1,6 @@
 import * as log from 'loglevel'; // eslint-disable-line no-unused-consts
 import * as React from 'react';
-import * as oneref from 'oneref';
+import { StateRef } from 'oneref';
 import * as Immutable from 'immutable';
 import { cx, css } from 'emotion';
 import * as styles from './cssStyles';
@@ -24,7 +24,7 @@ const tabWindowSelectedStyle = css({
     border: Constants.selectedBorder
 });
 
-interface FilteredTabWindowUIBaseProps {
+interface FilteredTabWindowUIProps {
     filteredTabWindow: FilteredTabWindow;
     isSelected: boolean;
     isFocused: boolean;
@@ -32,10 +32,9 @@ interface FilteredTabWindowUIBaseProps {
     selectedTabIndex: number;
     searchStr: string | null;
     onItemSelected: () => void; // N.B. just clears selection; tab or window selected both trigger this
+    stateRef: StateRef<TabManagerState>;
+    expandAll: boolean;
 }
-
-type FilteredTabWindowUIProps = FilteredTabWindowUIBaseProps &
-    oneref.StateRefProps<TabManagerState>;
 
 const FilteredTabWindowUI: React.FunctionComponent<
     FilteredTabWindowUIProps
@@ -44,11 +43,11 @@ const FilteredTabWindowUI: React.FunctionComponent<
     searchStr,
     isSelected,
     isFocused,
-    appState,
     stateRef,
     onItemSelected,
     selectedTabIndex,
-    modalActions
+    modalActions,
+    expandAll
 }: FilteredTabWindowUIProps) => {
     const [prevIsSelected, setPrevIsSelected] = useState(false);
     const windowDivRef = useRef<HTMLDivElement | null>(null);
@@ -65,12 +64,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     }
 
     const handleOpen = () => {
-        actions.openWindow(
-            appState,
-            appState.getCurrentWindow(),
-            filteredTabWindow.tabWindow,
-            stateRef
-        );
+        actions.openWindow(filteredTabWindow.tabWindow, stateRef);
         if (onItemSelected) {
             onItemSelected();
         }
@@ -79,7 +73,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     const handleClose = () => {
         // eslint-disable-line no-unused-consts
         // log.log("handleClose")
-        actions.closeWindow(appState, filteredTabWindow.tabWindow, stateRef);
+        actions.closeWindow(filteredTabWindow.tabWindow, stateRef);
     };
 
     const handleRevert = () => {
@@ -92,7 +86,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
      */
     const getExpandedState = () => {
         const tabWindow = filteredTabWindow.tabWindow;
-        return tabWindow.isExpanded(appState);
+        return tabWindow.isExpanded(expandAll);
     };
 
     const renderTabItems = (
@@ -110,7 +104,6 @@ const FilteredTabWindowUI: React.FunctionComponent<
             const isSelected = i === selectedTabIndex;
             const tabItem = (
                 <TabItemUI
-                    appState={appState}
                     stateRef={stateRef}
                     tabWindow={tabWindow}
                     tab={tabs.get(i)!}
@@ -157,7 +150,6 @@ const FilteredTabWindowUI: React.FunctionComponent<
 
     const windowHeader = (
         <WindowHeader
-            appState={appState}
             stateRef={stateRef}
             tabWindow={tabWindow}
             expanded={expanded}

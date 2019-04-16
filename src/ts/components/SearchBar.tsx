@@ -2,16 +2,14 @@ import * as log from 'loglevel'; // eslint-disable-line no-unused-vars
 import * as React from 'react';
 import * as Constants from './constants';
 import * as actions from '../actions';
-import * as Util from './util';
 import * as styles from './cssStyles';
 import { ThemeContext } from './themeContext';
 import { css, cx } from 'emotion';
 import MenuButton from './menuButton';
-import { StateRefProps } from 'oneref';
+import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useRef, useContext, Ref, MutableRefObject } from 'react';
-
-const mkUrl = Util.mkUrl;
+import { mkUrl } from '../utils';
 
 const toolbarOuterContainerStyle = css`
     display: flex;
@@ -44,19 +42,7 @@ export const expandAllIconStyle = css({
     WebkitMaskImage: mkUrl('images/triangle-small-1-01.png')
 });
 
-// The dreaded routine copied from SO
-// http://stackoverflow.com/a/18455088/3272482
-function copyTextToClipboard(text: string) {
-    var copyFrom = document.createElement('textarea');
-    copyFrom.textContent = text;
-    var body = document.getElementsByTagName('body')[0];
-    body.appendChild(copyFrom);
-    copyFrom.select();
-    document.execCommand('copy');
-    body.removeChild(copyFrom);
-}
-
-interface SearchBarBaseProps {
+interface SearchBarProps {
     onSearchInput: (s: string) => void;
     onSearchUp: (byPage: boolean) => void;
     onSearchDown: (byPage: boolean) => void;
@@ -66,12 +52,10 @@ interface SearchBarBaseProps {
     onShowPreferences: () => void;
     isPopout: boolean;
     searchInputRef: MutableRefObject<HTMLInputElement | null>;
+    stateRef: StateRef<TabManagerState>;
 }
 
-type SearchBarProps = SearchBarBaseProps & StateRefProps<TabManagerState>;
-
 const SearchBar: React.FunctionComponent<SearchBarProps> = ({
-    appState,
     stateRef,
     onSearchInput,
     onSearchUp,
@@ -186,28 +170,18 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
         if (isPopout) {
-            actions.hidePopout(appState, stateRef);
+            actions.hidePopout(stateRef);
         } else {
-            actions.showPopout(appState, stateRef);
+            actions.showPopout(stateRef);
         }
     };
 
     const handleExpandToggleClick = () => {
-        actions.toggleExpandAll(appState, stateRef);
+        actions.toggleExpandAll(stateRef);
     };
 
     const handleCopyClick = () => {
-        const openWindows = appState.getTabWindowsByType('normal');
-
-        var cmpFn = Util.windowCmp(appState.currentWindowId);
-        var sortedWindows = openWindows.sort(cmpFn);
-
-        const s = sortedWindows.reduce(
-            (rs, tw) => rs + '\n\n' + tw.exportStr(),
-            ''
-        );
-
-        copyTextToClipboard(s);
+        actions.copyWindowsToClipboard(stateRef);
     };
 
     // We'll rotate 270 degrees to point upper left for popout,
@@ -261,7 +235,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     return (
         <div className={toolbarOuterContainerStyle}>
             <div className={toolbarInnerContainerStyle}>
-                <MenuButton appState={appState} stateRef={stateRef} />
+                <MenuButton stateRef={stateRef} />
                 {popoutButton}
                 <input
                     className={searchInputStyle}
@@ -386,7 +360,7 @@ class SearchBar extends React.Component {
   handleCopyClick = () => {
     const openWindows = this.props.winStore.getTabWindowsByType('normal')
 
-    var cmpFn = Util.windowCmp(this.props.winStore.currentWindowId)
+    var cmpFn = utilswindowCmp(this.props.winStore.currentWindowId)
     var sortedWindows = openWindows.sort(cmpFn)
 
     const s = sortedWindows.reduce((rs, tw) => rs + '\n\n' + tw.exportStr(), '')

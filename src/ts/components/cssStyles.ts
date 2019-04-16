@@ -1,5 +1,5 @@
 import * as Constants from './constants';
-import { mkUrl } from './util';
+import { mkUrl } from '../utils';
 import { Theme } from './themeContext';
 /**
  * Wrappers around styles with explicit calls to css()

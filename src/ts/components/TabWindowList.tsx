@@ -6,18 +6,19 @@ import MessageCard from './MessageCard';
 
 import * as actions from '../actions';
 
-import * as util from './util';
+import { isNode } from '../utils';
 import TabManagerState from '../tabManagerState';
 import ModalActions from './modalActions';
 import { FilteredTabWindow } from '../searchOps';
+import { StateRef } from 'oneref';
 
 var relNotesStr = '';
-if (!util.isNode) {
+if (!isNode) {
     // in browser
     relNotesStr = require('../../html/relnotes.html');
 }
 
-interface TabWindowListBaseProps {
+interface TabWindowListProps {
     filteredWindows: FilteredTabWindow[];
     selectedWindowIndex: number;
     selectedTabIndex: number;
@@ -26,13 +27,13 @@ interface TabWindowListBaseProps {
     modalActions: ModalActions;
     focusedTabWindowRef?: React.MutableRefObject<HTMLDivElement | null>;
     onItemSelected: () => void;
+    stateRef: StateRef<TabManagerState>;
+    expandAll: boolean;
+    showRelNotes: boolean;
+    currentWindowId: number;
 }
 
-type TabWindowListProps = TabWindowListBaseProps &
-    oneref.StateRefProps<TabManagerState>;
-
 const TabWindowList: React.FC<TabWindowListProps> = ({
-    appState,
     stateRef,
     filteredWindows,
     selectedWindowIndex,
@@ -41,14 +42,15 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     searchRE,
     modalActions,
     onItemSelected,
-    focusedTabWindowRef
+    focusedTabWindowRef,
+    expandAll,
+    showRelNotes,
+    currentWindowId
 }) => {
     /* acknowledge release notes (and hide them) */
     const ackRelNotes = () => {
-        actions.hideRelNotes(appState, stateRef);
+        actions.hideRelNotes(stateRef);
     };
-
-    const showRelNotes = appState.showRelNotes;
 
     var relNotesSection = null;
     if (showRelNotes) {
@@ -68,8 +70,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
         var tabWindow = filteredTabWindow.tabWindow;
         var id = tabWindow.id;
         var isOpen = tabWindow.open;
-        const isFocused =
-            isOpen && appState.currentWindowId === tabWindow.openWindowId;
+        const isFocused = isOpen && currentWindowId === tabWindow.openWindowId;
 
         // focused property will only be true if isFocused and no rel notes to display:
         const focusedProp = !showRelNotes && isFocused;
@@ -78,7 +79,6 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
         const trueSelectedTabIndex = isSelected ? selectedTabIndex : -1;
         var windowElem = (
             <FilteredTabWindowUI
-                appState={appState}
                 stateRef={stateRef}
                 filteredTabWindow={filteredTabWindow}
                 key={id}
@@ -88,6 +88,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
                 selectedTabIndex={trueSelectedTabIndex}
                 modalActions={modalActions}
                 onItemSelected={onItemSelected}
+                expandAll={expandAll}
             />
         );
         if (isFocused) {

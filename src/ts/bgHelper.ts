@@ -299,14 +299,7 @@ const dedupeTab = async (
             );
             const currentWindow = tabClosedSt.getCurrentWindow();
             if (currentWindow) {
-                actions.activateTab(
-                    tabClosedSt,
-                    currentWindow,
-                    origTabWindow,
-                    origTab,
-                    0,
-                    stateRef
-                );
+                actions.activateTab(origTabWindow, origTab, 0, stateRef);
             }
         }
     }
@@ -939,20 +932,17 @@ async function main() {
         // might be hanging around...
         // log.debug('store before hiding popout: ', syncedStore.toJS())
 
-        const noPopStore = await actions.hidePopout(syncedStore, stateRef); // log.debug('noPopStore: ', noPopStore)
+        const noPopStore = await actions.hidePopout(stateRef); // log.debug('noPopStore: ', noPopStore)
 
         if (noPopStore.preferences.popoutOnStart) {
-            actions.showPopout(noPopStore, stateRef);
+            actions.showPopout(stateRef);
         }
 
         chrome.commands.onCommand.addListener(command => {
             chromeEventLog.debug('Chrome Event: onCommand: ', command);
 
             if (command === 'show_popout') {
-                actions.showPopout(
-                    (window as any).stateRef.getValue(),
-                    stateRef
-                );
+                actions.showPopout(stateRef);
             }
         });
     } catch (e) {
