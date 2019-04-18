@@ -22,7 +22,7 @@ const windowListSectionHeaderStyle = css({
 interface WindowListSectionProps {
     title?: string;
     focusedRef?: React.MutableRefObject<HTMLDivElement | null>;
-    // children: React.ReactChildren;
+    children: React.ReactNode;
 }
 
 interface SectionDivProps {
@@ -34,7 +34,7 @@ const WindowListSection: React.FC<WindowListSectionProps> = ({
     title,
     focusedRef,
     children
-}) => {
+}: WindowListSectionProps) => {
     var header = null;
     if (title) {
         header = (

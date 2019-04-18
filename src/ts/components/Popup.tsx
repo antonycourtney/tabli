@@ -4,9 +4,9 @@ import * as actions from '../actions';
 import * as searchOps from '../searchOps';
 import * as oneref from 'oneref';
 import { css } from 'emotion';
+import RevertModal from './RevertModal';
 /*
 import PreferencesModal from './PreferencesModal'
-import RevertModal from './RevertModal'
 import SaveModal from './SaveModal'
 import SelectablePopup from './SelectablePopup'
 */
@@ -105,16 +105,6 @@ type PopupProps = PopupBaseProps & oneref.StateRefProps<TabManagerState>;
         this.setState({ saveModalIsOpen: false });
     };
 
-    openRevertModal = filteredTabWindow => {
-        this.setState({
-            revertModalIsOpen: true,
-            revertTabWindow: filteredTabWindow.tabWindow
-        });
-    };
-
-    closeRevertModal = () => {
-        this.setState({ revertModalIsOpen: false, revertTabWindow: null });
-    };
 
     openPreferencesModal = () => {
         log.debug('openPreferencesModal');
@@ -140,11 +130,6 @@ type PopupProps = PopupBaseProps & oneref.StateRefProps<TabManagerState>;
         this.closeSaveModal();
     };
 
-    doRevert = tabWindow => {
-        // eslint-disable-line no-unused-vars
-        actions.revertWindow(this.state.revertTabWindow, this.props.storeRef);
-        this.closeRevertModal();
-    };
 
     doUpdatePreferences = newPrefs => {
         log.debug('update preferences: ', newPrefs.toJS());
@@ -309,13 +294,32 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     };
 
     const openRevertModal = (filteredTabWindow: FilteredTabWindow) => {
-        log.debug('TODO: openRevertModal');
+        setRevertModalIsOpen(true);
+        setRevertTabWindow(filteredTabWindow.tabWindow);
+    };
+
+    const closeRevertModal = () => {
+        setRevertModalIsOpen(false);
+        setRevertTabWindow(null);
+    };
+
+    const doRevert = (tabWindow: TabWindow) => {
+        actions.revertWindow(revertTabWindow!, stateRef);
+        closeRevertModal();
     };
 
     const modalActions: ModalActions = {
         openSaveModal,
         openRevertModal
     };
+
+    const revertModal = revertModalIsOpen ? (
+        <RevertModal
+            tabWindow={revertTabWindow!}
+            onClose={closeRevertModal}
+            onSubmit={doRevert}
+        />
+    ) : null;
 
     return (
         <ThemeContext.Provider value={theme}>
@@ -331,6 +335,7 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
                     searchRE={searchRE}
                     isPopout={isPopout}
                 />
+                {revertModal}
             </div>
         </ThemeContext.Provider>
     );
