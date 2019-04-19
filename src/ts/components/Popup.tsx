@@ -6,10 +6,6 @@ import * as oneref from 'oneref';
 import { css } from 'emotion';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
-/*
-import PreferencesModal from './PreferencesModal'
-import SelectablePopup from './SelectablePopup'
-*/
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
 import * as utils from '../utils';
 import { DragDropContext } from 'react-dnd';
@@ -267,7 +263,6 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     var cmpFn = utils.windowCmp(appState.currentWindowId);
     const sortedWindows = tabWindows.sort(cmpFn);
 
-    const [prefsModalIsOpen, setPrefsModalIsOpen] = useState(false);
     const [saveModalIsOpen, setSaveModalIsOpen] = useState(false);
     const [saveInitialTitle, setSaveInitialTitle] = useState('');
     const [saveTabWindow, setSaveTabWindow] = useState<TabWindow | null>(null);
@@ -348,7 +343,6 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
             <div className={popupOuterStyle(theme)}>
                 <SelectablePopup
                     onSearchInput={handleSearchInput}
-                    onShowPreferences={() => setPrefsModalIsOpen(true)}
                     appState={appState}
                     stateRef={stateRef}
                     filteredWindows={filteredWindows}

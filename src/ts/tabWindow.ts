@@ -200,7 +200,7 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
 
         if (!activeTab) {
             // shouldn't happen!
-            log.warn(
+            log.debug(
                 'TabWindow.get title(): No active tab found: ',
                 this.toJS()
             );

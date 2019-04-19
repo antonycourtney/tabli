@@ -49,7 +49,6 @@ interface SearchBarProps {
     onSearchEnter: (ref: MutableRefObject<HTMLInputElement | null>) => void;
     onSearchExit: () => void;
     onSearchExpandToggle: () => void;
-    onShowPreferences: () => void;
     isPopout: boolean;
     searchInputRef: MutableRefObject<HTMLInputElement | null>;
     stateRef: StateRef<TabManagerState>;

@@ -424,9 +424,6 @@ class SelectablePopup extends React.Component {
                         onSearchEnter={this.handleSelectionEnter}
                         onSearchExit={this.handleSearchExit}
                         onSearchExpandToggle={this.handleSelectionExpandToggle}
-                        onShowPreferences={
-                            this.props.appComponent.openPreferencesModal
-                        }
                         setInputRef={this.setSearchInputRef}
                         isPopout={this.props.isPopout}
                     />
@@ -458,7 +455,6 @@ interface SelectablePopupProps {
     appState: TabManagerState;
     stateRef: StateRef<TabManagerState>;
     onSearchInput: (searchStr: string) => void;
-    onShowPreferences: () => void;
     filteredWindows: FilteredTabWindow[];
     searchStr: string | null;
     searchRE: RegExp | null;
@@ -470,7 +466,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     appState,
     stateRef,
     onSearchInput,
-    onShowPreferences,
     filteredWindows,
     searchStr,
     searchRE,
@@ -635,7 +630,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                     onSearchEnter={handleSelectionEnter}
                     onSearchExit={handleSearchExit}
                     onSearchExpandToggle={handleSelectionExpandToggle}
-                    onShowPreferences={onShowPreferences}
                     searchInputRef={searchInputRef}
                     isPopout={isPopout}
                 />
