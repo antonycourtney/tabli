@@ -12,7 +12,7 @@ import { ThemeContext } from './themeContext';
 import * as tabItemUtil from './tabItemUtil';
 import TabManagerState from '../tabManagerState';
 import { StateRef } from 'oneref';
-import { useContext, useRef } from 'react';
+import { useContext, useRef, useEffect } from 'react';
 import * as tabWindowUtils from '../tabWindowUtils';
 
 /*
@@ -107,7 +107,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
 
     const defaultButtonRef = useRef<HTMLButtonElement | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         console.log('Revert modal effect handler: ', defaultButtonRef.current);
         if (defaultButtonRef.current) {
             defaultButtonRef.current.focus();

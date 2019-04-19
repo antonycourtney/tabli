@@ -5,9 +5,9 @@ import * as searchOps from '../searchOps';
 import * as oneref from 'oneref';
 import { css } from 'emotion';
 import RevertModal from './RevertModal';
+import SaveModal from './SaveModal';
 /*
 import PreferencesModal from './PreferencesModal'
-import SaveModal from './SaveModal'
 import SelectablePopup from './SelectablePopup'
 */
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
@@ -269,6 +269,8 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
 
     const [prefsModalIsOpen, setPrefsModalIsOpen] = useState(false);
     const [saveModalIsOpen, setSaveModalIsOpen] = useState(false);
+    const [saveInitialTitle, setSaveInitialTitle] = useState('');
+    const [saveTabWindow, setSaveTabWindow] = useState<TabWindow | null>(null);
     const [revertModalIsOpen, setRevertModalIsOpen] = useState(false);
     const [revertTabWindow, setRevertTabWindow] = useState<TabWindow | null>(
         null
@@ -290,7 +292,19 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     const filteredWindows = searchOps.filterTabWindows(sortedWindows, searchRE);
 
     const openSaveModal = (tabWindow: TabWindow) => {
-        log.debug('TODO: openSaveModal');
+        const initialTitle = tabWindow.title;
+        setSaveModalIsOpen(true);
+        setSaveInitialTitle(initialTitle);
+        setSaveTabWindow(tabWindow);
+    };
+    const closeSaveModal = () => {
+        setSaveModalIsOpen(false);
+    };
+
+    // handler for save modal
+    const doSave = (titleStr: string) => {
+        actions.manageWindow(saveTabWindow!, titleStr, stateRef);
+        closeSaveModal();
     };
 
     const openRevertModal = (filteredTabWindow: FilteredTabWindow) => {
@@ -321,6 +335,14 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
         />
     ) : null;
 
+    const saveModal = saveModalIsOpen ? (
+        <SaveModal
+            initialTitle={saveInitialTitle}
+            onClose={closeSaveModal}
+            onSubmit={doSave}
+        />
+    ) : null;
+
     return (
         <ThemeContext.Provider value={theme}>
             <div className={popupOuterStyle(theme)}>
@@ -336,6 +358,7 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
                     isPopout={isPopout}
                 />
                 {revertModal}
+                {saveModal}
             </div>
         </ThemeContext.Provider>
     );

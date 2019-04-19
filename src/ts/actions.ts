@@ -381,12 +381,14 @@ export function revertWindow(tabWindow: TabWindow, storeRef: TMSRef) {
  * save the specified tab window and make it a managed window
  */
 export function manageWindow(
-    tabliFolderId: string,
-    currentWindowId: number,
     tabWindow: TabWindow,
     title: string,
     storeRef: TMSRef
 ) {
+    const st = mutableGet(storeRef);
+    const tabliFolderId = st.folderId;
+    const currentWindowId = st.currentWindowId;
+
     // and write out a Bookmarks folder for this newly managed window:
     if (!tabliFolderId) {
         alert('Could not save bookmarks -- no tab manager folder');

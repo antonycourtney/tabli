@@ -12,11 +12,8 @@ function config(nodeEnv) {
             extensions: ['.webpack.js', '.web.js', '.js', '.ts', '.tsx']
         },
         entry: {
-            //   prefsPage: ["./src/js/prefsPage.js"],
             //   renderTest: ["./src/js/renderTest.js"],
-            //   tabliPopup: [ "./src/js/tabliPopup.js"],
-            //   tabliPopout: [ "./src/js/tabliPopout.js"],
-            //   bgHelper: [ "./src/js/bgHelper.js"]
+            prefsPage: ['./src/ts/prefsPage.tsx'],
             tabliPopup: ['./src/ts/tabliPopup.ts'],
             tabliPopout: ['./src/ts/tabliPopout.ts'],
             bgHelper: ['./src/ts/bgHelper.ts']
