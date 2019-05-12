@@ -15,16 +15,19 @@ import { useRef, useContext, useState, Ref, MutableRefObject } from 'react';
 import { TabItem } from '../tabWindow';
 import ModalActions from './modalActions';
 
-function matchingTabs(searchStr: string, filteredTabWindow: FilteredTabWindow) {
+function matchingTabs(
+    searchStr: string | null,
+    filteredTabWindow: FilteredTabWindow
+) {
     var ret =
-        searchStr.length > 0
-            ? filteredTabWindow.itemMatches
+        searchStr && searchStr.length > 0
+            ? filteredTabWindow.itemMatches.map(fti => fti.tabItem)
             : filteredTabWindow.tabWindow.tabItems;
     return ret;
 }
 
 function matchingTabsCount(
-    searchStr: string,
+    searchStr: string | null,
     filteredTabWindow: FilteredTabWindow
 ) {
     return matchingTabs(searchStr, filteredTabWindow).count();
@@ -35,7 +38,7 @@ function selectedTab(
     searchStr: string | null,
     tabIndex: number
 ): TabItem {
-    if (searchStr && searchStr.length === 0) {
+    if (!searchStr || searchStr.length === 0) {
         const tabWindow = filteredTabWindow.tabWindow;
         const tabItem = tabWindow.tabItems.get(tabIndex);
         return tabItem!;
@@ -68,12 +71,7 @@ const devModeStyle = css`
 const nodeEnv = process.env.NODE_ENV;
 const nodeEnvStyle = nodeEnv === 'development' ? devModeStyle : null;
 
-const popupHeaderStyle = cx(
-    popupHeaderBaseStyle,
-    nodeEnvStyle
-);
-
-
+const popupHeaderStyle = cx(popupHeaderBaseStyle, nodeEnvStyle);
 
 const popupBodyStyle = css({
     minHeight: Constants.POPUP_BODY_HEIGHT,
@@ -102,369 +100,6 @@ const summarySpanBaseStyle = css({
     marginRight: 5
 });
 
-/**
- * An element that manages the selection.
- *
- * We want this as a distinct element from its parent, because it does local state management
- * and validation that should happen with respect to the (already calculated) props containing
- * filtered windows that we receive from above
- */
-/*
-class SelectablePopup extends React.Component {
-    static contextType = ThemeContext;
-    state = {
-        selectedWindowIndex: 0,
-        selectedTabIndex: 0,
-        scrolledToWindowId: -1,
-        scrolledToTabId: -1
-    };
-
-    handlePrevSelection = byPage => {
-        if (this.props.filteredWindows.length === 0) {
-            return;
-        }
-        const selectedWindow = this.props.filteredWindows[
-            this.state.selectedWindowIndex
-        ];
-
-        // const tabCount = (this.props.searchStr.length > 0) ? selectedWindow.itemMatches.count() : selectedWindow.tabWindow.tabItems.count()
-
-        const isExpanded = selectedWindow.tabWindow.isExpanded(
-            this.props.appState
-        );
-
-        if (isExpanded && this.state.selectedTabIndex > 0 && !byPage) {
-            this.setState({
-                selectedTabIndex: this.state.selectedTabIndex - 1
-            });
-        } else {
-            // Already on first tab, try to back up to previous window:
-            let prevWindowIndex;
-            if (this.state.selectedWindowIndex > 0) {
-                prevWindowIndex = this.state.selectedWindowIndex - 1;
-            } else {
-                // ring style, move to last window:
-                prevWindowIndex = this.props.filteredWindows.length - 1;
-            }
-            const prevWindow = this.props.filteredWindows[prevWindowIndex];
-            const prevTabCount =
-                this.props.searchStr.length > 0
-                    ? prevWindow.itemMatches.count()
-                    : prevWindow.tabWindow.tabItems.count();
-
-            this.setState({
-                selectedWindowIndex: prevWindowIndex,
-                selectedTabIndex: prevTabCount - 1
-            });
-        }
-    };
-
-    handleNextSelection = byPage => {
-        if (this.props.filteredWindows.length === 0) {
-            return;
-        }
-        const selectedWindow = this.props.filteredWindows[
-            this.state.selectedWindowIndex
-        ];
-        const tabCount =
-            this.props.searchStr.length > 0
-                ? selectedWindow.itemMatches.count()
-                : selectedWindow.tabWindow.tabItems.count();
-
-        const isExpanded = selectedWindow.tabWindow.isExpanded(
-            this.props.appState
-        );
-
-        if (
-            isExpanded &&
-            this.state.selectedTabIndex + 1 < tabCount &&
-            !byPage
-        ) {
-            this.setState({
-                selectedTabIndex: this.state.selectedTabIndex + 1
-            });
-        } else {
-            // Already on last tab, try to advance to next window:
-            if (
-                this.state.selectedWindowIndex + 1 <
-                this.props.filteredWindows.length
-            ) {
-                this.setState({
-                    selectedWindowIndex: this.state.selectedWindowIndex + 1,
-                    selectedTabIndex: 0
-                });
-            } else {
-                // wrap the search:
-                this.setState({ selectedWindowIndex: 0, selectedTabIndex: 0 });
-            }
-        }
-    };
-
-    handleSelectionEnter = inputRef => {
-        if (this.props.filteredWindows.length === 0) {
-            return;
-        }
-
-        const currentWindow = this.props.appState.getCurrentWindow();
-        const selectedWindow = this.props.filteredWindows[
-            this.state.selectedWindowIndex
-        ];
-        if (this.state.selectedTabIndex === -1) {
-            // no specific tab, but still active / open window
-            actions.openWindow(
-                currentWindow,
-                selectedWindow.tabWindow,
-                this.props.stateRef
-            );
-        } else {
-            const selectedTabItem = selectedTab(
-                selectedWindow,
-                this.props.searchStr,
-                this.state.selectedTabIndex
-            );
-            actions.activateTab(
-                currentWindow,
-                selectedWindow.tabWindow,
-                selectedTabItem,
-                this.state.selectedTabIndex,
-                this.props.stateRef
-            );
-        }
-        // And reset the search field:
-        inputRef.value = '';
-        this.props.onSearchInput('');
-    };
-
-    handleSelectionExpandToggle = () => {
-        if (this.props.filteredWindows.length === 0) {
-            return;
-        }
-        const selectedWindow = this.props.filteredWindows[
-            this.state.selectedWindowIndex
-        ];
-        const tabWindow = selectedWindow.tabWindow;
-        // technically the logical negation here isn't right, but it'll do.
-        const expanded = tabWindow.isExpanded(this.props.appState);
-
-        actions.expandWindow(tabWindow, !expanded, this.props.stateRef);
-    };
-
-    handleSearchExit = () => {
-        // transfer focus back to current window (if there is one)
-        const curWindow = this.props.appState.getCurrentWindow();
-        if (!curWindow) {
-            return;
-        }
-        actions.openWindow(curWindow, curWindow, this.props.stateRef);
-    };
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        var selectedWindowIndex = this.state.selectedWindowIndex;
-        var nextFilteredWindows = nextProps.filteredWindows;
-
-        if (selectedWindowIndex >= nextFilteredWindows.length) {
-            if (nextFilteredWindows.length === 0) {
-                this.setState({ selectedWindowIndex: 0, selectedTabIndex: -1 });
-            } else {
-                var lastWindow =
-                    nextFilteredWindows[nextFilteredWindows.length - 1];
-                this.setState({
-                    selectedWindowIndex: nextFilteredWindows.length - 1,
-                    selectedTabIndex:
-                        matchingTabsCount(this.props.searchStr, lastWindow) - 1
-                });
-            }
-        } else {
-            const nextSearchStr = nextProps.searchStr;
-            var nextSelectedWindow = nextFilteredWindows[selectedWindowIndex];
-            const matchCount = matchingTabsCount(
-                nextSearchStr,
-                nextSelectedWindow
-            );
-            var nextTabIndex = Math.min(
-                this.state.selectedTabIndex,
-                matchCount - 1
-            );
-            this.setState({ selectedTabIndex: nextTabIndex });
-        }
-    }
-    */
-/*
- * We have to do some fairly horrible change detection here because
- * React only seems to support imperative handling of scroll position and
- * kbd focus.
- *
- * Code here is also much more involved than it needs to be because we briefly tried
- * to reduce flash / jitter by keeping all open windows in alphabetical order by title
- * and just scrolling to bring the target window into the viewport.
- * This turned out not to really reduce jitter because Chrome window titles are determined
- * by tab title, so simply switching tabs resulted in abrupt changes in window sort order.
- */
-/*
-    updateScrollPos = (bodyRef, windowRef) => {
-        const needScrollUpdate =
-            this.state.scrolledToWindowId !==
-                this.props.appState.currentWindowId ||
-            this.state.scrolledToTabId !== this.props.appState.getActiveTabId();
-
-
-      // log.log("updateScrollPos: scrolledToWindowId: ", this.state.scrolledToWindowId,
-      //             ", currentWindowId: ", this.props.appState.currentWindowId );
-      // log.log("updateScrollPos: scrolledToTabId: ", this.state.scrolledToTabId,
-      //             ", activeTabId: ", this.props.appState.getActiveTabId(),
-      //             ", needScroll: ", needScrollUpdate)
-        const isPopup = !this.props.isPopout;
-        if (
-            windowRef != null &&
-            bodyRef != null &&
-            needScrollUpdate &&
-            this.props.filteredWindows.length > 0 &&
-            !this.props.appState.showRelNotes
-        ) {
-            const viewportTop = bodyRef.scrollTop;
-            const viewportHeight = bodyRef.clientHeight;
-
-            const windowTop = windowRef.offsetTop;
-            const windowHeight = windowRef.scrollHeight;
-
-            // log.log("updateScrollPos: ", { offsetTop, viewportTop, viewportHeight, windowTop, windowHeight } )
-            if (
-                windowTop < viewportTop ||
-                windowTop + windowHeight > viewportTop + viewportHeight ||
-                isPopup
-            ) {
-                // log.log("updateScrollPos: setting scroll position")
-
-                if (windowHeight > viewportHeight || isPopup) {
-                    bodyRef.scrollTop =
-                        windowRef.offsetTop -
-                        bodyRef.offsetTop -
-                        Constants.FOCUS_SCROLL_BASE;
-                } else {
-                    // since we know only scroll if
-                    // set padding to center taget window in viewport:
-                    const viewportPad = (viewportHeight - windowHeight) / 2;
-                    bodyRef.scrollTop =
-                        windowRef.offsetTop -
-                        bodyRef.offsetTop -
-                        viewportPad -
-                        Constants.FOCUS_SCROLL_BASE;
-                }
-            }
-            // Set the selected window and tab to the focused window and its currently active tab:
-
-            const selectedWindow = this.props.filteredWindows[0];
-
-            const selectedTabs = matchingTabs(
-                this.props.searchStr,
-                selectedWindow
-            );
-
-            const activeEntry = selectedTabs.findEntry(
-                t => t.open && t.openState.active
-            );
-            const activeTabIndex = activeEntry ? activeEntry[0] : 0;
-            const activeTabId = this.props.appState.getActiveTabId();
-
-            const updState = {
-                scrolledToWindowId: this.props.appState.currentWindowId,
-                scrolledToTabId: activeTabId,
-                selectedWindowIndex: 0,
-                selectedTabIndex: activeTabIndex
-            };
-
-            // log.log("updateScrollPos: udpating State: ", updState)
-            this.setState(updState);
-        }
-    };
-
-    // Search input ref:
-    setSearchInputRef = ref => {
-        this.searchInputRef = ref;
-    };
-
-    handleItemSelected = item => {
-        if (this.searchInputRef) {
-            // And reset the search field:
-            this.searchInputRef.value = '';
-            this.props.onSearchInput('');
-        }
-    };
-
-    // Scrollable body (container) DOM ref
-    setBodyRef = ref => {
-        this.bodyRef = ref;
-        this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
-    };
-
-    // DOM ref for currently focused tab window:
-    setFocusedTabWindowRef = ref => {
-        this.focusedWindowRef = ref;
-        this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
-    };
-
-    componentDidUpdate() {
-        this.updateScrollPos(this.bodyRef, this.focusedWindowRef);
-    }
-
-    render() {
-        let theme = this.context;
-        const appState = this.props.appState;
-        const openTabCount = appState.countOpenTabs();
-        const openWinCount = appState.countOpenWindows();
-        const savedCount = appState.countSavedWindows();
-
-        // const summarySentence=openTabCount + " Open Tabs, " + openWinCount + " Open Windows, " + savedCount + " Saved Windows"
-        const summarySentence =
-            'Tabs: ' +
-            openTabCount +
-            ' Open. Windows: ' +
-            openWinCount +
-            ' Open, ' +
-            savedCount +
-            ' Saved.';
-
-        const summarySpanStyle = cx(styles.closed(theme), summarySpanBaseStyle);
-
-        return (
-            <div className={popupInnerStyle}>
-                <div className={popupHeaderStyle}>
-                    <SearchBar
-                        appState={this.props.appState}
-                        stateRef={this.props.stateRef}
-                        onSearchInput={this.props.onSearchInput}
-                        onSearchUp={this.handlePrevSelection}
-                        onSearchDown={this.handleNextSelection}
-                        onSearchEnter={this.handleSelectionEnter}
-                        onSearchExit={this.handleSearchExit}
-                        onSearchExpandToggle={this.handleSelectionExpandToggle}
-                        setInputRef={this.setSearchInputRef}
-                        isPopout={this.props.isPopout}
-                    />
-                </div>
-                <div className={popupBodyStyle} ref={this.setBodyRef}>
-                    <TabWindowList
-                        appState={this.props.appState}
-                        stateRef={this.props.stateRef}
-                        filteredWindows={this.props.filteredWindows}
-                        appComponent={this.props.appComponent}
-                        searchStr={this.props.searchStr}
-                        searchRE={this.props.searchRE}
-                        selectedWindowIndex={this.state.selectedWindowIndex}
-                        selectedTabIndex={this.state.selectedTabIndex}
-                        setFocusedTabWindowRef={this.setFocusedTabWindowRef}
-                        onItemSelected={this.handleItemSelected}
-                    />
-                </div>
-                <div className={popupFooterStyle(theme)}>
-                    <span className={summarySpanStyle}>{summarySentence}</span>
-                </div>
-            </div>
-        );
-    }
-}
-*/
-
 interface SelectablePopupProps {
     appState: TabManagerState;
     stateRef: StateRef<TabManagerState>;
@@ -476,6 +111,13 @@ interface SelectablePopupProps {
     modalActions: ModalActions;
 }
 
+/**
+ * An element that manages the selection.
+ *
+ * We want this as a distinct element from its parent, because it does local state management
+ * and validation that should happen with respect to the (already calculated) props containing
+ * filtered windows that we receive from above
+ */
 const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     appState,
     stateRef,
@@ -486,16 +128,154 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     isPopout,
     modalActions
 }: SelectablePopupProps) => {
-    const bodyRef = useRef(null);
+    const bodyRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const theme = useContext(ThemeContext);
     const focusedTabWindowRef = useRef<HTMLDivElement | null>(null);
 
     const [selectedWindowIndex, setSelectedWindowIndex] = useState(0);
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+    /* Through some disgusting accident of history, the current window id has type number,
+     * with -1 as sentinel, but active tab id is type number | null. *sigh*
+     */
     const [scrolledToWindowId, setScrolledToWindowId] = useState(-1);
-    const [scrolledToTabId, setScrolledToTabId] = useState(-1);
+    const [scrolledToTabId, setScrolledToTabId] = useState<number | null>(null);
     const expandAll = appState.expandAll;
+
+    const filteredWindowsLength = filteredWindows.length;
+    log.debug('SelectablePopup: ', {
+        selectedWindowIndex,
+        selectedTabIndex,
+        searchStr,
+        filteredWindowsLength
+    });
+
+    // This was ported from an old componentWillReceivProps handler;
+    // seems a little kludgey and likely to result in some extra
+    // rendering, but we'll leave it:
+    React.useEffect(() => {
+        if (selectedWindowIndex >= filteredWindows.length) {
+            if (filteredWindows.length === 0) {
+                log.debug('No filtered windows -- resetting selected indices');
+                setSelectedWindowIndex(0);
+                setSelectedTabIndex(-1);
+            } else {
+                var lastWindow = filteredWindows[filteredWindows.length - 1];
+                setSelectedWindowIndex(filteredWindows.length - 1);
+                setSelectedTabIndex(
+                    matchingTabsCount(searchStr, lastWindow) - 1
+                );
+            }
+        } else {
+            const nextSearchStr = searchStr;
+            var nextSelectedWindow = filteredWindows[selectedWindowIndex];
+            const matchCount = matchingTabsCount(
+                nextSearchStr,
+                nextSelectedWindow
+            );
+            var nextTabIndex = Math.min(selectedTabIndex, matchCount - 1);
+            setSelectedTabIndex(nextTabIndex);
+        }
+    });
+
+    // Ported from updateScrollPos:
+    /* Code here is also much more involved than it needs to be because we briefly tried
+     * to reduce flash / jitter by keeping all open windows in alphabetical order by title
+     * and just scrolling to bring the target window into the viewport.
+     * This turned out not to really reduce jitter because Chrome window titles are determined
+     * by tab title, so simply switching tabs resulted in abrupt changes in window sort order.
+     * Could probably simplified quite a bit.
+     */
+    React.useEffect(() => {
+        const needScrollUpdate =
+            scrolledToWindowId !== appState.currentWindowId ||
+            scrolledToTabId !== appState.getActiveTabId();
+
+        /*         log.debug(
+            'updateScrollPos: scrolledToWindowId: ',
+            scrolledToWindowId,
+            ', currentWindowId: ',
+            appState.currentWindowId
+        );
+        log.debug(
+            'updateScrollPos: scrolledToTabId: ',
+            scrolledToTabId,
+            ', activeTabId: ',
+            appState.getActiveTabId(),
+            ', needScroll: ',
+            needScrollUpdate
+        ); */
+
+        const isPopup = !isPopout;
+        if (
+            focusedTabWindowRef.current != null &&
+            bodyRef.current != null &&
+            needScrollUpdate &&
+            filteredWindows.length > 0 &&
+            !appState.showRelNotes
+        ) {
+            const viewportTop = bodyRef.current.scrollTop;
+            const viewportHeight = bodyRef.current.clientHeight;
+
+            const windowTop = focusedTabWindowRef.current.offsetTop;
+            const windowHeight = focusedTabWindowRef.current.scrollHeight;
+
+            // log.debug('past needScrollUpdate gate');
+            /*             log.debug('updateScrollPos: ', {
+                viewportTop,
+                viewportHeight,
+                windowTop,
+                windowHeight
+            }); */
+            if (
+                windowTop < viewportTop ||
+                windowTop + windowHeight > viewportTop + viewportHeight ||
+                isPopup
+            ) {
+                log.debug('updateScrollPos: setting scroll position');
+
+                if (windowHeight > viewportHeight || isPopup) {
+                    bodyRef.current.scrollTop =
+                        focusedTabWindowRef.current.offsetTop -
+                        bodyRef.current.offsetTop -
+                        Constants.FOCUS_SCROLL_BASE;
+                } else {
+                    // set padding to center taget window in viewport:
+                    const viewportPad = (viewportHeight - windowHeight) / 2;
+                    bodyRef.current.scrollTop =
+                        focusedTabWindowRef.current.offsetTop -
+                        bodyRef.current.offsetTop -
+                        viewportPad -
+                        Constants.FOCUS_SCROLL_BASE;
+                }
+            }
+            // Set the selected window and tab to the focused window and its currently active tab:
+
+            const selectedWindow = filteredWindows[0];
+
+            const selectedTabs = matchingTabs(searchStr, selectedWindow);
+
+            const activeEntry = selectedTabs.findEntry(
+                t => t.open && t.openState!.active
+            );
+            const activeTabIndex = activeEntry ? activeEntry[0] : 0;
+            const activeTabId = appState.getActiveTabId();
+
+            /*             log.debug('updateScrollPos: updating state: ', {
+                scrolledToWindowId: appState.currentWindowId,
+                scrolledToTabId: activeTabId ? activeTabId : -1,
+                selectedWindowIndex: 0,
+                selectedTabIndex: activeTabIndex
+            }); */
+            if (scrolledToWindowId !== appState.currentWindowId)
+                setScrolledToWindowId(appState.currentWindowId);
+            if (scrolledToTabId !== activeTabId)
+                setScrolledToTabId(activeTabId);
+            if (selectedWindowIndex !== 0) setSelectedWindowIndex(0);
+            if (selectedTabIndex !== activeTabIndex)
+                setSelectedTabIndex(activeTabIndex);
+        }
+    });
 
     const handlePrevSelection = (byPage: boolean) => {
         if (filteredWindows.length === 0) {
