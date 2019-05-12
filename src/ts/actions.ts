@@ -506,8 +506,8 @@ export function showPreferences() {
     chrome.tabs.create({ url: prefsURL });
 }
 
-export const showPopout = (storeRef: TMSRef) => {
-    const ptw = mutableGet(storeRef).getPopoutTabWindow();
+export const showPopout = (stateRef: StateRef<TabManagerState>) => {
+    const ptw = mutableGet(stateRef).getPopoutTabWindow();
     if (ptw) {
         tabliBrowser.setFocusedWindow(ptw.openWindowId);
     } else {

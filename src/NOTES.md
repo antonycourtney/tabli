@@ -438,3 +438,30 @@ It looks like the only reason I'm passing around `appState` is because several a
 provide a synchronous `read` or `get` (or perhaps `mutableGet` or `getLatest`) to read
 the current appState from the stateRef, but **we should only do this inside an action, never in a component.**
 So `mutableGet` seems like a good name...
+
+4/18/19:
+
+Odds and ends left from TypeScript port:
+
+[ ] Add back throttling of state updates. Old code:
+
+```javascript
+const viewStateListener = () => {
+    const nextStore = storeRef.getValue();
+    this.setState(this.storeAsState(nextStore));
+};
+
+const throttledListener = _.debounce(viewStateListener, 200);
+
+var listenerId = storeRef.addViewListener(throttledListener);
+```
+
+---
+
+11May19:
+
+There still seem to be some issues with scrolling / focus in TypeScript port: In the prod version,
+selecting a Chrome window will force the popout window to scroll to the top.
+
+Looks like this is because all of the logic for scrolledToWindowId and updateScrollPos in
+SelectablePopup.tsx hasn't been ported over yet....

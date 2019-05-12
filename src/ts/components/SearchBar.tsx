@@ -19,6 +19,7 @@ const toolbarOuterContainerStyle = css`
     min-width: 340px;
     justify: center;
 `;
+
 const toolbarInnerContainerStyle = css`
     display: flex;
     justify-content: space-around;
