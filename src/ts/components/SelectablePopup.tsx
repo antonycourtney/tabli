@@ -11,7 +11,14 @@ import { ThemeContext, Theme } from './themeContext';
 import { FilteredTabWindow } from '../searchOps';
 import TabManagerState from '../tabManagerState';
 import { StateRef } from 'oneref';
-import { useRef, useContext, useState, Ref, MutableRefObject } from 'react';
+import {
+    useRef,
+    useContext,
+    useState,
+    Ref,
+    MutableRefObject,
+    useCallback
+} from 'react';
 import { TabItem } from '../tabWindow';
 import ModalActions from './modalActions';
 
@@ -389,13 +396,13 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         actions.openWindow(curWindow, stateRef);
     };
 
-    const handleItemSelected = () => {
+    const handleItemSelected = useCallback(() => {
         if (searchInputRef.current) {
             // And reset the search field:
             searchInputRef.current.value = '';
             onSearchInput('');
         }
-    };
+    }, [searchInputRef]);
 
     const openTabCount = appState.countOpenTabs();
     const openWinCount = appState.countOpenWindows();

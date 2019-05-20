@@ -920,6 +920,7 @@ async function main() {
         const bmStore = await loadSnapState(attachBMStore);
         const stateRef = mkRef(bmStore);
         (window as any).stateRef = stateRef;
+        (window as any).isExtension = true;
         await actions.loadPreferences(stateRef);
         await actions.syncChromeWindows(stateRef);
         log.debug('initial sync of chrome windows complete.');

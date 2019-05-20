@@ -13,6 +13,7 @@ import TabManagerState from '../tabManagerState';
 import { useState, useRef } from 'react';
 import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
+import { areEqualShallow } from '../utils';
 
 const expandablePanelContentOpenStyle = css({
     marginTop: 0
@@ -49,6 +50,10 @@ const FilteredTabWindowUI: React.FunctionComponent<
     modalActions,
     expandAll
 }: FilteredTabWindowUIProps) => {
+    console.log(
+        '  FilteredTabWindowUI: rendering ',
+        filteredTabWindow.tabWindow.title
+    );
     const [prevIsSelected, setPrevIsSelected] = useState(false);
     const windowDivRef = useRef<HTMLDivElement | null>(null);
 
@@ -183,4 +188,17 @@ const FilteredTabWindowUI: React.FunctionComponent<
     );
 };
 
-export default FilteredTabWindowUI;
+const arePropsEqual = (oldProps: any, newProps: any): boolean => {
+    const areEqual = areEqualShallow(oldProps, newProps, true);
+    console.log('arePropsEqual: ', areEqual);
+    if (!areEqual) {
+        areEqualShallow(
+            oldProps.filteredTabWindow.tabWindow.toJS(),
+            newProps.filteredTabWindow.tabWindow.toJS(),
+            true
+        );
+    }
+    return areEqual;
+};
+
+export default React.memo(FilteredTabWindowUI, arePropsEqual);

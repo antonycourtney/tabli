@@ -12,7 +12,7 @@ function config(nodeEnv) {
             extensions: ['.webpack.js', '.web.js', '.js', '.ts', '.tsx']
         },
         entry: {
-            //   renderTest: ["./src/js/renderTest.js"],
+            renderTest: ['./src/ts/renderTest.tsx'],
             prefsPage: ['./src/ts/prefsPage.tsx'],
             tabliPopup: ['./src/ts/tabliPopup.ts'],
             tabliPopout: ['./src/ts/tabliPopout.ts'],

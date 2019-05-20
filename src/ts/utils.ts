@@ -209,3 +209,20 @@ export function escapeTableCell(s: string | null): string {
     }
     return '';
 }
+
+export function areEqualShallow(a: any, b: any, debug = false): boolean {
+    for (let key in a) {
+        if (!(key in b) || a[key] !== b[key]) {
+            if (debug) {
+                console.log('objects differ at key ', key);
+            }
+            return false;
+        }
+    }
+    for (let key in b) {
+        if (!(key in a)) {
+            return false;
+        }
+    }
+    return true;
+}

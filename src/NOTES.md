@@ -465,3 +465,24 @@ selecting a Chrome window will force the popout window to scroll to the top.
 
 Looks like this is because all of the logic for scrolledToWindowId and updateScrollPos in
 SelectablePopup.tsx hasn't been ported over yet....
+
+12May19:
+
+Have now restored the scroll update work.
+
+Next focus: Let's figure out adding React.memo.
+It would be really if we could create a standalone render-test that we could run as a non-extension
+to be able to measure perf using React DevTools...
+
+To start, let's try and profile with React DevTools:
+
+From Tabli dir:
+
+$ cd build
+$ python -m SimpleHTTPServer
+
+then open http://localhost:8000/renderTest.html
+
+Current issue: FavIcons don't load, fails with
+"Not allowed to load local resource: chrome://favicon/..."
+

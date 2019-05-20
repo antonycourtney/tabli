@@ -274,4 +274,5 @@ const DropWrap = DropTarget(
 const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect);
 
 const WrappedTabItemUI = DropWrap(DragWrap(TabItemUI));
-export default WrappedTabItemUI;
+const MemoWrappedTabItemUI = React.memo(WrappedTabItemUI);
+export default MemoWrappedTabItemUI;
