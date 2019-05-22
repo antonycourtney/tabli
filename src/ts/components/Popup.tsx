@@ -12,7 +12,7 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { TabWindow } from '../tabWindow';
 import SelectablePopup from './SelectablePopup';
 import { FilteredTabWindow } from '../searchOps';
@@ -56,7 +56,7 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     isPopout,
     noListener
 }: PopupProps) => {
-    console.log('PopupBase: ', appState.toJS());
+    log.debug('PopupBase: ', appState.toJS());
     const themeName = appState.preferences.theme as ThemeName;
     const theme = themes[themeName];
 
@@ -88,12 +88,15 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
 
     const filteredWindows = searchOps.filterTabWindows(sortedWindows, searchRE);
 
-    const openSaveModal = (tabWindow: TabWindow) => {
-        const initialTitle = tabWindow.title;
-        setSaveModalIsOpen(true);
-        setSaveInitialTitle(initialTitle);
-        setSaveTabWindow(tabWindow);
-    };
+    const openSaveModal = useCallback(
+        (tabWindow: TabWindow) => {
+            const initialTitle = tabWindow.title;
+            setSaveModalIsOpen(true);
+            setSaveInitialTitle(initialTitle);
+            setSaveTabWindow(tabWindow);
+        },
+        [setSaveModalIsOpen, setSaveInitialTitle, setSaveTabWindow]
+    );
     const closeSaveModal = () => {
         setSaveModalIsOpen(false);
     };
@@ -104,10 +107,13 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
         closeSaveModal();
     };
 
-    const openRevertModal = (filteredTabWindow: FilteredTabWindow) => {
-        setRevertModalIsOpen(true);
-        setRevertTabWindow(filteredTabWindow.tabWindow);
-    };
+    const openRevertModal = useCallback(
+        (tabWindow: TabWindow) => {
+            setRevertModalIsOpen(true);
+            setRevertTabWindow(tabWindow);
+        },
+        [setRevertModalIsOpen, setRevertTabWindow]
+    );
 
     const closeRevertModal = () => {
         setRevertModalIsOpen(false);
@@ -119,10 +125,13 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
         closeRevertModal();
     };
 
-    const modalActions: ModalActions = {
-        openSaveModal,
-        openRevertModal
-    };
+    const modalActions: ModalActions = React.useMemo(
+        () => ({
+            openSaveModal,
+            openRevertModal
+        }),
+        [openSaveModal, openRevertModal]
+    );
 
     const revertModal = revertModalIsOpen ? (
         <RevertModal

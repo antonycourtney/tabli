@@ -1,3 +1,4 @@
+import log from 'loglevel';
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as styles from './cssStyles';
@@ -108,7 +109,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
     const defaultButtonRef = useRef<HTMLButtonElement | null>(null);
 
     useEffect(() => {
-        console.log('Revert modal effect handler: ', defaultButtonRef.current);
+        log.debug('Revert modal effect handler: ', defaultButtonRef.current);
         if (defaultButtonRef.current) {
             defaultButtonRef.current.focus();
         }

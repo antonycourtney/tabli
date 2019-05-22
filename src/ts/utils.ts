@@ -214,7 +214,7 @@ export function areEqualShallow(a: any, b: any, debug = false): boolean {
     for (let key in a) {
         if (!(key in b) || a[key] !== b[key]) {
             if (debug) {
-                console.log('objects differ at key ', key);
+                log.debug('objects differ at key ', key);
             }
             return false;
         }
@@ -225,4 +225,16 @@ export function areEqualShallow(a: any, b: any, debug = false): boolean {
         }
     }
     return true;
+}
+
+// Set log level based on whether dev or prod:
+export function setLogLevel(log: any) {
+    const nodeEnv = process.env.NODE_ENV;
+
+    if (nodeEnv === 'development') {
+        // more detail, generally:
+        log.setLevel('debug'); // Enable to see every Chrome event:
+    } else {
+        log.setLevel('info');
+    }
 }

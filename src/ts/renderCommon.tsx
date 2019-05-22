@@ -2,6 +2,7 @@
  * common rendering entry point for popup and popout
  */
 import * as log from 'loglevel';
+import * as utils from './utils';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { PopupBaseProps, Popup } from './components/Popup';
@@ -9,6 +10,7 @@ import TabManagerState from './tabManagerState';
 import * as actions from './actions';
 import * as oneref from 'oneref';
 import { update, refContainer } from 'oneref';
+import { utimesSync } from 'fs';
 
 /**
  * Main entry point to rendering the popup window
@@ -21,6 +23,7 @@ export async function renderPopup(
     renderTest: boolean = false
 ) {
     try {
+        utils.setLogLevel(log);
         log.debug('renderPopup: isPopout: ', isPopout);
 
         var tPreRender = performance.now();

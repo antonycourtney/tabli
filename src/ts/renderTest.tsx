@@ -4,7 +4,7 @@ import * as RenderCommon from './renderCommon';
 
 import * as TabWindow from './tabWindow';
 import TabManagerState from './tabManagerState';
-import testData from '../../test/renderTest-chromeWindowSnap';
+import testData from '../../test-data/renderTest-chromeWindowSnap';
 import { mkRef, utils as oneRefUtils, StateRef, update } from 'oneref';
 
 // make a TabWindow from its JSON
@@ -43,10 +43,13 @@ function onTabRemoved(
 
 const tabsToRemove = [
     [5408, 5413],
-    [5285, 5286],
+    [1903, 2147],
+    [1903, 1904],
+    [1903, 2151],
+    [1903, 3994],
+    [1903, 4004],
     [5285, 5288],
     [5285, 5290],
-    [5285, 5292],
     [5285, 5294],
     [5285, 5296]
 ];
@@ -129,7 +132,14 @@ function loadTestData (callback) {
  */
 function renderTest() {
     // loadTestData(renderPage)
-    log.setLevel('debug');
+    const nodeEnv = process.env.NODE_ENV;
+    if (nodeEnv === 'development') {
+        // more detail, generally:
+        log.setLevel('debug'); // Enable to see every Chrome event:
+    } else {
+        log.setLevel('info');
+    }
+    console.log('log level: ', log.getLevel());
     renderPage(testData);
 }
 

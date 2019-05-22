@@ -41,7 +41,9 @@ const defaultFilteredTabItemProps: FilteredTabItemProps = {
 /**
  * A TabItem augmented with search results
  */
-class FilteredTabItem extends Immutable.Record(defaultFilteredTabItemProps) {}
+export class FilteredTabItem extends Immutable.Record(
+    defaultFilteredTabItemProps
+) {}
 
 /**
  * Use a RegExp to match a particular TabItem

@@ -34,12 +34,17 @@
         "semver": "^5.6.0"
     },
     "devDependencies": {
+        "@babel/core": "^7.4.4",
+        "@babel/preset-env": "^7.4.4",
+        "@babel/preset-typescript": "^7.3.3",
         "@types/chrome": "0.0.81",
         "@types/escape-string-regexp": "^1.0.0",
+        "@types/jest": "^24.0.13",
         "@types/lodash": "^4.14.123",
         "@types/loglevel": "^1.5.4",
         "@types/semver": "^5.5.0",
         "awesome-typescript-loader": "^5.2.1",
+        "babel-jest": "^24.8.0",
         "bootstrap": "^4.3.1",
         "difflet": "^1.0.1",
         "ekko-lightbox": "^5.3.0",
@@ -53,6 +58,7 @@
         "filesize": "^4.1.2",
         "html-loader": "^0.5.5",
         "image-webpack-loader": "^4.6.0",
+        "jest": "^24.8.0",
         "jsdom": "^14.0.0",
         "json-loader": "^0.5.7",
         "pre-commit": "^1.2.2",
@@ -79,19 +85,17 @@
         "build:html": "cp -r src/css/* build/css && cp -r src/html/* build",
         "build:images": "cp -r src/images/* src/assets/*.png build/images",
         "build:popper": "cp -r node_modules/popper.js/dist/* build/js",
-        "build:testData": "cp -r test/*.json build/testData",
+        "build:testData": "cp -r test-data/*.json build/testData",
         "build:manifest": "cp src/manifest.json build",
         "build-assets": "npm run build:dir && npm run build:jquery && npm run build:bootstrap && npm run build:popper && npm run build:fa && npm run build:html && npm run build:images && npm run build:testData && npm run build:manifest",
         "build-dev": "npm run build-assets && webpack --mode development",
         "build-prod": "npm run build-assets && webpack --mode production",
         "clean": "rm -rf ./build",
-        "leaktest": "babel-node --expose-gc --presets es2015,react,stage-3 ./test/leakTest.js | tap-spec",
         "lint": "eslint .",
         "lintfix": "eslint --fix .",
-        "unit-test": "babel-node ./test/runAllTests.js | tap-spec",
-        "test-old": "npm run lint && npm run unit-test",
         "watch": "webpack --mode development --watch",
-        "webpack-analyze": "webpack --mode production --profile --json > stats.json; ./node_modules/.bin/webpack-bundle-analyzer stats.json ./build/js"
+        "webpack-analyze": "webpack --mode production --profile --json > stats.json; ./node_modules/.bin/webpack-bundle-analyzer stats.json ./build/js",
+        "test": "jest"
     },
     "standard": {
         "globals": [

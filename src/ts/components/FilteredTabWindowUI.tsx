@@ -9,6 +9,7 @@ import * as Constants from './constants';
 import WindowHeader from './WindowHeader';
 import TabItemUI from './TabItemUI';
 import { TabWindow, TabItem } from '../tabWindow';
+import { FilteredTabItem } from '../searchOps';
 import TabManagerState from '../tabManagerState';
 import { useState, useRef } from 'react';
 import { FilteredTabWindow } from '../searchOps';
@@ -26,7 +27,8 @@ const tabWindowSelectedStyle = css({
 });
 
 interface FilteredTabWindowUIProps {
-    filteredTabWindow: FilteredTabWindow;
+    tabWindow: TabWindow;
+    itemMatches: Immutable.List<FilteredTabItem> | null;
     isSelected: boolean;
     isFocused: boolean;
     modalActions: ModalActions;
@@ -40,7 +42,8 @@ interface FilteredTabWindowUIProps {
 const FilteredTabWindowUI: React.FunctionComponent<
     FilteredTabWindowUIProps
 > = ({
-    filteredTabWindow,
+    tabWindow,
+    itemMatches,
     searchStr,
     isSelected,
     isFocused,
@@ -50,9 +53,10 @@ const FilteredTabWindowUI: React.FunctionComponent<
     modalActions,
     expandAll
 }: FilteredTabWindowUIProps) => {
-    console.log(
+    log.debug(
         '  FilteredTabWindowUI: rendering ',
-        filteredTabWindow.tabWindow.title
+        tabWindow.id,
+        tabWindow.title
     );
     const [prevIsSelected, setPrevIsSelected] = useState(false);
     const windowDivRef = useRef<HTMLDivElement | null>(null);
@@ -69,7 +73,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     }
 
     const handleOpen = () => {
-        actions.openWindow(filteredTabWindow.tabWindow, stateRef);
+        actions.openWindow(tabWindow, stateRef);
         if (onItemSelected) {
             onItemSelected();
         }
@@ -78,19 +82,18 @@ const FilteredTabWindowUI: React.FunctionComponent<
     const handleClose = () => {
         // eslint-disable-line no-unused-consts
         // log.log("handleClose")
-        actions.closeWindow(filteredTabWindow.tabWindow, stateRef);
+        actions.closeWindow(tabWindow, stateRef);
     };
 
     const handleRevert = () => {
         log.debug('FilteredTabWindowUI: handleRevert: ', modalActions);
-        modalActions.openRevertModal(filteredTabWindow);
+        modalActions.openRevertModal(tabWindow);
     };
 
     /* expanded state follows window open/closed state unless it is
      * explicitly set interactively by the user
      */
     const getExpandedState = () => {
-        const tabWindow = filteredTabWindow.tabWindow;
         return tabWindow.isExpanded(expandAll);
     };
 
@@ -130,15 +133,14 @@ const FilteredTabWindowUI: React.FunctionComponent<
     };
 
     const handleExpand = (expand: boolean) => {
-        actions.expandWindow(filteredTabWindow.tabWindow, expand, stateRef);
+        actions.expandWindow(tabWindow, expand, stateRef);
     };
 
-    const tabWindow = filteredTabWindow.tabWindow;
     let tabs;
-    if (searchStr == null || searchStr.length === 0) {
+    if (itemMatches === null) {
         tabs = tabWindow.tabItems;
     } else {
-        tabs = filteredTabWindow.itemMatches.map(fti => fti.tabItem);
+        tabs = itemMatches.map(fti => fti.tabItem);
     }
 
     /*
@@ -188,17 +190,4 @@ const FilteredTabWindowUI: React.FunctionComponent<
     );
 };
 
-const arePropsEqual = (oldProps: any, newProps: any): boolean => {
-    const areEqual = areEqualShallow(oldProps, newProps, true);
-    console.log('arePropsEqual: ', areEqual);
-    if (!areEqual) {
-        areEqualShallow(
-            oldProps.filteredTabWindow.tabWindow.toJS(),
-            newProps.filteredTabWindow.tabWindow.toJS(),
-            true
-        );
-    }
-    return areEqual;
-};
-
-export default React.memo(FilteredTabWindowUI, arePropsEqual);
+export default React.memo(FilteredTabWindowUI);

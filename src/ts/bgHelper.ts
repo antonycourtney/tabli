@@ -901,19 +901,12 @@ async function loadSnapState(bmStore: TabManagerState) {
 
 async function main() {
     try {
-        const nodeEnv = process.env.NODE_ENV;
-        // log.setLevel('info');
-        // chromeEventLog.setLevel('info');
-        log.setLevel('debug');
-        chromeEventLog.setLevel('debug');
+        utils.setLogLevel(log);
+        utils.setLogLevel(chromeEventLog);
+        // Can also do:
+        // chromeEventLog.setLevel('debug');
 
-        if (nodeEnv === 'development') {
-            // more detail, generally:
-            log.setLevel('debug'); // Enable to see every Chrome event:
-            // chromeEventLog.setLevel('debug')
-        }
-
-        log.info('bgHelper started, env: ', nodeEnv);
+        log.info('bgHelper started, env: ', process.env.NODE_ENV);
         actions.setReloadHandler(main);
         const rawBMStore = await initWinStore();
         const attachBMStore = await reattachWindows(rawBMStore);

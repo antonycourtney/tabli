@@ -26,6 +26,7 @@ import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
 import { StateRef } from 'oneref';
+import { areEqualShallow } from '../utils';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -108,6 +109,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     onItemSelected,
     stateRef
 }: TabItemUIProps) => {
+    // log.debug('  --TabItemUI: rendering: ', tab.title);
     const theme = useContext(ThemeContext);
 
     const handleClick = (event: React.MouseEvent) => {
@@ -273,6 +275,14 @@ const DropWrap = DropTarget(
 );
 const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect);
 
+/*
+ * N.B. We briefly attempted to wrap this in React.memo.
+ * Doesn't work out of the box because the tabWindow property
+ * is always different between oldProps and newProps because
+ * we've already done the functional update.
+ * Could fix with custom arePropsEqual function, but really
+ * not so essential since we already memoize at the level of
+ * FilteredTabWindowUI.
+ */
 const WrappedTabItemUI = DropWrap(DragWrap(TabItemUI));
-const MemoWrappedTabItemUI = React.memo(WrappedTabItemUI);
-export default MemoWrappedTabItemUI;
+export default WrappedTabItemUI;
