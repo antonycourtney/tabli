@@ -11,7 +11,11 @@ let cachedIsExtension: boolean | undefined = undefined;
 
 const inExtension = (): boolean => {
     if (cachedIsExtension === undefined) {
-        const details = (chrome as any).app.getDetails();
+        const app = (chrome as any).app;
+        if (app === undefined) {
+            return false; // should only happen when testing under jest
+        }
+        const details = app.getDetails();
         cachedIsExtension = details !== null;
     }
     return cachedIsExtension;

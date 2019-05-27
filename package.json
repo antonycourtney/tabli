@@ -36,6 +36,7 @@
     "devDependencies": {
         "@babel/core": "^7.4.4",
         "@babel/preset-env": "^7.4.4",
+        "@babel/preset-react": "^7.0.0",
         "@babel/preset-typescript": "^7.3.3",
         "@types/chrome": "0.0.81",
         "@types/escape-string-regexp": "^1.0.0",
@@ -59,6 +60,7 @@
         "html-loader": "^0.5.5",
         "image-webpack-loader": "^4.6.0",
         "jest": "^24.8.0",
+        "jest-webextension-mock": "^3.5.0",
         "jsdom": "^14.0.0",
         "json-loader": "^0.5.7",
         "pre-commit": "^1.2.2",

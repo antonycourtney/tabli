@@ -39,6 +39,8 @@ const searchInputStyle = css`
     font-size: 12px;
 `;
 
+const searchInputClass = cx('search-input', searchInputStyle);
+
 export const expandAllIconStyle = css({
     WebkitMaskImage: mkUrl('images/triangle-small-1-01.png')
 });
@@ -238,7 +240,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
                 <MenuButton stateRef={stateRef} />
                 {popoutButton}
                 <input
-                    className={searchInputStyle}
+                    className={searchInputClass}
                     type="search"
                     tabIndex={1}
                     ref={searchInputRef}

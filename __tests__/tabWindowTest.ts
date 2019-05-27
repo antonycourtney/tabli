@@ -324,7 +324,7 @@ test('missingSourceFieldsTests', () => {
     };
 
     const chromeTabWindow = tabWindowUtils.makeChromeTabWindow(
-        chromeWindowSnap4
+        chromeWindowSnap4 as any
     );
     const chromeTabWindowJS = JSON.parse(
         JSON.stringify(chromeTabWindow.toJS())
