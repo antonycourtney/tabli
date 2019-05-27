@@ -232,7 +232,8 @@ export function removeSavedWindowState(tabWindow: TabWindow): TabWindow {
  * Initialize an unopened TabWindow from a bookmarks folder
  */
 export function makeFolderTabWindow(
-    bookmarkFolder: chrome.bookmarks.BookmarkTreeNode
+    bookmarkFolder: chrome.bookmarks.BookmarkTreeNode,
+    logErrors: boolean = true
 ): TabWindow {
     const bmChildren = bookmarkFolder.children;
     const itemChildren = bmChildren
@@ -241,10 +242,12 @@ export function makeFolderTabWindow(
     const tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem));
     var fallbackTitle = '';
     if (bookmarkFolder.title === undefined) {
-        log.error(
-            'makeFolderTabWindow: malformed bookmarkFolder -- missing title: ',
-            bookmarkFolder
-        );
+        if (logErrors) {
+            log.error(
+                'makeFolderTabWindow: malformed bookmarkFolder -- missing title: ',
+                bookmarkFolder
+            );
+        }
         if (tabItems.count() > 0) {
             fallbackTitle = tabItems.get(0)!.title;
         }
