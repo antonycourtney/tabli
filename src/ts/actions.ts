@@ -506,10 +506,11 @@ export function sendFeedback() {
     chrome.tabs.create({ url: TABLI_FEEDBACK_URL });
 }
 
-export function showPreferences() {
+export async function showPreferences() {
     const prefsURL = chrome.runtime.getURL('preferences.html');
     log.debug({ prefsURL });
-    chrome.tabs.create({ url: prefsURL });
+    const tab = await chromep.tabs.create({ url: prefsURL });
+    chromep.windows.update(tab.windowId, { focused: true });
 }
 
 export const showPopout = (stateRef: StateRef<TabManagerState>) => {
