@@ -20,13 +20,12 @@ const onClose = async () => {
     }
 };
 
-const onUpdatePreferences = (
+const onUpdatePreferences = async (
     stateRef: StateRef<TabManagerState>,
     newPrefs: Preferences
 ) => {
-    log.debug('update preferences: ', newPrefs.toJS());
-    actions.savePreferences(newPrefs, stateRef);
-    onClose();
+    await actions.savePreferences(newPrefs, stateRef);
+    await onClose();
 };
 
 const renderPrefs = async () => {

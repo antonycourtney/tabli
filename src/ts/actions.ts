@@ -4,7 +4,13 @@ import * as prefs from './preferences';
 import * as tabliBrowser from './chromeBrowser';
 import * as Constants from './components/constants';
 import { TabItem, TabWindow } from './tabWindow'; // eslint-disable-line
-import { StateRef, update, awaitableUpdate_, mutableGet } from 'oneref';
+import {
+    StateRef,
+    utils as oneRefUtils,
+    update,
+    awaitableUpdate_,
+    mutableGet
+} from 'oneref';
 import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
 const chromep = ChromePromise;
