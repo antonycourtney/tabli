@@ -535,7 +535,9 @@ export const hidePopout = async (
     const winStore = mutableGet(storeRef);
     const ptw = winStore.getPopoutTabWindow();
     if (ptw) {
+        log.debug('hidePopout: Found existing popout window, closing...');
         const nextSt = await closeWindow(ptw, storeRef);
+        log.debug('hidePopout: old popout window closed.');
         return nextSt;
     }
     return winStore;

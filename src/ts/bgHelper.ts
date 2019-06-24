@@ -928,6 +928,10 @@ async function main() {
 
         const noPopStore = await actions.hidePopout(stateRef); // log.debug('noPopStore: ', noPopStore)
 
+        log.info(
+            'main: popoutOnStart: ',
+            noPopStore.preferences.popoutOnStart
+        );
         if (noPopStore.preferences.popoutOnStart) {
             actions.showPopout(stateRef);
         }
