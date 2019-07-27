@@ -12,7 +12,7 @@ import log from 'loglevel';
 import TabManagerState from './tabManagerState';
 import * as utils from './utils';
 import * as actions from './actions';
-// import ViewRef from './viewRef';
+import * as savedState from './savedState';
 import chromep from 'chrome-promise';
 import { TabWindow, TabItem } from './tabWindow';
 import * as tabWindowUtils from './tabWindowUtils';
@@ -852,6 +852,7 @@ async function loadSnapState(bmStore: TabManagerState) {
     }
 
     const savedWindowState = JSON.parse(savedWindowStateStr);
+    log.debug('loadSnapState: read: ', savedWindowState);
     const closedWindowsMap = bmStore.bookmarkIdMap.filter(bmWin => !bmWin.open);
     const closedWindowIds = closedWindowsMap.keys();
     let savedOpenTabsMap: { [id: string]: Immutable.List<TabItem> } = {};
@@ -938,6 +939,7 @@ async function main() {
                 actions.showPopout(stateRef);
             }
         });
+        savedState.init(stateRef);
     } catch (e) {
         log.error('*** caught top level exception: ', e);
     }

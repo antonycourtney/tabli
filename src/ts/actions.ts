@@ -269,14 +269,21 @@ export function saveTab(
     });
 }
 
-export function unsaveTab(
+export async function unsaveTab(
     tabWindow: TabWindow,
     tabItem: TabItem,
     storeRef: TMSRef
-) {
-    chrome.bookmarks.remove(tabItem.safeSavedState.bookmarkId, () => {
-        update(storeRef, state => state.handleTabUnsaved(tabWindow, tabItem));
-    });
+): Promise<void> {
+    const bookmarkId = tabItem.safeSavedState.bookmarkId;
+    log.debug('actions.unsaveTab: removing bookmark id ', bookmarkId);
+    try {
+        await chromep.bookmarks.remove(bookmarkId);
+    } catch (err) {
+        log.info('Error removing bookmark (ignoring): ', err.message);
+    }
+    // Let's still update local state, just in case this was a bookmark
+    // from saved state:
+    update(storeRef, state => state.handleTabUnsaved(tabWindow, tabItem));
 }
 
 export const closeWindow = async (
