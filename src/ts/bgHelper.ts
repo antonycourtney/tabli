@@ -286,7 +286,8 @@ const dedupeTab = async (
         );
 
         if (filteredMatchPairs.length > 0) {
-            const [origTabWindow, origTab] = filteredMatchPairs[0]; // if we wanted to programatically go back instead of closing:
+            const [origTabWindow, origTab] = filteredMatchPairs[0];
+            // if we wanted to programatically go back instead of closing:
             // (required <all_urls> permission in manifest)
             // const revertScript = {code: 'history.back();'}
             // await chromep.tabs.executeScript(tabId, revertScript)
@@ -297,10 +298,7 @@ const dedupeTab = async (
                 tabId,
                 stateRef
             );
-            const currentWindow = tabClosedSt.getCurrentWindow();
-            if (currentWindow) {
-                actions.activateTab(origTabWindow, origTab, 0, stateRef);
-            }
+            actions.activateTab(origTabWindow, origTab, 0, stateRef);
         }
     }
 };
@@ -928,10 +926,7 @@ async function main() {
 
         const noPopStore = await actions.hidePopout(stateRef); // log.debug('noPopStore: ', noPopStore)
 
-        log.info(
-            'main: popoutOnStart: ',
-            noPopStore.preferences.popoutOnStart
-        );
+        log.info('main: popoutOnStart: ', noPopStore.preferences.popoutOnStart);
         if (noPopStore.preferences.popoutOnStart) {
             actions.showPopout(stateRef);
         }
