@@ -12,7 +12,8 @@ export const themes = {
     headerBackground: '#ebe9eb',
     closedGray: '#979ca0',
     headerButtonColor: '#888888',
-    headerButtonHover: '#000000'
+    headerButtonHover: '#000000',
+    tabCloseHoverBackground: '#5f6368'
   },
   dark: {
     foreground: '#ffffff',
@@ -25,7 +26,8 @@ export const themes = {
     headerBackground: '#141414',
     closedGray: '#777777',
     headerButtonColor: '#888888',
-    headerButtonHover: '#dddddd'
+    headerButtonHover: '#dddddd',
+    tabCloseHoverBackground: '#5f6368'
   },
 }
 
