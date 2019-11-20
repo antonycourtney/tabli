@@ -6,7 +6,7 @@ import * as Util from './util';
 import * as styles from './cssStyles';
 import { ThemeContext } from './themeContext';
 import { css, cx } from 'emotion';
-import MenuButton from './menuButton';
+import MenuButton from './MenuButton';
 
 const mkUrl = Util.mkUrl;
 

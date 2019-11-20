@@ -26,7 +26,7 @@ const tabWindowSelectedStyle = css({
     border: Constants.selectedBorder
 });
 
-interface FilteredTabWindowUIProps {
+export interface FilteredTabWindowUIBaseProps {
     tabWindow: TabWindow;
     itemMatches: Immutable.List<FilteredTabItem> | null;
     isSelected: boolean;
@@ -35,9 +35,17 @@ interface FilteredTabWindowUIProps {
     selectedTabIndex: number;
     searchStr: string | null;
     onItemSelected: () => void; // N.B. just clears selection; tab or window selected both trigger this
-    stateRef: StateRef<TabManagerState>;
     expandAll: boolean;
 }
+
+// factored out to allow wrapping in a local
+// appContainer for testing with StoryBook:
+export interface FilteredTabWindowStateRefProps {
+    stateRef: StateRef<TabManagerState>;
+}
+
+export type FilteredTabWindowUIProps = FilteredTabWindowUIBaseProps &
+    FilteredTabWindowStateRefProps;
 
 const FilteredTabWindowUI: React.FunctionComponent<
     FilteredTabWindowUIProps

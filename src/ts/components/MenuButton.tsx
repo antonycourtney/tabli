@@ -10,6 +10,19 @@ import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useState, useContext } from 'react';
 
+const modalOverlayStyle = css({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    background: 'rgba(0,0,0,0.6)',
+    zIndex: 5,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'column'
+});
+
 const popperBaseStyle = (theme: Theme) =>
     css({
         backgroundColor: theme.background,
@@ -35,7 +48,7 @@ const menuIconStyle = css({
     WebkitMaskImage: mkUrl('images/hamburger-menu.png')
 });
 
-type ClickEvent = React.MouseEvent<HTMLButtonElement, MouseEvent>;
+type ClickEvent = React.SyntheticEvent<HTMLElement, MouseEvent>;
 type ClickHandler = (event: ClickEvent) => void;
 
 const handleHelpClick: ClickHandler = e => {
@@ -88,7 +101,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
     const theme = useContext(ThemeContext);
     const [dropdownOpen, setDropDownOpen] = useState(false);
 
-    const toggleDropDown: ClickHandler = e => {
+    const toggleDropDown = () => {
         setDropDownOpen((isOpen: boolean) => !isOpen);
     };
     const handleRelNotesClick: ClickHandler = e => {
@@ -98,6 +111,8 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
 
     const renderMenuItem = (handler: ClickHandler, label: string) => {
         const wrapItemHandler = (handler: ClickHandler) => (e: ClickEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
             setDropDownOpen(false);
             return handler(e);
         };
@@ -139,7 +154,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
                         className={styles.toolbarButton(theme)}
                         ref={ref}
                         title="Tabli Menu"
-                        onClick={e => toggleDropDown(e)}
+                        onClick={e => toggleDropDown()}
                     >
                         <div
                             className={cx(
@@ -152,16 +167,29 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
             </Reference>
             <Popper placement="bottom-end">
                 {({ ref, style, placement, arrowProps }) => {
-                    return (
+                    const menuDiv = (
                         <div
                             className={popperStyle}
+                            tabIndex={1}
                             ref={ref}
                             style={style}
                             data-placement={placement}
+                            onKeyDown={e => toggleDropDown()}
                         >
                             {menu}
                         </div>
                     );
+                    const wrappedMenuDiv = dropdownOpen ? (
+                        <div
+                            className={modalOverlayStyle}
+                            onClick={e => toggleDropDown()}
+                        >
+                            {menuDiv}
+                        </div>
+                    ) : (
+                        menuDiv
+                    );
+                    return wrappedMenuDiv;
                 }}
             </Popper>
         </Manager>

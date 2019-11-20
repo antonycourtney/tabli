@@ -14,7 +14,8 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react",
-        "downlevelIteration": true
+        "downlevelIteration": true,
+        "rootDirs": ["src/ts", "stories"]
     },
     "include": ["src/ts"],
     "types": ["chrome"]

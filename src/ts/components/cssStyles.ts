@@ -233,3 +233,6 @@ export const toolbarButtonIcon = (theme: Theme) => css`
     height: 14px;
     background-color: ${theme.foreground};
 `;
+export const expandAllIconStyle = css({
+    WebkitMaskImage: mkUrl('images/triangle-small-1-01.png')
+});
