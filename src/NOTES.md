@@ -486,3 +486,16 @@ then open http://localhost:8000/renderTest.html
 Current issue: FavIcons don't load, fails with
 "Not allowed to load local resource: chrome://favicon/..."
 
+---
+
+23Nov19:
+
+Time for a makeover.
+At the very least, must move to react-beautiful-dnd.
+Let's also try Streamline Icons for consistency and visual polish
+Additionally, may want to try Chakra UI for popup menu, and possibly Chakra UI's
+Accordion for window summaries.
+
+UI / org improvements:
+
+-   Would like to allow at least one additional level of hierarchy: sections

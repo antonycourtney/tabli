@@ -83,80 +83,80 @@ const StatefulTabWindowContainer = appContainer<
     FilteredTabWindowUIBaseProps
 >(mockWinStore, StatefulFilteredTabWindowUI);
 
+// helper to render a story horizontally centered:
+const rootStyle = css({
+    paddingTop: 10,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start'
+});
+
+const StoryRoot: React.FunctionComponent = ({ children }) => {
+    return <div className={rootStyle}>{children}</div>;
+};
+
 storiesOf('Tabli Components', module)
     .add('Expand All Button', () => (
-        <button
-            className={styles.toolbarButton(theme)}
-            title="Expand/Collapse All Window Summaries"
-        >
-            <div
-                className={cx(
-                    styles.toolbarButtonIcon(theme),
-                    styles.expandAllIconStyle
-                )}
-            />
-        </button>
+        <StoryRoot>
+            <button
+                className={styles.toolbarButton(theme)}
+                title="Expand/Collapse All Window Summaries"
+            >
+                <div
+                    className={cx(
+                        styles.toolbarButtonIcon(theme),
+                        styles.expandAllIconStyle
+                    )}
+                />
+            </button>
+        </StoryRoot>
     ))
     .add('Tab Item', () => (
-        <DragDropContextProvider backend={HTML5Backend}>
-            <TabItemUI
-                stateRef={stateRef}
-                tabWindow={testTabWindow}
-                tab={testTabItem}
-                tabIndex={0}
-                isSelected={false}
-                onItemSelected={() => console.log('item selected!')}
-            />
-        </DragDropContextProvider>
+        <StoryRoot>
+            <DragDropContextProvider backend={HTML5Backend}>
+                <TabItemUI
+                    stateRef={stateRef}
+                    tabWindow={testTabWindow}
+                    tab={testTabItem}
+                    tabIndex={0}
+                    isSelected={false}
+                    onItemSelected={() => console.log('item selected!')}
+                />
+            </DragDropContextProvider>
+        </StoryRoot>
     ))
     .add('Filtered Tab Window', () => (
-        <DragDropContextProvider backend={HTML5Backend}>
-            <FilteredTabWindowUI
-                stateRef={stateRef}
-                tabWindow={testTabWindow}
-                itemMatches={null}
-                searchStr={null}
-                isSelected={false}
-                isFocused={true}
-                selectedTabIndex={1}
-                modalActions={modalActions}
-                onItemSelected={() => console.log('onItemSelected')}
-                expandAll={false}
-            />
-        </DragDropContextProvider>
+        <StoryRoot>
+            <DragDropContextProvider backend={HTML5Backend}>
+                <FilteredTabWindowUI
+                    stateRef={stateRef}
+                    tabWindow={testTabWindow}
+                    itemMatches={null}
+                    searchStr={null}
+                    isSelected={false}
+                    isFocused={true}
+                    selectedTabIndex={1}
+                    modalActions={modalActions}
+                    onItemSelected={() => console.log('onItemSelected')}
+                    expandAll={false}
+                />
+            </DragDropContextProvider>
+        </StoryRoot>
     ))
     .add('Stateful Filtered Tab Window', () => (
-        <DragDropContextProvider backend={HTML5Backend}>
-            <StatefulTabWindowContainer
-                tabWindow={testTabWindow}
-                itemMatches={null}
-                searchStr={null}
-                isSelected={false}
-                isFocused={true}
-                selectedTabIndex={1}
-                modalActions={modalActions}
-                onItemSelected={() => console.log('onItemSelected')}
-                expandAll={false}
-            />
-        </DragDropContextProvider>
+        <StoryRoot>
+            <DragDropContextProvider backend={HTML5Backend}>
+                <StatefulTabWindowContainer
+                    tabWindow={testTabWindow}
+                    itemMatches={null}
+                    searchStr={null}
+                    isSelected={false}
+                    isFocused={true}
+                    selectedTabIndex={1}
+                    modalActions={modalActions}
+                    onItemSelected={() => console.log('onItemSelected')}
+                    expandAll={false}
+                />
+            </DragDropContextProvider>
+        </StoryRoot>
     ));
-
-// Omit because not interesting and no types:
-// import { Button, Welcome } from '@storybook/react/demo';
-/*
-storiesOf('Welcome', module).add('to Storybook', () => (
-    <Welcome showApp={linkTo('Button')} />
-));
-
-storiesOf('Button', module)
-    .add('with text', () => (
-        <Button onClick={action('clicked')}>Hello Button</Button>
-    ))
-    .add('with some emoji', () => (
-        <Button onClick={action('clicked')}>
-            <span role="img" aria-label="so cool">
-                😀 😎 👍 💯
-            </span>
-        </Button>
-    ));
-*/
