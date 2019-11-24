@@ -8,12 +8,16 @@ import { themes, ThemeContext } from '../src/ts/components/themeContext';
 import * as styles from '../src/ts/components/cssStyles';
 import { css, cx } from 'emotion';
 import TabItemUI from '../src/ts/components/TabItemUI';
-
+import * as tabWindowUtils from '../src/ts/tabWindowUtils';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { DragDropContextProvider } from 'react-dnd';
 
 import testData from '../test-data/renderTest-chromeWindowSnap';
 import TabManagerState from '../src/ts/tabManagerState';
+
+// Prevent VS Code from complaining about this JSON import:
+// @ts-ignore
+import windowSnapshot from '../test-data/windowSnapshot.json';
 
 import { mkRef, appContainer, mutableGet, StateRefProps } from 'oneref';
 import FilteredTabWindowUI, {
@@ -26,6 +30,14 @@ const theme = themes.light;
 
 storiesOf('Test Story', module).add('Basic Div', () => <div />);
 
+const testSavedWindow = tabWindowUtils.tabWindowFromJS(windowSnapshot);
+
+const TEST_OPEN_WINDOW_ID = 999;
+
+const testOpenSavedWindow = testSavedWindow
+    .set('open', true)
+    .set('openWindowId', TEST_OPEN_WINDOW_ID);
+
 const testChromeWindows = testData.chromeWindows;
 
 // log.info('renderPage: testData: ', testData)
@@ -33,6 +45,7 @@ const testChromeWindows = testData.chromeWindows;
 const emptyWinStore = new TabManagerState();
 const mockWinStore = emptyWinStore
     .syncWindowList(testChromeWindows as any)
+    .registerTabWindow(testOpenSavedWindow)
     .set('showRelNotes', false);
 
 console.log('mockWinStore: ', mockWinStore.toJS());
@@ -56,12 +69,14 @@ const modalActions = { openSaveModal, openRevertModal };
 /* helper to wrap a component rendered from a StateRef<T> */
 // const statefulComponent = ()
 
+const TEST_UNSAVED_OPEN_WINDOW_ID = 13;
+
 const StatefulFilteredTabWindowUI: React.FunctionComponent<
     FilteredTabWindowUIBaseProps & StateRefProps<TabManagerState>
 > = props => {
     const { stateRef } = props;
     const appState = mutableGet(stateRef);
-    const tabWindow = appState.getTabWindowByChromeId(13);
+    const tabWindow = appState.getTabWindowByChromeId(TEST_OPEN_WINDOW_ID);
     return (
         <FilteredTabWindowUI
             stateRef={stateRef}

@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx } from 'emotion';
 import { TabItem } from '../tabWindow';
+import * as utils from '../utils';
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon);
 const favIconOpenStyle = styles.favIcon;
@@ -29,7 +30,18 @@ export const mkFavIcon = (tab: TabItem) => {
     // But we still want to render FavIcons in non-extension rendering test
     if (!inExtension()) {
         const favIconUrl = tab.open ? tab.openState!.favIconUrl : null;
-        fiSrc = favIconUrl ? favIconUrl : '';
+        if (favIconUrl) {
+            fiSrc = favIconUrl;
+        } else {
+            if (tab.url) {
+                const urlinfo = utils.parseURL(tab.url);
+                if (urlinfo.host) {
+                    fiSrc =
+                        'https://www.google.com/s2/favicons?domain=' +
+                        urlinfo.host;
+                }
+            }
+        }
     } else {
         fiSrc = 'chrome://favicon/size/16/' + tab.url;
     }

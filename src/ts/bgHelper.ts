@@ -54,6 +54,8 @@ function loadManagedWindows(
     winStore: TabManagerState,
     tabliFolder: chrome.bookmarks.BookmarkTreeNode
 ): TabManagerState {
+    console.log('loadManagedWindows: tabliFolder: ', tabliFolder);
+
     var folderTabWindows = [];
 
     for (var i = 0; i < tabliFolder.children!.length; i++) {

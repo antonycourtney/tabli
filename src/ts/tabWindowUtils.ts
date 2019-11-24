@@ -16,11 +16,15 @@ import intersection from 'lodash/intersection';
 import reduce from 'lodash/reduce';
 const _ = { get, has, keys, intersection, reduce };
 
+
 function tabItemReviver(k: string | number, v: any) {
     if (k === 'savedState') {
         return new SavedTabState(v);
     } else if (k === 'openState') {
         return new OpenTabState(v);
+    } else if (k === 'tabItems') {
+        const elems = v.map((elem: any) => new TabItem(elem));
+        return Immutable.List<TabItem>(elems);
     }
     return v;
 }
@@ -31,6 +35,11 @@ function tabItemReviver(k: string | number, v: any) {
 export function tabItemFromJS(js: Object) {
     const tiMap = Immutable.fromJS(js, tabItemReviver);
     return new TabItem(tiMap);
+}
+
+export function tabWindowFromJS(js: Object) {
+    const tiMap = Immutable.fromJS(js, tabItemReviver);
+    return new TabWindow(tiMap);
 }
 
 /*
