@@ -503,3 +503,7 @@ UI / org improvements I'd like to add:
 -   Long-standing issue: Would like to be able to distinguish 'anchor' tabs (those to be re-opened on a revert operation) from associated bookmarks.
 
 To start with, I'm going to try and slightly tweak the rendering of tab items to make them a better fit for use with react-beautiful-dnd. For now this means setting border-radius so that every tab is clearly an independent entity rather than just a row that takes 100% of the rectangular cell where it rendered in a window summary.
+
+Let's try to swap the visual indicators for keyboard selection and hover...
+
+But before that, let me try and upgrade packages and install react-beautiful-dnd...

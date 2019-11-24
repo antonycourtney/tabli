@@ -8,7 +8,7 @@ import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
 import * as utils from '../utils';
-import { DragDropContext } from 'react-dnd';
+import { DndProvider } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
@@ -50,7 +50,7 @@ export interface PopupBaseProps {
 
 type PopupProps = PopupBaseProps & oneref.StateRefProps<TabManagerState>;
 
-const PopupBase: React.FunctionComponent<PopupProps> = ({
+export const Popup: React.FunctionComponent<PopupProps> = ({
     appState,
     stateRef,
     isPopout,
@@ -150,23 +150,23 @@ const PopupBase: React.FunctionComponent<PopupProps> = ({
     ) : null;
 
     return (
-        <ThemeContext.Provider value={theme}>
-            <div className={popupOuterStyle(theme)}>
-                <SelectablePopup
-                    onSearchInput={handleSearchInput}
-                    appState={appState}
-                    stateRef={stateRef}
-                    filteredWindows={filteredWindows}
-                    modalActions={modalActions}
-                    searchStr={searchStr}
-                    searchRE={searchRE}
-                    isPopout={isPopout}
-                />
-                {revertModal}
-                {saveModal}
-            </div>
-        </ThemeContext.Provider>
+        <DndProvider backend={HTML5Backend}>
+            <ThemeContext.Provider value={theme}>
+                <div className={popupOuterStyle(theme)}>
+                    <SelectablePopup
+                        onSearchInput={handleSearchInput}
+                        appState={appState}
+                        stateRef={stateRef}
+                        filteredWindows={filteredWindows}
+                        modalActions={modalActions}
+                        searchStr={searchStr}
+                        searchRE={searchRE}
+                        isPopout={isPopout}
+                    />
+                    {revertModal}
+                    {saveModal}
+                </div>
+            </ThemeContext.Provider>
+        </DndProvider>
     );
 };
-
-export const Popup = DragDropContext(HTML5Backend)(PopupBase);
