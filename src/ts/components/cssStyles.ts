@@ -40,15 +40,22 @@ export const audibleIcon = css({
     backgroundColor: '#505050'
 });
 export const tabItem = css({
-    height: 20,
-    maxHeight: 20,
+    borderRadius: 3,
+    height: 24,
+    maxHeight: 24,
     paddingLeft: 3,
     paddingRight: 3,
+    paddingTop: 2,
+    paddingBottom: 2,
+    marginLeft: 6,
+    marginRight: 6,
+    marginTop: 4,
+    marginBottom: 4,
     display: 'flex',
     alignItems: 'center',
+    border: '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
     '&:hover': {
-        borderTop: '1px solid #cacaca',
-        borderBottom: '1px solid #cacaca'
+        border: '1px solid #cacaca'
     }
 });
 export const tabItemDropOver = css({

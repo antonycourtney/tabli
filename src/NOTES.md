@@ -496,6 +496,10 @@ Let's also try Streamline Icons for consistency and visual polish
 Additionally, may want to try Chakra UI for popup menu, and possibly Chakra UI's
 Accordion for window summaries.
 
-UI / org improvements:
+UI / org improvements I'd like to add:
 
--   Would like to allow at least one additional level of hierarchy: sections
+-   Allow at least one additional level of hierarchy: sections. Not clear if we should allow nested sections...certainly not obvious how to render them
+-   Would really like to support multi-select, but this raises a ton of complications. Should actions like closing of tabs apply to multiple selections? How does multi-select work with keyboard navigation / keyboard selection?
+-   Long-standing issue: Would like to be able to distinguish 'anchor' tabs (those to be re-opened on a revert operation) from associated bookmarks.
+
+To start with, I'm going to try and slightly tweak the rendering of tab items to make them a better fit for use with react-beautiful-dnd. For now this means setting border-radius so that every tab is clearly an independent entity rather than just a row that takes 100% of the rectangular cell where it rendered in a window summary.
