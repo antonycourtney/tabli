@@ -11,17 +11,10 @@ import HeaderCheckbox from './HeaderCheckbox';
 import { ThemeContext } from './themeContext';
 import * as tabItemUtil from './tabItemUtil';
 import {
-    DragSource,
-    DragSourceMonitor,
-    ConnectDragSource,
-    DragSourceConnector,
-    DropTarget,
-    DropTargetConnector,
-    DropTargetMonitor,
-    DragElementWrapper,
-    DragSourceOptions,
-    ConnectDropTarget
-} from 'react-dnd';
+    Draggable,
+    DraggableProvided,
+    DraggableStateSnapshot
+} from 'react-beautiful-dnd';
 import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
@@ -47,33 +40,12 @@ export interface TabItemUIProps {
     isSelected: boolean;
     onItemSelected: (item: TabItem) => void;
 
-    // "collected" props -- we define these as optional because there seems to be an issue
-    // with the TypeScript bindings; these should probably not be exposed outside
-    // the wrapper that injects them.
-    // See https://stackoverflow.com/questions/40111314/react-dnd-typescript-support for a
-    // mention of this
-    connectDragSource?: ConnectDragSource;
-    connectDropTarget?: ConnectDropTarget;
-    isDragging?: boolean;
     isOver?: boolean;
     stateRef: StateRef<TabManagerState>;
 }
 
-const tabItemSource = {
-    beginDrag(props: TabItemUIProps) {
-        return { sourceTabWindow: props.tabWindow, sourceTab: props.tab };
-    }
-};
-
-// collect for use as drag source:
-function collect(connect: DragSourceConnector, monitor: DragSourceMonitor) {
-    return {
-        connectDragSource: connect.dragSource(),
-        isDragging: monitor.isDragging()
-    };
-}
-
 // for use as drop target:
+/*
 const tabItemTarget = {
     drop(props: TabItemUIProps, monitor: DropTargetMonitor) {
         const sourceItem = monitor.getItem();
@@ -85,22 +57,9 @@ const tabItemTarget = {
         );
     }
 };
-
-// collect function for drop target:
-function collectDropTarget(
-    connect: DropTargetConnector,
-    monitor: DropTargetMonitor
-) {
-    return {
-        connectDropTarget: connect.dropTarget(),
-        isOver: monitor.isOver()
-    };
-}
+*/
 
 const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
-    connectDragSource,
-    connectDropTarget,
-    isDragging,
     tabWindow,
     tab,
     tabIndex,
@@ -240,40 +199,53 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         dropStyle
     );
 
-    return connectDropTarget!(
-        connectDragSource!(
-            <div
-                className={tabItemStyle + ' tabItemHoverContainer'}
-                onClick={handleClick}
-            >
-                <div className={styles.rowItemsFixedWidth}>
-                    {tabCheckItem}
-                    {tabFavIcon}
-                </div>
-                <a
-                    href={tab.url}
-                    className={tabTitleStyle}
-                    title={tooltipContent}
-                    onClick={handleClick}
-                >
-                    {tabTitle}
-                </a>
-                <div className={styles.rowItemsFixedWidth}>
-                    {suspendedIcon}
-                    {audibleIcon}
-                    {closeButton}
-                </div>
-            </div>
-        )
+    const draggableId = tabWindow.id + '-' + tabIndex.toString();
+
+    // TODO: getItemStyle() as a function of draggableProps.style and
+    // isDragging
+
+    return (
+        <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
+            {(
+                providedDraggable: DraggableProvided,
+                snapshotDraggable: DraggableStateSnapshot
+            ) => {
+                // console.log({ providedDraggable, snapshotDraggable });
+                return (
+                    <div
+                        ref={providedDraggable.innerRef}
+                        {...providedDraggable.draggableProps}
+                        {...providedDraggable.dragHandleProps}
+                    >
+                        <div
+                            className={tabItemStyle + ' tabItemHoverContainer'}
+                            onClick={handleClick}
+                        >
+                            <div className={styles.rowItemsFixedWidth}>
+                                {tabCheckItem}
+                                {tabFavIcon}
+                            </div>
+                            <a
+                                href={tab.url}
+                                className={tabTitleStyle}
+                                title={tooltipContent}
+                                onClick={handleClick}
+                            >
+                                {tabTitle}
+                            </a>
+                            <div className={styles.rowItemsFixedWidth}>
+                                {suspendedIcon}
+                                {audibleIcon}
+                                {closeButton}
+                            </div>
+                        </div>
+                        {providedDraggable.placeholder}
+                    </div>
+                );
+            }}
+        </Draggable>
     );
 };
-
-const DropWrap = DropTarget(
-    DragItemTypes.TAB_ITEM,
-    tabItemTarget,
-    collectDropTarget
-);
-const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect);
 
 /*
  * N.B. We briefly attempted to wrap this in React.memo.
@@ -284,5 +256,4 @@ const DragWrap = DragSource(DragItemTypes.TAB_ITEM, tabItemSource, collect);
  * not so essential since we already memoize at the level of
  * FilteredTabWindowUI.
  */
-const WrappedTabItemUI = DropWrap(DragWrap(TabItemUI));
-export default WrappedTabItemUI;
+export default TabItemUI;

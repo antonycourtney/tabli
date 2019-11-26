@@ -15,6 +15,11 @@ import { useState, useRef } from 'react';
 import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
 import { areEqualShallow } from '../utils';
+import {
+    Droppable,
+    DroppableProvided,
+    DroppableStateSnapshot
+} from 'react-beautiful-dnd';
 
 const expandablePanelContentOpenStyle = css({
     marginTop: 0
@@ -25,6 +30,13 @@ const expandablePanelContentClosedStyle = css({
 const tabWindowSelectedStyle = css({
     border: Constants.selectedBorder
 });
+
+const getListStyle = (isDraggingOver: boolean) =>
+    css({
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%'
+    });
 
 export interface FilteredTabWindowUIBaseProps {
     tabWindow: TabWindow;
@@ -47,9 +59,7 @@ export interface FilteredTabWindowStateRefProps {
 export type FilteredTabWindowUIProps = FilteredTabWindowUIBaseProps &
     FilteredTabWindowStateRefProps;
 
-const FilteredTabWindowUI: React.FunctionComponent<
-    FilteredTabWindowUIProps
-> = ({
+const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = ({
     tabWindow,
     itemMatches,
     searchStr,
@@ -190,10 +200,28 @@ const FilteredTabWindowUI: React.FunctionComponent<
         className: windowStyles,
         ref: windowDivRef
     };
+
+    /* N.B.: On inner div, may want to set class name / styling with:
+        className={getListStyle(snapshot.isDraggingOver)}
+    */
     return (
         <div {...windowDivProps}>
-            {windowHeader}
-            {tabItems}
+            <Droppable droppableId="droppable">
+                {(
+                    provided: DroppableProvided,
+                    snapshot: DroppableStateSnapshot
+                ) => (
+                    <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={getListStyle(snapshot.isDraggingOver)}
+                    >
+                        {windowHeader}
+                        {tabItems}
+                        {provided.placeholder}
+                    </div>
+                )}
+            </Droppable>
         </div>
     );
 };

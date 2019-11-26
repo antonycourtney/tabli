@@ -87,7 +87,8 @@ export const windowHeader = (theme: Theme) =>
         // marginBottom: 3,
         display: 'inline-flex',
         // justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexGrow: 1
     });
 export const windowManagedButton = css({
     WebkitMaskImage: mkUrl('images/Status-9.png'),

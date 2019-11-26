@@ -9,12 +9,10 @@ import * as styles from '../src/ts/components/cssStyles';
 import { css, cx } from 'emotion';
 import TabItemUI from '../src/ts/components/TabItemUI';
 import * as tabWindowUtils from '../src/ts/tabWindowUtils';
-import HTML5Backend from 'react-dnd-html5-backend';
-import { DragDropContextProvider } from 'react-dnd';
 
 import testData from '../test-data/renderTest-chromeWindowSnap';
 import TabManagerState from '../src/ts/tabManagerState';
-
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 // Prevent VS Code from complaining about this JSON import:
 // @ts-ignore
 import windowSnapshot from '../test-data/windowSnapshot.json';
@@ -71,9 +69,8 @@ const modalActions = { openSaveModal, openRevertModal };
 
 const TEST_UNSAVED_OPEN_WINDOW_ID = 13;
 
-const StatefulFilteredTabWindowUI: React.FunctionComponent<
-    FilteredTabWindowUIBaseProps & StateRefProps<TabManagerState>
-> = props => {
+const StatefulFilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIBaseProps &
+    StateRefProps<TabManagerState>> = props => {
     const { stateRef } = props;
     const appState = mutableGet(stateRef);
     const tabWindow = appState.getTabWindowByChromeId(TEST_OPEN_WINDOW_ID);
@@ -110,6 +107,10 @@ const StoryRoot: React.FunctionComponent = ({ children }) => {
     return <div className={rootStyle}>{children}</div>;
 };
 
+const onDragEnd = (result: DropResult) => {
+    console.log('onDragEnd: ', result);
+};
+
 storiesOf('Tabli Components', module)
     .add('Expand All Button', () => (
         <StoryRoot>
@@ -126,9 +127,10 @@ storiesOf('Tabli Components', module)
             </button>
         </StoryRoot>
     ))
+    /*
     .add('Tab Item', () => (
         <StoryRoot>
-            <DragDropContextProvider backend={HTML5Backend}>
+            <DragDropContext onDragEnd={onDragEnd}>
                 <TabItemUI
                     stateRef={stateRef}
                     tabWindow={testTabWindow}
@@ -137,12 +139,12 @@ storiesOf('Tabli Components', module)
                     isSelected={false}
                     onItemSelected={() => console.log('item selected!')}
                 />
-            </DragDropContextProvider>
+            </DragDropContext>
         </StoryRoot>
-    ))
+    )) */
     .add('Filtered Tab Window', () => (
         <StoryRoot>
-            <DragDropContextProvider backend={HTML5Backend}>
+            <DragDropContext onDragEnd={onDragEnd}>
                 <FilteredTabWindowUI
                     stateRef={stateRef}
                     tabWindow={testTabWindow}
@@ -155,12 +157,12 @@ storiesOf('Tabli Components', module)
                     onItemSelected={() => console.log('onItemSelected')}
                     expandAll={false}
                 />
-            </DragDropContextProvider>
+            </DragDropContext>
         </StoryRoot>
     ))
     .add('Stateful Filtered Tab Window', () => (
         <StoryRoot>
-            <DragDropContextProvider backend={HTML5Backend}>
+            <DragDropContext onDragEnd={onDragEnd}>
                 <StatefulTabWindowContainer
                     tabWindow={testTabWindow}
                     itemMatches={null}
@@ -172,6 +174,6 @@ storiesOf('Tabli Components', module)
                     onItemSelected={() => console.log('onItemSelected')}
                     expandAll={false}
                 />
-            </DragDropContextProvider>
+            </DragDropContext>
         </StoryRoot>
     ));

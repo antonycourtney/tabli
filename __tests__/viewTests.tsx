@@ -177,9 +177,11 @@ test('isearch test', () => {
         </ClassWrapper>
     );
 
-    const baseTabItems = ReactTestUtils.scryRenderedComponentsWithType(
+    console.log('isearch test: component: ', component);
+
+    const baseTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
         component,
-        TabItemUI
+        'tabItemHoverContainer'
     );
 
     console.log('isearch test: initial tab items found: ', baseTabItems.length);
@@ -209,9 +211,9 @@ test('isearch test', () => {
 
     ReactTestUtils.Simulate.change(searchInput); //  {target: { value: 'git'}})
 
-    const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(
+    const filteredTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
         component,
-        TabItemUI
+        'tabItemHoverContainer'
     );
 
     console.log(
@@ -241,9 +243,9 @@ test('search and open test', () => {
         </ClassWrapper>
     );
 
-    const baseTabItems = ReactTestUtils.scryRenderedComponentsWithType(
+    const baseTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
         component,
-        TabItemUI
+        'tabItemHoverContainer'
     );
 
     console.log(
@@ -279,9 +281,9 @@ test('search and open test', () => {
     ReactTestUtils.Simulate.change(searchInput);
     console.log('simulated input value update applied.');
 
-    const filteredTabItems = ReactTestUtils.scryRenderedComponentsWithType(
+    const filteredTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
         component,
-        TabItemUI
+        'tabItemHoverContainer'
     );
 
     console.log(

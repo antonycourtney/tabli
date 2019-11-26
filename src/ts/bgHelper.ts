@@ -24,6 +24,7 @@ import {
     awaitableUpdate
 } from 'oneref';
 import ChromePromise from 'chrome-promise/chrome-promise';
+import { injectGlobal } from 'emotion';
 const _ = {
     has,
     fromPairs
@@ -54,7 +55,7 @@ function loadManagedWindows(
     winStore: TabManagerState,
     tabliFolder: chrome.bookmarks.BookmarkTreeNode
 ): TabManagerState {
-    console.log('loadManagedWindows: tabliFolder: ', tabliFolder);
+    log.debug('loadManagedWindows: tabliFolder: ', tabliFolder);
 
     var folderTabWindows = [];
 
@@ -272,36 +273,40 @@ const dedupeTab = async (
     changeInfo: chrome.tabs.TabChangeInfo,
     tab: chrome.tabs.Tab
 ) => {
-    const url = changeInfo.url;
+    try {
+        const url = changeInfo.url;
 
-    if (url != null) {
-        const matchPairs = st.findURL(url); // and filter out the tab we're checking:
+        if (url != null) {
+            const matchPairs = st.findURL(url); // and filter out the tab we're checking:
 
-        const isSelf = (tw: TabWindow, ti: TabItem) =>
-            tw.open &&
-            tw.openWindowId === tab.windowId &&
-            ti.open &&
-            ti.openState!.openTabId === tabId;
+            const isSelf = (tw: TabWindow, ti: TabItem) =>
+                tw.open &&
+                tw.openWindowId === tab.windowId &&
+                ti.open &&
+                ti.openState!.openTabId === tabId;
 
-        const filteredMatchPairs = matchPairs.filter(
-            ([tw, ti]) => !isSelf(tw, ti)
-        );
-
-        if (filteredMatchPairs.length > 0) {
-            const [origTabWindow, origTab] = filteredMatchPairs[0];
-            // if we wanted to programatically go back instead of closing:
-            // (required <all_urls> permission in manifest)
-            // const revertScript = {code: 'history.back();'}
-            // await chromep.tabs.executeScript(tabId, revertScript)
-
-            const tabWindow = st.getTabWindowByChromeId(tab.windowId);
-            const tabClosedSt = await actions.closeTab(
-                tabWindow!,
-                tabId,
-                stateRef
+            const filteredMatchPairs = matchPairs.filter(
+                ([tw, ti]) => !isSelf(tw, ti)
             );
-            actions.activateTab(origTabWindow, origTab, 0, stateRef);
+
+            if (filteredMatchPairs.length > 0) {
+                const [origTabWindow, origTab] = filteredMatchPairs[0];
+                // if we wanted to programatically go back instead of closing:
+                // (required <all_urls> permission in manifest)
+                // const revertScript = {code: 'history.back();'}
+                // await chromep.tabs.executeScript(tabId, revertScript)
+
+                const tabWindow = st.getTabWindowByChromeId(tab.windowId);
+                const tabClosedSt = await actions.closeTab(
+                    tabWindow!,
+                    tabId,
+                    stateRef
+                );
+                actions.activateTab(origTabWindow, origTab, 0, stateRef);
+            }
         }
+    } catch (e) {
+        log.warn('caught error during tab de-dup (ignoring...): ', e);
     }
 };
 

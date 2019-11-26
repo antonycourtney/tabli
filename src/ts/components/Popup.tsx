@@ -8,8 +8,7 @@ import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
 import * as utils from '../utils';
-import { DndProvider } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
 import { useState, useCallback } from 'react';
@@ -149,8 +148,12 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
         />
     ) : null;
 
+    const onDragEnd = (result: DropResult) => {
+        console.log('onDragEnd: ', result);
+    };
+
     return (
-        <DndProvider backend={HTML5Backend}>
+        <DragDropContext onDragEnd={onDragEnd}>
             <ThemeContext.Provider value={theme}>
                 <div className={popupOuterStyle(theme)}>
                     <SelectablePopup
@@ -167,6 +170,6 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
                     {saveModal}
                 </div>
             </ThemeContext.Provider>
-        </DndProvider>
+        </DragDropContext>
     );
 };

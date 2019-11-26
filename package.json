@@ -9,6 +9,7 @@
     "dependencies": {
         "@babel/plugin-proposal-class-properties": "^7.7.4",
         "@types/react": "^16.9.13",
+        "@types/react-beautiful-dnd": "^11.0.3",
         "@types/react-dom": "^16.9.4",
         "babel-plugin-flow-to-typescript": "^0.4.0",
         "chrome-promise": "^3.0.5",
@@ -26,6 +27,7 @@
         "prop-types": "^15.7.2",
         "react": "^16.12.0",
         "react-addons-pure-render-mixin": "^15.6.2",
+        "react-beautiful-dnd": "^12.1.1",
         "react-dnd": "^9.4.0",
         "react-dnd-html5-backend": "^9.4.0",
         "react-dom": "^16.12.0",
