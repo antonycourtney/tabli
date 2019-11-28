@@ -22,6 +22,17 @@ const inExtension = (): boolean => {
     return cachedIsExtension;
 };
 
+const httpFavIconUrl = (url: string | null): string => {
+    let fiSrc = '';
+    if (url) {
+        const urlinfo = utils.parseURL(url);
+        if (urlinfo.host) {
+            fiSrc = 'https://www.google.com/s2/favicons?domain=' + urlinfo.host;
+        }
+    }
+    return fiSrc;
+};
+
 export const mkFavIcon = (tab: TabItem) => {
     const favIconStyle = tab.open ? favIconOpenStyle : favIconClosedStyle;
     let fiSrc: string = '';
@@ -33,16 +44,15 @@ export const mkFavIcon = (tab: TabItem) => {
         if (favIconUrl) {
             fiSrc = favIconUrl;
         } else {
-            if (tab.url) {
-                const urlinfo = utils.parseURL(tab.url);
-                if (urlinfo.host) {
-                    fiSrc =
-                        'https://www.google.com/s2/favicons?domain=' +
-                        urlinfo.host;
-                }
-            }
+            fiSrc = httpFavIconUrl(tab.url);
         }
     } else {
+        // 26Nov19: We seem to be getting weird hangs on reload,
+        // along with Errors about XSS issues and cookies.
+        // I suspected it might be due to chrome://favicon, so
+        // tried using the the explicit google.com location, but
+        // that didn't help, so back to chrome://favicon it is...
+        // fiSrc = httpFavIconUrl(tab.url);
         fiSrc = 'chrome://favicon/size/16/' + tab.url;
     }
 

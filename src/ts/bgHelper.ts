@@ -55,7 +55,7 @@ function loadManagedWindows(
     winStore: TabManagerState,
     tabliFolder: chrome.bookmarks.BookmarkTreeNode
 ): TabManagerState {
-    log.debug('loadManagedWindows: tabliFolder: ', tabliFolder);
+    log.debug('loadManagedWindows:  tabliFolder: ', tabliFolder);
 
     var folderTabWindows = [];
 
@@ -169,7 +169,7 @@ function setupConnectionListener(stateRef: StateRef<TabManagerState>) {
             port.onDisconnect.addListener(() => {
                 chromeEventLog.debug('Chrome Event: onDisconnect');
                 removeStateChangeListener(stateRef, listenerId);
-                //        log.debug("Removed view listener ", listenerId)
+                log.debug('Removed view listener ', listenerId);
             });
         });
     });

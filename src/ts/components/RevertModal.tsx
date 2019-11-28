@@ -59,8 +59,9 @@ const RevertModal: React.FC<RevertModalProps> = ({
             tabActiveStyle
         );
         const id = 'tabItem-' + idx;
+        const tabItemStyle = styles.tabItem(theme);
         return (
-            <div key={id} className={cx(styles.noWrap, styles.tabItem)}>
+            <div key={id} className={cx(styles.noWrap, tabItemStyle)}>
                 {tabFavIcon}
                 <span className={tabTitleStyles}>{tabItem.title}</span>
                 <div className={styles.spacer} />

@@ -31,33 +31,42 @@ export const tabTitle = css({
 export const simpleTabTitle = css({
     width: Constants.SIMPLE_TAB_TITLE_WIDTH
 });
-export const tabItemSelected = (theme: Theme) =>
-    css({
-        backgroundColor: theme.tabItemSelected
-    });
 export const audibleIcon = css({
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
     backgroundColor: '#505050'
 });
-export const tabItem = css({
-    borderRadius: 3,
-    height: 24,
-    maxHeight: 24,
-    paddingLeft: 3,
-    paddingRight: 3,
-    paddingTop: 2,
-    paddingBottom: 2,
-    marginLeft: 6,
-    marginRight: 6,
-    marginTop: 4,
-    marginBottom: 4,
-    display: 'flex',
-    alignItems: 'center',
-    border: '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
-    '&:hover': {
+export const tabItem = (theme: Theme) =>
+    css({
+        borderRadius: 3,
+        height: 24,
+        maxHeight: 24,
+        paddingLeft: 3,
+        paddingRight: 3,
+        paddingTop: 2,
+        paddingBottom: 2,
+        marginLeft: 6,
+        marginRight: 6,
+        marginTop: 4,
+        marginBottom: 4,
+        display: 'flex',
+        alignItems: 'center',
+        border:
+            '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
+        '&:hover': {
+            backgroundColor: theme.tabItemSelected
+        }
+    });
+export const tabItemSelected = (theme: Theme) =>
+    css({
         border: '1px solid #cacaca'
-    }
-});
+    });
+
+export const tabItemDragging = (theme: Theme) =>
+    css({
+        border: '1px solid #cacaca',
+        backgroundColor: theme.tabItemSelected
+    });
+
 export const tabItemDropOver = css({
     borderBottom: '2px solid #333333'
 });

@@ -31,17 +31,6 @@ const popupOuterStyle = (theme: Theme) =>
         color: theme.foreground
     });
 
-/**
- * send message to BGhelper
- */
-function sendHelperMessage(msg: any) {
-    var port = chrome.runtime.connect({ name: 'popup' });
-    port.postMessage(msg);
-    port.onMessage.addListener((response: any) => {
-        log.debug('Got response message: ', response);
-    });
-}
-
 export interface PopupBaseProps {
     isPopout: boolean;
     noListener: boolean;
@@ -149,7 +138,14 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     ) : null;
 
     const onDragEnd = (result: DropResult) => {
-        console.log('onDragEnd: ', result);
+        const { source, destination } = result;
+        if (!source || !destination) return;
+        const sourceWindow = appState.findTabWindowById(source.droppableId);
+        const dstWindow = appState.findTabWindowById(destination.droppableId);
+        if (!sourceWindow || !dstWindow) return;
+        const sourceTab = sourceWindow.tabItems.get(source.index);
+        if (!sourceTab) return;
+        actions.moveTabItem(dstWindow, destination.index, sourceTab, stateRef);
     };
 
     return (

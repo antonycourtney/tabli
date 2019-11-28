@@ -376,6 +376,11 @@ export default class TabManagerState extends Immutable.Record(
         return openWindows.concat(closedSavedWindows);
     }
 
+    findTabWindowById(targetId: string): TabWindow | undefined {
+        const allWindows = this.getAll();
+        return allWindows.find(w => w.id === targetId);
+    }
+
     getTabWindowsByType(windowType: string): Immutable.Seq.Indexed<TabWindow> {
         const openWindows = this.getOpen();
         return openWindows.filter(w => w.windowType === windowType);

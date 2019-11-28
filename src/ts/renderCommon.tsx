@@ -13,6 +13,19 @@ import { update, refContainer } from 'oneref';
 import { utimesSync } from 'fs';
 
 /**
+ * send message to BGhelper with listener id.
+ * This allows the BGhelper to de-registered the listener
+ * when the popout or popup goes away and the connection breaks.
+ */
+function sendHelperMessage(msg: any) {
+    var port = chrome.runtime.connect({ name: 'renderedWindow' });
+    port.postMessage(msg);
+    port.onMessage.addListener((response: any) => {
+        log.debug('Got response message: ', response);
+    });
+}
+
+/**
  * Main entry point to rendering the popup window
  */
 export async function renderPopup(
@@ -30,10 +43,12 @@ export async function renderPopup(
 
         var parentNode = document.getElementById('windowList-region');
 
-        const App = refContainer<TabManagerState, PopupBaseProps>(
+        const [App, listenerId] = refContainer<TabManagerState, PopupBaseProps>(
             storeRef,
             Popup
         );
+        log.debug('refContainer listener id: ', listenerId);
+        sendHelperMessage({ listenerId });
         ReactDOM.render(
             <App isPopout={isPopout} noListener={renderTest} />,
             parentNode,

@@ -204,9 +204,10 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     /* N.B.: On inner div, may want to set class name / styling with:
         className={getListStyle(snapshot.isDraggingOver)}
     */
+    const droppableId = tabWindow.id;
     return (
         <div {...windowDivProps}>
-            <Droppable droppableId="droppable">
+            <Droppable droppableId={droppableId}>
                 {(
                     provided: DroppableProvided,
                     snapshot: DroppableStateSnapshot

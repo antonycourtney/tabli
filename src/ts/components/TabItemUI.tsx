@@ -192,33 +192,40 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     // Due to limitation of nested class selectors with composition;
     // see https://emotion.sh/docs/nested for more info.
 
-    const tabItemStyle = cx(
-        styles.noWrap,
-        styles.tabItem,
-        selectedStyle,
-        dropStyle
-    );
-
     const draggableId = tabWindow.id + '-' + tabIndex.toString();
 
     // TODO: getItemStyle() as a function of draggableProps.style and
     // isDragging
+    const getItemStyle = (isDragging: boolean): string => {
+        const dragStyle = isDragging ? styles.tabItemDragging(theme) : null;
+        const tabItemStyle = cx(
+            styles.noWrap,
+            styles.tabItem(theme),
+            selectedStyle,
+            dropStyle,
+            dragStyle
+        );
+        return tabItemStyle;
+    };
 
     return (
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
             {(
-                providedDraggable: DraggableProvided,
-                snapshotDraggable: DraggableStateSnapshot
+                dragProvided: DraggableProvided,
+                dragSnapshot: DraggableStateSnapshot
             ) => {
-                // console.log({ providedDraggable, snapshotDraggable });
+                // console.log({ dragProvided, dragSnapshot });
                 return (
                     <div
-                        ref={providedDraggable.innerRef}
-                        {...providedDraggable.draggableProps}
-                        {...providedDraggable.dragHandleProps}
+                        ref={dragProvided.innerRef}
+                        {...dragProvided.draggableProps}
+                        {...dragProvided.dragHandleProps}
                     >
                         <div
-                            className={tabItemStyle + ' tabItemHoverContainer'}
+                            className={
+                                getItemStyle(dragSnapshot.isDragging) +
+                                ' tabItemHoverContainer'
+                            }
                             onClick={handleClick}
                         >
                             <div className={styles.rowItemsFixedWidth}>
@@ -239,7 +246,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 {closeButton}
                             </div>
                         </div>
-                        {providedDraggable.placeholder}
+                        {dragProvided.placeholder}
                     </div>
                 );
             }}
