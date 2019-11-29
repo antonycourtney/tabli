@@ -1,108 +1,135 @@
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 html {
-  height: 100%;
+    height: 100%;
 }
 .popup-html {
-  width: 375px;
-  height: 600px;
+    width: 450px;
+    height: 600px;
 }
 body {
-      /* background: white; */
-      font-family: sans-serif;
-      /* max-width: 400px; */
-      /* overflow-x: hidden; */
-      font-size:12px;
-      cursor: default;
-      overflow: hidden;
-      margin: 0px;
-      height: 100%;
-      width: 100%;
-   }
-h1, h2, h3 {font-family: sans-serif;}
-h1 { font-size: 16px; }
-h2 {   font-size: 16px;
-      margin-top: 12px;
-      margin-bottom: 2px;
-      /* text-decoration: underline; */
-  }
-h3 { font-size: 13px;  margin-top: 8px; margin-bottom: 2px }
-hr {margin-top: 0in; padding: 0px}
-ul {margin-top: .05in; padding-left: 20px;}
-p {margin-top: 4px; margin-bottom: 4px; }
+    /* background: white; */
+    font-family: sans-serif;
+    /* max-width: 400px; */
+    /* overflow-x: hidden; */
+    font-size: 12px;
+    cursor: default;
+    overflow: hidden;
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+}
+h1,
+h2,
+h3 {
+    font-family: sans-serif;
+}
+h1 {
+    font-size: 16px;
+}
+h2 {
+    font-size: 16px;
+    margin-top: 12px;
+    margin-bottom: 2px;
+    /* text-decoration: underline; */
+}
+h3 {
+    font-size: 13px;
+    margin-top: 8px;
+    margin-bottom: 2px;
+}
+hr {
+    margin-top: 0in;
+    padding: 0px;
+}
+ul {
+    margin-top: 0.05in;
+    padding-left: 20px;
+}
+p {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
 // For dialogs:
-label, input { display:block; }
-fieldset { padding:0; border:0; }
+label,
+input {
+    display: block;
+}
+fieldset {
+    padding: 0;
+    border: 0;
+}
 .save-form label {
-  padding: 5px;
-  font-weight: bold;
+    padding: 5px;
+    font-weight: bold;
 }
 .preferences-form {
-  font-size: 14px;
-  min-height: 100px;
-  margin-top: 10px;
-  margin-left: 8px;
-  margin-right: 8px;
-  margin-bottom: 10px;
+    font-size: 14px;
+    min-height: 100px;
+    margin-top: 10px;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 10px;
 }
 .tabli-menu {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.42;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42;
 }
 .main-container {
-  height: 100%;
-  width: 100%;
+    height: 100%;
+    width: 100%;
 }
 
 /* from styles.headerButton */
 .headerButton {
-  outline: none;
-  border: none;
-  backgroundRepeat: no-repeat;
-  width: 16px;
-  height: 16px;
-  marginLeft: 1px;
-  marginRight: 1px;
-  flex: none;
+    outline: none;
+    border: none;
+    backgroundrepeat: no-repeat;
+    width: 16px;
+    height: 16px;
+    marginleft: 1px;
+    marginright: 1px;
+    flex: none;
 }
 .toolbar-btn-square {
-  width: 24px;
-  height: 24px;
-  padding: 4px;
+    width: 24px;
+    height: 24px;
+    padding: 4px;
 }
 
 .toolbar-btn {
-  height: 20px;
-  padding: 2px;
+    height: 20px;
+    padding: 2px;
 }
 
-.btn-group-xs > .btn, .btn-xs {
-    padding  : 1px 5px;
-    font-size  : 12px;
-    line-height  : 1.5;
-    border-radius : 3px;
+.btn-group-xs > .btn,
+.btn-xs {
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
     border: 1px solid #ccc;
 }
 
 .tabli-logo-icon {
-  min-width: 24px;
-  width: 24px;
-  height: 24px;
-  background-image: url('../images/logoImage.png');
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center center;
+    min-width: 24px;
+    width: 24px;
+    height: 24px;
+    background-image: url('../images/logoImage.png');
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
 }
 
 .popout-icon {
-  width: 16px;
-  height: 16px;
-  background-image: url('../images/popout.png');
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center center;
+    width: 16px;
+    height: 16px;
+    background-image: url('../images/popout.png');
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
 }
 
 /*
@@ -111,91 +138,93 @@ fieldset { padding:0; border:0; }
  * how we handle relNotes.html
  */
 .card {
-  font-family: sans-serif;
-  background-color: inherit;
+    font-family: sans-serif;
+    background-color: inherit;
 }
 .card-header {
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
-  padding-top: 8px;
-  font-size: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    font-size: 16px;
 }
 .card-title {
-  font-weight: bold;
-  font-size: 20px;
-  padding-bottom: 0px;
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 0px;
 }
 .card-subtitle {
-  font-size: 14px;
-  /* color: rgba(0, 0, 0, 0.541176); */
+    font-size: 14px;
+    /* color: rgba(0, 0, 0, 0.541176); */
 }
 .card-body {
-  padding-left: 16px;
-  padding-right: 16px;
-  font-size: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+    font-size: 12px;
 }
 a.card-link {
-  text-decoration: none;
-  color: #4285f4;
+    text-decoration: none;
+    color: #4285f4;
 }
-
 
 .tabli-dialog-button {
-  margin: 8px;
-  min-width: 60px;
+    margin: 8px;
+    min-width: 60px;
 }
 .inline-flex {
-  display:inline-flex;
-  align-items: center;
+    display: inline-flex;
+    align-items: center;
 }
 .inline-block {
-  display: inline-block;
+    display: inline-block;
 }
 .no-top-border {
-  border-bottom: 4px;
+    border-bottom: 4px;
 }
 .header-container {
-  display: flex;
-  align-items: center;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  min-width: 340px;
-  justify: center;
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    min-width: 340px;
+    justify: center;
 }
 .header-toolbar {
-  display: flex;
-  justify-content: space-around;
-  width: 340px;
+    display: flex;
+    justify-content: space-around;
+    width: 340px;
 }
 .search-input {
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  width: 200px;
-  max-width: 200px;
-  margin-left: 8px;
-  margin-right: 12px;
-  flex: 0 0 auto;
-  height: 22px;
-  line-height: 1.42;
-  padding: 1px;
-  font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    width: 200px;
+    max-width: 200px;
+    margin-left: 8px;
+    margin-right: 12px;
+    flex: 0 0 auto;
+    height: 22px;
+    line-height: 1.42;
+    padding: 1px;
+    font-size: 12px;
 }
-input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: searchfield-cancel-button;
-  margin-right: 5px;
+input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: searchfield-cancel-button;
+    margin-right: 5px;
 }
 /* GRRRRRR. @#!@#$ CSS */
 .popout-button {
-  line-height: 1.0;
+    line-height: 1;
 }
 .modal-body-container {
-  margin: 8px;
+    margin: 8px;
 }
-.preferences-form input[type="checkbox"] {
-  margin: 8px;
+.preferences-form input[type='checkbox'] {
+    margin: 8px;
 }
-button, input, input[type="search"], input[type="checkbox"] {
-  background-color: inherit;
-  color: inherit;
+button,
+input,
+input[type='search'],
+input[type='checkbox'] {
+    background-color: inherit;
+    color: inherit;
 }
