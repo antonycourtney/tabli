@@ -62,7 +62,7 @@ const popupInnerStyle = css({
     flexWrap: 'nowrap'
 });
 
-const popupHeaderBaseStyle = css({
+const popupHeaderStyle = css({
     minWidth: 350,
     width: '100%',
     display: 'flex',
@@ -72,13 +72,6 @@ const popupHeaderBaseStyle = css({
     padding: 0,
     flex: '0 0 auto'
 });
-const devModeStyle = css`
-    background-color: #e8ad2e66;
-`;
-const nodeEnv = process.env.NODE_ENV;
-const nodeEnvStyle = nodeEnv === 'development' ? devModeStyle : null;
-
-const popupHeaderStyle = cx(popupHeaderBaseStyle, nodeEnvStyle);
 
 const popupBodyStyle = css({
     minHeight: Constants.POPUP_BODY_HEIGHT,
@@ -96,7 +89,7 @@ const popupFooterStyle = (theme: Theme) =>
         paddingRight: 16,
         paddingTop: 4,
         paddingBottom: 4,
-        fontSize: 11,
+        fontSize: 12,
         flex: '0 0 auto',
         display: 'flex',
         justifyContent: 'flex-end',

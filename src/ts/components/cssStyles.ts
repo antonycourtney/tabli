@@ -237,7 +237,7 @@ export const modalCloseButton = (theme: Theme) =>
 const titleBaseStyle = cx(text, noWrap, windowTitle);
 export const titleOpen = cx(titleBaseStyle, open);
 export const titleClosed = (theme: Theme) => cx(titleBaseStyle, closed(theme));
-export const toolbarButtonSize = 30;
+export const toolbarButtonSize = 26;
 export const toolbarButton = (theme: Theme) => css`
     width: ${toolbarButtonSize + 'px'};
     width: ${toolbarButtonSize + 'px'};

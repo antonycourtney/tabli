@@ -52,7 +52,7 @@ export const popin = (
 );
 
 const menuStyle = css`
-    margin: 4px;
+    margin: 2px;
 `;
 
 export const menu = (

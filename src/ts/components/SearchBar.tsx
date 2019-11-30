@@ -15,8 +15,8 @@ import { mkUrl } from '../utils';
 const toolbarOuterContainerStyle = css`
     display: flex;
     align-items: center;
-    margin-top: 12px;
-    margin-bottom: 12px;
+    margin-top: 16px;
+    margin-bottom: 16px;
     margin-left: 12px;
     min-width: 400px;
 `;
@@ -30,7 +30,7 @@ const toolbarInnerContainerStyle = css`
 const growRightStyle = css`
     display: flex;
     justify-content: flex-start;
-    align-items: stretch;
+    align-items: center;
     margin-left: 0px;
     margin-top: 0px;
     margin-bottom: 0px;
@@ -51,14 +51,14 @@ const searchInputStyle = css`
     margin-left: 8px;
     margin-right: 12px;
     flex: 0 0 auto;
-    height: 28px;
+    height: 24px;
     line-height: 1.5;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding-top: 1px;
+    padding-bottom: 1px;
     padding-left: 4px;
     padding-right: 4px;
     font-size: 12px;
-    height: 30px;
+    height: 26px;
 `;
 
 const searchInputClass = cx('search-input', searchInputStyle);
@@ -241,6 +241,14 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
         </button>
     );
 
+    const devLabelStyle = css({
+        fontSize: 10
+    });
+    const nodeEnv = process.env.NODE_ENV;
+    const devLabel =
+        nodeEnv === 'development' ? (
+            <span className={devLabelStyle}>DEV</span>
+        ) : null;
     return (
         <div className={toolbarOuterContainerStyle}>
             <div className={toolbarInnerContainerStyle}>
@@ -259,6 +267,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
                         title="Search Page Titles and URLs"
                     />
                 </GrowRight>
+                {devLabel}
             </div>
         </div>
     );
