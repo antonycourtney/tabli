@@ -507,3 +507,12 @@ To start with, I'm going to try and slightly tweak the rendering of tab items to
 Let's try to swap the visual indicators for keyboard selection and hover...
 
 But before that, let me try and upgrade packages and install react-beautiful-dnd...
+
+OK, got react-beautiful-dnd working, and have done a bunch of other cosmetic layout tweaks.
+A few more to do:
+
+-   Clean up searchbar layout and sizing
+-   Check out PR on improved glyph for tab close
+-   Try to use better glyph for expand / contract button
+-   Try to use react-spring for smooth animation of open/close
+-   Expand / contract glyph for whole window list sections?

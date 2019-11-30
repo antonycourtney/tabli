@@ -2,6 +2,7 @@ import * as log from 'loglevel'; // eslint-disable-line no-unused-vars
 import * as React from 'react';
 import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
+import * as svg from './svg';
 import { Manager, Reference, Popper } from 'react-popper';
 import { css, cx } from 'emotion';
 import { mkUrl } from '../utils';
@@ -43,10 +44,6 @@ const menuItemStyle = (theme: Theme) =>
             backgroundColor: theme.menuItemHover
         }
     });
-
-const menuIconStyle = css({
-    WebkitMaskImage: mkUrl('images/hamburger-menu.png')
-});
 
 type ClickEvent = React.SyntheticEvent<HTMLElement, MouseEvent>;
 type ClickHandler = (event: ClickEvent) => void;
@@ -145,6 +142,10 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
     if ((window as any).isTesting) {
         return <div />;
     }
+    const menuIconStyle = styles.toolbarButtonIconMaskImage(
+        theme,
+        'images/hamburger-menu.png'
+    );
     return (
         <Manager>
             <Reference>
@@ -158,10 +159,11 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
                     >
                         <div
                             className={cx(
-                                styles.toolbarButtonIcon(theme),
-                                menuIconStyle
+                                styles.toolbarButtonSVGIconContainer(theme)
                             )}
-                        />
+                        >
+                            {svg.menu}
+                        </div>
                     </button>
                 )}
             </Reference>

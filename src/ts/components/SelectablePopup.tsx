@@ -66,14 +66,14 @@ const popupHeaderBaseStyle = css({
     minWidth: 350,
     width: '100%',
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     height: Constants.POPUP_HEADER_HEIGHT,
     borderBottom: '1px solid #bababa',
     padding: 0,
     flex: '0 0 auto'
 });
 const devModeStyle = css`
-    background-color: #e8ad2e;
+    background-color: #e8ad2e66;
 `;
 const nodeEnv = process.env.NODE_ENV;
 const nodeEnvStyle = nodeEnv === 'development' ? devModeStyle : null;

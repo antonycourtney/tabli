@@ -7,9 +7,11 @@ export const TAB_TITLE_MIN_WIDTH = 250;
 export const TAB_TITLE_MAX_WIDTH = WINDOW_MAX_WIDTH - 60;
 export const TAB_ITEM_HEIGHT = 24;
 export const SIMPLE_TAB_TITLE_WIDTH = 200;
-export const POPUP_HEADER_HEIGHT = 38;
-export const POPUP_BODY_HEIGHT = 537;
+export const POPUP_MAX_HEIGHT = 600;
+export const POPUP_HEADER_HEIGHT = 50;
 export const POPUP_FOOTER_HEIGHT = 25;
+export const POPUP_BODY_HEIGHT =
+    POPUP_MAX_HEIGHT - POPUP_HEADER_HEIGHT - POPUP_FOOTER_HEIGHT;
 export const FOCUS_SCROLL_BASE = 10;
 export const MODAL_BODY_MAX_HEIGHT = 500;
 export const POPOUT_DEFAULT_WIDTH = 450;
@@ -32,5 +34,3 @@ export const KEY_P = 80;
 export const DragItemTypes = {
     TAB_ITEM: 'tabItem'
 };
-
-export const selectedBorder = '2px solid #a0a0a0';

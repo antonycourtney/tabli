@@ -6,6 +6,7 @@ import * as styles from './cssStyles';
 import { ThemeContext } from './themeContext';
 import { css, cx } from 'emotion';
 import MenuButton from './MenuButton';
+import * as svg from './svg';
 import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useRef, useContext, Ref, MutableRefObject } from 'react';
@@ -14,29 +15,50 @@ import { mkUrl } from '../utils';
 const toolbarOuterContainerStyle = css`
     display: flex;
     align-items: center;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    min-width: 340px;
-    justify: center;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    margin-left: 12px;
+    min-width: 400px;
 `;
 
 const toolbarInnerContainerStyle = css`
     display: flex;
-    justify-content: space-around;
-    width: 340px;
+    justify-content: flex-start;
+    width: 400px;
 `;
+
+const growRightStyle = css`
+    display: flex;
+    justify-content: flex-start;
+    align-items: stretch;
+    margin-left: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: auto;
+    flex-grow: 1;
+`;
+
+// A container that will grow to the right:
+const GrowRight: React.FunctionComponent = ({ children }) => (
+    <div className={growRightStyle}>{children}</div>
+);
+
 const searchInputStyle = css`
     border: 1px solid #ccc;
-    border-radius: 3px;
+    border-radius: 4px;
     width: 200px;
     max-width: 200px;
     margin-left: 8px;
     margin-right: 12px;
     flex: 0 0 auto;
-    height: 22px;
-    line-height: 1.42;
-    padding: 1px;
+    height: 28px;
+    line-height: 1.5;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 4px;
+    padding-right: 4px;
     font-size: 12px;
+    height: 30px;
 `;
 
 const searchInputClass = cx('search-input', searchInputStyle);
@@ -182,13 +204,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
         actions.copyWindowsToClipboard(stateRef);
     };
 
-    // We'll rotate 270 degrees to point upper left for popout,
-    // 90 degrees to point lower right for pop-in:
-    const popImgName = isPopout ? 'popin' : 'popout';
-    const popImgPath = 'images/' + popImgName + '.png';
-    const popIconStyle = css({
-        WebkitMaskImage: mkUrl(popImgPath)
-    });
+    const popSVG = isPopout ? svg.popin : svg.popout;
 
     const popVerb = isPopout ? 'Hide' : 'Show';
     const popDesc = popVerb + ' Tabli Popout Window';
@@ -199,9 +215,9 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
             title={popDesc}
             onClick={handlePopoutClick}
         >
-            <div
-                className={cx(styles.toolbarButtonIcon(theme), popIconStyle)}
-            />
+            <div className={cx(styles.toolbarButtonSVGIconContainer(theme))}>
+                {popSVG}
+            </div>
         </button>
     );
 
@@ -211,12 +227,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
             title="Expand/Collapse All Window Summaries"
             onClick={handleExpandToggleClick}
         >
-            <div
-                className={cx(
-                    styles.toolbarButtonIcon(theme),
-                    styles.expandAllIconStyle
-                )}
-            />
+            <div className={styles.expandAllIconStyle(theme)} />
         </button>
     );
 
@@ -233,21 +244,21 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     return (
         <div className={toolbarOuterContainerStyle}>
             <div className={toolbarInnerContainerStyle}>
-                <MenuButton stateRef={stateRef} />
-                {popoutButton}
-                <input
-                    className={searchInputClass}
-                    type="search"
-                    tabIndex={1}
-                    ref={searchInputRef}
-                    id="searchBox"
-                    placeholder="Search..."
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    title="Search Page Titles and URLs"
-                />
-                {expandAllButton}
-                {copyButton}
+                <GrowRight>{popoutButton}</GrowRight>
+                <GrowRight>
+                    <MenuButton stateRef={stateRef} />
+                    <input
+                        className={searchInputClass}
+                        type="search"
+                        tabIndex={1}
+                        ref={searchInputRef}
+                        id="searchBox"
+                        placeholder="Search..."
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        title="Search Page Titles and URLs"
+                    />
+                </GrowRight>
             </div>
         </div>
     );

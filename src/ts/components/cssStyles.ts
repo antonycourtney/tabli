@@ -237,8 +237,11 @@ export const modalCloseButton = (theme: Theme) =>
 const titleBaseStyle = cx(text, noWrap, windowTitle);
 export const titleOpen = cx(titleBaseStyle, open);
 export const titleClosed = (theme: Theme) => cx(titleBaseStyle, closed(theme));
+export const toolbarButtonSize = 30;
 export const toolbarButton = (theme: Theme) => css`
-    padding: 1px 5px;
+    width: ${toolbarButtonSize + 'px'};
+    width: ${toolbarButtonSize + 'px'};
+    padding: 0px;
     font-size: 12px;
     line-height: 1.5;
     border-radius: 3px;
@@ -248,11 +251,34 @@ export const toolbarButton = (theme: Theme) => css`
     }
     background-color: ${theme.buttonBackground};
 `;
-export const toolbarButtonIcon = (theme: Theme) => css`
-    width: 14px;
-    height: 14px;
-    background-color: ${theme.foreground};
-`;
-export const expandAllIconStyle = css({
-    WebkitMaskImage: mkUrl('images/triangle-small-1-01.png')
-});
+export const toolbarIconSize = 16;
+export const toolbarButtonIconContainer = (theme: Theme) =>
+    css({
+        width: toolbarIconSize,
+        height: toolbarIconSize
+    });
+export const toolbarSVGIconSize = toolbarButtonSize - 2;
+export const toolbarButtonSVGIconContainer = (theme: Theme) =>
+    css({
+        width: toolbarSVGIconSize,
+        height: toolbarSVGIconSize,
+        fill: theme.foreground
+    });
+
+export const toolbarButtonIconMaskBG = (theme: Theme) =>
+    css({
+        backgroundColor: theme.foreground
+    });
+
+export const toolbarButtonIconMaskImage = (theme: Theme, path: string) =>
+    cx(
+        toolbarButtonIconContainer(theme),
+        toolbarButtonIconMaskBG(theme),
+        css({
+            margin: '1px 5px',
+            WebkitMaskImage: mkUrl(path)
+        })
+    );
+
+export const expandAllIconStyle = (theme: Theme) =>
+    toolbarButtonIconMaskImage(theme, 'images/triangle-small-1-01.png');

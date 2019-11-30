@@ -52,12 +52,11 @@ export const mkFavIcon = (tab: TabItem) => {
         // I suspected it might be due to chrome://favicon, so
         // tried using the the explicit google.com location, but
         // that didn't help, so back to chrome://favicon it is...
-        //
-        // 28Nov19: Seemed to be observing slow perf (like several seconds)
-        // with chrome://favicon, so back to https to google favicon support
-        // it is...
-        fiSrc = httpFavIconUrl(tab.url);
-        //fiSrc = 'chrome://favicon/size/16/' + tab.url;
+        // Also noticing that for certain domains, the google lookup
+        // just yields a placeholder FavIcon, while chrome://favicon
+        // seems to be more reliable...
+        // fiSrc = httpFavIconUrl(tab.url);
+        fiSrc = 'chrome://favicon/size/16/' + tab.url;
     }
 
     // Skip the chrome FAVICONs; they just throw when accessed.

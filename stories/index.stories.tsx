@@ -8,6 +8,7 @@ import { themes, ThemeContext } from '../src/ts/components/themeContext';
 import * as styles from '../src/ts/components/cssStyles';
 import { css, cx } from 'emotion';
 import TabItemUI from '../src/ts/components/TabItemUI';
+import { PopupBaseProps, Popup } from '../src/ts/components/Popup';
 import * as tabWindowUtils from '../src/ts/tabWindowUtils';
 
 import testData from '../test-data/renderTest-chromeWindowSnap';
@@ -95,6 +96,11 @@ const StatefulTabWindowContainer = appContainer<
     FilteredTabWindowUIBaseProps
 >(mockWinStore, StatefulFilteredTabWindowUI);
 
+const StatefulPopup = appContainer<TabManagerState, PopupBaseProps>(
+    mockWinStore,
+    Popup
+);
+
 // helper to render a story horizontally centered:
 const rootStyle = css({
     paddingTop: 10,
@@ -103,8 +109,18 @@ const rootStyle = css({
     alignItems: 'flex-start'
 });
 
+const rootInnerStyle = css({
+    width: 450,
+    height: 600,
+    border: '1px solid #888888'
+});
+
 const StoryRoot: React.FunctionComponent = ({ children }) => {
-    return <div className={rootStyle}>{children}</div>;
+    return (
+        <div className={rootStyle}>
+            <div className={rootInnerStyle}>{children}</div>
+        </div>
+    );
 };
 
 const onDragEnd = (result: DropResult) => {
@@ -118,12 +134,7 @@ storiesOf('Tabli Components', module)
                 className={styles.toolbarButton(theme)}
                 title="Expand/Collapse All Window Summaries"
             >
-                <div
-                    className={cx(
-                        styles.toolbarButtonIcon(theme),
-                        styles.expandAllIconStyle
-                    )}
-                />
+                <div className={styles.expandAllIconStyle(theme)} />
             </button>
         </StoryRoot>
     ))
@@ -174,6 +185,13 @@ storiesOf('Tabli Components', module)
                     onItemSelected={() => console.log('onItemSelected')}
                     expandAll={false}
                 />
+            </DragDropContext>
+        </StoryRoot>
+    ))
+    .add('Full Popup', () => (
+        <StoryRoot>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <StatefulPopup isPopout={false} noListener={true} />
             </DragDropContext>
         </StoryRoot>
     ));

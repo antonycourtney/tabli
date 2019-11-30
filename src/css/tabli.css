@@ -184,8 +184,8 @@ a.card-link {
 .header-container {
     display: flex;
     align-items: center;
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin-top: 12px;
+    margin-bottom: 12px;
     min-width: 340px;
     justify: center;
 }
