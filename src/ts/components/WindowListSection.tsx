@@ -16,7 +16,12 @@ const windowListSectionHeaderStyle = css({
     minWidth: Constants.WINDOW_MIN_WIDTH,
     maxWidth: Constants.WINDOW_MAX_WIDTH,
     fontWeight: 'bold',
-    marginBottom: 5
+    fontSize: 14,
+    marginBottom: 8
+});
+
+const windowListChildrenContainerStyle = css({
+    marginLeft: 8
 });
 
 interface WindowListSectionProps {
@@ -52,7 +57,7 @@ const WindowListSection: React.FC<WindowListSectionProps> = ({
     return (
         <div {...sectionDivProps}>
             {header}
-            <div>{children}</div>
+            <div className={windowListChildrenContainerStyle}>{children}</div>
         </div>
     );
 };

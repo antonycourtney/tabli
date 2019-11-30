@@ -38,33 +38,33 @@ export const audibleIcon = css({
 export const tabItem = (theme: Theme) =>
     css({
         borderRadius: 3,
-        height: 24,
-        maxHeight: 24,
+        height: Constants.TAB_ITEM_HEIGHT,
+        maxHeight: Constants.TAB_ITEM_HEIGHT,
         paddingLeft: 3,
         paddingRight: 3,
         paddingTop: 2,
         paddingBottom: 2,
         marginLeft: 6,
         marginRight: 6,
-        marginTop: 4,
-        marginBottom: 4,
+        marginTop: 2,
+        marginBottom: 2,
         display: 'flex',
         alignItems: 'center',
         border:
             '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
         '&:hover': {
-            backgroundColor: theme.tabItemSelected
+            backgroundColor: theme.tabItemHover
         }
     });
 export const tabItemSelected = (theme: Theme) =>
     css({
-        border: '1px solid #cacaca'
+        border: '1px solid ' + theme.windowSelectedBorder // #cacaca
     });
 
 export const tabItemDragging = (theme: Theme) =>
     css({
         border: '1px solid #cacaca',
-        backgroundColor: theme.tabItemSelected
+        backgroundColor: theme.tabItemHover
     });
 
 export const tabItemDropOver = css({
@@ -151,7 +151,9 @@ export const imageButtonClosed = (theme: Theme) =>
         backgroundColor: theme.closedGray
     });
 export const tabList = css({
-    marginLeft: 0
+    marginLeft: 0,
+    marginTop: 4,
+    marginBottom: 4
 });
 export const simpleTabContainer = css({
     width: 250,
@@ -167,15 +169,16 @@ export const simpleTabContainer = css({
 export const tabWindowFocused = css({
     boxShadow: '0px 0px 5px 2px #7472ff'
 });
-export const tabWindow = css({
-    border: '1px solid #bababa',
-    borderRadius: 3,
-    marginBottom: 8,
-    minWidth: Constants.WINDOW_MIN_WIDTH,
-    maxWidth: Constants.WINDOW_MAX_WIDTH,
-    display: 'flex',
-    flexDirection: 'column'
-});
+export const tabWindow = (theme: Theme) =>
+    css({
+        border: '2px solid ' + theme.windowBorder,
+        borderRadius: 5,
+        marginBottom: 10,
+        minWidth: Constants.WINDOW_MIN_WIDTH,
+        maxWidth: Constants.WINDOW_MAX_WIDTH,
+        display: 'flex',
+        flexDirection: 'column'
+    });
 export const expandablePanel = css({
     width: '100%',
     position: 'relative',

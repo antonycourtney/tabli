@@ -11,7 +11,7 @@ import TabItemUI from './TabItemUI';
 import { TabWindow, TabItem } from '../tabWindow';
 import { FilteredTabItem } from '../searchOps';
 import TabManagerState from '../tabManagerState';
-import { useState, useRef } from 'react';
+import { useState, useRef, useContext } from 'react';
 import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
 import { areEqualShallow } from '../utils';
@@ -20,16 +20,18 @@ import {
     DroppableProvided,
     DroppableStateSnapshot
 } from 'react-beautiful-dnd';
+import { Theme, ThemeContext } from './themeContext';
 
 const expandablePanelContentOpenStyle = css({
-    marginTop: 0
+    marginTop: 4
 });
 const expandablePanelContentClosedStyle = css({
     marginTop: '-999px'
 });
-const tabWindowSelectedStyle = css({
-    border: Constants.selectedBorder
-});
+const tabWindowSelectedStyle = (theme: Theme) =>
+    css({
+        border: '2px solid ' + theme.windowSelectedBorder
+    });
 
 const getListStyle = (isDraggingOver: boolean) =>
     css({
@@ -76,6 +78,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
         tabWindow.id,
         tabWindow.title
     );
+    const theme = useContext(ThemeContext);
     const [prevIsSelected, setPrevIsSelected] = useState(false);
     const windowDivRef = useRef<HTMLDivElement | null>(null);
 
@@ -187,10 +190,10 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
         />
     );
 
-    const selectedStyle = isSelected ? tabWindowSelectedStyle : null;
+    const selectedStyle = isSelected ? tabWindowSelectedStyle(theme) : null;
     const focusedStyle = isFocused ? styles.tabWindowFocused : null;
     const windowStyles = cx(
-        styles.tabWindow,
+        styles.tabWindow(theme),
         styles.expandablePanel,
         selectedStyle,
         focusedStyle

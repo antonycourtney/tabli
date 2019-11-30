@@ -2,15 +2,13 @@ import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx, css } from 'emotion';
 import FlatButton from './FlatButton';
+import { Theme, ThemeContext } from './themeContext';
 
 const messageCardBaseStyle = css({
     padding: 0
 });
-const messageCardStyle = cx(
-    styles.tabWindow,
-    styles.tabWindowFocused,
-    messageCardBaseStyle
-);
+const messageCardStyle = (theme: Theme) =>
+    cx(styles.tabWindow(theme), styles.tabWindowFocused, messageCardBaseStyle);
 
 const cardActionsStyle = css({
     display: 'inline-flex',
@@ -35,9 +33,10 @@ const MessageCard: React.FunctionComponent<MessageCardProps> = ({
     onClick
 }: MessageCardProps) => {
     const rawMarkup = { __html: content };
+    const theme = React.useContext(ThemeContext);
 
     return (
-        <div className={messageCardStyle}>
+        <div className={messageCardStyle(theme)}>
             <div className="cardContent" dangerouslySetInnerHTML={rawMarkup} />
             <div className={cardActionsStyle}>
                 <FlatButton label="GOT IT" onClick={onClick} />
