@@ -59,11 +59,39 @@ export const menu = (
     <svg
         className={menuStyle}
         xmlns="http://www.w3.org/2000/svg"
-        width="20px"
-        height="20px"
+        width="20"
+        height="20"
         viewBox="0 0 24 24"
     >
-        <path d="M0 0h24v24H0z" fill="none" />
-        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+        <path fill="none" d="M0 0h24v24H0V0z" />
+        <path d="M4 18h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zm0-5h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zM3 7c0 .55.45 1 1 1h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1z" />
+    </svg>
+);
+
+export const expandMore = (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="2 4 20 20"
+    >
+        <path opacity=".87" fill="none" d="M24 24H0V0h24v24z" />
+        <path d="M15.88 9.29L12 13.17 8.12 9.29c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.39-.39.39-1.02 0-1.41-.39-.38-1.03-.39-1.42 0z" />
+    </svg>
+);
+
+const debugHelper = css({
+    backgroundColor: 'yellow'
+});
+
+export const expandLess = (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="2 4 20 20"
+    >
+        <path fill="none" d="M0 0h24v24H0V0z" />
+        <path d="M11.29 8.71L6.7 13.3c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 10.83l3.88 3.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L12.7 8.71c-.38-.39-1.02-.39-1.41 0z" />
     </svg>
 );
