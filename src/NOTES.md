@@ -516,3 +516,25 @@ A few more to do:
 -   Try to use better glyph for expand / contract button
 -   Try to use react-spring for smooth animation of open/close
 -   Expand / contract glyph for whole window list sections?
+
+1Dec:
+
+Interesting perf issue / observation:
+
+If I get rid of the optimization in FilteredTabWindowUI that skips rendering of tabItems for
+closed (non-expanded) window summaries, the time to render the initial view goes waaaay up,
+from about 1.3 seconds to 6+ seconds. To me this suggests something hella slow about the
+perf of TabItemUI.
+Worth noting, though, that I discovered this while experimenting while trying to animate
+the expand / collapse of windows. Maybe this is better if I get rid of the animation work?
+
+Other notes on attempt to introduce react-spring:
+
+ - The expansion was getting animated even when just moving a window from "Other Open Windows" to
+   "Current Window" section.
+ - Close window summary transition didn't appear to animate; not sure why. Originally figured this
+   was due to the above optimization which removes all tabs from the render tree for closed windows,
+   but seemed to still see this even when that optimization was disabled.
+ - Looking at how Accordions were implemented in chakra UI was illuminating; provides a [collapse](https://chakra-ui.com/collapse) component, built on top of [react-animate-height](https://github.com/Stanko/react-animate-height)
+
+ 

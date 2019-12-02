@@ -40,12 +40,17 @@ export const mkFavIcon = (tab: TabItem) => {
     // Can only use 'chrome://favicon' from inside an extension apparently
     // But we still want to render FavIcons in non-extension rendering test
     if (!inExtension()) {
+        // Let's always use the external source for consistency and to avoid
+        // CORS issues:
+        /*
         const favIconUrl = tab.open ? tab.openState!.favIconUrl : null;
         if (favIconUrl) {
             fiSrc = favIconUrl;
         } else {
             fiSrc = httpFavIconUrl(tab.url);
         }
+        */
+        fiSrc = httpFavIconUrl(tab.url);
     } else {
         // 26Nov19: We seem to be getting weird hangs on reload,
         // along with Errors about XSS issues and cookies.
