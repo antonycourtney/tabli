@@ -222,6 +222,12 @@ export const hidden = css`
 export const visible = css`
     visibility: visible;
 `;
+export const checkStyle = (theme: Theme) => css`
+    fill: ${theme.revertColor};
+    &:hover {
+        fill: ${theme.revertHover};
+    }
+`;
 export const closeButtonBaseStyle = (theme: Theme) => css`
     -webkit-mask-image: url('../images/Interface-77.png');
     background-color: ${theme.headerButtonColor};

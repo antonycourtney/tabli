@@ -23,11 +23,9 @@ import { StateRef } from 'oneref';
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput);
 
 const revertButtonBaseStyle = css({
-    maskImage: mkUrl('images/chevron-double-mix-1-01.png'),
-    backgroundColor: '#7472ff',
     marginRight: '20px'
 });
-const revertButtonStyle = cx(styles.headerButton, revertButtonBaseStyle);
+const revertButtonStyle = cx(styles.headerHoverVisible, revertButtonBaseStyle);
 
 const editButtonBaseStyle = (theme: Theme) => css`
     -webkit-mask-image: url('../images/Edition-30.png');
@@ -137,10 +135,21 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
             value={managed}
         />
     );
-
+    /*
     const revertButton = (
         <HeaderButton
             className={revertButtonStyle}
+            visible={managed && tabWindow.open}
+            title="Revert to bookmarked tabs (Close other tabs)"
+            onClick={onRevert}
+        />
+    );
+*/
+    const revertButton = (
+        <HeaderButtonSVG
+            className={revertButtonStyle}
+            svgClassName={styles.checkStyle(theme)}
+            svgElem={svg.chevron}
             visible={managed && tabWindow.open}
             title="Revert to bookmarked tabs (Close other tabs)"
             onClick={onRevert}

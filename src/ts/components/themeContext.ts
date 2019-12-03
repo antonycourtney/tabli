@@ -15,6 +15,8 @@ export interface Theme {
     headerButtonColor: string;
     headerButtonHover: string;
     tabCloseHoverBackground: string;
+    revertColor: string;
+    revertHover: string;
 }
 
 export interface ThemeMap {
@@ -38,7 +40,9 @@ export const themes: ThemeMap = {
         closedGray: '#979ca0',
         headerButtonColor: '#888888',
         headerButtonHover: '#000000',
-        tabCloseHoverBackground: '#5f6368'
+        tabCloseHoverBackground: '#5f6368',
+        revertColor: '#7472ff',
+        revertHover: '#b4b3ff'
     },
     dark: {
         foreground: '#ffffff',
@@ -54,7 +58,9 @@ export const themes: ThemeMap = {
         closedGray: '#777777',
         headerButtonColor: '#888888',
         headerButtonHover: '#dddddd',
-        tabCloseHoverBackground: '#5f6368'
+        tabCloseHoverBackground: '#5f6368',
+        revertColor: '#7472ff',
+        revertHover: '#b4b3ff'
     }
 };
 export const ThemeContext = React.createContext(

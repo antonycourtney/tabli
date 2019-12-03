@@ -8,7 +8,7 @@ import * as React from 'react';
 
 import { cx, css } from 'emotion';
 import * as styles from './cssStyles';
-import { ThemeContext } from './themeContext';
+import { ThemeContext, Theme } from './themeContext';
 import get from 'lodash/get';
 import { useContext } from 'react';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
@@ -27,15 +27,6 @@ interface HeaderCheckboxProps {
     extraUncheckedStyle?: string;
     onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
-
-const checkStyle = css`
-     {
-        fill: #7472ff;
-        &:hover {
-            fill: #b4b3ff;
-        }
-    }
-`;
 
 const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
     title,
@@ -60,19 +51,8 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
                 title={title}
                 onClick={onClick}
                 visible={true}
-                svgClassName={checkStyle}
+                svgClassName={styles.checkStyle(theme)}
             />
-            /*
-            <button
-                className={cx(
-                    styles.headerButton,
-                    styles.windowManagedButton,
-                    openStateStyle
-                )}
-                title={title}
-                onClick={onClick}
-            />
-*/
         );
     } else {
         checkboxComponent = (
