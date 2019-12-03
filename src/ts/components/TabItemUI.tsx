@@ -20,6 +20,8 @@ import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
 import { StateRef } from 'oneref';
 import { areEqualShallow } from '../utils';
+import { HeaderButtonSVG } from './HeaderButtonSVG';
+import * as svg from './svg';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -180,10 +182,11 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     );
 
     const closeButton = (
-        <HeaderButton
-            className={tabItemCloseButtonStyle}
+        <HeaderButtonSVG
+            className={tabItemHoverVisible}
+            svgElem={svg.closeIcon}
             visible={tab.open}
-            title="Close Window"
+            title="Close Tab"
             onClick={handleClose}
         />
     );

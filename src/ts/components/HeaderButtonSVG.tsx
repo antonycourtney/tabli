@@ -12,7 +12,7 @@ import * as styles from './cssStyles';
 
 interface HeaderButtonSVGProps extends HeaderButtonProps {
     svgElem: JSX.Element;
-    headerHoverVisible?: boolean;
+    svgClassName?: string;
 }
 
 const svgContainerStyle = (theme: Theme) => css`
@@ -33,15 +33,8 @@ const baseStyle = (theme: Theme) => css`
     }
 `;
 
-const buttonStyle = (
-    theme: Theme,
-    headerVisible: boolean,
-    className: string | undefined
-) => {
-    const headerVisStyle = headerVisible ? styles.headerHoverVisible : null;
-    console.log('buttonStyle: ', headerVisible, headerVisStyle);
-    return cx(styles.headerButton, baseStyle(theme), headerVisStyle, className);
-};
+const buttonStyle = (theme: Theme, className: string | undefined) =>
+    cx(styles.headerButton, baseStyle(theme), className);
 
 export const HeaderButtonSVG: React.FunctionComponent<HeaderButtonSVGProps> = ({
     svgElem,
@@ -49,7 +42,7 @@ export const HeaderButtonSVG: React.FunctionComponent<HeaderButtonSVGProps> = ({
     title,
     visible,
     onClick,
-    headerHoverVisible
+    svgClassName
 }: HeaderButtonSVGProps) => {
     const theme = useContext(ThemeContext);
 
@@ -67,16 +60,15 @@ export const HeaderButtonSVG: React.FunctionComponent<HeaderButtonSVGProps> = ({
         return headerButtonSpacer;
     }
 
-    const headerVis: boolean =
-        headerHoverVisible === undefined ? true : headerHoverVisible;
-
     return (
         <button
-            className={buttonStyle(theme, headerVis, className)}
+            className={buttonStyle(theme, className)}
             title={title}
             onClick={handleClick}
         >
-            <div className={svgContainerStyle(theme)}>{svgElem}</div>
+            <div className={cx(svgContainerStyle(theme), svgClassName)}>
+                {svgElem}
+            </div>
         </button>
     );
 };

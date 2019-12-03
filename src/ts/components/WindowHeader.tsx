@@ -164,6 +164,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
 
     const closeButton = (
         <HeaderButtonSVG
+            className={styles.headerHoverVisible}
             svgElem={svg.closeIcon}
             visible={tabWindow.open}
             title="Close Window"

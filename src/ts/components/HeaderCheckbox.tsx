@@ -11,6 +11,8 @@ import * as styles from './cssStyles';
 import { ThemeContext } from './themeContext';
 import get from 'lodash/get';
 import { useContext } from 'react';
+import { HeaderButtonSVG } from './HeaderButtonSVG';
+import * as svg from './svg';
 
 const containerBaseStyle = css({
     display: 'flex',
@@ -25,6 +27,15 @@ interface HeaderCheckboxProps {
     extraUncheckedStyle?: string;
     onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
+
+const checkStyle = css`
+     {
+        fill: #7472ff;
+        &:hover {
+            fill: #b4b3ff;
+        }
+    }
+`;
 
 const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
     title,
@@ -44,6 +55,14 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
     if (checked) {
         const openStateStyle = isOpen ? null : styles.imageButtonClosed(theme);
         checkboxComponent = (
+            <HeaderButtonSVG
+                svgElem={svg.check}
+                title={title}
+                onClick={onClick}
+                visible={true}
+                svgClassName={checkStyle}
+            />
+            /*
             <button
                 className={cx(
                     styles.headerButton,
@@ -53,6 +72,7 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
                 title={title}
                 onClick={onClick}
             />
+*/
         );
     } else {
         checkboxComponent = (
