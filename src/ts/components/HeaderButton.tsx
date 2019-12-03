@@ -2,18 +2,18 @@ import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx } from 'emotion';
 
-const buttonSpacer = (
+export const headerButtonSpacer = (
     <button className={cx(styles.headerButton, styles.hidden)} />
 );
 
-interface HeaderButtonProps {
-    className: string;
+export interface HeaderButtonProps {
+    className?: string;
     title: string;
     visible: boolean;
     onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-const HeaderButton: React.FunctionComponent<HeaderButtonProps> = ({
+export const HeaderButton: React.FunctionComponent<HeaderButtonProps> = ({
     className,
     title,
     visible,
@@ -30,10 +30,8 @@ const HeaderButton: React.FunctionComponent<HeaderButtonProps> = ({
      * a simple spacer
      */
     if (!visible) {
-        return buttonSpacer;
+        return headerButtonSpacer;
     }
 
     return <button className={className} title={title} onClick={handleClick} />;
 };
-
-export default HeaderButton;

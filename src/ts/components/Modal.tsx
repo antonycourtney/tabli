@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as styles from './cssStyles';
 import { css, cx } from 'emotion';
 import { ThemeContext, Theme } from './themeContext';
-import HeaderButton from './HeaderButton';
+import { HeaderButton } from './HeaderButton';
 import { useContext } from 'react';
 
 /*

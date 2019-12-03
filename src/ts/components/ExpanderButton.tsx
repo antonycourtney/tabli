@@ -5,9 +5,7 @@ import { ThemeContext, Theme } from './themeContext';
 import * as styles from './cssStyles';
 import * as svg from './svg';
 import { useContext } from 'react';
-
-const expandIcon = mkUrl('images/triangle-small-4-01.png');
-const collapseIcon = mkUrl('images/triangle-small-1-01.png');
+import { HEADER_BUTTON_SIZE } from './constants';
 
 const baseStyle = (theme: Theme) => css`
     padding: 0;
@@ -20,10 +18,9 @@ const baseStyle = (theme: Theme) => css`
 const expanderButtonStyle = (theme: Theme) =>
     cx(styles.headerButton, baseStyle(theme));
 
-const headerButtonSize = 16;
 const expanderSVGContainerStyle = (theme: Theme) => css`
-    width: ${headerButtonSize + 'px'};
-    height: ${headerButtonSize + 'px'};
+    width: ${HEADER_BUTTON_SIZE + 'px'};
+    height: ${HEADER_BUTTON_SIZE + 'px'};
     overflow: hidden;
     fill: ${theme.headerButtonColor};
     &:hover {

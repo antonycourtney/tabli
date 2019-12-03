@@ -8,8 +8,10 @@ import { ThemeContext, Theme } from './themeContext';
 
 import { cx, css } from 'emotion';
 import * as styles from './cssStyles';
+import * as svg from './svg';
 
-import HeaderButton from './HeaderButton';
+import { HeaderButton } from './HeaderButton';
+import { HeaderButtonSVG } from './HeaderButtonSVG';
 import ExpanderButton from './ExpanderButton';
 import HeaderCheckbox from './HeaderCheckbox';
 import TabManagerState from '../tabManagerState';
@@ -161,8 +163,8 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     );
 
     const closeButton = (
-        <HeaderButton
-            className={styles.headerCloseButton(theme)}
+        <HeaderButtonSVG
+            svgElem={svg.closeIcon}
             visible={tabWindow.open}
             title="Close Window"
             onClick={onClose}

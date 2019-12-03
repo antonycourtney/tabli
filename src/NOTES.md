@@ -537,4 +537,18 @@ Other notes on attempt to introduce react-spring:
    but seemed to still see this even when that optimization was disabled.
  - Looking at how Accordions were implemented in chakra UI was illuminating; provides a [collapse](https://chakra-ui.com/collapse) component, built on top of [react-animate-height](https://github.com/Stanko/react-animate-height)
 
- 
+Looking at perf again:
+
+Interesting experiment:
+- Slow things down by disabling the non-expanded tab item culling optimization as mentioned above.
+- Replace FavIcon with emptyFavIcon to avoid drowning in FavIcon loads in Perf tab
+- We seem to spend about 1 sec loading PNGs for button icons.
+Specifically:
+ Interface-77.png
+ Files-26.png
+ Status-9.png
+ Edition-30.png
+ chevron-double-mix-1-01.png
+
+This seems to happen concurrently with other stuff, but still seems not great.
+Can we just replace with SVGs?

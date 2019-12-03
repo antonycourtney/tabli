@@ -6,7 +6,7 @@ import * as styles from './cssStyles';
 import { cx, css } from 'emotion';
 import * as actions from '../actions';
 import { DragItemTypes } from './constants';
-import HeaderButton from './HeaderButton';
+import { HeaderButton } from './HeaderButton';
 import HeaderCheckbox from './HeaderCheckbox';
 import { ThemeContext } from './themeContext';
 import * as tabItemUtil from './tabItemUtil';

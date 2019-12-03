@@ -228,6 +228,9 @@ export const closeButtonBaseStyle = (theme: Theme) => css`
     &:hover {
         -webkit-mask-image: url('../images/Interface-74.png');
         background-color: ${theme.headerButtonHover};
+        border-radius: 50%;
+        box-shadow: 0 0 0 5px ${theme.tabCloseHoverBackground} inset,
+            0 0 0 2px ${theme.tabCloseHoverBackground};
     }
 `;
 export const headerCloseButton = (theme: Theme) =>

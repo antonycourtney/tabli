@@ -76,5 +76,6 @@ export const mkFavIcon = (tab: TabItem) => {
         ) : (
             emptyFavIcon
         );
-    return tabFavIcon;
+    // return tabFavIcon;
+    return emptyFavIcon;
 };
