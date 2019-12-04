@@ -24,6 +24,7 @@ import FilteredTabWindowUI, {
     FilteredTabWindowUIProps
 } from '../src/ts/components/FilteredTabWindowUI';
 import { TabWindow } from '../src/ts/tabWindow';
+import { matchTabWindow } from '../src/ts/searchOps';
 
 const theme = themes.light;
 
@@ -45,9 +46,12 @@ const emptyWinStore = new TabManagerState();
 const mockWinStore = emptyWinStore
     .syncWindowList(testChromeWindows as any)
     .registerTabWindow(testOpenSavedWindow)
-    .set('showRelNotes', false);
+    .set('showRelNotes', false)
+    .setCurrentWindowId(TEST_OPEN_WINDOW_ID);
 
 console.log('mockWinStore: ', mockWinStore.toJS());
+
+console.log('mockWinStore: getOpen(): ', mockWinStore.getOpen().toJS());
 
 const stateRef = mkRef(mockWinStore);
 

@@ -143,3 +143,14 @@ export const chevron = (
         </g>
     </svg>
 );
+
+export const page = (
+    <svg
+        height="24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="10 15 70 75"
+    >
+        <path d="M56.41,32H35V68H65V40.59ZM37,66V34H55v8h8V66Z"></path>
+    </svg>
+);

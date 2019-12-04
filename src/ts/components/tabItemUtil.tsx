@@ -1,8 +1,11 @@
 import * as React from 'react';
 import * as styles from './cssStyles';
-import { cx } from 'emotion';
+import { cx, css } from 'emotion';
 import { TabItem } from '../tabWindow';
 import * as utils from '../utils';
+import { HEADER_BUTTON_SIZE } from './constants';
+import { Theme } from './themeContext';
+import * as svg from './svg';
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon);
 const favIconOpenStyle = styles.favIcon;
@@ -32,6 +35,14 @@ const httpFavIconUrl = (url: string | null): string => {
     }
     return fiSrc;
 };
+
+const svgContainerStyle = css`
+    width: 24px;
+    height: 24px;
+    overflow: hidden;
+    fill: #888888;
+`;
+const emptyFavIcon = <div className={svgContainerStyle}>{svg.page}</div>;
 
 export const mkFavIcon = (tab: TabItem) => {
     const favIconStyle = tab.open ? favIconOpenStyle : favIconClosedStyle;
@@ -69,7 +80,8 @@ export const mkFavIcon = (tab: TabItem) => {
         fiSrc = '';
     }
 
-    const emptyFavIcon = <div className={emptyFavIconStyle} />;
+    // const emptyFavIcon = <div className={emptyFavIconStyle} />;
+
     const tabFavIcon =
         fiSrc.length > 0 ? (
             <img className={favIconStyle} src={fiSrc} />

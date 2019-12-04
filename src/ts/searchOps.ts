@@ -103,7 +103,7 @@ export class FilteredTabWindow extends Immutable.Record(
 export function matchTabWindow(
     tabWindow: TW.TabWindow,
     searchExp: SearchSpec,
-    options: SearchOpts
+    options: SearchOpts = defaultSearchOpts
 ): FilteredTabWindow | null {
     if (searchExp === null) {
         return null;
