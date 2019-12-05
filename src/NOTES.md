@@ -554,6 +554,41 @@ Interesting experiment:
 This seems to happen concurrently with other stuff, but still seems not great.
 Can we just replace with SVGs?
 
+OK, done -- all images above now replaced with SVGs.
+
 TODO:
 
 -   Try to refactor ExpanderButton to use HeaderButtonSVG
+
+With all image buttons replaced with SVGs, and with current hack showing the perf issue with
+the popup, let's once again try to debug the perf issue with initial render when opening
+the popup.
+
+Currently we are reliably seeing it take 2.3 seconds for a full render (wall clock, reported on console).
+
+And that is with NO FavIcons.
+
+Questions:
+
+-   What's the baseline, i.e. doing NO rendering?
+-   Does non-popup renderTest.html take similar time?
+-   What if we make popup or renderTest use the same mock store?
+
+renderTest time: 1.1 seconds
+
+A reload on renderTest takes more like 600 ms. Still seems like a lot!
+
+Time to render simple span on renderTest page: 5 to 50 ms.
+
+Similar result on popup: 5 to 50 ms.
+
+Let's try some branch and bound and try to figure out where the time is going....
+
+If we eliminate the TabList (so just header and footer), rendering takes around 172ms for the popup.
+Around 100ms for renderTest.
+
+At some point because of issues with FavIcon caching, I deferred rendering to the onLoad handler.
+What if we did it sooner?
+( That really made no difference in render time for renderTest; sticking with onLoad...)
+
+What if we try concurrent mode?

@@ -6,24 +6,11 @@ import * as utils from '../utils';
 import { HEADER_BUTTON_SIZE } from './constants';
 import { Theme } from './themeContext';
 import * as svg from './svg';
+import { inExtension } from '../utils';
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon);
 const favIconOpenStyle = styles.favIcon;
 const favIconClosedStyle = cx(styles.favIcon, styles.favIconClosed);
-
-let cachedIsExtension: boolean | undefined = undefined;
-
-const inExtension = (): boolean => {
-    if (cachedIsExtension === undefined) {
-        const app = (chrome as any).app;
-        if (app === undefined) {
-            return false; // should only happen when testing under jest
-        }
-        const details = app.getDetails();
-        cachedIsExtension = details !== null;
-    }
-    return cachedIsExtension;
-};
 
 const httpFavIconUrl = (url: string | null): string => {
     let fiSrc = '';

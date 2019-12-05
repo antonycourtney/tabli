@@ -28,13 +28,8 @@ const revertButtonBaseStyle = css({
 const revertButtonStyle = cx(styles.headerHoverVisible, revertButtonBaseStyle);
 
 const editButtonBaseStyle = (theme: Theme) => css`
-    -webkit-mask-image: url('../images/Edition-30.png');
-    background-color: ${theme.headerButtonColor};
     margin-left: 4px;
     margin-right: 12px;
-    &:hover {
-        background-color: ${theme.headerButtonHover};
-    }
 `;
 
 interface WindowHeaderProps {
@@ -135,16 +130,6 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
             value={managed}
         />
     );
-    /*
-    const revertButton = (
-        <HeaderButton
-            className={revertButtonStyle}
-            visible={managed && tabWindow.open}
-            title="Revert to bookmarked tabs (Close other tabs)"
-            onClick={onRevert}
-        />
-    );
-*/
     const revertButton = (
         <HeaderButtonSVG
             className={revertButtonStyle}
@@ -157,14 +142,13 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     );
 
     const editButtonStyle = cx(
-        styles.headerButton,
         styles.headerHoverVisible,
         editButtonBaseStyle(theme)
     );
-
     const editButton = (
-        <HeaderButton
+        <HeaderButtonSVG
             className={editButtonStyle}
+            svgElem={svg.edit}
             visible={managed && !editingTitle}
             title="Edit saved window title"
             onClick={handleTitleRename}
@@ -206,9 +190,15 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         titleComponent = <span>{windowTitle}</span>;
     }
 
-    const titleStyle = tabWindow.open
+    const titleTextStyle = tabWindow.open
         ? styles.titleOpen
         : styles.titleClosed(theme);
+
+    const titleContainerStyle = css({
+        display: 'flex'
+    });
+
+    const titleStyle = cx(titleTextStyle, titleContainerStyle);
     const titleSpan = (
         <div className={titleStyle}>
             {titleComponent}

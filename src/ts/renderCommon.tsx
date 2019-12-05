@@ -48,7 +48,9 @@ export async function renderPopup(
             Popup
         );
         log.debug('refContainer listener id: ', listenerId);
-        sendHelperMessage({ listenerId });
+        if (utils.inExtension()) {
+            sendHelperMessage({ listenerId });
+        }
         ReactDOM.render(
             <App isPopout={isPopout} noListener={renderTest} />,
             parentNode,
@@ -59,7 +61,6 @@ export async function renderPopup(
                 }
             }
         );
-
         var tPostRender = performance.now();
         log.info(
             'full render complete. render time: (',

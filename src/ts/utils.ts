@@ -238,3 +238,17 @@ export function setLogLevel(log: any) {
         log.setLevel('info');
     }
 }
+
+let cachedIsExtension: boolean | undefined = undefined;
+
+export const inExtension = (): boolean => {
+    if (cachedIsExtension === undefined) {
+        const app = (chrome as any).app;
+        if (app === undefined) {
+            return false; // should only happen when testing under jest
+        }
+        const details = app.getDetails();
+        cachedIsExtension = details !== null;
+    }
+    return cachedIsExtension;
+};
