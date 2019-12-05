@@ -18,5 +18,5 @@
         "rootDirs": ["src/ts", "stories"]
     },
     "include": ["src/ts"],
-    "types": ["chrome"]
+    "types": ["chrome", "react=dom/experimental"]
 }

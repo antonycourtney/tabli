@@ -66,15 +66,14 @@ export const mkFavIcon = (tab: TabItem) => {
     if (fiSrc.indexOf('chrome://theme/') === 0) {
         fiSrc = '';
     }
-
-    // const emptyFavIcon = <div className={emptyFavIconStyle} />;
-
+    /*
     const tabFavIcon =
         fiSrc.length > 0 ? (
             <img className={favIconStyle} src={fiSrc} />
         ) : (
             emptyFavIcon
         );
-    // return tabFavIcon;
+*/
     return emptyFavIcon;
+    // return tabFavIcon;
 };

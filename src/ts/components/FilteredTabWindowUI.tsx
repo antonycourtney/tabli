@@ -169,15 +169,12 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
      */
     const expanded = getExpandedState();
     let tabItems: JSX.Element | null = null;
-    /*
     if (expanded) {
         tabItems = renderTabItems(tabWindow, tabs);
     } else {
         // render empty list of tab items to get -ve margin rollup layout right...
         tabItems = renderTabItems(tabWindow, Immutable.List<TabItem>());
     }
-    */
-    tabItems = renderTabItems(tabWindow, tabs);
 
     const windowHeader = (
         <WindowHeader

@@ -173,7 +173,7 @@ export const tabWindow = (theme: Theme) =>
     css({
         border: '2px solid ' + theme.windowBorder,
         borderRadius: 5,
-        marginBottom: 10,
+        marginBottom: 8,
         minWidth: Constants.WINDOW_MIN_WIDTH,
         maxWidth: Constants.WINDOW_MAX_WIDTH,
         display: 'flex',
