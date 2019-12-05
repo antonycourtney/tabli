@@ -42,7 +42,7 @@ export const themes: ThemeMap = {
         headerButtonHover: '#000000',
         tabCloseHoverBackground: '#5f6368',
         revertColor: '#7472ff',
-        revertHover: '#b4b3ff'
+        revertHover: '#1d1aff'
     },
     dark: {
         foreground: '#ffffff',
