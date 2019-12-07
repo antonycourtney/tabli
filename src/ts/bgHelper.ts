@@ -21,10 +21,13 @@ import {
     update,
     removeStateChangeListener,
     mkRef,
-    awaitableUpdate
+    awaitableUpdate,
+    refContainer
 } from 'oneref';
 import ChromePromise from 'chrome-promise/chrome-promise';
 import { injectGlobal } from 'emotion';
+import { ssrRender } from './ssr';
+
 const _ = {
     has,
     fromPairs
@@ -166,6 +169,7 @@ function setupConnectionListener(stateRef: StateRef<TabManagerState>) {
         port.onMessage.addListener((msg: any) => {
             chromeEventLog.debug('Chrome Event: onMessage ', msg);
             var listenerId = msg.listenerId;
+            port.postMessage({ renderedPage });
             port.onDisconnect.addListener(() => {
                 chromeEventLog.debug('Chrome Event: onDisconnect');
                 removeStateChangeListener(stateRef, listenerId);
@@ -905,6 +909,8 @@ async function loadSnapState(bmStore: TabManagerState) {
     return nextStore;
 }
 
+let renderedPage: string | null = null;
+
 async function main() {
     try {
         utils.setLogLevel(log);
@@ -946,6 +952,8 @@ async function main() {
                 actions.showPopout(stateRef);
             }
         });
+        renderedPage = ssrRender(stateRef);
+
         savedState.init(stateRef);
     } catch (e) {
         log.error('*** caught top level exception: ', e);

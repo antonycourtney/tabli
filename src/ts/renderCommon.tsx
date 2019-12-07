@@ -23,6 +23,11 @@ function sendHelperMessage(msg: any) {
     port.postMessage(msg);
     port.onMessage.addListener((response: any) => {
         log.debug('Got response message: ', response);
+
+        let parentNode = document.getElementById('windowList-region');
+        if (parentNode && response.renderedPage) {
+            parentNode.innerHTML = response.renderedPage;
+        }
     });
 }
 
@@ -64,16 +69,18 @@ export async function renderPopup(
             }
         );
         */
-
-        ReactDOM.createRoot(parentNode!).render(
-            <App isPopout={isPopout} noListener={renderTest} />,
-            () => {
-                const searchBoxElem = document.getElementById('searchBox');
-                if (searchBoxElem) {
-                    searchBoxElem.focus();
+        if (isPopout) {
+            // skip for popup for now, while we try SSR...
+            ReactDOM.createRoot(parentNode!).render(
+                <App isPopout={isPopout} noListener={renderTest} />,
+                () => {
+                    const searchBoxElem = document.getElementById('searchBox');
+                    if (searchBoxElem) {
+                        searchBoxElem.focus();
+                    }
                 }
-            }
-        );
+            );
+        }
         // For testing:
         // ReactDOM.createRoot(parentNode!).render(<span>Hello, wordl!</span>);
         var tPostRender = performance.now();
