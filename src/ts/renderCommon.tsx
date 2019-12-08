@@ -52,7 +52,7 @@ export async function renderPopup(
         if (utils.inExtension()) {
             sendHelperMessage({ listenerId });
         }
-        /* non-concurrent (blocking) mode: 
+        /* non-concurrent (blocking) mode: */
         ReactDOM.render(
             <App isPopout={isPopout} noListener={renderTest} />,
             parentNode,
@@ -63,7 +63,8 @@ export async function renderPopup(
                 }
             }
         );
-        */
+        /*
+         * experimenting with concurrent mode:
 
         ReactDOM.createRoot(parentNode!).render(
             <App isPopout={isPopout} noListener={renderTest} />,
@@ -76,6 +77,8 @@ export async function renderPopup(
         );
         // For testing:
         // ReactDOM.createRoot(parentNode!).render(<span>Hello, wordl!</span>);
+        */
+
         var tPostRender = performance.now();
         log.info(
             'full render complete. render time: (',
