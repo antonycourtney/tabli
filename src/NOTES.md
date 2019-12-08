@@ -624,7 +624,6 @@ Hmmm. Replacing button with div did relatively little for Lighthouse scores on r
 
 OK, time to cut and ship.
 TODO:
-  - get rid of bootstrap!
   - change cursor on header buttons
   - better screenshots for Chrome Web Store
   - ? dnd on closed windows?

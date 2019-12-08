@@ -20,25 +20,6 @@ body {
     height: 100%;
     width: 100%;
 }
-h1,
-h2,
-h3 {
-    font-family: sans-serif;
-}
-h1 {
-    font-size: 16px;
-}
-h2 {
-    font-size: 16px;
-    margin-top: 12px;
-    margin-bottom: 2px;
-    /* text-decoration: underline; */
-}
-h3 {
-    font-size: 13px;
-    margin-top: 8px;
-    margin-bottom: 2px;
-}
 hr {
     margin-top: 0in;
     padding: 0px;
@@ -80,56 +61,6 @@ fieldset {
 .main-container {
     height: 100%;
     width: 100%;
-}
-
-/* from styles.headerButton */
-.headerButton {
-    outline: none;
-    border: none;
-    backgroundrepeat: no-repeat;
-    width: 16px;
-    height: 16px;
-    marginleft: 1px;
-    marginright: 1px;
-    flex: none;
-}
-.toolbar-btn-square {
-    width: 24px;
-    height: 24px;
-    padding: 4px;
-}
-
-.toolbar-btn {
-    height: 20px;
-    padding: 2px;
-}
-
-.btn-group-xs > .btn,
-.btn-xs {
-    padding: 1px 5px;
-    font-size: 12px;
-    line-height: 1.5;
-    border-radius: 3px;
-    border: 1px solid #ccc;
-}
-
-.tabli-logo-icon {
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
-    background-image: url('../images/logoImage.png');
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center center;
-}
-
-.popout-icon {
-    width: 16px;
-    height: 16px;
-    background-image: url('../images/popout.png');
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center center;
 }
 
 /*
@@ -180,19 +111,6 @@ a.card-link {
 }
 .no-top-border {
     border-bottom: 4px;
-}
-.header-container {
-    display: flex;
-    align-items: center;
-    margin-top: 12px;
-    margin-bottom: 12px;
-    min-width: 340px;
-    justify: center;
-}
-.header-toolbar {
-    display: flex;
-    justify-content: space-around;
-    width: 340px;
 }
 .search-input {
     border: 1px solid #ccc;
