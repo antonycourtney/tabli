@@ -33,6 +33,7 @@ export interface OpenTabStateProps {
     favIconUrl: string;
     title: string;
     audible: boolean;
+    muted: boolean;
     pinned: boolean;
     isSuspended: boolean;
 }
@@ -45,6 +46,7 @@ const defaultOpenTabStateProps: OpenTabStateProps = {
     favIconUrl: '',
     title: '',
     audible: false,
+    muted: false,
     pinned: false,
     isSuspended: false
 };

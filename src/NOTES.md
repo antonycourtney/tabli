@@ -624,7 +624,11 @@ Hmmm. Replacing button with div did relatively little for Lighthouse scores on r
 
 OK, time to cut and ship.
 TODO:
-  - change cursor on header buttons
-  - better screenshots for Chrome Web Store
-  - ? dnd on closed windows?
-  - 
+X change cursor on header buttons
+
+-   better screenshots for Chrome Web Store
+-   ? dnd on closed windows?
+-   dnd bug with active tab indicator not updating! Happens when moving currently active tab in window.
+-   need to move audibleIcon to SVG!
+
+? Try pruning unused TS exports (particularly in, say, cssStyles) using something like ts-prune.

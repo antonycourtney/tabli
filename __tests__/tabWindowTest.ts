@@ -69,7 +69,8 @@ test('chromeTabWindow', () => {
                     title: 'Component API | React',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             },
             {
@@ -85,7 +86,8 @@ test('chromeTabWindow', () => {
                     title: 'Tutorial | React',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             },
             {
@@ -104,7 +106,8 @@ test('chromeTabWindow', () => {
                         'javascript - Is there any proper way to integrate d3.js graphics into Facebook React application? - Stack Overflow',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             },
             {
@@ -122,7 +125,8 @@ test('chromeTabWindow', () => {
                         'Flux | Application Architecture for Building User Interfaces',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             },
             {
@@ -138,7 +142,8 @@ test('chromeTabWindow', () => {
                     title: 'Fluxxor - Home',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             },
             {
@@ -155,7 +160,8 @@ test('chromeTabWindow', () => {
                     title: 'FixedDataTable',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             },
             {
@@ -173,7 +179,8 @@ test('chromeTabWindow', () => {
                     title: 'Declare Permissions - Google Chrome',
                     audible: false,
                     pinned: false,
-                    isSuspended: false
+                    isSuspended: false,
+                    muted: false
                 }
             }
         ],

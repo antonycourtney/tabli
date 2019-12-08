@@ -86,6 +86,18 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         }
     };
 
+    const handleMuteToggle = () => {
+        if (!tabWindow.open) {
+            return;
+        }
+        if (!tab.open) {
+            return;
+        }
+        const openState = tab.openState!;
+        const mute = !openState.muted;
+        actions.tabSetMute(tabWindow, openState.openTabId, mute, stateRef);
+    };
+
     const handleClose = () => {
         if (!tabWindow.open) {
             return;
@@ -170,10 +182,23 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         tab.open && tab.openState!.isSuspended ? (
             <div className={styles.headerButton}>💤</div>
         ) : null;
-    const audibleIcon =
-        tab.open && tab.openState!.audible ? (
-            <div className={audibleIconStyle} />
-        ) : null;
+
+    let audibleIcon: JSX.Element | null = null;
+    if (tab.open) {
+        const openState = tab.openState!;
+        if (openState.audible || openState.muted) {
+            const svgElem = openState.muted ? svg.silent : svg.sound;
+            const title = openState.muted ? 'Unmute Tab' : 'Mute Tab';
+            audibleIcon = (
+                <HeaderButtonSVG
+                    svgElem={svgElem}
+                    visible={true}
+                    title={title}
+                    onClick={handleMuteToggle}
+                />
+            );
+        }
+    }
 
     const tabItemCloseButtonStyle = cx(
         styles.headerButton,

@@ -715,7 +715,7 @@ export const d3AttachedExpectedTabWindow =
         "title": "API Reference · mbostock/d3 Wiki",
         "audible": false,
         "pinned": false,
-        "isSuspended": false
+        "isSuspended": false, "muted": false
       }
     },
     {
@@ -731,7 +731,7 @@ export const d3AttachedExpectedTabWindow =
         "title": "D3.js - Data-Driven Documents",
         "audible": false,
         "pinned": false,
-        "isSuspended": false
+        "isSuspended": false, "muted": false
       }
     },
     {
@@ -752,7 +752,7 @@ export const d3AttachedExpectedTabWindow =
         "title": "Gallery · mbostock/d3 Wiki",
         "audible": false,
         "pinned": false,
-        "isSuspended": false
+        "isSuspended": false, "muted": false
       }
     },
     {
@@ -773,7 +773,7 @@ export const d3AttachedExpectedTabWindow =
         "title": "Tutorials · mbostock/d3 Wiki",
         "audible": false,
         "pinned": false,
-        "isSuspended": false
+        "isSuspended": false, "muted": false
       }
     },
     {
@@ -794,7 +794,7 @@ export const d3AttachedExpectedTabWindow =
         "title": "Drag + Zoom - bl.ocks.org",
         "audible": false,
         "pinned": false,
-        "isSuspended": false
+        "isSuspended": false, "muted": false
       }
     },
     {
@@ -815,7 +815,7 @@ export const d3AttachedExpectedTabWindow =
         "title": "Focus+Context via Brushing - bl.ocks.org",
         "audible": false,
         "pinned": false,
-        "isSuspended": false
+        "isSuspended": false, "muted": false
       }
     },
     {

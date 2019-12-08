@@ -217,6 +217,15 @@ export function openWindow(targetTabWindow: TabWindow, storeRef: TMSRef) {
     }
 }
 
+export function tabSetMute(
+    tabWindow: TabWindow,
+    tabId: TabId,
+    muted: boolean,
+    storeRef: TMSRef
+) {
+    chromep.tabs.update(tabId, { muted });
+}
+
 export const closeTab = async (
     origTabWindow: TabWindow,
     tabId: TabId,

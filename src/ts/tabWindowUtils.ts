@@ -16,7 +16,6 @@ import intersection from 'lodash/intersection';
 import reduce from 'lodash/reduce';
 const _ = { get, has, keys, intersection, reduce };
 
-
 function tabItemReviver(k: string | number, v: any) {
     if (k === 'savedState') {
         return new SavedTabState(v);
@@ -138,6 +137,8 @@ function makeOpenTabState(tab: chrome.tabs.Tab) {
 
     const [url, isSuspended] = suspender.getURI(rawURL);
 
+    const muted = _.get(tab, 'mutedInfo.muted', false);
+
     const ts = new OpenTabState({
         url,
         audible: tab.audible,
@@ -147,7 +148,8 @@ function makeOpenTabState(tab: chrome.tabs.Tab) {
         active: tab.active,
         openTabIndex: tab.index,
         pinned: tab.pinned,
-        isSuspended
+        isSuspended,
+        muted
     });
     return ts;
 }
@@ -650,7 +652,12 @@ export function updateTabItem(
         const [url, isSuspended] = suspender.getURI(rawURL);
         urlInfo = { url, isSuspended };
     }
-    Object.assign(changeInfo, chromeChangeInfo, urlInfo);
+
+    let mutedInfo = {};
+    if (_.has(chromeChangeInfo, 'mutedInfo.muted')) {
+        mutedInfo = { muted: chromeChangeInfo.mutedInfo!.muted };
+    }
+    Object.assign(changeInfo, chromeChangeInfo, urlInfo, mutedInfo);
 
     const updKeys = _.intersection(
         _.keys(prevOpenState.toJS()),
