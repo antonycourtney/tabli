@@ -592,3 +592,30 @@ What if we did it sooner?
 ( That really made no difference in render time for renderTest; sticking with onLoad...)
 
 What if we try concurrent mode?
+
+Concurrent mode definitely allowed the initial render call to return more quickly, but isn't
+any faster at actual rendering the popup.
+
+Tried SSR, but it really doesn't work well in browser; emotion didn't work, and lots of
+warnings from react-beautiful-dnd re: useLayoutEffect. There's an 'isomorphic' variant of
+this for server-side use in the implementation, but it uses (window === undefined) to detect
+server-side, and that's just not true in browser. And emotion didn't give use styling info...
+
+Stumbled upon https://benfrain.com/we-need-a-better-button-its-too-slow-and-wont-behave/ which
+may explain some of what I am seeing. May be worth trying to use div's instead of buttons
+since I style it all myself anyway...
+
+Let's establish a baseline, using:
+
+-   a prod build
+-   renderTest served via localhost (Python SimpleHTTPServer),
+-   Lighthouse
+-   Incognito window
+    and renderTest.html:
+
+According to Lighthouse:
+First Contentful Paint (FCP): 1.2s
+First Meaningful Paint (FMP): 1.2s
+
+Hmmm. Replacing button with div did relatively little for Lighthouse scores on renderTest (1.2s down to
+1s) but the popup _seems_ significantly faster to open, so I'm leaving it...

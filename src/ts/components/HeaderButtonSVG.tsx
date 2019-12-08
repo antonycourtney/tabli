@@ -61,7 +61,8 @@ export const HeaderButtonSVG: React.FunctionComponent<HeaderButtonSVGProps> = ({
     }
 
     return (
-        <button
+        <div
+            role="button"
             className={buttonStyle(theme, className)}
             title={title}
             onClick={handleClick}
@@ -69,6 +70,6 @@ export const HeaderButtonSVG: React.FunctionComponent<HeaderButtonSVGProps> = ({
             <div className={cx(svgContainerStyle(theme), svgClassName)}>
                 {svgElem}
             </div>
-        </button>
+        </div>
     );
 };

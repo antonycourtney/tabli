@@ -55,9 +55,13 @@ const ExpanderButton: React.FunctionComponent<ExpanderButtonProps> = ({
         overflow: 'hidden'
     });
     return (
-        <button className={expanderButtonStyle(theme)} onClick={handleClicked}>
+        <div
+            role="button"
+            className={expanderButtonStyle(theme)}
+            onClick={handleClicked}
+        >
             <div className={expanderSVGContainerStyle(theme)}>{iconSVG}</div>
-        </button>
+        </div>
     );
 };
 
