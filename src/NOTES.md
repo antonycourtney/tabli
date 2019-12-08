@@ -619,3 +619,13 @@ First Meaningful Paint (FMP): 1.2s
 
 Hmmm. Replacing button with div did relatively little for Lighthouse scores on renderTest (1.2s down to
 1s) but the popup _seems_ significantly faster to open, so I'm leaving it...
+
+7Dec19
+
+OK, time to cut and ship.
+TODO:
+  - get rid of bootstrap!
+  - change cursor on header buttons
+  - better screenshots for Chrome Web Store
+  - ? dnd on closed windows?
+  - 

@@ -26,6 +26,7 @@ const svgContainerStyle = (theme: Theme) => css`
 `;
 
 const baseStyle = (theme: Theme) => css`
+    cursor: default;
     padding: 0;
     display: flex;
     &:focus {

@@ -26,7 +26,8 @@ export const tabTitle = css({
     '&:hover': {
         color: 'inherit',
         textDecoration: 'none'
-    }
+    },
+    cursor: 'default'
 });
 export const simpleTabTitle = css({
     width: Constants.SIMPLE_TAB_TITLE_WIDTH
