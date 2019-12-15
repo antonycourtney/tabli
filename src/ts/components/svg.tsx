@@ -71,9 +71,9 @@ export const menu = (
 export const expandMore = (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="2 4 20 20"
+        width="100%"
+        height="100%"
+        viewBox="2 2 20 20"
     >
         <path opacity=".87" fill="none" d="M24 24H0V0h24v24z" />
         <path d="M15.88 9.29L12 13.17 8.12 9.29c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.39-.39.39-1.02 0-1.41-.39-.38-1.03-.39-1.42 0z" />
@@ -87,9 +87,9 @@ const debugHelper = css({
 export const expandLess = (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="2 4 20 20"
+        width="100%"
+        height="100%"
+        viewBox="2 2 20 20"
     >
         <path fill="none" d="M0 0h24v24H0V0z" />
         <path d="M11.29 8.71L6.7 13.3c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 10.83l3.88 3.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L12.7 8.71c-.38-.39-1.02-.39-1.41 0z" />
@@ -99,9 +99,9 @@ export const expandLess = (
 export const closeIcon = (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 4 24 24"
+        width="100%"
+        height="100%"
+        viewBox="0 0 24 24"
     >
         <path fill="none" d="M0 0h24v24H0V0z" />
         <path d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
@@ -111,9 +111,9 @@ export const closeIcon = (
 export const check = (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="2 4 24 28"
+        width="100%"
+        height="100%"
+        viewBox="0 0 25 25"
     >
         <path fill="none" d="M0 0h24v24H0V0z" />
         <path d="M9 16.17L5.53 12.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l4.18 4.18c.39.39 1.02.39 1.41 0L20.29 7.71c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0L9 16.17z" />
@@ -122,13 +122,11 @@ export const check = (
 
 export const chevron = (
     <svg
-        height="16px"
-        width="16px"
+        height="100%"
+        width="100%"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
-        x="0px"
-        y="0px"
-        viewBox="0 10 100 100"
+        viewBox="-15 0 135 100"
     >
         <g>
             <path d="M5273.1,2400.1v-2c0-2.8-5-4-9.7-4s-9.7,1.3-9.7,4v2c0,1.8,0.7,3.6,2,4.9l5,4.9c0.3,0.3,0.4,0.6,0.4,1v6.4     c0,0.4,0.2,0.7,0.6,0.8l2.9,0.9c0.5,0.1,1-0.2,1-0.8v-7.2c0-0.4,0.2-0.7,0.4-1l5.1-5C5272.4,2403.7,5273.1,2401.9,5273.1,2400.1z      M5263.4,2400c-4.8,0-7.4-1.3-7.5-1.8v0c0.1-0.5,2.7-1.8,7.5-1.8c4.8,0,7.3,1.3,7.5,1.8C5270.7,2398.7,5268.2,2400,5263.4,2400z"></path>
@@ -158,9 +156,9 @@ export const page = (
 export const edit = (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="1 2 25 26"
+        width="100%"
+        height="100%"
+        viewBox="-1 -1 26 26"
     >
         <path fill="none" d="M0 0h24v24H0V0z" />
         <path d="M3 17.46v3.04c0 .28.22.5.5.5h3.04c.13 0 .26-.05.35-.15L17.81 9.94l-3.75-3.75L3.15 17.1c-.1.1-.15.22-.15.36zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
@@ -171,11 +169,11 @@ export const edit = (
 // style="enable-background:new 0 0 100 100;"
 export const sound = (
     <svg
-        width="14"
-        height="14"
+        width="100%"
+        height="100%"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
-        viewBox="0 20 100 100"
+        viewBox="-15 10 125 80"
     >
         <g>
             <g>
@@ -195,11 +193,11 @@ export const sound = (
 
 export const silent = (
     <svg
-        height="16"
-        width="16"
+        height="100%"
+        width="100%"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
-        viewBox="-30 60 381.5 341"
+        viewBox="-50 -30 390 400"
     >
         <path d="M218.484,56.45c0-12.877-6.119-15.758-12-12l-85.22,52.397l97.22,97.216V56.45z"></path>
         <path d="M41.583,98.451c-6.627,0-12,5.372-12,12v114.666c0,6.628,5.373,12,12,12h77.076l87.825,54.001c5.518,3.394,12,0.755,12-12  v-14.344L52.158,98.451H41.583z"></path>

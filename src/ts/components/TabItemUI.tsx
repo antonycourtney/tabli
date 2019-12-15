@@ -243,6 +243,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                 dragSnapshot: DraggableStateSnapshot
             ) => {
                 // console.log({ dragProvided, dragSnapshot });
+                // for debugging: const blueBorder = css({ border: '1px solid #0000ff' });
                 return (
                     <div
                         ref={dragProvided.innerRef}

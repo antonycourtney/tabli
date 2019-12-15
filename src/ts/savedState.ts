@@ -58,6 +58,7 @@ const saveState = () => {
     const savedState = { savedWindowStateVersion, savedWindowState };
     chrome.storage.local.set(savedState, () => {
         log.debug(new Date().toString() + ' succesfully wrote window state');
+        log.debug('window state: ', serBookmarkIdMap.toJS());
     });
 };
 

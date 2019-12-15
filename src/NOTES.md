@@ -629,6 +629,23 @@ X change cursor on header buttons
 -   better screenshots for Chrome Web Store
 -   ? dnd on closed windows?
 -   dnd bug with active tab indicator not updating! Happens when moving currently active tab in window.
--   need to move audibleIcon to SVG!
+    X need to move audibleIcon to SVG!
 
 ? Try pruning unused TS exports (particularly in, say, cssStyles) using something like ts-prune.
+
+## @#$!@#$ YIKES!
+
+Just saw a case where moving an open, saved tab appeared to result in an attempted unsaveTab
+operation on the wrong tab!
+I suspect this is a result of being overly simplistic with tab ids, particularly with draggable ids,
+and particularly across await boundaries. An index just isn't sufficient to identify a tab, if we
+also use the window id as some kind of stable identifier...
+dig into this! Try to repro by moving the (saved) Facebook tab earlier in tab order in its saved window.
+
+11Dec:
+
+    - Grrrr. Made some tweaks to simplify layout so that header checkbox and FavIcon have reasonable spacing.
+    Now 'x' close button on a Saved Window is not aligned with revert button chevron!
+        - Let's put all the SVG buttons in single flexbox in Storybook so we can check alignment...
+
+    - WHY is entering text in the search box SO laggy?? MUST FIX

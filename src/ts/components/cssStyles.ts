@@ -77,10 +77,23 @@ export const headerButton = css({
     backgroundRepeat: 'no-repeat',
     width: 16,
     height: 16,
-    marginLeft: 1,
-    marginRight: 1,
+    marginLeft: 2,
+    marginRight: 2,
     flex: 'none'
 });
+export const headerCheckBoxInput = css({
+    width: 10,
+    height: 10
+});
+export const headerCheckboxContainer = cx(
+    headerButton,
+    css({
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    })
+);
+
 export const noWrap = css({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -135,7 +148,8 @@ export const spacer = css({
 export const favIcon = css({
     width: 16,
     height: 16,
-    marginRight: 3,
+    marginRight: 4,
+    marginLeft: 2,
     flex: 'none'
 });
 export const emptyFavIcon = css({
@@ -190,13 +204,6 @@ export const dialogInfoContents = css({
     marginLeft: 10,
     marginTop: 4,
     marginBottom: 0
-});
-export const headerCheckBoxInput = css({
-    width: 10,
-    height: 12
-});
-export const headerCheckboxContainer = css({
-    paddingLeft: 4
 });
 export const dialogButtonRow = css({
     display: 'flex',

@@ -25,6 +25,8 @@ import FilteredTabWindowUI, {
 } from '../src/ts/components/FilteredTabWindowUI';
 import { TabWindow } from '../src/ts/tabWindow';
 import { matchTabWindow } from '../src/ts/searchOps';
+import { HeaderButtonSVG } from '../src/ts/components/HeaderButtonSVG';
+import * as svg from '../src/ts/components/svg';
 
 const theme = themes.light;
 
@@ -127,6 +129,58 @@ const StoryRoot: React.FunctionComponent = ({ children }) => {
     );
 };
 
+const debugBorder = css({
+    border: '1px solid #ff0000'
+});
+
+const debugBlueBorder = css({
+    border: '1px solid #0000ff'
+});
+
+const debugRedBG = css({
+    backgroundColor: 'lightcoral'
+});
+
+const debugBlueBG = css({
+    backgroundColor: 'lightblue'
+});
+
+const buttonContainerStyle = css({
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    height: 24
+});
+
+const AllSVGButtons = ({}) => {
+    const svgs = [
+        // svg.popout,
+        // svg.popin,
+        // svg.menu,
+        svg.expandMore,
+        svg.expandLess,
+        svg.check,
+        // svg.page,
+        svg.edit,
+        svg.sound,
+        svg.silent,
+        svg.chevron,
+        svg.closeIcon
+    ];
+    const buttons = svgs.map((svgElem, idx) => (
+        <HeaderButtonSVG
+            className={debugRedBG}
+            svgClassName={debugBlueBG}
+            key={idx}
+            svgElem={svgElem}
+        />
+    ));
+    return (
+        <div className={cx(buttonContainerStyle, debugBorder)}>{buttons}</div>
+    );
+};
+
 const onDragEnd = (result: DropResult) => {
     console.log('onDragEnd: ', result);
 };
@@ -140,6 +194,16 @@ storiesOf('Tabli Components', module)
             >
                 <div className={styles.expandAllIconStyle(theme)} />
             </button>
+        </StoryRoot>
+    ))
+    .add('SVG close button', () => (
+        <StoryRoot>
+            <HeaderButtonSVG className={debugBorder} svgElem={svg.closeIcon} />
+        </StoryRoot>
+    ))
+    .add('All SVG buttons', () => (
+        <StoryRoot>
+            <AllSVGButtons />
         </StoryRoot>
     ))
     /*

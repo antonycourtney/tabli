@@ -14,11 +14,16 @@ import { useContext } from 'react';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
 
-const containerBaseStyle = css({
+const containerStyle = css({
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    outline: 'none',
+    border: '1px solid #0000ff', // 'none',
+    height: 16,
+    marginLeft: 4,
+    marginRight: 4,
+    flex: 'none'
 });
-const containerStyle = cx(styles.headerButton, containerBaseStyle);
 
 interface HeaderCheckboxProps {
     title: string;
@@ -70,7 +75,7 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
             </div>
         );
     }
-    return <div className={containerStyle}>{checkboxComponent}</div>;
+    return checkboxComponent;
 };
 
 export default HeaderCheckbox;

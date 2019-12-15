@@ -34,6 +34,7 @@ type TMSRef = StateRef<TabManagerState>;
  */
 export function syncChromeWindowById(windowId: WindowId, storeRef: TMSRef) {
     chrome.windows.get(windowId, { populate: true }, chromeWindow => {
+        console.log('syncChromeWindowById: got: ', chromeWindow);
         update(storeRef, state => state.syncChromeWindow(chromeWindow));
     });
 }
@@ -619,6 +620,8 @@ export const moveTabItem = async (
             const targetWindowId = targetTabWindow.openWindowId;
             const moveProps = { windowId: targetWindowId, index: targetIndex };
             chromeTab = await chromep.tabs.move(openTabId, moveProps);
+            // Let's just refresh the whole window:
+            syncChromeWindowById(targetWindowId, storeRef);
         } else {
             // Not entirely clear what to do in this case;
             // We'll only remove the tab if tab is saved, since
@@ -660,9 +663,9 @@ export const moveTabItem = async (
                 : st;
             return updSt;
         });
+        // TODO: should probably change above to an awaitableUpdate,
+        // and then resynch the target window if it is open.
     }
-    // Let's just refresh the whole window:
-    // syncChromeWindowById(targetWindowId, storeRef)
 };
 
 export function hideRelNotes(storeRef: TMSRef) {
