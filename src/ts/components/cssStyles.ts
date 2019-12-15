@@ -77,8 +77,8 @@ export const headerButton = css({
     backgroundRepeat: 'no-repeat',
     width: 16,
     height: 16,
-    marginLeft: 2,
-    marginRight: 2,
+    marginLeft: 3,
+    marginRight: 3,
     flex: 'none'
 });
 export const headerCheckBoxInput = css({

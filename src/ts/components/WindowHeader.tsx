@@ -28,7 +28,7 @@ const revertButtonBaseStyle = css({
 const revertButtonStyle = cx(styles.headerHoverVisible, revertButtonBaseStyle);
 
 const editButtonBaseStyle = (theme: Theme) => css`
-    margin-left: 4px;
+    margin-left: 2px;
     margin-right: 12px;
 `;
 
@@ -44,6 +44,14 @@ interface WindowHeaderProps {
     onItemSelected: () => void;
     stateRef: StateRef<TabManagerState>;
 }
+
+const debugRedBG = css({
+    backgroundColor: 'lightcoral'
+});
+
+const debugBlueBG = css({
+    backgroundColor: 'lightblue'
+});
 
 const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     stateRef,
@@ -195,7 +203,8 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         : styles.titleClosed(theme);
 
     const titleContainerStyle = css({
-        display: 'flex'
+        display: 'flex',
+        alignItems: 'normal'
     });
 
     const titleStyle = cx(titleTextStyle, titleContainerStyle);
@@ -217,12 +226,12 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
             }
             onClick={onOpen}
         >
-            <div className={styles.rowItemsFixedWidth}>
+            <div className={cx(styles.rowItemsFixedWidth)}>
                 {checkItem}
                 <ExpanderButton expanded={expanded} onClick={onExpand} />
             </div>
             {titleSpan}
-            <div className={styles.rowItemsFixedWidth}>
+            <div className={cx(styles.rowItemsFixedWidth)}>
                 {revertButton}
                 {closeButton}
             </div>

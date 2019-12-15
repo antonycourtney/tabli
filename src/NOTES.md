@@ -649,3 +649,6 @@ dig into this! Try to repro by moving the (saved) Facebook tab earlier in tab or
         - Let's put all the SVG buttons in single flexbox in Storybook so we can check alignment...
 
     - WHY is entering text in the search box SO laggy?? MUST FIX
+
+14Dec: - Still looks to me like expand button aligned with baseline of text instead of being vertically centered.
+SO annoying...

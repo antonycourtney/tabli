@@ -102,10 +102,14 @@ const StatefulTabWindowContainer = appContainer<
     FilteredTabWindowUIBaseProps
 >(mockWinStore, StatefulFilteredTabWindowUI);
 
-const StatefulPopup = appContainer<TabManagerState, PopupBaseProps>(
-    mockWinStore,
-    Popup
-);
+const statefulPopup = (st0: TabManagerState) =>
+    appContainer<TabManagerState, PopupBaseProps>(st0, Popup);
+
+const LightPopup = statefulPopup(mockWinStore);
+
+const darkStore = mockWinStore.setIn(['preferences', 'theme'], 'dark');
+
+const DarkPopup = statefulPopup(darkStore);
 
 // helper to render a story horizontally centered:
 const rootStyle = css({
@@ -259,7 +263,14 @@ storiesOf('Tabli Components', module)
     .add('Full Popup', () => (
         <StoryRoot>
             <DragDropContext onDragEnd={onDragEnd}>
-                <StatefulPopup isPopout={false} noListener={true} />
+                <LightPopup isPopout={false} noListener={true} />
+            </DragDropContext>
+        </StoryRoot>
+    ))
+    .add('Dark Mode Full Popup', () => (
+        <StoryRoot>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <DarkPopup isPopout={false} noListener={true} />
             </DragDropContext>
         </StoryRoot>
     ));
