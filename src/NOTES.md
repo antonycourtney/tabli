@@ -652,3 +652,27 @@ dig into this! Try to repro by moving the (saved) Facebook tab earlier in tab or
 
 14Dec: - Still looks to me like expand button aligned with baseline of text instead of being vertically centered.
 SO annoying...
+
+Shawn Axsom suggestions:
+
+-   Allow editing of (saved) tab titles
+    (Design challenge: do we ever care about the underlying tab title? Probably not, but at least need a way to cancel it and revert back to page title...)
+-   Add a hotkey for closing a tab with the keyboard. '-' ?
+    Tricky bit: Non-arrow / tab keys go direct to search box...
+
+TOP Priorities:
+
+-   DnD bug getting IDs confused
+-   Laggy search box
+-   closed windows as DnD target
+
+15Dec: While investigating laggy isearch, put back the redundant setValue optimization in oneref.
+Need to commit and publish this.
+Then should also add in support for throttling; just use lodash...
+
+\*\*\*\* Some interesting possibilities for perf:
+
+-   Can we somehow cache style calls to avoid re-computing styles for themes? This seems particularly helpful
+    for things like HeaderButtonSVG
+-   The useCallback hook allows us to construct a stable callback in the parent so that we can use React.memo
+    effectively in the child...

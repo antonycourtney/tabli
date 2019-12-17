@@ -47,7 +47,6 @@ export interface FilteredTabWindowUIBaseProps {
     isFocused: boolean;
     modalActions: ModalActions;
     selectedTabIndex: number;
-    searchStr: string | null;
     onItemSelected: () => void; // N.B. just clears selection; tab or window selected both trigger this
     expandAll: boolean;
 }
@@ -64,7 +63,6 @@ export type FilteredTabWindowUIProps = FilteredTabWindowUIBaseProps &
 const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = ({
     tabWindow,
     itemMatches,
-    searchStr,
     isSelected,
     isFocused,
     stateRef,

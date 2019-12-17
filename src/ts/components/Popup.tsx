@@ -149,25 +149,23 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     };
 
     return (
-        <React.StrictMode>
-            <DragDropContext onDragEnd={onDragEnd}>
-                <ThemeContext.Provider value={theme}>
-                    <div className={popupOuterStyle(theme)}>
-                        <SelectablePopup
-                            onSearchInput={handleSearchInput}
-                            appState={appState}
-                            stateRef={stateRef}
-                            filteredWindows={filteredWindows}
-                            modalActions={modalActions}
-                            searchStr={searchStr}
-                            searchRE={searchRE}
-                            isPopout={isPopout}
-                        />
-                        {revertModal}
-                        {saveModal}
-                    </div>
-                </ThemeContext.Provider>
-            </DragDropContext>
-        </React.StrictMode>
+        <DragDropContext onDragEnd={onDragEnd}>
+            <ThemeContext.Provider value={theme}>
+                <div className={popupOuterStyle(theme)}>
+                    <SelectablePopup
+                        onSearchInput={handleSearchInput}
+                        appState={appState}
+                        stateRef={stateRef}
+                        filteredWindows={filteredWindows}
+                        modalActions={modalActions}
+                        searchStr={searchStr}
+                        searchRE={searchRE}
+                        isPopout={isPopout}
+                    />
+                    {revertModal}
+                    {saveModal}
+                </div>
+            </ThemeContext.Provider>
+        </DragDropContext>
     );
 };

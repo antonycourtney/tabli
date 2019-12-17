@@ -90,7 +90,6 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
                 tabWindow={tabWindow}
                 itemMatches={itemMatches}
                 key={id}
-                searchStr={searchStr}
                 isSelected={isSelected}
                 isFocused={focusedProp}
                 selectedTabIndex={trueSelectedTabIndex}

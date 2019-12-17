@@ -150,6 +150,9 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         filteredWindowsLength
     });
 
+    const windowTitles = filteredWindows.map(ftw => ftw.tabWindow.title);
+    log.debug('SelectablePopup: window titles: ', windowTitles);
+
     // This was ported from an old componentWillReceivProps handler;
     // seems a little kludgey and likely to result in some extra
     // rendering, but we'll leave it:

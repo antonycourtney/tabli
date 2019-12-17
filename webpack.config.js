@@ -7,11 +7,12 @@ process.traceDeprecation = true;
 
 function config(nodeEnv) {
     return {
-        devtool: 'source-map',
+        devtool: 'inline-source-map',
         resolve: {
             extensions: ['.webpack.js', '.web.js', '.js', '.ts', '.tsx']
         },
         entry: {
+            bigRenderTest: ['./src/ts/bigRenderTest.tsx'],
             renderTest: ['./src/ts/renderTest.tsx'],
             prefsPage: ['./src/ts/prefsPage.tsx'],
             tabliPopup: ['./src/ts/tabliPopup.ts'],
@@ -24,12 +25,12 @@ function config(nodeEnv) {
         },
         module: {
             rules: [
+                // { test: /\.(json)$/, loader: 'raw-loader' },
                 // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
                 { test: /\.tsx?$/, loader: 'awesome-typescript-loader' },
 
                 // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
                 { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
-                { test: /\.(json)$/, loader: 'raw-loader' },
                 {
                     test: /\.less$/,
                     loader: 'style-loader!css-loader!less-loader'

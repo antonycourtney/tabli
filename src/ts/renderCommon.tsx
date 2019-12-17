@@ -31,7 +31,7 @@ function sendHelperMessage(msg: any) {
  */
 export async function renderPopup(
     storeRef: oneref.StateRef<TabManagerState>,
-    currentChromeWindow: chrome.windows.Window,
+    currentChromeWindow: chrome.windows.Window | null,
     isPopout: boolean,
     doSync: boolean,
     renderTest: boolean = false
@@ -95,7 +95,9 @@ export async function renderPopup(
                 'renderPopup: setting current window to ',
                 currentChromeWindow
             );
-            const nextStore = syncStore.setCurrentWindow(currentChromeWindow);
+            const nextStore = currentChromeWindow
+                ? syncStore.setCurrentWindow(currentChromeWindow)
+                : syncStore;
             if (!nextStore.equals(syncStore)) {
                 update(storeRef, st => nextStore);
             } else {
