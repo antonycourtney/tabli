@@ -4,7 +4,7 @@ import { css } from 'emotion';
 const windowListSectionStyle = css({
     borderBottom: '1px solid #bababa',
     paddingLeft: 12,
-    paddingRight: 16,
+    paddingRight: 24,
     paddingTop: 12,
     paddingBottom: 8,
     display: 'flex',
