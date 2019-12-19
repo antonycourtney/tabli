@@ -273,10 +273,17 @@ const dedupeTab = async (
     changeInfo: chrome.tabs.TabChangeInfo,
     tab: chrome.tabs.Tab
 ) => {
+    // for debugging:
+    const jsifyPairs = (pairs: [any, any][]) =>
+        pairs.map(([a, b]) => [a.toJS(), b.toJS()]);
+
     try {
         const url = changeInfo.url;
 
-        if (url != null) {
+        // log.debug('dedupeTab: ', st.toJS(), tabId, changeInfo, tab);
+
+        // TODO: We should really look at pendingUrl, to try and dedupe tabs earlier...
+        if (url != null && url.length > 0) {
             const matchPairs = st.findURL(url); // and filter out the tab we're checking:
 
             const isSelf = (tw: TabWindow, ti: TabItem) =>
@@ -289,6 +296,11 @@ const dedupeTab = async (
                 ([tw, ti]) => !isSelf(tw, ti)
             );
 
+            /*             log.debug('dedupeTab: ', {
+                matchPairs: jsifyPairs(matchPairs),
+                filteredMatchPairs: jsifyPairs(filteredMatchPairs)
+            });
+ */
             if (filteredMatchPairs.length > 0) {
                 const [origTabWindow, origTab] = filteredMatchPairs[0];
                 // if we wanted to programatically go back instead of closing:
@@ -296,6 +308,10 @@ const dedupeTab = async (
                 // const revertScript = {code: 'history.back();'}
                 // await chromep.tabs.executeScript(tabId, revertScript)
 
+                log.debug(
+                    '*** dedupeTab: closing detected duplicate tab ',
+                    tabId
+                );
                 const tabWindow = st.getTabWindowByChromeId(tab.windowId);
                 const tabClosedSt = await actions.closeTab(
                     tabWindow!,

@@ -98,6 +98,10 @@ const restoreFromAppState = (
     mbTab: TabItem | null,
     storeRef: TMSRef
 ) => {
+    log.debug(
+        'restoreFromAppState: restoring saved TabWindow: ',
+        tabWindow.toJS()
+    );
     const attachWindow = (chromeWindow?: chrome.windows.Window) => {
         if (chromeWindow) {
             update(storeRef, state =>

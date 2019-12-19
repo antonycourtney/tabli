@@ -143,15 +143,16 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     const expandAll = appState.expandAll;
 
     const filteredWindowsLength = filteredWindows.length;
-    log.debug('SelectablePopup: ', {
+    log.trace('SelectablePopup: ', {
         selectedWindowIndex,
         selectedTabIndex,
         searchStr,
         filteredWindowsLength
     });
 
-    const windowTitles = filteredWindows.map(ftw => ftw.tabWindow.title);
-    log.debug('SelectablePopup: window titles: ', windowTitles);
+    // truly just for debugging:
+    // const windowTitles = filteredWindows.map(ftw => ftw.tabWindow.title);
+    // log.trace('SelectablePopup: window titles: ', windowTitles);
 
     // This was ported from an old componentWillReceivProps handler;
     // seems a little kludgey and likely to result in some extra

@@ -71,7 +71,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     modalActions,
     expandAll
 }: FilteredTabWindowUIProps) => {
-    log.debug(
+    log.trace(
         '  FilteredTabWindowUI: rendering ',
         tabWindow.id,
         tabWindow.title
