@@ -7,6 +7,7 @@ import { HEADER_BUTTON_SIZE } from './constants';
 import { Theme } from './themeContext';
 import * as svg from './svg';
 import { inExtension } from '../utils';
+import { SimpleImg } from 'react-simple-img';
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon);
 const favIconOpenStyle = styles.favIcon;
@@ -68,7 +69,7 @@ export const mkFavIcon = (tab: TabItem) => {
     }
     const tabFavIcon =
         fiSrc.length > 0 ? (
-            <img className={favIconStyle} src={fiSrc} />
+            <SimpleImg className={favIconStyle} importance="low" src={fiSrc} />
         ) : (
             emptyFavIcon
         );

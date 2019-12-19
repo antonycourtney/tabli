@@ -1,7 +1,9 @@
 import * as RenderCommon from './renderCommon';
 
 /*
- * Perform our React rendering *after* the load event for the popup
+ * We *used* to perform our React rendering *after* the load event for the popup
+ * by doing
+ *   window.onload = () => RenderCommon.getFocusedAndRender(false, false)
  * (rather than the more traditional ondocumentready event)
  * because we observe that Chrome's http cache will not attempt to
  * re-validate cached resources accessed after the load event, and this
@@ -11,10 +13,13 @@ import * as RenderCommon from './renderCommon';
  *
  */
 function main() {
-    window.onload = () => RenderCommon.getFocusedAndRender(true);
     window.onfocus = (e: any) => {
-        document.getElementById('searchBox')!.focus();
+        const elem = document.getElementById('searchBox');
+        if (elem) {
+            elem.focus();
+        }
     };
+    RenderCommon.getFocusedAndRender(true);
 }
 
 main();

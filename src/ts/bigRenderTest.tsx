@@ -121,7 +121,8 @@ function renderTest() {
  */
 function main() {
     log.info('render test, environment: ', process.env.NODE_ENV);
-    window.onload = renderTest;
+    // window.onload = renderTest;
+    renderTest();
 }
 
 main();
