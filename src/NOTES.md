@@ -676,3 +676,80 @@ Then should also add in support for throttling; just use lodash...
     for things like HeaderButtonSVG
 -   The useCallback hook allows us to construct a stable callback in the parent so that we can use React.memo
     effectively in the child...
+
+I haven't had much luck with the React profiler; timings seem confusing and off.
+
+What I do see, consistently, is that bigRenderTest takes about 2.6 seconds:
+full render complete. render time: ( 2684.4900001306087 ms)
+
+What if we break out the core SVG in HeaderButtonSVG and memoize?
+
+And.....NOPE. No significant change in timing if we React.memo SVGIcon. rats.
+
+Alright, I think we have to give up on raw initial render perf. :-(
+From the Profiler it actually looks like most of the time is going to react-beautiful-dnd overhead.
+
+But let's do some experiments:
+
+-   What happens if we completely eliminate HeaderButtonSVG from TabItemUI?
+-   What happens if we remove dnd support from TabItemUI?
+-   What happens if we leave dnd support, but remove all other rendering from TabItemUI?
+
+1. Removing closeButton:
+   Takes time from around 2.4 seconds to 2.1 seconds. Not a lot!
+
+2. Replace everything with <span>{tabTitle}</span>:
+   Down to 565 ms.
+
+3. No dnd for TabItemUI, but everything else:
+   Back to around 2.5 seconds. Suggests that dnd overhead isn't the issue.
+
+4. Put back DnD, replace everything else with <span>{tabTitle}</span>:
+   Still down at an impressive 643ms.
+
+Let's slowly start putting back in the various pieces:
+
+-   Outer div (tabItemHoverContainer): 760ms
+
+Adding tabCheckItem and tabFavIcon:
+
+-   Fairly big jump: around 2 seconds
+
+Just tabFavIcon (no tabCheckItem):
+
+-   Still >= 2 seconds.
+
+with tabCheckItem (but no tabFavIcon):
+
+-   Back down to under 1 second (around 985ms)
+
+Let's go back to everything _except_ favIcon:
+Around 1.3 seconds....!
+
+OK, great. That's huge. Maybe we can lazy-load FavIcons; we'll try https://github.com/bluebill1049/react-simple-img
+and look at some other solutions such as https://medium.com/@albertjuhe/an-easy-to-use-performant-solution-to-lazy-load-images-in-react-e6752071020c
+
+But first: Where is that 1.3 seconds coming from?
+
+One theory: the checkbox input components...
+NOPE! Just doesn't appear to be significant; maybe 200 ms.
+
+If we cut off everything in setup, just call render, takes about 50 ms.
+
+If we render header and footer, but skip TabWindowList:
+Now we're up to about 100ms.
+
+With sections, but no actual windows:
+Still around 100ms.
+
+With windows, including headers, but no headers or TabItems:
+
+Up to around 130 to 200 ms.
+
+Headers only, no tab items: Around 250ms.
+
+Add back tab items:
+...and we're back up to 1.3 seconds.
+So, basically, it just costs us around 1000ms for 1000 tab items. Which isn't terrible!
+
+Let's try lazy loading the images for FavIcons!

@@ -77,6 +77,10 @@ function config(nodeEnv) {
 
 function development() {
     var dev = config('development');
+    Object.assign(dev.optimization, {
+        minimize: false
+    });
+
     return dev;
 }
 
@@ -88,14 +92,17 @@ function production() {
         })
     );
     prod.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(true));
-    prod.optimization.minimize = {
-        compress: {
-            warnings: false
-        },
-        mangle: {
-            except: ['module', 'exports', 'require']
-        }
+    prod.optimization.minimize = true;
+
+    // for profiling:
+    /*
+    prod.optimization.minimize = false; // avoids mangling
+    prod.resolve.alias = {
+        'react-dom$': 'react-dom/profiling',
+        'scheduler/tracing': 'scheduler/tracing-profiling'
     };
+    console.log('profuction config: ', prod);
+    */
     return prod;
 }
 

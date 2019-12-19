@@ -45,6 +45,20 @@ const baseStyle = (theme: Theme) => css`
 const buttonStyle = (theme: Theme, className: string | undefined) =>
     cx(styles.headerButton, baseStyle(theme), className);
 
+interface SVGIconProps {
+    svgElem: JSX.Element;
+    svgClassName?: string;
+    theme: Theme;
+}
+
+const SVGIcon = ({ svgElem, svgClassName, theme }: SVGIconProps) => {
+    return (
+        <div className={cx(svgContainerStyle(theme), svgClassName)}>
+            {svgElem}
+        </div>
+    );
+};
+
 export const HeaderButtonSVG = ({
     svgElem,
     className,
@@ -80,9 +94,11 @@ export const HeaderButtonSVG = ({
             title={title}
             {...clickProps}
         >
-            <div className={cx(svgContainerStyle(theme), svgClassName)}>
-                {svgElem}
-            </div>
+            <SVGIcon
+                svgElem={svgElem}
+                svgClassName={svgClassName}
+                theme={theme}
+            />
         </div>
     );
 };
