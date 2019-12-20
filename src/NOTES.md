@@ -763,3 +763,8 @@ To also explore:
 -   While URLs are pending can apparently end up displaying / persisting empty titles. Not good! Use
     saved bookmark title in this case.
 -   DnD issue!
+
+-   What if we always showed some kind of background for every tab item, and just used a highlight
+    on mouseover?
+
+    

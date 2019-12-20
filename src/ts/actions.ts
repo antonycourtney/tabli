@@ -194,7 +194,7 @@ const restoreFromAppState = (
  *
  * N.B.: NOT exported; called from openWindow
  */
-function restoreBookmarkWindow(
+async function restoreBookmarkWindow(
     tabWindow: TabWindow,
     mbTab: TabItem | null,
     storeRef: TMSRef
@@ -210,12 +210,13 @@ function restoreBookmarkWindow(
     );
 }
 
-export function openWindow(targetTabWindow: TabWindow, storeRef: TMSRef) {
+export async function openWindow(targetTabWindow: TabWindow, storeRef: TMSRef) {
     if (targetTabWindow.open) {
         // existing, open window -- just transfer focus
-        chrome.windows.update(targetTabWindow.openWindowId, { focused: true });
-
-        // TODO: update focus in winStore
+        chromep.windows.update(targetTabWindow.openWindowId, {
+            focused: true
+        });
+        // No need to update focus in state; should happen via event listeners
     } else {
         // bookmarked window -- need to open it!
         restoreBookmarkWindow(targetTabWindow, null, storeRef);
@@ -327,13 +328,13 @@ export function expandWindow(
 }
 
 // activate a specific tab:
-export function activateTab(
+export async function activateTab(
     targetTabWindow: TabWindow,
     tab: TabItem,
     tabIndex: number,
     storeRef: TMSRef
 ) {
-    // log.debug("activateTab: ", tabWindow, tab )
+    log.debug('activateTab: ', targetTabWindow.toJS(), tab.toJS());
 
     const st = mutableGet(storeRef);
     const lastFocusedTabWindow = st.getCurrentWindow();
@@ -342,13 +343,6 @@ export function activateTab(
         // OK, so we know this window is open.  What about the specific tab?
         if (tab.open) {
             // Tab is already open, just make it active:
-            // log.debug("making tab active")
-            /*
-            chrome.tabs.update(tab.openTabId, { active: true }, () => {
-              // log.debug("making tab's window active")
-              chrome.windows.update(tabWindow.openWindowId, { focused: true })
-            })
-      */
             tabliBrowser.activateTab(tab.safeOpenState.openTabId, () => {
                 tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId);
             });
@@ -361,11 +355,13 @@ export function activateTab(
                 active: true
             };
 
-            // log.debug("restoring bookmarked tab")
-            chrome.tabs.create(createOpts, () => {});
+            log.debug('restoring saved tab');
+            await chromep.tabs.create(createOpts);
+            tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId);
         }
     } else {
         log.debug('activateTab: opening single tab of saved window');
+
         // TODO: insert our own callback so we can activate chosen tab after opening window!
         restoreBookmarkWindow(targetTabWindow, tab, storeRef);
     }
