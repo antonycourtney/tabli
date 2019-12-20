@@ -44,7 +44,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     isPopout,
     noListener
 }: PopupProps) => {
-    log.debug('PopupBase: ', appState.toJS());
+    log.trace('Popup: ', appState.toJS());
     const themeName = appState.preferences.theme as ThemeName;
     const theme = themes[themeName];
 

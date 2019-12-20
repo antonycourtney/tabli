@@ -173,6 +173,10 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         />
     );
 
+    const titleTextStyle = tabWindow.open
+        ? styles.titleOpen
+        : styles.titleClosed(theme);
+
     // log.log("WindowHeader: ", windowTitle, openStyle, managed, expanded)
     let titleComponent = null;
     if (editingTitle) {
@@ -195,12 +199,8 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
             </form>
         );
     } else {
-        titleComponent = <span>{windowTitle}</span>;
+        titleComponent = <span className={styles.noWrap}>{windowTitle}</span>;
     }
-
-    const titleTextStyle = tabWindow.open
-        ? styles.titleOpen
-        : styles.titleClosed(theme);
 
     const titleContainerStyle = css({
         display: 'flex',

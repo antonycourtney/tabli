@@ -753,3 +753,13 @@ Add back tab items:
 So, basically, it just costs us around 1000ms for 1000 tab items. Which isn't terrible!
 
 Let's try lazy loading the images for FavIcons!
+
+## ...and it worked!
+
+Fixed critical bug with tab de-dup'ing.
+
+To also explore:
+
+-   While URLs are pending can apparently end up displaying / persisting empty titles. Not good! Use
+    saved bookmark title in this case.
+-   DnD issue!
