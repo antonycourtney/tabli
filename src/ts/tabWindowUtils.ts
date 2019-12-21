@@ -454,6 +454,7 @@ export function updateWindow(
     tabWindow: TabWindow,
     chromeWindow: chrome.windows.Window
 ): TabWindow {
+    log.debug('updateWindow: ', tabWindow.toJS(), chromeWindow);
     const mergedTabItems = mergeOpenTabs(
         tabWindow.tabItems,
         chromeWindow.tabs!
@@ -465,6 +466,7 @@ export function updateWindow(
         .set('openWindowId', chromeWindow.id)
         .remove('snapshot')
         .remove('chromeSessionId');
+    log.debug('updateWindow: updated Window: ', updWindow.toJS());
     return updWindow;
 }
 

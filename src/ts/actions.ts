@@ -9,7 +9,8 @@ import {
     utils as oneRefUtils,
     update,
     awaitableUpdate_,
-    mutableGet
+    mutableGet,
+    awaitableUpdate
 } from 'oneref';
 import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
@@ -37,6 +38,20 @@ export function syncChromeWindowById(windowId: WindowId, storeRef: TMSRef) {
         console.log('syncChromeWindowById: got: ', chromeWindow);
         update(storeRef, state => state.syncChromeWindow(chromeWindow));
     });
+}
+
+// awaitable variant on above:
+export async function awaitableSyncChromeWindowById(
+    windowId: WindowId,
+    storeRef: TMSRef
+) {
+    const chromeWindow = await chromep.windows.get(windowId, {
+        populate: true
+    });
+    log.debug('awaitableSyncChromeWindowById: got: ', chromeWindow);
+    await awaitableUpdate_(storeRef, state =>
+        state.syncChromeWindow(chromeWindow)
+    );
 }
 
 /**
@@ -607,6 +622,13 @@ export const moveTabItem = async (
     movedTabItem: TabItem,
     storeRef: TMSRef
 ) => {
+    log.debug(
+        'moveTabItem: targetTabWindow: ',
+        targetTabWindow.toJS(),
+        'targetIndex: ',
+        targetIndex
+    );
+    log.debug('moveTabItem: movedTabItem: ', movedTabItem);
     const st = mutableGet(storeRef);
     /* The tab being moved can be in 4 possible states based
      * on open and saved flags, same for target window...
@@ -615,13 +637,15 @@ export const moveTabItem = async (
     // Let's first handle whether tab being moved is open,
     // and if so either move or close it:
     if (movedTabItem.open) {
+        log.debug('moveTabItem: moving an open tab');
         const openTabId = movedTabItem.safeOpenState.openTabId;
         if (targetTabWindow.open) {
+            log.debug('moveTabItem: ...to an open window');
             const targetWindowId = targetTabWindow.openWindowId;
             const moveProps = { windowId: targetWindowId, index: targetIndex };
             chromeTab = await chromep.tabs.move(openTabId, moveProps);
             // Let's just refresh the whole window:
-            syncChromeWindowById(targetWindowId, storeRef);
+            await awaitableSyncChromeWindowById(targetWindowId, storeRef);
         } else {
             // Not entirely clear what to do in this case;
             // We'll only remove the tab if tab is saved, since

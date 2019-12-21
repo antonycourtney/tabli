@@ -767,4 +767,8 @@ To also explore:
 -   What if we always showed some kind of background for every tab item, and just used a highlight
     on mouseover?
 
-    
+-   Could we have a minimize / hide all option?
+
+-  PUT BACK THROTTLING!
+
+- *** search box not centered when resizing....

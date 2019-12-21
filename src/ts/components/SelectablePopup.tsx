@@ -21,6 +21,7 @@ import {
 } from 'react';
 import { TabItem } from '../tabWindow';
 import ModalActions from './modalActions';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 
 function matchingTabs(
     searchStr: string | null,
@@ -417,41 +418,65 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
 
     const summarySpanStyle = cx(styles.closed(theme), summarySpanBaseStyle);
 
+    const onDragEnd = async (result: DropResult) => {
+        log.debug('onDragEnd: ', result);
+        const { source, destination } = result;
+        if (!source || !destination) return;
+        const sourceWindow = appState.findTabWindowById(source.droppableId);
+        const dstWindow = appState.findTabWindowById(destination.droppableId);
+        if (!sourceWindow || !dstWindow) return;
+        const sourceTab = sourceWindow.tabItems.get(source.index);
+        if (!sourceTab) return;
+        await actions.moveTabItem(
+            dstWindow,
+            destination.index,
+            sourceTab,
+            stateRef
+        );
+        log.debug('onDragEnd: moveTabItem completed, resetting indices....:');
+        // reset selected indices; should pick up active window/tab next render:
+        setSelectedWindowIndex(0);
+        setSelectedTabIndex(-1);
+        log.debug('onDragEnd: reset indices done');
+    };
+
     return (
-        <div className={popupInnerStyle}>
-            <div className={popupHeaderStyle}>
-                <SearchBar
-                    stateRef={stateRef}
-                    onSearchInput={onSearchInput}
-                    onSearchUp={handlePrevSelection}
-                    onSearchDown={handleNextSelection}
-                    onSearchEnter={handleSelectionEnter}
-                    onSearchExit={handleSearchExit}
-                    onSearchExpandToggle={handleSelectionExpandToggle}
-                    searchInputRef={searchInputRef}
-                    isPopout={isPopout}
-                />
+        <DragDropContext onDragEnd={onDragEnd}>
+            <div className={popupInnerStyle}>
+                <div className={popupHeaderStyle}>
+                    <SearchBar
+                        stateRef={stateRef}
+                        onSearchInput={onSearchInput}
+                        onSearchUp={handlePrevSelection}
+                        onSearchDown={handleNextSelection}
+                        onSearchEnter={handleSelectionEnter}
+                        onSearchExit={handleSearchExit}
+                        onSearchExpandToggle={handleSelectionExpandToggle}
+                        searchInputRef={searchInputRef}
+                        isPopout={isPopout}
+                    />
+                </div>
+                <div className={popupBodyStyle} ref={bodyRef}>
+                    <TabWindowList
+                        stateRef={stateRef}
+                        filteredWindows={filteredWindows}
+                        modalActions={modalActions}
+                        searchStr={searchStr}
+                        searchRE={searchRE}
+                        selectedWindowIndex={selectedWindowIndex}
+                        selectedTabIndex={selectedTabIndex}
+                        focusedTabWindowRef={focusedTabWindowRef}
+                        onItemSelected={handleItemSelected}
+                        expandAll={expandAll}
+                        showRelNotes={appState.showRelNotes}
+                        currentWindowId={appState.currentWindowId}
+                    />
+                </div>
+                <div className={popupFooterStyle(theme)}>
+                    <span className={summarySpanStyle}>{summarySentence}</span>
+                </div>
             </div>
-            <div className={popupBodyStyle} ref={bodyRef}>
-                <TabWindowList
-                    stateRef={stateRef}
-                    filteredWindows={filteredWindows}
-                    modalActions={modalActions}
-                    searchStr={searchStr}
-                    searchRE={searchRE}
-                    selectedWindowIndex={selectedWindowIndex}
-                    selectedTabIndex={selectedTabIndex}
-                    focusedTabWindowRef={focusedTabWindowRef}
-                    onItemSelected={handleItemSelected}
-                    expandAll={expandAll}
-                    showRelNotes={appState.showRelNotes}
-                    currentWindowId={appState.currentWindowId}
-                />
-            </div>
-            <div className={popupFooterStyle(theme)}>
-                <span className={summarySpanStyle}>{summarySentence}</span>
-            </div>
-        </div>
+        </DragDropContext>
     );
 };
 

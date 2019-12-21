@@ -8,7 +8,6 @@ import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
 import * as utils from '../utils';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
 import { useState, useCallback } from 'react';
@@ -137,35 +136,22 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
         />
     ) : null;
 
-    const onDragEnd = (result: DropResult) => {
-        const { source, destination } = result;
-        if (!source || !destination) return;
-        const sourceWindow = appState.findTabWindowById(source.droppableId);
-        const dstWindow = appState.findTabWindowById(destination.droppableId);
-        if (!sourceWindow || !dstWindow) return;
-        const sourceTab = sourceWindow.tabItems.get(source.index);
-        if (!sourceTab) return;
-        actions.moveTabItem(dstWindow, destination.index, sourceTab, stateRef);
-    };
-
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <ThemeContext.Provider value={theme}>
-                <div className={popupOuterStyle(theme)}>
-                    <SelectablePopup
-                        onSearchInput={handleSearchInput}
-                        appState={appState}
-                        stateRef={stateRef}
-                        filteredWindows={filteredWindows}
-                        modalActions={modalActions}
-                        searchStr={searchStr}
-                        searchRE={searchRE}
-                        isPopout={isPopout}
-                    />
-                    {revertModal}
-                    {saveModal}
-                </div>
-            </ThemeContext.Provider>
-        </DragDropContext>
+        <ThemeContext.Provider value={theme}>
+            <div className={popupOuterStyle(theme)}>
+                <SelectablePopup
+                    onSearchInput={handleSearchInput}
+                    appState={appState}
+                    stateRef={stateRef}
+                    filteredWindows={filteredWindows}
+                    modalActions={modalActions}
+                    searchStr={searchStr}
+                    searchRE={searchRE}
+                    isPopout={isPopout}
+                />
+                {revertModal}
+                {saveModal}
+            </div>
+        </ThemeContext.Provider>
     );
 };
