@@ -9,6 +9,7 @@ const flatButtonStyle = css({
     fontFamily: 'Roboto, sans-serif',
     fontSize: 14,
     color: '#4285f4',
+    cursor: 'pointer',
     '&:hover': {
         textDecoration: 'none'
     }
@@ -24,23 +25,17 @@ const FlatButton: React.FunctionComponent<FlatButtonProps> = ({
     onClick
 }: FlatButtonProps) => {
     const handleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        log.debug('FlatButton.handleClick');
         event.stopPropagation();
         event.preventDefault();
         if (onClick) {
             onClick(event);
         }
-        log.debug('FlatButton.handleClick: returning false');
         return false;
     };
     return (
-        <a
-            className={flatButtonStyle}
-            onClick={handleClick}
-            href="javascript:;"
-        >
-            {label}
-        </a>
+        <div role="button" onClick={handleClick}>
+            <span className={flatButtonStyle}>{label}</span>
+        </div>
     );
 };
 
