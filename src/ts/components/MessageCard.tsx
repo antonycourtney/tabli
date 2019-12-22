@@ -8,7 +8,11 @@ const messageCardBaseStyle = css({
     padding: 0
 });
 const messageCardStyle = (theme: Theme) =>
-    cx(styles.tabWindow(theme), styles.tabWindowFocused, messageCardBaseStyle);
+    cx(
+        styles.tabWindow(theme),
+        styles.tabWindowFocused(theme),
+        messageCardBaseStyle
+    );
 
 const cardActionsStyle = css({
     display: 'inline-flex',

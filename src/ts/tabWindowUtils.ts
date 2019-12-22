@@ -189,8 +189,12 @@ function cleanOpenState(ti: TabItem): TabItem {
 /*
  * Return the base state of an open tab (no saved tab info)
  */
-function resetOpenItem(ti: TabItem): TabItem {
-    return ti.remove('saved').remove('savedState');
+function resetOpenItem(ti: TabItem, clearActive: boolean = false): TabItem {
+    const noSaved = ti.remove('saved').remove('savedState');
+    const noActive = clearActive
+        ? noSaved.set('openState', noSaved.safeOpenState.remove('active'))
+        : noSaved;
+    return noActive;
 }
 
 /*
@@ -383,8 +387,13 @@ function mergeTabWindowTabItems(
 ) {
     const tabItems = tabWindow.tabItems;
 
+    // If this tab is active, clear active from all other tabs:
+    const clearActive = optChromeTab && optChromeTab.active;
+
     const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
-    const baseOpenItems = tabItems.filter(ti => ti.open).map(resetOpenItem);
+    const baseOpenItems = tabItems
+        .filter(ti => ti.open)
+        .map(ti => resetOpenItem(ti, clearActive));
 
     const updOpenItems = optChromeTab
         ? baseOpenItems

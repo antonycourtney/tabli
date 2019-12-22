@@ -135,7 +135,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     const focusedTabWindowRef = useRef<HTMLDivElement | null>(null);
 
     const [selectedWindowIndex, setSelectedWindowIndex] = useState(0);
-    const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+    const [selectedTabIndex, setSelectedTabIndex] = useState(-1);
     /* Through some disgusting accident of history, the current window id has type number,
      * with -1 as sentinel, but active tab id is type number | null. *sigh*
      */
@@ -178,7 +178,13 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 nextSearchStr,
                 nextSelectedWindow
             );
-            var nextTabIndex = Math.min(selectedTabIndex, matchCount - 1);
+            // If we have a non-empty search, position selected tab at 0,
+            // unless there are no matching tabs.
+            const nonEmptySearch = searchStr && searchStr.length > 0;
+            const baseTabIndex = nonEmptySearch
+                ? Math.max(0, selectedTabIndex)
+                : selectedTabIndex;
+            var nextTabIndex = Math.min(baseTabIndex, matchCount - 1);
             setSelectedTabIndex(nextTabIndex);
         }
     });
@@ -277,8 +283,8 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             if (scrolledToTabId !== activeTabId)
                 setScrolledToTabId(activeTabId);
             if (selectedWindowIndex !== 0) setSelectedWindowIndex(0);
-            if (selectedTabIndex !== activeTabIndex)
-                setSelectedTabIndex(activeTabIndex);
+            // reset keyboard selection position when we update scroll position:
+            setSelectedTabIndex(-1);
         }
     });
 

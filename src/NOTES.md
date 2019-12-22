@@ -769,6 +769,26 @@ To also explore:
 
 -   Could we have a minimize / hide all option?
 
--  PUT BACK THROTTLING!
+-   PUT BACK THROTTLING!
 
-- *** search box not centered when resizing....
+-   (!!) search box not centered when resizing....
+
+Taking a brief break from dealing with DnD bugs to:
+
+-   Checkpoint checkin dnd
+-   Change keyboard selection initial index to be -1, and only show when user starts using arrows keys
+-   Stronger visual indicator of active tab in EVERY window. Bold just isn't strong enough.
+
+TODO: A problem with not auto-setting selectedTabIndex to active tab is ISearch. Want to be able to type a few
+characters and hit Enter without using down-arrow. Should be fixable by adjusting index from -1 to 0 whenever the
+search string has length > 0.
+
+OK, we seem to have a reasonable active tab indicator by using boxShadow.
+BUT: This shows that we have a bug! When we open a new tab, we can end up in a state with more than one
+active tab within a window. It seems we don't get tab updated messages when a tab should lose its
+active status...
+
+-   When opening a tab window, can we update tab manager state while the window is opening? BIG lag
+    right now when re-opening a saved window.
+
+-   Need to update selected tab index back to 0 when searchStr changes from non-empty to empty...

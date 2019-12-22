@@ -189,7 +189,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     );
 
     const selectedStyle = isSelected ? tabWindowSelectedStyle(theme) : null;
-    const focusedStyle = isFocused ? styles.tabWindowFocused : null;
+    const focusedStyle = isFocused ? styles.tabWindowFocused(theme) : null;
     const windowStyles = cx(
         styles.tabWindow(theme),
         styles.expandablePanel,

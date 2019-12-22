@@ -46,21 +46,6 @@ export interface TabItemUIProps {
     stateRef: StateRef<TabManagerState>;
 }
 
-// for use as drop target:
-/*
-const tabItemTarget = {
-    drop(props: TabItemUIProps, monitor: DropTargetMonitor) {
-        const sourceItem = monitor.getItem();
-        actions.moveTabItem(
-            props.tabWindow,
-            props.tabIndex + 1,
-            sourceItem.sourceTab,
-            props.stateRef
-        );
-    }
-};
-*/
-
 const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     tabWindow,
     tab,
@@ -165,18 +150,39 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     }
 
     const tabFavIcon = tabItemUtil.mkFavIcon(tab);
-    var tabActiveStyle =
+
+    const tabActiveTextStyle =
         tab.open && tab.openState!.active ? styles.activeSpan : null;
-    var tabTitleStyle = cx(
+
+    const tabTitleStyle = cx(
         styles.text,
         styles.tabTitle,
         styles.noWrap,
         tabOpenStateStyle,
-        tabActiveStyle
+        tabActiveTextStyle
     );
-    var selectedStyle = isSelected ? styles.tabItemSelected(theme) : null;
 
-    var dropStyle = isOver ? styles.tabItemDropOver : null;
+    const selectedStyle = isSelected ? styles.tabItemSelected(theme) : null;
+    const dropStyle = isOver ? styles.tabItemDropOver : null;
+
+    const activeStyle =
+        tab.open && tab.openState!.active ? styles.tabItemActive(theme) : null;
+
+    // Note explicit global css class name tabItemHoverContainer here
+    // Due to limitation of nested class selectors with composition;
+    // see https://emotion.sh/docs/nested for more info.
+    const getItemStyle = (isDragging: boolean): string => {
+        const dragStyle = isDragging ? styles.tabItemDragging(theme) : null;
+        const tabItemStyle = cx(
+            styles.noWrap,
+            styles.tabItem(theme),
+            activeStyle,
+            selectedStyle,
+            dropStyle,
+            dragStyle
+        );
+        return tabItemStyle;
+    };
 
     const suspendedIcon =
         tab.open && tab.openState!.isSuspended ? (
@@ -216,25 +222,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         />
     );
 
-    // Note explicit global css class name tabItemHoverContainer here
-    // Due to limitation of nested class selectors with composition;
-    // see https://emotion.sh/docs/nested for more info.
-
     const draggableId = tabWindow.id + '-' + tabIndex.toString();
-
-    // TODO: getItemStyle() as a function of draggableProps.style and
-    // isDragging
-    const getItemStyle = (isDragging: boolean): string => {
-        const dragStyle = isDragging ? styles.tabItemDragging(theme) : null;
-        const tabItemStyle = cx(
-            styles.noWrap,
-            styles.tabItem(theme),
-            selectedStyle,
-            dropStyle,
-            dragStyle
-        );
-        return tabItemStyle;
-    };
 
     return (
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>

@@ -105,7 +105,7 @@
         "watch": "webpack --mode development --watch",
         "watch-prod": "webpack --env prod --mode production --watch",
         "webpack-analyze": "webpack --env prod --mode production --profile --json > stats.json; ./node_modules/.bin/webpack-bundle-analyzer stats.json ./build/js",
-        "test": "jest",
+        "test": "jest -t isearch",
         "storybook": "start-storybook -s ./build -p 6006",
         "build-storybook": "build-storybook"
     },

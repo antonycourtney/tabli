@@ -86,7 +86,6 @@ const StatefulFilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIBa
             stateRef={stateRef}
             tabWindow={tabWindow!}
             itemMatches={null}
-            searchStr={null}
             isSelected={false}
             isFocused={true}
             selectedTabIndex={1}
@@ -232,7 +231,6 @@ storiesOf('Tabli Components', module)
                     stateRef={stateRef}
                     tabWindow={testTabWindow}
                     itemMatches={null}
-                    searchStr={null}
                     isSelected={false}
                     isFocused={true}
                     selectedTabIndex={1}
@@ -249,7 +247,6 @@ storiesOf('Tabli Components', module)
                 <StatefulTabWindowContainer
                     tabWindow={testTabWindow}
                     itemMatches={null}
-                    searchStr={null}
                     isSelected={false}
                     isFocused={true}
                     selectedTabIndex={1}

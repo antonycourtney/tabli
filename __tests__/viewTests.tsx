@@ -12,6 +12,22 @@ import TabItemUI from '../src/ts/components/TabItemUI';
 import * as popperJS from 'popper.js';
 import * as sinon from 'sinon';
 import { appContainer } from 'oneref';
+import { resetServerContext } from 'react-beautiful-dnd';
+
+beforeAll(() => {
+    if (window.document)
+        (document as any).createRange = () => {
+            let ret = {
+                setStart: () => {},
+                setEnd: () => {},
+                commonAncestorContainer: {
+                    nodeName: 'BODY',
+                    ownerDocument: document
+                }
+            };
+            return ret;
+        };
+});
 
 test('adds 1 + 2 to equal 3', () => {
     expect(1 + 2).toBe(3);
@@ -116,6 +132,7 @@ test('basic render test', () => {
 
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);
 
+    resetServerContext();
     const component = ReactTestUtils.renderIntoDocument<
         PopupBaseProps,
         React.Component<PopupBaseProps>
@@ -168,6 +185,8 @@ test('isearch test', () => {
     const winStore = initialWinStore();
 
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);
+
+    resetServerContext();
     const component = ReactTestUtils.renderIntoDocument<
         PopupBaseProps,
         React.Component<PopupBaseProps>
@@ -177,7 +196,9 @@ test('isearch test', () => {
         </ClassWrapper>
     );
 
-    console.log('isearch test: component: ', component);
+    console.log('document: ', document);
+
+    // console.log('isearch test: component: ', component);
 
     const baseTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
         component,
@@ -234,6 +255,7 @@ test('search and open test', () => {
 
     const winStore = initialWinStore();
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);
+    resetServerContext();
     const component = ReactTestUtils.renderIntoDocument<
         PopupBaseProps,
         React.Component<PopupBaseProps>

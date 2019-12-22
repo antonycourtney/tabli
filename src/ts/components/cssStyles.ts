@@ -62,6 +62,13 @@ export const tabItemSelected = (theme: Theme) =>
         border: '1px solid ' + theme.windowSelectedBorder // #cacaca
     });
 
+// Styling to denote the active tab in each window:
+export const tabItemActive = (theme: Theme) =>
+    css({
+        border: '1px solid ' + theme.tabItemHover,
+        boxShadow: '0px 0px 3px 1px ' + theme.tabItemHover
+    });
+
 export const tabItemDragging = (theme: Theme) =>
     css({
         border: '1px solid #cacaca',
@@ -181,9 +188,11 @@ export const simpleTabContainer = css({
     border: '1px solid #bababa',
     borderRadius: 3
 });
-export const tabWindowFocused = css({
-    boxShadow: '0px 0px 5px 2px #7472ff'
-});
+export const tabWindowFocused = (theme: Theme) =>
+    css({
+        boxShadow: '0px 0px 5px 2px ' + theme.windowBorder
+    });
+
 export const tabWindow = (theme: Theme) =>
     css({
         border: '2px solid ' + theme.windowBorder,
