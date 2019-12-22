@@ -13,6 +13,13 @@ import * as popperJS from 'popper.js';
 import * as sinon from 'sinon';
 import { appContainer } from 'oneref';
 import { resetServerContext } from 'react-beautiful-dnd';
+import {
+    render,
+    fireEvent,
+    waitForElement,
+    getByTestId,
+    waitForDomChange
+} from '@testing-library/react';
 
 beforeAll(() => {
     if (window.document)
@@ -133,16 +140,13 @@ test('basic render test', () => {
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);
 
     resetServerContext();
-    const component = ReactTestUtils.renderIntoDocument<
-        PopupBaseProps,
-        React.Component<PopupBaseProps>
-    >(
+    const { getByTestId } = render(
         <ClassWrapper>
             <App isPopout={false} noListener={true} />
         </ClassWrapper>
     );
 
-    expect(component).not.toBe(null);
+    expect(getByTestId).not.toBe(null);
 });
 
 /*
@@ -187,55 +191,29 @@ test('isearch test', () => {
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);
 
     resetServerContext();
-    const component = ReactTestUtils.renderIntoDocument<
-        PopupBaseProps,
-        React.Component<PopupBaseProps>
-    >(
+    const { getAllByTestId, getByTestId } = render(
         <ClassWrapper>
             <App isPopout={false} noListener={true} />
         </ClassWrapper>
     );
 
-    console.log('document: ', document);
-
     // console.log('isearch test: component: ', component);
 
-    const baseTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
-        component,
-        'tabItemHoverContainer'
-    );
+    const baseTabItems = getAllByTestId('tabItem-container');
 
     console.log('isearch test: initial tab items found: ', baseTabItems.length);
 
     expect(baseTabItems.length).toBe(14);
 
-    /*
-    const selectablePopup = ReactTestUtils.findRenderedComponentWithType(
-        component,
-        SelectablePopup
-    );
-
-    const searchInput = selectablePopup.searchInputRef;
-    */
-    const searchInput = findRenderedDOMComponentWithClass(
-        component,
-        'search-input'
-    ) as HTMLInputElement;
+    const searchInput = getByTestId('searchBox') as HTMLInputElement;
     searchInput.value = 'git';
 
-    // const searchBar = ReactTestUtils.findRenderedComponentWithType(component, SearchBar)
-    // const searchInput = searchBar.refs.searchInput
-    // searchInput.value = 'git'
+    // This doesn't seem to work, but ye old ReactTestUtils.Simulate does, so we'll skip:
+    // fireEvent.change(searchInput, { target: searchInput });
 
-    // const inputComponents = ReactTestUtils.scryRenderedDOMComponentsWithTag(searchBar,'input')
-    // console.log("inputComponents: ", inputComponents)
+    ReactTestUtils.Simulate.change(searchInput);
 
-    ReactTestUtils.Simulate.change(searchInput); //  {target: { value: 'git'}})
-
-    const filteredTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
-        component,
-        'tabItemHoverContainer'
-    );
+    const filteredTabItems = getAllByTestId('tabItem-container');
 
     console.log(
         'isearch test: filtered tab items found: ',
@@ -247,7 +225,7 @@ test('isearch test', () => {
     actionsMock.restore();
 });
 
-test('search and open test', () => {
+test('search and open test', async () => {
     // Let's stub out all the stubs in actions libs:
     var actionsMock = sinon.mock(actions);
 
@@ -256,19 +234,13 @@ test('search and open test', () => {
     const winStore = initialWinStore();
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);
     resetServerContext();
-    const component = ReactTestUtils.renderIntoDocument<
-        PopupBaseProps,
-        React.Component<PopupBaseProps>
-    >(
+    const { getAllByTestId, getByTestId } = render(
         <ClassWrapper>
             <App isPopout={false} noListener={true} />
         </ClassWrapper>
     );
 
-    const baseTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
-        component,
-        'tabItemHoverContainer'
-    );
+    const baseTabItems = getAllByTestId('tabItem-container');
 
     console.log(
         'search and open test: initial tab items found: ',
@@ -277,36 +249,16 @@ test('search and open test', () => {
 
     expect(baseTabItems.length).toBe(14);
 
-    /*
-    const searchBar = ReactTestUtils.findRenderedComponentWithType(
-        component,
-        SearchBar
-    );
-
-    const selectablePopup = ReactTestUtils.findRenderedComponentWithType(
-        component,
-        SelectablePopup
-    );
-
-    const searchInput = selectablePopup.searchInputRef;
-    */
-
-    const searchInput = findRenderedDOMComponentWithClass(
-        component,
-        'search-input'
-    ) as HTMLInputElement;
-
-    searchInput.value = 'git';
-
     console.log('About to update searchInput.value');
+
+    const searchInput = getByTestId('searchBox') as HTMLInputElement;
     searchInput.value = 'git';
+
     ReactTestUtils.Simulate.change(searchInput);
+
     console.log('simulated input value update applied.');
 
-    const filteredTabItems = ReactTestUtils.scryRenderedDOMComponentsWithClass(
-        component,
-        'tabItemHoverContainer'
-    );
+    const filteredTabItems = getAllByTestId('tabItem-container');
 
     console.log(
         'search and open test: filtered tab items found: ',
@@ -314,6 +266,9 @@ test('search and open test', () => {
     );
 
     expect(filteredTabItems.length).toBe(8);
+
+    // Let changes to state to propogate:
+    await waitForDomChange();
 
     ReactTestUtils.Simulate.keyDown(searchInput, {
         key: 'Enter',

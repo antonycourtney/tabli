@@ -261,6 +261,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
                         tabIndex={1}
                         ref={searchInputRef}
                         id="searchBox"
+                        data-testid="searchBox"
                         placeholder="Search..."
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}

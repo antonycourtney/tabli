@@ -45,6 +45,7 @@
         "@storybook/addon-viewport": "^5.2.8",
         "@storybook/addons": "^5.2.8",
         "@storybook/react": "^5.2.8",
+        "@testing-library/react": "^9.4.0",
         "@types/chrome": "0.0.91",
         "@types/jest": "^24.0.23",
         "@types/lodash": "^4.14.149",
@@ -105,7 +106,7 @@
         "watch": "webpack --mode development --watch",
         "watch-prod": "webpack --env prod --mode production --watch",
         "webpack-analyze": "webpack --env prod --mode production --profile --json > stats.json; ./node_modules/.bin/webpack-bundle-analyzer stats.json ./build/js",
-        "test": "jest -t isearch",
+        "test": "jest",
         "storybook": "start-storybook -s ./build -p 6006",
         "build-storybook": "build-storybook"
     },

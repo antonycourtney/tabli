@@ -243,6 +243,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 getItemStyle(dragSnapshot.isDragging) +
                                 ' tabItemHoverContainer'
                             }
+                            data-testid="tabItem-container"
                             onClick={handleClick}
                         >
                             <div className={styles.rowItemsFixedWidth}>
