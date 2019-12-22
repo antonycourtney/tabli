@@ -134,6 +134,10 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     const theme = useContext(ThemeContext);
     const focusedTabWindowRef = useRef<HTMLDivElement | null>(null);
 
+    // Keep track of prevSearchStr so we can detect when it
+    // changes from non-empty to empty:
+    const [prevSearchStr, setPrevSearchStr] = useState(searchStr);
+
     const [selectedWindowIndex, setSelectedWindowIndex] = useState(0);
     const [selectedTabIndex, setSelectedTabIndex] = useState(-1);
     /* Through some disgusting accident of history, the current window id has type number,
@@ -172,21 +176,32 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 );
             }
         } else {
-            const nextSearchStr = searchStr;
-            var nextSelectedWindow = filteredWindows[selectedWindowIndex];
-            const matchCount = matchingTabsCount(
-                nextSearchStr,
-                nextSelectedWindow
-            );
-            // If we have a non-empty search, position selected tab at 0,
-            // unless there are no matching tabs.
+            var selectedWindow = filteredWindows[selectedWindowIndex];
+            const matchCount = matchingTabsCount(searchStr, selectedWindow);
+            // We want to set selectedTabIndex to 0 when we start a search,
+            // and back to -1 when we stop searching, but we also don't
+            // want to disturb any user navigation with arrow keys, which
+            // may happen even when there is no search
+
+            let baseTabIndex = selectedTabIndex;
+
             const nonEmptySearch = searchStr && searchStr.length > 0;
-            const baseTabIndex = nonEmptySearch
-                ? Math.max(0, selectedTabIndex)
-                : selectedTabIndex;
+
+            if (nonEmptySearch) {
+                // If we have a non-empty search, position selected tab at 0:
+                baseTabIndex = Math.max(0, selectedTabIndex);
+            } else {
+                // empty search...was this previously non-empty?
+                const prevNonEmptySearch = prevSearchStr && prevSearchStr.length > 0;
+                if (prevNonEmptySearch)
+                    baseTabIndex = -1;
+            }
+
+            // Now clamp baseTabIndex to number of matching tabs (which may be 0):
             var nextTabIndex = Math.min(baseTabIndex, matchCount - 1);
             setSelectedTabIndex(nextTabIndex);
         }
+        setPrevSearchStr(searchStr);
     });
 
     // Ported from updateScrollPos:
