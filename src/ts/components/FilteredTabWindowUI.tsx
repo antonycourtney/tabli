@@ -73,7 +73,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
 }: FilteredTabWindowUIProps) => {
     log.trace(
         '  FilteredTabWindowUI: rendering ',
-        tabWindow.id,
+        tabWindow.key,
         tabWindow.title
     );
     const theme = useContext(ThemeContext);
