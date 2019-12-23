@@ -792,3 +792,41 @@ active status...
     right now when re-opening a saved window.
 
 -   Need to update selected tab index back to 0 when searchStr changes from non-empty to empty...
+
+\*\*\*\* - Bug in SimpleImg exposed by DnD: It looks like dragging within a window will mess up favicon images.
+( Was due to bad key handling... )
+
+New, annoying issue with rbd: Annoying flash at drop.
+A new idea to pursue: What if we need to do the state update synchronously in onDragEnd?
+Or at least...sooner? Like before we actually move the tab items? Like: What if we skip actually moving
+the tabs for now, and just worry about the state?
+
+Sequence of events we see when moving a tab:
+Chrome Event: tabs.onDetached: 1042 {oldPosition: 3, oldWindowId: 689}
+(We attempt to close it, but its already gone...)
+Chrome Event: tabs.onAttached: 1042 {newPosition: 5, newWindowId: 858}
+Chrome Event: tabs.onCreated: {...id: 1042, ...} // Not real! Comes from onAttached handler!
+
+Let's check how we're handling these:
+onDetached: Let's make sure handling it like closed only operates on source window:
+onAttached --> onCreated: This seems risky, particularly with the optimistic UI update.
+
+Problem 1:
+
+-   tabWindowUtils.closeTab will bail out when it doesn't find the detached tab in the original tabWindow.
+    This won't work when we move a saved tab!
+
+I am seeing some strange behavior where fairly frequently dragging a tab to a new window results in a duplicate
+in the target briefly (and then is corrected).
+Theory is that this is the result of calling onCreated to handle onAttached....
+
+handled by getting tab details and then passing state.handleTabCreated:
+which just calls tabWindowUtils.createTab:
+
+...turned out we could end up duplicating tabs in mergeTabWindowTabItems. Fixed, by filtering out dupes
+after we've split open from saved, before merging.
+
+TODO:
+
+-   fix handling of onDetached for saved tab items. Need to deal with both moves initiated from within Tabli
+    and reacting to dragging of tabs outside of Tabli.

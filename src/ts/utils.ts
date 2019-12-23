@@ -233,7 +233,7 @@ export function setLogLevel(log: any) {
 
     if (nodeEnv === 'development') {
         // more detail, generally:
-        log.setLevel('debug'); // Enable to see every Chrome event:
+        log.setLevel('debug');
     } else {
         log.setLevel('info');
     }

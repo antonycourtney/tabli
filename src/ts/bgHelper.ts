@@ -649,6 +649,7 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
             detachInfo
         ); // just handle like tab closing:
 
+        // TODO: This won't be right for saved tabs; we will lose the saved state...
         onTabRemoved(stateRef, detachInfo.oldWindowId, tabId);
     });
     chrome.tabs.onAttached.addListener((tabId: number, attachInfo) => {

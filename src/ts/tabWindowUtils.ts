@@ -390,10 +390,24 @@ function mergeTabWindowTabItems(
     // If this tab is active, clear active from all other tabs:
     const clearActive = optChromeTab && optChromeTab.active;
 
-    const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
-    const baseOpenItems = tabItems
+    let baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
+    let baseOpenItems = tabItems
         .filter(ti => ti.open)
         .map(ti => resetOpenItem(ti, clearActive));
+
+    if (optChromeTab && optChromeTab.id) {
+        // filter out existing open tab with same chrome id, use optChromeTab's instead:
+        baseOpenItems = baseOpenItems.filter(
+            ti => ti.openState!.openTabId !== optChromeTab.id
+        );
+    }
+
+    if (optBookmark) {
+        // filter out any matching bookmark with same bookmark id:
+        baseSavedItems = baseSavedItems.filter(
+            ti => ti.savedState!.bookmarkId !== optBookmark.id
+        );
+    }
 
     const updOpenItems = optChromeTab
         ? baseOpenItems

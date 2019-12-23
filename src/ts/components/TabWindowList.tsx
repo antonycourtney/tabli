@@ -69,7 +69,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
         var filteredTabWindow = filteredWindows[i];
         var tabWindow = filteredTabWindow.tabWindow;
 
-        var id = tabWindow.id;
+        var key = tabWindow.key;
         var isOpen = tabWindow.open;
         const isFocused = isOpen && currentWindowId === tabWindow.openWindowId;
 
@@ -89,7 +89,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
                 stateRef={stateRef}
                 tabWindow={tabWindow}
                 itemMatches={itemMatches}
-                key={id}
+                key={key}
                 isSelected={isSelected}
                 isFocused={focusedProp}
                 selectedTabIndex={trueSelectedTabIndex}

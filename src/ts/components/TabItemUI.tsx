@@ -18,7 +18,7 @@ import {
 import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
-import { StateRef } from 'oneref';
+import { StateRef, mutableGet } from 'oneref';
 import { areEqualShallow } from '../utils';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
@@ -34,6 +34,17 @@ const tabItemHoverVisible = css`
 `;
 
 const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon);
+
+const getDragContainerStyle = (
+    isDragging: boolean,
+    draggableStyle: any,
+    snapshot: any
+) => {
+    return {
+        // styles we need to apply on draggables
+        ...draggableStyle
+    };
+};
 
 export interface TabItemUIProps {
     tabWindow: TabWindow;
@@ -171,7 +182,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     // Note explicit global css class name tabItemHoverContainer here
     // Due to limitation of nested class selectors with composition;
     // see https://emotion.sh/docs/nested for more info.
-    const getItemStyle = (isDragging: boolean): string => {
+    const getTabItemStyle = (isDragging: boolean): string => {
         const dragStyle = isDragging ? styles.tabItemDragging(theme) : null;
         const tabItemStyle = cx(
             styles.noWrap,
@@ -222,7 +233,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         />
     );
 
-    const draggableId = tabWindow.id + '-' + tabIndex.toString();
+    const draggableId = tab.key;
 
     return (
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
@@ -237,10 +248,15 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
+                        style={getDragContainerStyle(
+                            dragSnapshot.isDragging,
+                            dragProvided.draggableProps.style,
+                            dragSnapshot
+                        )}
                     >
                         <div
                             className={
-                                getItemStyle(dragSnapshot.isDragging) +
+                                getTabItemStyle(dragSnapshot.isDragging) +
                                 ' tabItemHoverContainer'
                             }
                             data-testid="tabItem-container"

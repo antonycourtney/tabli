@@ -613,6 +613,111 @@ export function copyWindowsToClipboard(stateRef: TMSRef) {
     copyTextToClipboard(s);
 }
 
+// reorder tab within a window:
+const reorderTab = (
+    st: TabManagerState,
+    tabWindow: TabWindow,
+    tabItem: TabItem,
+    sourceIndex: number,
+    targetIndex: number
+): TabManagerState => {
+    // reorder tab items within this single window:
+    const tabItems = tabWindow.tabItems;
+    const nextTabItems = tabItems
+        .splice(sourceIndex, 1)
+        .splice(targetIndex, 0, tabItem);
+    const nextTabWindow = tabWindow.setTabItems(nextTabItems);
+    const nextSt = st.registerTabWindow(nextTabWindow);
+    return nextSt;
+};
+
+// move tab between two windows:
+const moveTab = (
+    st: TabManagerState,
+    sourceTabWindow: TabWindow,
+    targetTabWindow: TabWindow,
+    tabItem: TabItem,
+    sourceIndex: number,
+    targetIndex: number
+): TabManagerState => {
+    // reorder tab items within this single window:
+    const sourceTabItems = sourceTabWindow.tabItems;
+    const nextSourceTabItems = sourceTabItems.splice(sourceIndex, 1);
+    const nextSourceTabWindow = sourceTabWindow.setTabItems(nextSourceTabItems);
+
+    const targetTabItems = targetTabWindow.tabItems;
+    const nextTargetTabItems = targetTabItems.splice(targetIndex, 0, tabItem);
+    const nextTargetTabWindow = targetTabWindow.setTabItems(nextTargetTabItems);
+
+    const nextSt = st.registerTabWindows([
+        nextSourceTabWindow,
+        nextTargetTabWindow
+    ]);
+    return nextSt;
+};
+
+// Test of dnd animation by moving tab immediately:
+export const stubMoveTabItem = async (
+    sourceTabWindow: TabWindow,
+    targetTabWindow: TabWindow,
+    sourceIndex: number,
+    targetIndex: number,
+    movedTabItem: TabItem,
+    storeRef: TMSRef
+) => {
+    log.debug(
+        'stubMoveTabItem: targetTabWindow: ',
+        targetTabWindow.toJS(),
+        'targetIndex: ',
+        targetIndex
+    );
+    log.debug('moveTabItem: movedTabItem: ', movedTabItem.toJS());
+    if (movedTabItem.open) {
+        const openTabId = movedTabItem.openState!.openTabId;
+
+        if (sourceTabWindow.open && targetTabWindow.open) {
+            // common case: moving an open tab between open widows
+
+            // optimistic visual update, essential to get desired
+            // DnD drop animation behavior without flashing:
+            update(
+                storeRef,
+                (st: TabManagerState): TabManagerState => {
+                    let nextSt = st;
+                    if (sourceTabWindow === targetTabWindow) {
+                        nextSt = reorderTab(
+                            st,
+                            sourceTabWindow,
+                            movedTabItem,
+                            sourceIndex,
+                            targetIndex
+                        );
+                    } else {
+                        nextSt = moveTab(
+                            st,
+                            sourceTabWindow,
+                            targetTabWindow,
+                            movedTabItem,
+                            sourceIndex,
+                            targetIndex
+                        );
+                    }
+                    return nextSt;
+                }
+            );
+            const sourceWindowId = sourceTabWindow.openWindowId;
+            const targetWindowId = targetTabWindow.openWindowId;
+            const moveProps = { windowId: targetWindowId, index: targetIndex };
+            await chromep.tabs.move(openTabId, moveProps);
+            console.log('chrome tab move complete, refreshing...:');
+            // Let's just refresh the both windows:
+            await awaitableSyncChromeWindowById(sourceWindowId, storeRef);
+            if (sourceWindowId !== targetWindowId) {
+                await awaitableSyncChromeWindowById(targetWindowId, storeRef);
+            }
+        }
+    }
+};
 /*
  * move an open tab (in response to a drag event):
  */
@@ -628,7 +733,7 @@ export const moveTabItem = async (
         'targetIndex: ',
         targetIndex
     );
-    log.debug('moveTabItem: movedTabItem: ', movedTabItem);
+    log.debug('moveTabItem: movedTabItem: ', movedTabItem.toJS());
     const st = mutableGet(storeRef);
     /* The tab being moved can be in 4 possible states based
      * on open and saved flags, same for target window...

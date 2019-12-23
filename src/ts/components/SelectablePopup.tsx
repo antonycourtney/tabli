@@ -10,7 +10,7 @@ import TabWindowList from './TabWindowList';
 import { ThemeContext, Theme } from './themeContext';
 import { FilteredTabWindow } from '../searchOps';
 import TabManagerState from '../tabManagerState';
-import { StateRef } from 'oneref';
+import { StateRef, beginTransaction, endTransaction } from 'oneref';
 import {
     useRef,
     useContext,
@@ -21,7 +21,12 @@ import {
 } from 'react';
 import { TabItem } from '../tabWindow';
 import ModalActions from './modalActions';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import {
+    DragDropContext,
+    DropResult,
+    ResponderProvided,
+    DragStart
+} from 'react-beautiful-dnd';
 
 function matchingTabs(
     searchStr: string | null,
@@ -192,9 +197,9 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 baseTabIndex = Math.max(0, selectedTabIndex);
             } else {
                 // empty search...was this previously non-empty?
-                const prevNonEmptySearch = prevSearchStr && prevSearchStr.length > 0;
-                if (prevNonEmptySearch)
-                    baseTabIndex = -1;
+                const prevNonEmptySearch =
+                    prevSearchStr && prevSearchStr.length > 0;
+                if (prevNonEmptySearch) baseTabIndex = -1;
             }
 
             // Now clamp baseTabIndex to number of matching tabs (which may be 0):
@@ -258,8 +263,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 windowTop + windowHeight > viewportTop + viewportHeight ||
                 isPopup
             ) {
-                log.debug('updateScrollPos: setting scroll position');
-
                 if (windowHeight > viewportHeight || isPopup) {
                     bodyRef.current.scrollTop =
                         focusedTabWindowRef.current.offsetTop -
@@ -439,15 +442,26 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
 
     const summarySpanStyle = cx(styles.closed(theme), summarySpanBaseStyle);
 
-    const onDragEnd = async (result: DropResult) => {
+    const onDragStart = (start: DragStart, provided: ResponderProvided) => {
+        console.log('onDragStart: ', start);
+        // beginTransaction(stateRef);
+        // console.log('onDragStart: started transaction');
+    };
+
+    // main response handling of dragEnd:
+    // We break this in to a separate function
+    // so that we always call endTransaction, even in the case of short-circuit return.
+    const handleDragEnd = async (result: DropResult) => {
         log.debug('onDragEnd: ', result);
-        const { source, destination } = result;
-        if (!source || !destination) return;
-        const sourceWindow = appState.findTabWindowById(source.droppableId);
-        const dstWindow = appState.findTabWindowById(destination.droppableId);
+        const { source, draggableId, destination } = result;
+        if (!destination) return;
+        const sourceWindow = appState.findTabWindowByKey(source.droppableId);
+        const dstWindow = appState.findTabWindowByKey(destination.droppableId);
         if (!sourceWindow || !dstWindow) return;
-        const sourceTab = sourceWindow.tabItems.get(source.index);
-        if (!sourceTab) return;
+        const mbSourceTab = sourceWindow.findTabByKey(draggableId);
+        if (!mbSourceTab) return;
+        const [_, sourceTab] = mbSourceTab;
+        log.debug('onDragEnd: sourceTab: ', sourceTab.title);
         await actions.moveTabItem(
             dstWindow,
             destination.index,
@@ -460,9 +474,38 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         setSelectedTabIndex(-1);
         log.debug('onDragEnd: reset indices done');
     };
+    /*
+    const onDragEnd = async (result: DropResult) => {
+        await handleDragEnd(result);
+        console.log('onDragEnd: ending transaction');
+        endTransaction(stateRef);
+        console.log('transaction ended');
+    };
+*/
+    const onDragEnd = (result: DropResult) => {
+        console.log('onDragEnd stub: ', result);
+        const { source, draggableId, destination } = result;
+        if (!destination) return;
+        const sourceWindow = appState.findTabWindowByKey(source.droppableId);
+        const dstWindow = appState.findTabWindowByKey(destination.droppableId);
+        if (!sourceWindow || !dstWindow) return;
+        const mbSourceTab = sourceWindow.findTabByKey(draggableId);
+        if (!mbSourceTab) return;
+        const [_, sourceTab] = mbSourceTab;
+        log.debug('onDragEnd: sourceTab: ', sourceTab.title);
+        actions.stubMoveTabItem(
+            sourceWindow,
+            dstWindow,
+            source.index,
+            destination.index,
+            sourceTab,
+            stateRef
+        );
+        // endTransaction(stateRef);
+    };
 
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <div className={popupInnerStyle}>
                 <div className={popupHeaderStyle}>
                     <SearchBar

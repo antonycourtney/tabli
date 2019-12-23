@@ -71,18 +71,43 @@ const defaultTabItemProps: TabItemProps = {
     openState: null // OpenTabState iff open
 };
 
+// We may keep some tabs around that are neither open nor saved
+// (recently closed / history)
+// Use a counter to generate unique ids for these on-demand...
+let historyIdCounter = 500;
+
+const genHistoryId = () => '_historicalTab-' + historyIdCounter++;
+
 /*
  * An item in a tabbed window.
  *
  * May be associated with an open tab, a bookmark, or both
  */
 export class TabItem extends Immutable.Record(defaultTabItemProps) {
+    private _id: string | undefined;
+
     get title(): string {
         if (this.open && this.openState) {
             return this.openState.title;
         }
 
         return this.savedState ? this.savedState.title : '';
+    }
+
+    // get a unique key for this TabItem
+    // useful as key in React arrays
+    // Note: not unique across persisted sessions / Chrome restart
+    get key(): string {
+        if (this._id === undefined) {
+            if (this.saved) {
+                this._id = '_savedTab-' + this.savedState!.bookmarkId;
+            } else if (this.open) {
+                this._id = '_openTab-' + this.openState!.openTabId;
+            } else {
+                this._id = genHistoryId();
+            }
+        }
+        return this._id;
     }
 
     get url(): string {
@@ -181,7 +206,7 @@ const defaultTabWindowProps: TabWindowProps = {
 
 export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
     private _title: string | undefined;
-    private _id: string | undefined;
+    private _key: string | undefined;
 
     get title(): string {
         if (this._title === undefined) {
@@ -222,17 +247,19 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
         return this.set('savedTitle', title);
     }
 
-    // get a unique id for this window
+    // get a unique key for this window
     // useful as key in React arrays
-    get id(): string {
-        if (this._id === undefined) {
+    // Should be adequate as a key for React, but does not uniquely
+    // determine the immutable record state.
+    get key(): string {
+        if (this._key === undefined) {
             if (this.saved) {
-                this._id = '_saved' + this.savedFolderId;
+                this._key = '_saved' + this.savedFolderId;
             } else {
-                this._id = '_open' + this.openWindowId;
+                this._key = '_open' + this.openWindowId;
             }
         }
-        return this._id;
+        return this._key;
     }
 
     get openTabCount(): number {
@@ -264,6 +291,11 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
         return ret ? ret : null;
     }
 
+    findTabByKey(key: string): [number, TabItem] | null {
+        const ret = this.tabItems.findEntry(ti => ti.key === key);
+        return ret ? ret : null;
+    }
+
     getActiveTabId(): number | null {
         const activeTab = this.tabItems.find(
             t => t.open && t.openState!.active
@@ -279,7 +311,7 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
      * Then we briefly used .cacheResult() when tabItems was (supposedly) a Seq,
      * but it turned out that certain code paths (such as inserting a tab) would
      * result in nextItems being a List.
-     * Seems to make the most sentence to just make tabItems a List not a Seq
+     * Seems to make the most sense to just make tabItems a List not a Seq
      */
     setTabItems(nextItems: Immutable.List<TabItem>): TabWindow {
         /* HACK: debugging only check; get rid of this! */

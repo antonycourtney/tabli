@@ -376,9 +376,9 @@ export default class TabManagerState extends Immutable.Record(
         return openWindows.concat(closedSavedWindows);
     }
 
-    findTabWindowById(targetId: string): TabWindow | undefined {
+    findTabWindowByKey(targetKey: string): TabWindow | undefined {
         const allWindows = this.getAll();
-        return allWindows.find(w => w.id === targetId);
+        return allWindows.find(w => w.key === targetKey);
     }
 
     getTabWindowsByType(windowType: string): Immutable.Seq.Indexed<TabWindow> {

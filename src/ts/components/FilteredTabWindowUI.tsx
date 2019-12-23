@@ -127,14 +127,14 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
          */
         const items = [];
         for (let i = 0; i < tabs.count(); i++) {
-            const id = 'tabItem-' + i;
+            const tab = tabs.get(i)!;
             const isSelected = i === selectedTabIndex;
             const tabItem = (
                 <TabItemUI
                     stateRef={stateRef}
                     tabWindow={tabWindow}
-                    tab={tabs.get(i)!}
-                    key={id}
+                    tab={tab}
+                    key={tab.key}
                     tabIndex={i}
                     isSelected={isSelected}
                     onItemSelected={onItemSelected}
@@ -205,7 +205,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     /* N.B.: On inner div, may want to set class name / styling with:
         className={getListStyle(snapshot.isDraggingOver)}
     */
-    const droppableId = tabWindow.id;
+    const droppableId = tabWindow.key;
     return (
         <div {...windowDivProps}>
             <Droppable droppableId={droppableId}>

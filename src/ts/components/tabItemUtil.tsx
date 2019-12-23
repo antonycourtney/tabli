@@ -7,7 +7,9 @@ import { HEADER_BUTTON_SIZE } from './constants';
 import { Theme } from './themeContext';
 import * as svg from './svg';
 import { inExtension } from '../utils';
-import { SimpleImg } from 'react-simple-img';
+import { initSimpleImg, SimpleImg } from 'react-simple-img';
+
+initSimpleImg(undefined, undefined, true);
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon);
 const favIconOpenStyle = styles.favIcon;
