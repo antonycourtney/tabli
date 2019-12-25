@@ -120,11 +120,6 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
         tabWindow: TabWindow,
         tabs: Immutable.Collection.Indexed<TabItem>
     ) => {
-        /*
-         * We tried explicitly checking for expanded state and
-         * returning null if not expanded, but (somewhat surprisingly) it
-         * was no faster, even with dozens of hidden tabs
-         */
         const items = [];
         for (let i = 0; i < tabs.count(); i++) {
             const tab = tabs.get(i)!;

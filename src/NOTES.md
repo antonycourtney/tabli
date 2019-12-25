@@ -828,5 +828,12 @@ after we've split open from saved, before merging.
 
 TODO:
 
--   fix handling of onDetached for saved tab items. Need to deal with both moves initiated from within Tabli
+X   fix handling of onDetached for saved tab items. Need to deal with both moves initiated from within Tabli
     and reacting to dragging of tabs outside of Tabli.
+
+X   Make target window and tab active after drop operation.
+
+X  Support moving of closed, saved tabs, even across closed, saved windows
+
+-  Deal with using DnD to adjust ordering of both open tab index and bookmark index.
+

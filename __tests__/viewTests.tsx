@@ -229,7 +229,7 @@ test('search and open test', async () => {
     // Let's stub out all the stubs in actions libs:
     var actionsMock = sinon.mock(actions);
 
-    actionsMock.expects('activateTab').once();
+    actionsMock.expects('activateOrRestoreTab').once();
 
     const winStore = initialWinStore();
     const App = appContainer<TabManagerState, PopupBaseProps>(winStore, Popup);

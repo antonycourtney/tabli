@@ -385,7 +385,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 searchStr,
                 selectedTabIndex
             );
-            actions.activateTab(
+            actions.activateOrRestoreTab(
                 selectedWindow.tabWindow,
                 selectedTabItem,
                 selectedTabIndex,
@@ -444,15 +444,10 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
 
     const onDragStart = (start: DragStart, provided: ResponderProvided) => {
         console.log('onDragStart: ', start);
-        // beginTransaction(stateRef);
-        // console.log('onDragStart: started transaction');
     };
 
-    // main response handling of dragEnd:
-    // We break this in to a separate function
-    // so that we always call endTransaction, even in the case of short-circuit return.
-    const handleDragEnd = async (result: DropResult) => {
-        log.debug('onDragEnd: ', result);
+    const onDragEnd = (result: DropResult) => {
+        console.log('onDragEnd: ', result);
         const { source, draggableId, destination } = result;
         if (!destination) return;
         const sourceWindow = appState.findTabWindowByKey(source.droppableId);
@@ -462,8 +457,10 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (!mbSourceTab) return;
         const [_, sourceTab] = mbSourceTab;
         log.debug('onDragEnd: sourceTab: ', sourceTab.title);
-        await actions.moveTabItem(
+        actions.moveTabItem(
+            sourceWindow,
             dstWindow,
+            source.index,
             destination.index,
             sourceTab,
             stateRef
@@ -473,35 +470,6 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         setSelectedWindowIndex(0);
         setSelectedTabIndex(-1);
         log.debug('onDragEnd: reset indices done');
-    };
-    /*
-    const onDragEnd = async (result: DropResult) => {
-        await handleDragEnd(result);
-        console.log('onDragEnd: ending transaction');
-        endTransaction(stateRef);
-        console.log('transaction ended');
-    };
-*/
-    const onDragEnd = (result: DropResult) => {
-        console.log('onDragEnd stub: ', result);
-        const { source, draggableId, destination } = result;
-        if (!destination) return;
-        const sourceWindow = appState.findTabWindowByKey(source.droppableId);
-        const dstWindow = appState.findTabWindowByKey(destination.droppableId);
-        if (!sourceWindow || !dstWindow) return;
-        const mbSourceTab = sourceWindow.findTabByKey(draggableId);
-        if (!mbSourceTab) return;
-        const [_, sourceTab] = mbSourceTab;
-        log.debug('onDragEnd: sourceTab: ', sourceTab.title);
-        actions.stubMoveTabItem(
-            sourceWindow,
-            dstWindow,
-            source.index,
-            destination.index,
-            sourceTab,
-            stateRef
-        );
-        // endTransaction(stateRef);
     };
 
     return (

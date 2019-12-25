@@ -62,7 +62,7 @@ export const mkFavIcon = (tab: TabItem) => {
         // just yields a placeholder FavIcon, while chrome://favicon
         // seems to be more reliable...
         // fiSrc = httpFavIconUrl(tab.url);
-        fiSrc = 'chrome://favicon/size/16/' + tab.url;
+        fiSrc = 'chrome://favicon/size/16/' + utils.baseURL(tab.url);
     }
 
     // Skip the chrome FAVICONs; they just throw when accessed.

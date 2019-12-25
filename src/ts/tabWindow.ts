@@ -71,12 +71,11 @@ const defaultTabItemProps: TabItemProps = {
     openState: null // OpenTabState iff open
 };
 
-// We may keep some tabs around that are neither open nor saved
-// (recently closed / history)
-// Use a counter to generate unique ids for these on-demand...
-let historyIdCounter = 500;
+// Use a counter to generate unique keys for tab items on-demand...
+// lets
+let tabItemKeyCounter = 500;
 
-const genHistoryId = () => '_historicalTab-' + historyIdCounter++;
+const genTabItemKey = () => '_tabItem-' + tabItemKeyCounter++;
 
 /*
  * An item in a tabbed window.
@@ -97,16 +96,18 @@ export class TabItem extends Immutable.Record(defaultTabItemProps) {
     // get a unique key for this TabItem
     // useful as key in React arrays
     // Note: not unique across persisted sessions / Chrome restart
+    // We briefly tried to use open tab ids or bookmarks ids, but this gets horribly confusing
+    // and risks collisions when, for example, we persist the last opened state of a tab and
+    // re-hydrate it.
     get key(): string {
         if (this._id === undefined) {
-            if (this.saved) {
-                this._id = '_savedTab-' + this.savedState!.bookmarkId;
-            } else if (this.open) {
-                this._id = '_openTab-' + this.openState!.openTabId;
-            } else {
-                this._id = genHistoryId();
-            }
+            this._id = genTabItemKey();
         }
+        return this._id;
+    }
+
+    // just for debugging:
+    get rawKey(): string | undefined {
         return this._id;
     }
 

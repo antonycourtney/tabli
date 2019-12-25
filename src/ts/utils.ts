@@ -125,6 +125,16 @@ export function parseURL(url: string): ParsedURL {
         segments: a.pathname.replace(/^\//, '').split('/') // eslint-disable-line
     };
 }
+
+/**
+ * drop parameters from an url 
+ */
+export function baseURL(url: string): string {
+    const idx = url.indexOf('?');
+    const ret = (idx >= 0) ? url.slice(0, idx) : url;
+    return ret;
+}
+
 /**
  * chain a sequence of asynchronous actions
  * TODO: Investigate if this can go away with latest iteration of

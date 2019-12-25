@@ -75,7 +75,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
         // log.debug("TabItem: handleClick: tab: ", tab)
 
-        actions.activateTab(tabWindow, tab, tabIndex, stateRef);
+        actions.activateOrRestoreTab(tabWindow, tab, tabIndex, stateRef);
 
         if (onItemSelected) {
             onItemSelected(tab);

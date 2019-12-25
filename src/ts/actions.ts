@@ -1,7 +1,6 @@
 import log from 'loglevel';
 import * as utils from './utils';
 import * as prefs from './preferences';
-import * as tabliBrowser from './chromeBrowser';
 import * as Constants from './components/constants';
 import { TabItem, TabWindow } from './tabWindow'; // eslint-disable-line
 import {
@@ -117,6 +116,14 @@ const restoreFromAppState = (
         'restoreFromAppState: restoring saved TabWindow: ',
         tabWindow.toJS()
     );
+    const tabItemRawKeys = tabWindow.tabItems.map(ti => ti.rawKey).toArray;
+    log.debug(
+        'restoreFromAppState: tabWindow tabItem _key vals:',
+        tabItemRawKeys
+    );
+    const tabItemKeys = tabWindow.tabItems.map(ti => ti.key).toArray();
+    log.debug('restoreFromAppState: tabWindow keys: ', tabItemKeys);
+
     const attachWindow = (chromeWindow?: chrome.windows.Window) => {
         if (chromeWindow) {
             update(storeRef, state =>
@@ -342,8 +349,20 @@ export function expandWindow(
     );
 }
 
+export async function setActiveTab(tab: TabItem) {
+    if (tab.open) {
+        await chromep.tabs.update(tab.openState!.openTabId, { active: true });
+    }
+}
+
+export async function setFocusedWindow(tabWindow: TabWindow) {
+    if (tabWindow.open) {
+        await chromep.windows.update(tabWindow.openWindowId, { focused: true });
+    }
+}
+
 // activate a specific tab:
-export async function activateTab(
+export async function activateOrRestoreTab(
     targetTabWindow: TabWindow,
     tab: TabItem,
     tabIndex: number,
@@ -358,9 +377,8 @@ export async function activateTab(
         // OK, so we know this window is open.  What about the specific tab?
         if (tab.open) {
             // Tab is already open, just make it active:
-            tabliBrowser.activateTab(tab.safeOpenState.openTabId, () => {
-                tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId);
-            });
+            await setActiveTab(tab);
+            await setFocusedWindow(targetTabWindow);
         } else {
             // restore this bookmarked tab:
             var createOpts = {
@@ -372,7 +390,7 @@ export async function activateTab(
 
             log.debug('restoring saved tab');
             await chromep.tabs.create(createOpts);
-            tabliBrowser.setFocusedWindow(targetTabWindow.openWindowId);
+            await setFocusedWindow(targetTabWindow);
         }
     } else {
         log.debug('activateTab: opening single tab of saved window');
@@ -548,7 +566,7 @@ export async function showPreferences() {
 export const showPopout = (stateRef: StateRef<TabManagerState>) => {
     const ptw = mutableGet(stateRef).getPopoutTabWindow();
     if (ptw) {
-        tabliBrowser.setFocusedWindow(ptw.openWindowId);
+        setFocusedWindow(ptw);
     } else {
         chromep.windows.create({
             url: 'popout.html',
@@ -613,8 +631,8 @@ export function copyWindowsToClipboard(stateRef: TMSRef) {
     copyTextToClipboard(s);
 }
 
-// reorder tab within a window:
-const reorderTab = (
+// optimistic state update to reorder tab within a window:
+const optimisticReorderTab = (
     st: TabManagerState,
     tabWindow: TabWindow,
     tabItem: TabItem,
@@ -631,8 +649,8 @@ const reorderTab = (
     return nextSt;
 };
 
-// move tab between two windows:
-const moveTab = (
+// optimistic state update to move tab between two windows:
+const optimisticMoveTab = (
     st: TabManagerState,
     sourceTabWindow: TabWindow,
     targetTabWindow: TabWindow,
@@ -640,7 +658,6 @@ const moveTab = (
     sourceIndex: number,
     targetIndex: number
 ): TabManagerState => {
-    // reorder tab items within this single window:
     const sourceTabItems = sourceTabWindow.tabItems;
     const nextSourceTabItems = sourceTabItems.splice(sourceIndex, 1);
     const nextSourceTabWindow = sourceTabWindow.setTabItems(nextSourceTabItems);
@@ -657,7 +674,7 @@ const moveTab = (
 };
 
 // Test of dnd animation by moving tab immediately:
-export const stubMoveTabItem = async (
+export const moveTabItem = async (
     sourceTabWindow: TabWindow,
     targetTabWindow: TabWindow,
     sourceIndex: number,
@@ -672,56 +689,86 @@ export const stubMoveTabItem = async (
         targetIndex
     );
     log.debug('moveTabItem: movedTabItem: ', movedTabItem.toJS());
+
+    // optimistic visual update, essential to get desired
+    // DnD drop animation behavior without flashing:
+
+    // TODO: need to think about what to do here when moving a saved tab!
+    // probably want something like TabManagerState.handleSavedTabMoved,
+    // though we don't actually want to create a new tab in the destination....
+    update(
+        storeRef,
+        (st: TabManagerState): TabManagerState => {
+            let nextSt = st;
+            if (sourceTabWindow === targetTabWindow) {
+                nextSt = optimisticReorderTab(
+                    st,
+                    sourceTabWindow,
+                    movedTabItem,
+                    sourceIndex,
+                    targetIndex
+                );
+            } else {
+                nextSt = optimisticMoveTab(
+                    st,
+                    sourceTabWindow,
+                    targetTabWindow,
+                    movedTabItem,
+                    sourceIndex,
+                    targetIndex
+                );
+            }
+            return nextSt;
+        }
+    );
+
     if (movedTabItem.open) {
         const openTabId = movedTabItem.openState!.openTabId;
 
         if (sourceTabWindow.open && targetTabWindow.open) {
             // common case: moving an open tab between open widows
 
-            // optimistic visual update, essential to get desired
-            // DnD drop animation behavior without flashing:
-            update(
-                storeRef,
-                (st: TabManagerState): TabManagerState => {
-                    let nextSt = st;
-                    if (sourceTabWindow === targetTabWindow) {
-                        nextSt = reorderTab(
-                            st,
-                            sourceTabWindow,
-                            movedTabItem,
-                            sourceIndex,
-                            targetIndex
-                        );
-                    } else {
-                        nextSt = moveTab(
-                            st,
-                            sourceTabWindow,
-                            targetTabWindow,
-                            movedTabItem,
-                            sourceIndex,
-                            targetIndex
-                        );
-                    }
-                    return nextSt;
-                }
-            );
+            // Perform the move of the live tab in Chrome:
             const sourceWindowId = sourceTabWindow.openWindowId;
             const targetWindowId = targetTabWindow.openWindowId;
             const moveProps = { windowId: targetWindowId, index: targetIndex };
             await chromep.tabs.move(openTabId, moveProps);
-            console.log('chrome tab move complete, refreshing...:');
+            log.debug('chrome tab move complete');
+
             // Let's just refresh the both windows:
-            await awaitableSyncChromeWindowById(sourceWindowId, storeRef);
+            syncChromeWindowById(sourceWindowId, storeRef);
             if (sourceWindowId !== targetWindowId) {
-                await awaitableSyncChromeWindowById(targetWindowId, storeRef);
+                syncChromeWindowById(targetWindowId, storeRef);
             }
         }
     }
+
+    if (
+        movedTabItem.saved &&
+        targetTabWindow.saved &&
+        sourceTabWindow !== targetTabWindow
+    ) {
+        const bookmarkId = movedTabItem.savedState!.bookmarkId;
+        const folderId = targetTabWindow.savedFolderId;
+        log.debug(
+            'moving saved tab to saved window -- moving bookmark: ',
+            bookmarkId
+        );
+        const bmNode = await chromep.bookmarks.move(bookmarkId, {
+            parentId: folderId
+        });
+        log.debug('bookmark move complete');
+    }
+
+    // *sigh* We tried to activate movedTabItem explicitly here, but that often results in changing the
+    // window title, which affects the sort order, which leads to annoying shuffling of windows after
+    // a drag operation....
 };
+
 /*
  * move an open tab (in response to a drag event):
  */
-export const moveTabItem = async (
+export const oldMoveTabItem = async (
     targetTabWindow: TabWindow,
     targetIndex: number,
     movedTabItem: TabItem,

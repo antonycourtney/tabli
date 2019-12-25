@@ -318,7 +318,12 @@ const dedupeTab = async (
                     tabId,
                     stateRef
                 );
-                actions.activateTab(origTabWindow, origTab, 0, stateRef);
+                actions.activateOrRestoreTab(
+                    origTabWindow,
+                    origTab,
+                    0,
+                    stateRef
+                );
             }
         }
     } catch (e) {
@@ -649,7 +654,8 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
             detachInfo
         ); // just handle like tab closing:
 
-        // TODO: This won't be right for saved tabs; we will lose the saved state...
+        // I am a little surprised that this doesn't lose saved state when detaching a
+        // saved tab, but it really doesn't seem to!
         onTabRemoved(stateRef, detachInfo.oldWindowId, tabId);
     });
     chrome.tabs.onAttached.addListener((tabId: number, attachInfo) => {
