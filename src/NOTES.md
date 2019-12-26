@@ -837,3 +837,18 @@ X  Support moving of closed, saved tabs, even across closed, saved windows
 
 X  Deal with using DnD to adjust ordering of both open tab index and bookmark index.
 
+Release Prep, 26Dec19:
+
+  - Better screenshots for Chrome Web Store
+  - Better screenshots for Tabli web site
+  - Get gettabli.com domain working for support email
+    (Grrrr. broken. But seems to be done via admin.google.com -> Domains, as antony@antonycourtney.com)
+  - write relnotes
+  - Update web site with rel notes
+  - Add link to Wired article to web site
+  - Maybe: write a "Getting the Most out of Tabli" post
+  - Build and upload new release to CWS
+  - Email tabli-users
+  - Ship It
+  - Chill
+
