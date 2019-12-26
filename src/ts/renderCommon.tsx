@@ -26,6 +26,9 @@ function sendHelperMessage(msg: any) {
     });
 }
 
+// full state update no more than 5 times a second:
+const DEBOUNCE_WAIT = 200;
+
 /**
  * Main entry point to rendering the popup window
  */
@@ -46,7 +49,8 @@ export async function renderPopup(
 
         const [App, listenerId] = refContainer<TabManagerState, PopupBaseProps>(
             storeRef,
-            Popup
+            Popup,
+            DEBOUNCE_WAIT
         );
         log.debug('refContainer listener id: ', listenerId);
         if (utils.inExtension()) {

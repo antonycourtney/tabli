@@ -835,5 +835,5 @@ X   Make target window and tab active after drop operation.
 
 X  Support moving of closed, saved tabs, even across closed, saved windows
 
--  Deal with using DnD to adjust ordering of both open tab index and bookmark index.
+X  Deal with using DnD to adjust ordering of both open tab index and bookmark index.
 

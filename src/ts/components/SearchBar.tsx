@@ -19,12 +19,14 @@ const toolbarOuterContainerStyle = css`
     margin-bottom: 16px;
     margin-left: 12px;
     min-width: 400px;
+    width: 100%;
 `;
 
 const toolbarInnerContainerStyle = css`
     display: flex;
     justify-content: flex-start;
-    width: 400px;
+    min-width: 400px;
+    width: 100%;
 `;
 
 const growRightStyle = css`
@@ -34,13 +36,30 @@ const growRightStyle = css`
     margin-left: 0px;
     margin-top: 0px;
     margin-bottom: 0px;
-    margin-left: auto;
+    margin-right: auto;
     flex-grow: 1;
 `;
 
 // A container that will grow to the right:
 const GrowRight: React.FunctionComponent = ({ children }) => (
     <div className={growRightStyle}>{children}</div>
+);
+
+const centeredStyle = css`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-right: auto;
+    flex-basis: auto;
+    flex-grow: 1;
+`;
+
+// A flex container with 'justify-content: center':
+const Centered: React.FunctionComponent = ({ children }) => (
+    <div className={centeredStyle}>{children}</div>
 );
 
 const searchInputStyle = css`
@@ -242,7 +261,8 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     );
 
     const devLabelStyle = css({
-        fontSize: 10
+        fontSize: 10,
+        marginRight: 25
     });
     const nodeEnv = process.env.NODE_ENV;
     const devLabel =
@@ -253,21 +273,23 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
         <div className={toolbarOuterContainerStyle}>
             <div className={toolbarInnerContainerStyle}>
                 <GrowRight>{popoutButton}</GrowRight>
-                <GrowRight>
-                    <MenuButton stateRef={stateRef} />
-                    <input
-                        className={searchInputClass}
-                        type="search"
-                        tabIndex={1}
-                        ref={searchInputRef}
-                        id="searchBox"
-                        data-testid="searchBox"
-                        placeholder="Search..."
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
-                        title="Search Page Titles and URLs"
-                    />
-                </GrowRight>
+                <Centered>
+                    <GrowRight>
+                        <MenuButton stateRef={stateRef} />
+                        <input
+                            className={searchInputClass}
+                            type="search"
+                            tabIndex={1}
+                            ref={searchInputRef}
+                            id="searchBox"
+                            data-testid="searchBox"
+                            placeholder="Search..."
+                            onChange={handleChange}
+                            onKeyDown={handleKeyDown}
+                            title="Search Page Titles and URLs"
+                        />
+                    </GrowRight>
+                </Centered>
                 {devLabel}
             </div>
         </div>

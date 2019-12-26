@@ -80,12 +80,15 @@ const popupHeaderStyle = css({
     flex: '0 0 auto'
 });
 
-const popupBodyStyle = css({
-    minHeight: Constants.POPUP_BODY_HEIGHT,
-    position: 'relative',
-    overflow: 'auto',
-    flex: '1 1 auto'
-});
+// We attempted to include scrollbarColor here, but it appears that is
+// too bleeding edge, at least in Dec. 2019
+const popupBodyStyle = (theme: Theme) =>
+    css({
+        minHeight: Constants.POPUP_BODY_HEIGHT,
+        position: 'relative',
+        overflow: 'auto',
+        flex: '1 1 auto'
+    });
 const popupFooterStyle = (theme: Theme) =>
     css({
         minWidth: 350,
@@ -484,7 +487,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                         isPopout={isPopout}
                     />
                 </div>
-                <div className={popupBodyStyle} ref={bodyRef}>
+                <div className={popupBodyStyle(theme)} ref={bodyRef}>
                     <TabWindowList
                         stateRef={stateRef}
                         filteredWindows={filteredWindows}

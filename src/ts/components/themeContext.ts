@@ -17,6 +17,7 @@ export interface Theme {
     tabCloseHoverBackground: string;
     revertColor: string;
     revertHover: string;
+    scrollbarColor: string;
 }
 
 export interface ThemeMap {
@@ -42,7 +43,8 @@ export const themes: ThemeMap = {
         headerButtonHover: '#000000',
         tabCloseHoverBackground: '#5f6368',
         revertColor: '#7472ff',
-        revertHover: '#1d1aff'
+        revertHover: '#1d1aff',
+        scrollbarColor: 'light'
     },
     dark: {
         foreground: '#ffffff',
@@ -60,7 +62,8 @@ export const themes: ThemeMap = {
         headerButtonHover: '#dddddd',
         tabCloseHoverBackground: '#5f6368',
         revertColor: '#7472ff',
-        revertHover: '#b4b3ff'
+        revertHover: '#b4b3ff',
+        scrollbarColor: 'dark'
     }
 };
 export const ThemeContext = React.createContext(
