@@ -116,14 +116,15 @@ const restoreFromAppState = (
         'restoreFromAppState: restoring saved TabWindow: ',
         tabWindow.toJS()
     );
-    const tabItemRawKeys = tabWindow.tabItems.map(ti => ti.rawKey).toArray;
+    /*
+    const tabItemRawKeys = tabWindow.tabItems.map(ti => ti.rawKey).toArray();
     log.debug(
         'restoreFromAppState: tabWindow tabItem _key vals:',
         tabItemRawKeys
     );
     const tabItemKeys = tabWindow.tabItems.map(ti => ti.key).toArray();
     log.debug('restoreFromAppState: tabWindow keys: ', tabItemKeys);
-
+    */
     const attachWindow = (chromeWindow?: chrome.windows.Window) => {
         if (chromeWindow) {
             update(storeRef, state =>
@@ -721,7 +722,7 @@ export const moveTabItem = async (
 
     const targetIndices = getTabIndices(targetTabWindow);
     log.debug('moveItem target window tab indices: ', targetIndices);
-
+    log.debug('movedItem dropIndex: ', dropIndex);
     if (movedTabItem.open) {
         const openTabId = movedTabItem.openState!.openTabId;
 

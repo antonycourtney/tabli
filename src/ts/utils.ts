@@ -290,7 +290,7 @@ export const getOpenTabIndex = (
     dropIndex: number
 ): number => {
     let entry = indices[dropIndex];
-    if (entry && entry[0]) {
+    if (entry && entry[0] !== undefined) {
         // common case:
         return entry[0];
     }
