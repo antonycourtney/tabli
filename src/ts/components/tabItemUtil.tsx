@@ -9,7 +9,12 @@ import * as svg from './svg';
 import { inExtension } from '../utils';
 import { initSimpleImg, SimpleImg } from 'react-simple-img';
 
-initSimpleImg(undefined, undefined, true);
+const nodeEnv = process.env.NODE_ENV;
+
+if (nodeEnv === 'development') {
+    // only log errors in dev mode:
+    initSimpleImg(undefined, undefined, true);
+}
 
 const emptyFavIconStyle = cx(styles.headerButton, styles.emptyFavIcon);
 const favIconOpenStyle = styles.favIcon;

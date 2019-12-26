@@ -27,6 +27,7 @@ import {
     ResponderProvided,
     DragStart
 } from 'react-beautiful-dnd';
+import { getTabIndices } from '../utils';
 
 function matchingTabs(
     searchStr: string | null,
@@ -442,12 +443,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
 
     const summarySpanStyle = cx(styles.closed(theme), summarySpanBaseStyle);
 
-    const onDragStart = (start: DragStart, provided: ResponderProvided) => {
-        console.log('onDragStart: ', start);
-    };
-
     const onDragEnd = (result: DropResult) => {
-        console.log('onDragEnd: ', result);
         const { source, draggableId, destination } = result;
         if (!destination) return;
         const sourceWindow = appState.findTabWindowByKey(source.droppableId);
@@ -473,7 +469,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     };
 
     return (
-        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}>
             <div className={popupInnerStyle}>
                 <div className={popupHeaderStyle}>
                     <SearchBar

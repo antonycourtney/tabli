@@ -13,6 +13,7 @@ import {
 } from 'oneref';
 import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
+import { getTabIndices, getOpenTabIndex, getSavedTabIndex } from './utils';
 const chromep = ChromePromise;
 
 type TabId = number;
@@ -34,7 +35,6 @@ type TMSRef = StateRef<TabManagerState>;
  */
 export function syncChromeWindowById(windowId: WindowId, storeRef: TMSRef) {
     chrome.windows.get(windowId, { populate: true }, chromeWindow => {
-        console.log('syncChromeWindowById: got: ', chromeWindow);
         update(storeRef, state => state.syncChromeWindow(chromeWindow));
     });
 }
@@ -678,24 +678,21 @@ export const moveTabItem = async (
     sourceTabWindow: TabWindow,
     targetTabWindow: TabWindow,
     sourceIndex: number,
-    targetIndex: number,
+    dropIndex: number,
     movedTabItem: TabItem,
     storeRef: TMSRef
 ) => {
     log.debug(
         'stubMoveTabItem: targetTabWindow: ',
         targetTabWindow.toJS(),
-        'targetIndex: ',
-        targetIndex
+        'dropIndex: ',
+        dropIndex
     );
     log.debug('moveTabItem: movedTabItem: ', movedTabItem.toJS());
 
     // optimistic visual update, essential to get desired
     // DnD drop animation behavior without flashing:
 
-    // TODO: need to think about what to do here when moving a saved tab!
-    // probably want something like TabManagerState.handleSavedTabMoved,
-    // though we don't actually want to create a new tab in the destination....
     update(
         storeRef,
         (st: TabManagerState): TabManagerState => {
@@ -706,7 +703,7 @@ export const moveTabItem = async (
                     sourceTabWindow,
                     movedTabItem,
                     sourceIndex,
-                    targetIndex
+                    dropIndex
                 );
             } else {
                 nextSt = optimisticMoveTab(
@@ -715,12 +712,15 @@ export const moveTabItem = async (
                     targetTabWindow,
                     movedTabItem,
                     sourceIndex,
-                    targetIndex
+                    dropIndex
                 );
             }
             return nextSt;
         }
     );
+
+    const targetIndices = getTabIndices(targetTabWindow);
+    log.debug('moveItem target window tab indices: ', targetIndices);
 
     if (movedTabItem.open) {
         const openTabId = movedTabItem.openState!.openTabId;
@@ -731,7 +731,10 @@ export const moveTabItem = async (
             // Perform the move of the live tab in Chrome:
             const sourceWindowId = sourceTabWindow.openWindowId;
             const targetWindowId = targetTabWindow.openWindowId;
-            const moveProps = { windowId: targetWindowId, index: targetIndex };
+
+            const openIndex = getOpenTabIndex(targetIndices, dropIndex);
+            log.debug('target open tab index: ', openIndex);
+            let moveProps = { windowId: targetWindowId, index: openIndex };
             await chromep.tabs.move(openTabId, moveProps);
             log.debug('chrome tab move complete');
 
@@ -743,19 +746,18 @@ export const moveTabItem = async (
         }
     }
 
-    if (
-        movedTabItem.saved &&
-        targetTabWindow.saved &&
-        sourceTabWindow !== targetTabWindow
-    ) {
+    if (movedTabItem.saved && targetTabWindow.saved) {
         const bookmarkId = movedTabItem.savedState!.bookmarkId;
         const folderId = targetTabWindow.savedFolderId;
         log.debug(
             'moving saved tab to saved window -- moving bookmark: ',
             bookmarkId
         );
+        const savedIndex = getSavedTabIndex(targetIndices, dropIndex);
+        log.debug('target saved tab index: ', savedIndex);
         const bmNode = await chromep.bookmarks.move(bookmarkId, {
-            parentId: folderId
+            parentId: folderId,
+            index: savedIndex
         });
         log.debug('bookmark move complete');
     }

@@ -2,8 +2,14 @@ import * as Immutable from 'immutable';
 import * as log from 'loglevel';
 import * as BC from './browserConstants';
 import { TabWindow } from './tabWindow';
+import findLastIndex from 'lodash/findLastIndex';
 export const mkUrl = (relPath: string) =>
     'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")';
+
+const _ = {
+    findLastIndex
+};
+
 /**
  * Object merge operator from the original css-in-js presentation
  */
@@ -127,11 +133,11 @@ export function parseURL(url: string): ParsedURL {
 }
 
 /**
- * drop parameters from an url 
+ * drop parameters from an url
  */
 export function baseURL(url: string): string {
     const idx = url.indexOf('?');
-    const ret = (idx >= 0) ? url.slice(0, idx) : url;
+    const ret = idx >= 0 ? url.slice(0, idx) : url;
     return ret;
 }
 
@@ -261,4 +267,56 @@ export const inExtension = (): boolean => {
         cachedIsExtension = details !== null;
     }
     return cachedIsExtension;
+};
+
+type MbIndex = number | undefined;
+
+export const getTabIndices = (tabWindow: TabWindow): [MbIndex, MbIndex][] => {
+    const indices = tabWindow.tabItems
+        .map(ti => {
+            const openIndex = ti.open ? ti.openState!.openTabIndex : undefined;
+            const savedIndex = ti.saved
+                ? ti.savedState!.bookmarkIndex
+                : undefined;
+            return [openIndex, savedIndex] as [MbIndex, MbIndex];
+        })
+        .toArray();
+    return indices;
+};
+
+// find the right open tab index for use in chrome.tabs.move:
+export const getOpenTabIndex = (
+    indices: [MbIndex, MbIndex][],
+    dropIndex: number
+): number => {
+    let entry = indices[dropIndex];
+    if (entry && entry[0]) {
+        // common case:
+        return entry[0];
+    }
+    let lastOpenIndex = _.findLastIndex(
+        indices,
+        p => p[0] !== undefined,
+        dropIndex
+    );
+    let lastOpenEntry = indices[lastOpenIndex];
+    return lastOpenEntry[0]! + 1;
+};
+
+// Return the bookmark index IFF it is in the
+// section after all open tabs, identified by
+// all open tab indices being undefined:
+// Note: This doesn't actually work particularly well,
+// since windows are saved with previously open tabs
+// in tab index order...
+export const getSavedTabIndex = (
+    indices: [MbIndex, MbIndex][],
+    dropIndex: number
+): number | undefined => {
+    let lastOpenIndex = _.findLastIndex(indices, p => p[0] !== undefined);
+    if (dropIndex > lastOpenIndex && dropIndex < indices.length) {
+        const entry = indices[dropIndex];
+        return entry[1];
+    }
+    return undefined;
 };
