@@ -91,6 +91,7 @@ fieldset {
 .card-body {
     padding-left: 16px;
     padding-right: 16px;
+    padding-top: 0px;
     font-size: 12px;
 }
 a.card-link {

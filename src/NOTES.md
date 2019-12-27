@@ -828,27 +828,26 @@ after we've split open from saved, before merging.
 
 TODO:
 
-X   fix handling of onDetached for saved tab items. Need to deal with both moves initiated from within Tabli
-    and reacting to dragging of tabs outside of Tabli.
+X fix handling of onDetached for saved tab items. Need to deal with both moves initiated from within Tabli
+and reacting to dragging of tabs outside of Tabli.
 
-X   Make target window and tab active after drop operation.
+X Make target window and tab active after drop operation.
 
-X  Support moving of closed, saved tabs, even across closed, saved windows
+X Support moving of closed, saved tabs, even across closed, saved windows
 
-X  Deal with using DnD to adjust ordering of both open tab index and bookmark index.
+X Deal with using DnD to adjust ordering of both open tab index and bookmark index.
 
 Release Prep, 26Dec19:
 
-  - Better screenshots for Chrome Web Store
-  - Better screenshots for Tabli web site
-  - Get gettabli.com domain working for support email
-    (Grrrr. broken. But seems to be done via admin.google.com -> Domains, as antony@antonycourtney.com)
-  - write relnotes
-  - Update web site with rel notes
-  - Add link to Wired article to web site
-  - Maybe: write a "Getting the Most out of Tabli" post
-  - Build and upload new release to CWS
-  - Email tabli-users
-  - Ship It
-  - Chill
+X Better screenshots for Chrome Web Store
+X Better screenshots for Tabli web site
+X Get gettabli.com domain working for support email ( Got it working as a "Group" email via gsuite via admin.google.com, using antonycourtney.com G Suite setup)
 
+-   write relnotes
+-   Update web site with rel notes
+-   X Add link to Wired article to web site
+    0 Maybe: write a "Getting the Most out of Tabli" post
+-   Build and upload new release to CWS
+-   Email tabli-users
+-   Ship It
+-   Chill
