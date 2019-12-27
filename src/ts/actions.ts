@@ -24,7 +24,7 @@ const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
 const TABLI_REVIEW_URL =
     'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews';
-const TABLI_FEEDBACK_URL = 'mailto:tabli-feedback@antonycourtney.com';
+const TABLI_FEEDBACK_URL = 'mailto:tabli-feedback@gettabli.com';
 
 type WindowId = number;
 type TMSRef = StateRef<TabManagerState>;
