@@ -219,10 +219,6 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
         actions.toggleExpandAll(stateRef);
     };
 
-    const handleCopyClick = () => {
-        actions.copyWindowsToClipboard(stateRef);
-    };
-
     const popSVG = isPopout ? svg.popin : svg.popout;
 
     const popVerb = isPopout ? 'Hide' : 'Show';
@@ -247,16 +243,6 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
             onClick={handleExpandToggleClick}
         >
             <div className={styles.expandAllIconStyle(theme)} />
-        </button>
-    );
-
-    const copyButton = (
-        <button
-            className={styles.toolbarButton(theme)}
-            title="Copy All to Clipboard"
-            onClick={handleCopyClick}
-        >
-            <i className="fa fa-clipboard" aria-hidden="true" />
         </button>
     );
 

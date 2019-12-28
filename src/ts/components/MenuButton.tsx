@@ -123,13 +123,20 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
         );
     };
 
+    const handleCopyClick = () => {
+        actions.copyWindowsToClipboard(stateRef);
+    };
+
     const menu = (
         <div className={menuStyle}>
+            {renderMenuItem(handlePreferencesClick, 'Preferences...')}
+            <hr />
+            {renderMenuItem(handleCopyClick, 'Copy')}
+            <hr />
             {renderMenuItem(handleHelpClick, 'Help (Manual)')}
             {renderMenuItem(handleAboutClick, 'About Tabli')}
             {renderMenuItem(handleRelNotesClick, 'Release Notes')}
             <hr />
-            {renderMenuItem(handlePreferencesClick, 'Preferences...')}
             {renderMenuItem(handleReloadClick, 'Reload')}
             <hr />
             {renderMenuItem(handleReviewClick, 'Review Tabli')}
