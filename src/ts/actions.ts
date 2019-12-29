@@ -893,3 +893,31 @@ export const reload = async () => {
         reloadHandler();
     }
 };
+
+export const tidyWindows = async (stateRef: TMSRef) => {
+    const st = mutableGet(stateRef);
+    const openWindows = st.getOpen();
+    openWindows.forEach(tw => {
+        const windowId = tw.openWindowId;
+        if (tw.windowType === 'normal' && windowId !== st.currentWindowId) {
+            const windowId = tw.openWindowId;
+            chrome.windows.update(windowId, { state: 'minimized' });
+        }
+    });
+};
+
+export const untidyWindows = async (stateRef: TMSRef) => {
+    const st = mutableGet(stateRef);
+    const lastFocusedTabWindow = st.getCurrentWindow();
+    const openWindows = st.getOpen().toArray();
+    for (let tw of openWindows) {
+        const windowId = tw.openWindowId;
+        if (tw.windowType === 'normal') {
+            const windowId = tw.openWindowId;
+            await chrome.windows.update(windowId, { state: 'normal' });
+        }
+    }
+    if (lastFocusedTabWindow !== null) {
+        setFocusedWindow(lastFocusedTabWindow);
+    }
+};

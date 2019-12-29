@@ -86,6 +86,19 @@ export class TabItem extends Immutable.Record(defaultTabItemProps) {
     private _id: string | undefined;
 
     get title(): string {
+        /*
+        hold-over from exploring showing saved titles instead of current title:
+        if (this.saved && this.open) {
+            if (this.savedState!.title !== this.openState!.title) {
+                log.debug(
+                    'tabItem saved title: ',
+                    this.savedState!.title,
+                    '|',
+                    this.openState!.title
+                );
+            }
+        }
+        */
         if (this.open && this.openState) {
             return this.openState.title;
         }

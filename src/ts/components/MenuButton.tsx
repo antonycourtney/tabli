@@ -86,7 +86,7 @@ type MenuButtonProps = {
 const menuStyle = css({
     display: 'flex',
     flexDirection: 'column',
-    width: 160,
+    width: 200,
     minWidth: '10rem',
     padding: '.5rem 0',
     margin: '.125rem 0 0'
@@ -123,21 +123,33 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
         );
     };
 
-    const handleCopyClick = () => {
+    const handleCopyClick: ClickHandler = e => {
+        e.preventDefault();
         actions.copyWindowsToClipboard(stateRef);
+    };
+
+    const handleTidyClick: ClickHandler = e => {
+        e.preventDefault();
+        actions.tidyWindows(stateRef);
+    };
+    const handleUntidyClick: ClickHandler = e => {
+        e.preventDefault();
+        actions.untidyWindows(stateRef);
     };
 
     const menu = (
         <div className={menuStyle}>
             {renderMenuItem(handlePreferencesClick, 'Preferences...')}
             <hr />
-            {renderMenuItem(handleCopyClick, 'Copy')}
+            {renderMenuItem(handleCopyClick, 'Copy Window Summary')}
             <hr />
             {renderMenuItem(handleHelpClick, 'Help (Manual)')}
-            {renderMenuItem(handleAboutClick, 'About Tabli')}
             {renderMenuItem(handleRelNotesClick, 'Release Notes')}
             <hr />
-            {renderMenuItem(handleReloadClick, 'Reload')}
+            {renderMenuItem(handleTidyClick, 'Tidy (Minimize All)')}
+            {renderMenuItem(handleUntidyClick, 'Untidy (Restore All)')}
+            <hr />
+            {renderMenuItem(handleReloadClick, 'Reload Tabli')}
             <hr />
             {renderMenuItem(handleReviewClick, 'Review Tabli')}
             {renderMenuItem(handleFeedbackClick, 'Send Feedback')}
