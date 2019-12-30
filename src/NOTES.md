@@ -851,3 +851,13 @@ X Get gettabli.com domain working for support email ( Got it working as a "Group
 -   Email tabli-users
 -   Ship It
 -   Chill
+
+A quick thought on performance:
+
+Profiling suggests that at this point, DnD overhead may be the most significant component of rendering performance.
+Some thoughts:
+  - We could try tweaking bigRenderTest to run with no DnD contexts and see if it impacts perf significantly.
+If so, we could
+  - Only support DnD in the popout window
+  - Make an "editing / organize" mode and only turn on DnD in that mode.
+   
