@@ -108,7 +108,7 @@
         "webpack-analyze": "webpack --env prod --mode production --profile --json > stats.json; ./node_modules/.bin/webpack-bundle-analyzer stats.json ./build/js",
         "test": "jest",
         "storybook": "start-storybook -s ./build -p 6006",
-        "build-storybook": "build-storybook"
+        "build-storybook": "build-storybook -o ./doc/site/dist/storybook"
     },
     "standard": {
         "globals": [
