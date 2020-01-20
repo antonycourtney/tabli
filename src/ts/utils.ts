@@ -320,3 +320,5 @@ export const getSavedTabIndex = (
     }
     return undefined;
 };
+
+export const windowIsPopout = (): boolean => (window as any)._tabliIsPopout;

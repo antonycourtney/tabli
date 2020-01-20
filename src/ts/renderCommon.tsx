@@ -129,6 +129,7 @@ export function getFocusedAndRender(isPopout: boolean, doSync: boolean = true) {
     log.setLevel('debug');
     var bgPage = chrome.extension.getBackgroundPage();
     var storeRef = (bgPage as any).stateRef;
+    (window as any)._tabliIsPopout = isPopout;
     chrome.windows.getCurrent({}, currentChromeWindow => {
         renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
     });

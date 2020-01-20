@@ -19,7 +19,7 @@ import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
 import { StateRef, mutableGet } from 'oneref';
-import { areEqualShallow } from '../utils';
+import { areEqualShallow, windowIsPopout } from '../utils';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
 
@@ -79,6 +79,9 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
         if (onItemSelected) {
             onItemSelected(tab);
+        }
+        if (!windowIsPopout()) {
+            window.close();
         }
     };
 

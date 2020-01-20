@@ -14,7 +14,7 @@ import TabManagerState from '../tabManagerState';
 import { useState, useRef, useContext } from 'react';
 import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
-import { areEqualShallow } from '../utils';
+import { areEqualShallow, windowIsPopout } from '../utils';
 import {
     Droppable,
     DroppableProvided,
@@ -95,6 +95,9 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
         actions.openWindow(tabWindow, stateRef);
         if (onItemSelected) {
             onItemSelected();
+        }
+        if (!windowIsPopout()) {
+            window.close();
         }
     };
 
