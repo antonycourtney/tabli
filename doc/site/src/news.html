@@ -2,217 +2,253 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>News</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <title>News</title>
 
-    <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/fonts.css" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
+  <!-- Bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/fonts.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <div include="favicon-links.html"></div>
+  <div include="favicon-links.html"></div>
 </head>
 <!--
 
 -->
+
 <body>
-    <div include="header.html"></div>
-    <div class="sub-header inner-page">
-      <div class="container">
-        <h2 class="text-center">Changelog</h2>
-        <!-- TODO: Should really have a common source for release notes text instead of copying it here, but too much
+  <div include="header.html"></div>
+  <div class="sub-header inner-page">
+    <div class="container">
+      <h2 class="text-center">Changelog</h2>
+      <!-- TODO: Should really have a common source for release notes text instead of copying it here, but too much
              surgery required to make that happen right now. -->
-        <div class="relnotes-header" id="relnotes_v2_0_1">
-          <div class="relnotes-title">Tabli 2.0.1</div>
-          <div class="relnotes-subtitle">Dec. 30, 2019</div>
-        </div>
-        <div class="relnotes-body">
-          <span>What's New:</span>
+      <div class="relnotes-header" id="relnotes_v2_0_2">
+        <div class="relnotes-title">Tabli 2.0.2</div>
+        <div class="relnotes-subtitle">Jan. 20, 2020</div>
+      </div>
+      <div class="relnotes-body">
+        <span>What's New:</span>
+        <ul>
+          <li>
+            By popular request, I've added an option for a denser, more
+            compact layout (similar to Tabli's pre-2.0 design) to show
+            more tabs in less space. To enable: From the Tabli menu (☰)
+            select "Preferences...> Layout > compact".
+          </li>
+          <li>
+            The in-browser Tabli popup now automatically hides after
+            switching to another window or tab.
+          </li>
+        </ul>
+      </div>
+
+      <div class="relnotes-header" id="relnotes_v2_0_1">
+        <div class="relnotes-title">Tabli 2.0.1</div>
+        <div class="relnotes-subtitle">Dec. 30, 2019</div>
+      </div>
+      <div class="relnotes-body">
+        <span>What's New:</span>
+        <ul>
+          <li>
+            Put back the "Copy Window Summary" action inadvertently
+            removed in 2.0.0 to copy a summary of open windows to the
+            clipboard as Markdown text. Now on the Tabli menu (☰).
+          </li>
+          <li>
+            Added a new "Tidy" operation to Tabli menu for minimizing
+            all but the active browser window. Helpful for getting
+            focused on one thing for a while on a cluttered multi-window
+            desktop without restoring to a full screen browser window.
+          </li>
+        </ul>
+      </div>
+      <div class="relnotes-header" id="relnotes_v2_0_0">
+        <div class="relnotes-title">Tabli 2.0.0</div>
+        <div class="relnotes-subtitle">Dec. 27, 2019</div>
+      </div>
+      <div class="relnotes-body">
+        <span>What's New:</span>
+        <ul>
+          <li>
+            A visual makeover -- more contrast and spatial separation
+            between elements, better button graphics, minor alignment
+            fixes, etc.
+          </li>
+          <li>
+            Improved visual feedback when re-ordering or moving tabs
+            using drag and drop.
+          </li>
+          <li>
+            You can now mute tabs directly from Tabli. Click on the
+            audio (speaker) icon on a tab when sound is playing to mute
+            or unmute.
+          </li>
+
+          <li>
+            This is the first release of Tabli since a fairly extensive
+            overhaul of the internals earlier this year. While I've
+            tested and used the newer implementation for months, it's
+            possible something got missed. If you encounter issues or
+            unexpected behavior, please use "Send Feedback" from the
+            Tabli menu (☰) to send an email to
+            <a class="card-link" target="_blank"
+              href="mailto:tabli-feedback@gettabli.com">tabli-feedback@gettabli.com</a>
+            to report it.
+          </li>
+        </ul>
+
+      </div>
+      <div class="relnotes-header" id="relnotes_v1_2_2">
+        <div class="relnotes-title">Tabli 1.2.2</div>
+        <div class="relnotes-subtitle">Nov. 21, 2018</div>
+      </div>
+      <div class="relnotes-body">
+        <span>New Features</span>
+        <ul>
+          <li>By Popular Demand, Tabli now supports a Dark Mode Theme. Select preferred
+            Theme (light or dark) via "Preferences..." on Tabli's menu button (☰).
+          <li>Tabli ❤️ The Great Suspender.
+            A number of Tabli users also use
+            <a target="_blank"
+              href="https://chrome.google.com/webstore/detail/the-great-suspender/klbibkeccnjlkjkiokjodocebajanakg?hl=en">The
+              Great Suspender</a>,
+            an excellent Chrome extension that automatically suspends tabs you aren't using,
+            freeing memory and CPU. This release of Tabli resolves a long-standing issue
+            to ensure the correct icon and URL are shown for tabs suspended
+            by the Great Suspender, and adds a little 💤 icon to indicate suspended tabs.
+        </ul>
+      </div>
+
+      <div class="relnotes-header" id="relnotes_v1_1_0">
+        <div class="relnotes-title">Tabli 1.1.0</div>
+        <div class="relnotes-subtitle">Aug. 2, 2018</div>
+      </div>
+      <div class="relnotes-body">
+        <span>New Features</span>
+        <ul>
+          <li>You can now edit saved folder titles directly in Tabli - just click the pencil icon on the window header.
+          <li>Tabli now correctly moves saved tab state when you drag and drop saved tabs between saved windows.
+          <li>Fixed a sizing bug in the Tabli popup that hid the close button for a tab when audio was playing.
+        </ul>
+      </div>
+      <div class="relnotes-header" id="relnotes_v0_9_9">
+        <div class="relnotes-title">Tabli 0.9.9</div>
+        <div class="relnotes-subtitle">Feb. 19, 2018</div>
+      </div>
+      <div class="relnotes-body">
+        <span>New Features</span>
+        <ul>
+          <li>Tabli now supports a limited form of tab de-duplication as an opt-in feature. To enable, open
+            "Preferences..." and select "Automatically close duplicate tabs"
+          <li>By popular demand, Tabli now supports automatic synchronization of saved windows and tabs across computers
+            logged in to the same Chrome profile.
+          <li>To improve performance, by default Tabli now only reloads saved tabs when re-opening saved windows. There
+            is a "Preferences..." option to revert to the previous (slower) behavior of restoring all tabs.
+        </ul>
+      </div>
+      <div class="relnotes-header" id="relnotes_v0_9_7">
+        <div class="relnotes-title">Tabli 0.9.7</div>
+        <div class="relnotes-subtitle">Mar. 15, 2017</div>
+      </div>
+      <div class="relnotes-body">
+        <span>New in this release:</span>
+        <ul>
+          <li>By popular demand, the Tabli Popout Window now has much better resize behavior so you can see those long
+            tab titles and more window and tab summaries.</li>
+          <li>The Tabli Popout Window now opens by default when you start Chrome. If for some reason you don't like this
+            behavior there is a "Preferences..." option on the menu (<img src="assets/hamburger-menu.png" />) to disable
+            it.</li>
+          <li>Minor Bug Fix: The 'Enter' (Open) keyboard shortcut now works when only the window title matches the
+            search string.</li>
+        </ul>
+      </div>
+      <div class="relnotes-header" id="relnotes_v0_9_6">
+        <div class="relnotes-title">Tabli 0.9.6</div>
+        <div class="relnotes-subtitle">Jan. 24, 2017</div>
+      </div>
+      <div class="relnotes-body">
+        <span>New in this release:</span>
+        <ul>
+          <li>Tabli now uses the Chrome Sessions API when re-opening Saved Windows. This enables Tabli to restore the
+            state of pinned tabs for those that use that feature of Chrome.</li>
+          <li>Tabli no longer requests the 'Manage your Downloads' permission.</li>
+        </ul>
+      </div>
+      <div class="relnotes-header" id="relnotes_v0_9_5">
+        <div class="relnotes-title">Tabli 0.9.5</div>
+        <div class="relnotes-subtitle">Jan. 11, 2017</div>
+      </div>
+      <div class="relnotes-body">
+        <span>New in this release:
           <ul>
-            <li>
-              Put back the "Copy Window Summary" action inadvertently
-              removed in 2.0.0 to copy a summary of open windows to the
-              clipboard as Markdown text. Now on the Tabli menu (☰).
-            </li>
-            <li>
-              Added a new "Tidy" operation to Tabli menu for minimizing
-              all but the active browser window. Helpful for getting
-              focused on one thing for a while on a cluttered multi-window
-              desktop without restoring to a full screen browser window.
-            </li>
+            <li><b>Basic Session Management:</b> When a Saved Window is closed and re-opened, Tabli will restore all
+              previously open tabs in that window. This works even after re-starting Chrome or if Chrome crashes. Of
+              course you can still use the revert <span style="white-space:nowrap">button (<img
+                  src="assets/revert-button.png" />)</span> to close all but your explicitly saved tabs (marked with a
+              <img src="assets/check.png">) .
+            <li><b>New keyboard shortcut:</b> Press <code>;</code> to expand or collapse the currently selected window
+              summary.
+            <li>If you open the Tabli Popout (by clicking <img src="assets/popout.png" />), it will remain open after
+              re-starting Chrome. If you have a large, high-resolution monitor I highly recommend using the Tabli
+              Popout.
+            <li>When navigating with keyboard shortcuts, the selected window will scroll into view.
+            <li>Keyboard navigation now wraps: Up from top window moves to bottom of window list and vice versa.
           </ul>
-        </div>                      
-        <div class="relnotes-header" id="relnotes_v2_0_0">
-          <div class="relnotes-title">Tabli 2.0.0</div>
-          <div class="relnotes-subtitle">Dec. 27, 2019</div>
-        </div>
-          <div class="relnotes-body">
-            <span>What's New:</span>
-            <ul>
-                <li>
-                    A visual makeover -- more contrast and spatial separation
-                    between elements, better button graphics, minor alignment
-                    fixes, etc.
-                </li>
-                <li>
-                    Improved visual feedback when re-ordering or moving tabs
-                    using drag and drop.
-                </li>
-                <li>
-                    You can now mute tabs directly from Tabli. Click on the
-                    audio (speaker) icon on a tab when sound is playing to mute
-                    or unmute.
-                </li>
-
-                <li>
-                    This is the first release of Tabli since a fairly extensive
-                    overhaul of the internals earlier this year. While I've
-                    tested and used the newer implementation for months, it's
-                    possible something got missed. If you encounter issues or
-                    unexpected behavior, please use "Send Feedback" from the
-                    Tabli menu (☰) to send an email to
-                    <a
-                        class="card-link"
-                        target="_blank"
-                        href="mailto:tabli-feedback@gettabli.com"
-                        >tabli-feedback@gettabli.com</a
-                    >
-                    to report it.
-                </li>
-            </ul>
-
-          </div>
-        <div class="relnotes-header" id="relnotes_v1_2_2">
-           <div class="relnotes-title">Tabli 1.2.2</div>
-           <div class="relnotes-subtitle">Nov. 21, 2018</div>
-         </div>
-         <div class="relnotes-body">
-           <span>New Features</span>
-           <ul>
-             <li>By Popular Demand, Tabli now supports a Dark Mode Theme. Select preferred
-             Theme (light or dark) via "Preferences..." on Tabli's menu button (☰).
-             <li>Tabli ❤️ The Great Suspender.
-             A number of Tabli users also use
-             <a target="_blank" href="https://chrome.google.com/webstore/detail/the-great-suspender/klbibkeccnjlkjkiokjodocebajanakg?hl=en">The Great Suspender</a>,
-             an excellent Chrome extension that automatically suspends tabs you aren't using,
-             freeing memory and CPU. This release of Tabli resolves a long-standing issue
-             to ensure the correct icon and URL are shown for tabs suspended
-             by the Great Suspender, and adds a little 💤 icon to indicate suspended tabs.
-           </ul>
-         </div>
-
-         <div class="relnotes-header" id="relnotes_v1_1_0">
-           <div class="relnotes-title">Tabli 1.1.0</div>
-           <div class="relnotes-subtitle">Aug. 2, 2018</div>
-         </div>
-         <div class="relnotes-body">
-           <span>New Features</span>
-           <ul>
-             <li>You can now edit saved folder titles directly in Tabli - just click the pencil icon on the window header.
-             <li>Tabli now correctly moves saved tab state when you drag and drop saved tabs between saved windows.
-             <li>Fixed a sizing bug in the Tabli popup that hid the close button for a tab when audio was playing.
-           </ul>
-         </div>
-         <div class="relnotes-header" id="relnotes_v0_9_9">
-           <div class="relnotes-title">Tabli 0.9.9</div>
-           <div class="relnotes-subtitle">Feb. 19, 2018</div>
-         </div>
-         <div class="relnotes-body">
-           <span>New Features</span>
-           <ul>
-             <li>Tabli now supports a limited form of tab de-duplication as an opt-in feature. To enable, open "Preferences..." and select "Automatically close duplicate tabs"
-             <li>By popular demand, Tabli now supports automatic synchronization of saved windows and tabs across computers logged in to the same Chrome profile.
-             <li>To improve performance, by default Tabli now only reloads saved tabs when re-opening saved windows. There is a "Preferences..." option to revert to the previous (slower) behavior of restoring all tabs.
-           </ul>
-         </div>
-         <div class="relnotes-header" id="relnotes_v0_9_7">
-           <div class="relnotes-title">Tabli 0.9.7</div>
-           <div class="relnotes-subtitle">Mar. 15, 2017</div>
-         </div>
-         <div class="relnotes-body">
-           <span>New in this release:</span>
-           <ul>
-             <li>By popular demand, the Tabli Popout Window now has much better resize behavior so you can see those long tab titles and more window and tab summaries.
-             <li>The Tabli Popout Window now opens by default when you start Chrome. If for some reason you don't like this behavior there is a "Preferences..." option on the menu (<img src="assets/hamburger-menu.png"></img>) to disable it.
-             <li>Minor Bug Fix: The 'Enter' (Open) keyboard shortcut now works when only the window title matches the search string.
-           </ul>
-         </div>
-         <div class="relnotes-header" id="relnotes_v0_9_6">
-           <div class="relnotes-title">Tabli 0.9.6</div>
-           <div class="relnotes-subtitle">Jan. 24, 2017</div>
-         </div>
-         <div class="relnotes-body">
-           <span>New in this release:</span>
-           <ul>
-             <li>Tabli now uses the Chrome Sessions API when re-opening Saved Windows. This enables Tabli to restore the
-             state of pinned tabs for those that use that feature of Chrome.
-             <li>Tabli no longer requests the 'Manage your Downloads' permission.
-           </ul>
-         </div>
-         <div class="relnotes-header" id="relnotes_v0_9_5">
-           <div class="relnotes-title">Tabli 0.9.5</div>
-           <div class="relnotes-subtitle">Jan. 11, 2017</div>
-         </div>
-         <div class="relnotes-body">
-           <span>New in this release:
-           <ul>
-             <li><b>Basic Session Management:</b> When a Saved Window is closed and re-opened, Tabli will restore all
-             previously open tabs in that window. This works even after re-starting Chrome or if Chrome crashes. Of course you can still use the revert <span style="white-space:nowrap">button (<img src="assets/revert-button.png"></img>)</span> to close all but your explicitly saved tabs (marked with a <img src="assets/check.png"></img>) .
-             <li><b>New keyboard shortcut:</b> Press <code>;</code> to expand or collapse the currently selected window summary.
-             <li>If you open the Tabli Popout (by clicking <img src="assets/popout.png"></img>), it will remain open after re-starting Chrome. If you have a large, high-resolution monitor I highly recommend using the Tabli Popout.
-             <li>When navigating with keyboard shortcuts, the selected window will scroll into view.
-             <li>Keyboard navigation now wraps: Up from top window moves to bottom of window list and vice versa.
-           </ul>
-         </div>
-         <div class="relnotes-header" id="relnotes_v0_9_1">
-           <div class="relnotes-title">Tabli 0.9.3</div>
-           <div class="relnotes-subtitle">June 11, 2016</div>
-         </div>
-         <div class="relnotes-body">
-           <h5>New Features:</h5>
-           <ul>
-             <li><b>Introducing: The Tabli Popout Window</b>&#8212; an independent Tabli window that
-               updates as you browse. This provides a convenient, always-available view of all your
-               browser windows and tabs, especially useful on large, high resolution monitors.
-               Activate by clicking the popout
-               <span style="white-space:nowrap">button (<img src="assets/popout.png"></img>)</span> in the Tabli popup.
-             <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>
-             <li>Tooltips that show the full title and URL of each tab.</li>
-             <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>
-             <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John Bartel (@jonbo).</li>
-             <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to next/prev tab/window).</li>
-             <li>A cleaned up toolbar.
-           </ul>
-           <h5>Permissions Warning and Privacy:</h5>
-           <P>Unfortunately, existing users of the previous version of Tabli were greeted with this somewhat alarming
-             dialog from Google Chrome after Tabli was automatically updated from the Chrome web store:
-           <P>
-             <img src="images/tabli-update-dialog.png"></img>
-           <P>This dialog is rather misleading in that the only <em>new</em> permission added to Tabli between the previous
-             version (0.8.8) and the latest version (0.9.1) is the ability for Tabli to read Chrome's store
-             of FavIcons &dash; the small icons that appear on the tab for each web site.
-           <P>Tabli requests the permissions shown in the above dialog in order to perform its essential function.
-              However: <strong>Tabli does not make any outbound data connections, and does not send any data whatsoever
-              to any external application, extension or cloud service.</strong>
-           </P>
-           <P>More detailed discussion may be found in the
-           <a href="https://github.com/antonycourtney/tabli/issues/74">corresponding github issue</a>.
-           </P>
-         </div>
+      </div>
+      <div class="relnotes-header" id="relnotes_v0_9_1">
+        <div class="relnotes-title">Tabli 0.9.3</div>
+        <div class="relnotes-subtitle">June 11, 2016</div>
+      </div>
+      <div class="relnotes-body">
+        <h5>New Features:</h5>
+        <ul>
+          <li><b>Introducing: The Tabli Popout Window</b>&#8212; an independent Tabli window that
+            updates as you browse. This provides a convenient, always-available view of all your
+            browser windows and tabs, especially useful on large, high resolution monitors.
+            Activate by clicking the popout
+            <span style="white-space:nowrap">button (<img src="assets/popout.png" />)</span> in the Tabli popup.
+          <li>Drag and Drop tab items in Tabli to move tabs between windows or re-order tabs within a window.</li>
+          <li>Tooltips that show the full title and URL of each tab.</li>
+          <li>Numerous bug fixes to address minor visual issues (like lingering visible-on-hover icons).</li>
+          <li>Faster loading of FavIcons by using Chrome's built-in favicon cache, thanks to a contribution by John
+            Bartel (@jonbo).</li>
+          <li>Emacs-like keyboard shortcuts in addition to arrows (Ctrl-n, Ctrl-p / SHIFT-Ctrl-n/SHIFT-Ctrl-p to move to
+            next/prev tab/window).</li>
+          <li>A cleaned up toolbar.
+        </ul>
+        <h5>Permissions Warning and Privacy:</h5>
+        <P>Unfortunately, existing users of the previous version of Tabli were greeted with this somewhat alarming
+          dialog from Google Chrome after Tabli was automatically updated from the Chrome web store:
+          <P>
+            <img src="images/tabli-update-dialog.png" />
+            <P>This dialog is rather misleading in that the only <em>new</em> permission added to Tabli between the
+              previous
+              version (0.8.8) and the latest version (0.9.1) is the ability for Tabli to read Chrome's store
+              of FavIcons &dash; the small icons that appear on the tab for each web site.
+              <P>Tabli requests the permissions shown in the above dialog in order to perform its essential function.
+                However: <strong>Tabli does not make any outbound data connections, and does not send any data
+                  whatsoever
+                  to any external application, extension or cloud service.</strong>
+              </P>
+              <P>More detailed discussion may be found in the
+                <a href="https://github.com/antonycourtney/tabli/issues/74">corresponding github issue</a>.
+              </P>
       </div>
     </div>
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/bootstrap.min.js"></script>
-    <div include="footer.html"></div>
-    <div include="analytics.html"></div>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="js/bootstrap.min.js"></script>
+  <div include="footer.html"></div>
+  <div include="analytics.html"></div>
 </body>
