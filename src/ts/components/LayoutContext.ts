@@ -10,6 +10,7 @@ export interface Layout {
     sectionPaddingBottom: number;
     sectionHeaderFontSize: number;
     sectionHeaderMarginBottom: number;
+    popupHeaderHeight: number;
 }
 
 export interface LayoutMap {
@@ -28,7 +29,8 @@ export const layouts: LayoutMap = {
         sectionPaddingTop: 12,
         sectionPaddingBottom: 8,
         sectionHeaderFontSize: 14,
-        sectionHeaderMarginBottom: 8
+        sectionHeaderMarginBottom: 8,
+        popupHeaderHeight: 44
     },
     compact: {
         tabPaddingTop: 0,
@@ -39,7 +41,8 @@ export const layouts: LayoutMap = {
         sectionPaddingTop: 6,
         sectionPaddingBottom: 4,
         sectionHeaderFontSize: 13,
-        sectionHeaderMarginBottom: 4
+        sectionHeaderMarginBottom: 4,
+        popupHeaderHeight: 40
     }
 };
 export const LayoutContext = React.createContext(

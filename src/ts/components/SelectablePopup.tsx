@@ -28,6 +28,7 @@ import {
     DragStart
 } from 'react-beautiful-dnd';
 import { getTabIndices } from '../utils';
+import { Layout, LayoutContext } from './LayoutContext';
 
 function matchingTabs(
     searchStr: string | null,
@@ -69,26 +70,33 @@ const popupInnerStyle = css({
     flexWrap: 'nowrap'
 });
 
-const popupHeaderStyle = css({
-    minWidth: 350,
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    height: Constants.POPUP_HEADER_HEIGHT,
-    borderBottom: '1px solid #bababa',
-    padding: 0,
-    flex: '0 0 auto'
-});
+const popupHeaderStyle = (layout: Layout) =>
+    css({
+        minWidth: 350,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        height: layout.popupHeaderHeight,
+        borderBottom: '1px solid #bababa',
+        padding: 0,
+        flex: '0 0 auto'
+    });
 
 // We attempted to include scrollbarColor here, but it appears that is
 // too bleeding edge, at least in Dec. 2019
-const popupBodyStyle = (theme: Theme) =>
-    css({
-        minHeight: Constants.POPUP_BODY_HEIGHT,
+const popupBodyStyle = (theme: Theme, layout: Layout) => {
+    const popupBodyHeight =
+        Constants.POPUP_MAX_HEIGHT -
+        Constants.POPUP_FOOTER_HEIGHT -
+        layout.popupHeaderHeight;
+    return css({
+        minHeight: popupBodyHeight,
         position: 'relative',
         overflow: 'auto',
         flex: '1 1 auto'
     });
+};
+
 const popupFooterStyle = (theme: Theme) =>
     css({
         minWidth: 350,
@@ -138,6 +146,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     isPopout,
     modalActions
 }: SelectablePopupProps) => {
+    const layout = useContext(LayoutContext);
     const bodyRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const theme = useContext(ThemeContext);
@@ -474,7 +483,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <div className={popupInnerStyle}>
-                <div className={popupHeaderStyle}>
+                <div className={popupHeaderStyle(layout)}>
                     <SearchBar
                         stateRef={stateRef}
                         onSearchInput={onSearchInput}
@@ -487,7 +496,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                         isPopout={isPopout}
                     />
                 </div>
-                <div className={popupBodyStyle(theme)} ref={bodyRef}>
+                <div className={popupBodyStyle(theme, layout)} ref={bodyRef}>
                     <TabWindowList
                         stateRef={stateRef}
                         filteredWindows={filteredWindows}
