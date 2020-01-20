@@ -11,6 +11,7 @@ import TabManagerState from '../tabManagerState';
 import ModalActions from './modalActions';
 import { FilteredTabWindow } from '../searchOps';
 import { StateRef } from 'oneref';
+import * as tippy from 'tippy.js';
 
 var relNotesStr = '';
 if (!isNode) {
@@ -31,6 +32,7 @@ interface TabWindowListProps {
     expandAll: boolean;
     showRelNotes: boolean;
     currentWindowId: number;
+    tippySingleton: (instance: tippy.Instance) => void;
 }
 
 const TabWindowList: React.FC<TabWindowListProps> = ({
@@ -45,7 +47,8 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     focusedTabWindowRef,
     expandAll,
     showRelNotes,
-    currentWindowId
+    currentWindowId,
+    tippySingleton
 }) => {
     /* acknowledge release notes (and hide them) */
     const ackRelNotes = () => {
@@ -96,6 +99,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
                 modalActions={modalActions}
                 onItemSelected={onItemSelected}
                 expandAll={expandAll}
+                tippySingleton={tippySingleton}
             />
         );
         if (isFocused) {

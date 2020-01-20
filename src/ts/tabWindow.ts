@@ -36,6 +36,7 @@ export interface OpenTabStateProps {
     muted: boolean;
     pinned: boolean;
     isSuspended: boolean;
+    screenshot: string | null;
 }
 
 const defaultOpenTabStateProps: OpenTabStateProps = {
@@ -48,7 +49,8 @@ const defaultOpenTabStateProps: OpenTabStateProps = {
     audible: false,
     muted: false,
     pinned: false,
-    isSuspended: false
+    isSuspended: false,
+    screenshot: null
 };
 
 /*
@@ -160,6 +162,10 @@ export class TabItem extends Immutable.Record(defaultTabItemProps) {
             return this.openState;
         }
         throw new Error('Unexpected access of openState on non-open tab');
+    }
+
+    hasScreenshot(): boolean {
+        return this.open && this.openState!.screenshot !== null;
     }
 }
 
@@ -292,6 +298,16 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
         );
         return ret ? ret : null;
     }
+
+    getTabByChromeId(tabId: number): TabItem | null {
+        const entry = this.findChromeTabId(tabId);
+        if (entry) {
+            const [_, tabItem] = entry;
+            return tabItem;
+        }
+        return null;
+    }
+
     /*
      * Returns [index,TabItem] pair if window contains chrome bookmark id or else null
      */

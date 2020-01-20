@@ -132,7 +132,7 @@ function makeBookmarkedTabItem(bm: chrome.bookmarks.BookmarkTreeNode) {
 /*
  * initialize OpenTabState from a browser tab
  */
-function makeOpenTabState(tab: chrome.tabs.Tab) {
+function makeOpenTabState(tab: chrome.tabs.Tab, screenshot: string | null) {
     const rawURL = _.get(tab, 'url', '');
 
     const [url, isSuspended] = suspender.getURI(rawURL);
@@ -149,16 +149,20 @@ function makeOpenTabState(tab: chrome.tabs.Tab) {
         openTabIndex: tab.index,
         pinned: tab.pinned,
         isSuspended,
-        muted
+        muted,
+        screenshot
     });
     return ts;
 }
 
 /*
- * Initialize a TabItem from an open Chrome tab
+ * Initialize a TabItem from an open Chrome tab (and optional screenshot)
  */
-export function makeOpenTabItem(tab: chrome.tabs.Tab) {
-    const openState = makeOpenTabState(tab);
+export function makeOpenTabItem(
+    tab: chrome.tabs.Tab,
+    screenshot: string | null = null
+) {
+    const openState = makeOpenTabState(tab, screenshot);
 
     const tabItem = new TabItem({
         open: true,
@@ -285,7 +289,7 @@ export function makeChromeTabWindow(
     chromeWindow: chrome.windows.Window
 ): TabWindow {
     const chromeTabs = chromeWindow.tabs ? chromeWindow.tabs : [];
-    const tabItems = chromeTabs.map(makeOpenTabItem);
+    const tabItems = chromeTabs.map(tab => makeOpenTabItem(tab, null));
     const tabWindow = new TabWindow({
         open: true,
         openWindowId: chromeWindow.id,
@@ -347,6 +351,20 @@ export function mergeSavedOpenTabs(
     return mergedTabItems;
 }
 
+// find a screenshot by Chrome tab id in a list of TabItem, if it exists
+const findScreenshot = (
+    tabItems: Immutable.List<TabItem>,
+    tabId: number
+): string | null => {
+    const tabItem = tabItems.find(
+        ti => ti.open && ti.openState!.openTabId == tabId
+    );
+    if (tabItem) {
+        return tabItem.openState!.screenshot;
+    }
+    return null;
+};
+
 /*
  * Merge currently open tabs from an open Chrome window with tabItem state of a saved
  * tabWindow
@@ -361,7 +379,12 @@ function mergeOpenTabs(
     openTabs: chrome.tabs.Tab[]
 ): Immutable.List<TabItem> {
     const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
-    const chromeOpenTabItems = Immutable.List(openTabs.map(makeOpenTabItem));
+    const chromeOpenTabItems = Immutable.List(
+        openTabs.map(tab => {
+            const screenshot = tab.id ? findScreenshot(tabItems, tab.id) : null;
+            return makeOpenTabItem(tab, screenshot);
+        })
+    );
 
     const mergedTabItems = mergeSavedOpenTabs(
         baseSavedItems,
@@ -640,6 +663,30 @@ export function setActiveTab(tabWindow: TabWindow, tabId: number) {
 
     return tabWindow.setTabItems(updItems);
 }
+
+export const updateTabScreenshot = (
+    tabWindow: TabWindow,
+    tabId: number,
+    screenshot: string
+): TabWindow => {
+    const tabPos = tabWindow.findChromeTabId(tabId);
+
+    if (!tabPos) {
+        // log.warn("updateTabItem: Got update for unknown tab id ", tabId)
+        // log.debug("updateTabItem: changeInfo: ", changeInfo)
+        return tabWindow;
+    }
+    const [index, prevTabItem] = tabPos;
+    const prevOpenState = prevTabItem.openState;
+    if (prevOpenState) {
+        const updOpenState = prevOpenState.set('screenshot', screenshot);
+        const updTabItem = prevTabItem.set('openState', updOpenState);
+        const updItems = tabWindow.tabItems.set(index, updTabItem);
+        const updWindow = tabWindow.setTabItems(updItems);
+        return updWindow;
+    }
+    return tabWindow;
+};
 
 /*
  * update a tabItem in a TabWindow to latest chrome tab state

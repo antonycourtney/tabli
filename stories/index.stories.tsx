@@ -26,9 +26,14 @@ import FilteredTabWindowUI, {
 import { TabWindow } from '../src/ts/tabWindow';
 import { matchTabWindow } from '../src/ts/searchOps';
 import { HeaderButtonSVG } from '../src/ts/components/HeaderButtonSVG';
+import { TabPreview } from '../src/ts/components/TabPreview';
 import * as svg from '../src/ts/components/svg';
+import { testScreenshot } from './testScreenshot';
+import { useSingleton } from '@tippy.js/react';
 
 const theme = themes.light;
+
+console.log('testScreenshot: ', testScreenshot);
 
 storiesOf('Test Story', module).add('Basic Div', () => <div />);
 
@@ -81,6 +86,11 @@ const StatefulFilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIBa
     const { stateRef } = props;
     const appState = mutableGet(stateRef);
     const tabWindow = appState.getTabWindowByChromeId(TEST_OPEN_WINDOW_ID);
+    const tippySingleton = useSingleton({
+        interactive: true,
+        popperOptions: { positionFixed: true },
+        delay: 200
+    });
     return (
         <FilteredTabWindowUI
             stateRef={stateRef}
@@ -91,6 +101,7 @@ const StatefulFilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIBa
             selectedTabIndex={1}
             modalActions={modalActions}
             onItemSelected={() => console.log('onItemSelected')}
+            tippySingleton={tippySingleton}
             expandAll={false}
         />
     );
@@ -115,7 +126,9 @@ const rootStyle = css({
     paddingTop: 10,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    fontFamily: 'sans-serif',
+    fontSize: 12
 });
 
 const rootInnerStyle = css({
@@ -268,6 +281,17 @@ storiesOf('Tabli Components', module)
         <StoryRoot>
             <DragDropContext onDragEnd={onDragEnd}>
                 <DarkPopup isPopout={false} noListener={true} />
+            </DragDropContext>
+        </StoryRoot>
+    ))
+    .add('TabPreview', () => (
+        <StoryRoot>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <TabPreview
+                    title="The New York Times - Breaking News, World News & Multimedia"
+                    url="https://www.nytimes.com"
+                    screenshot={testScreenshot}
+                />
             </DragDropContext>
         </StoryRoot>
     ));

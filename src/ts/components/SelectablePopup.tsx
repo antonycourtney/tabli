@@ -28,6 +28,7 @@ import {
     DragStart
 } from 'react-beautiful-dnd';
 import { getTabIndices } from '../utils';
+import { useSingleton } from '@tippy.js/react';
 
 function matchingTabs(
     searchStr: string | null,
@@ -142,6 +143,12 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const theme = useContext(ThemeContext);
     const focusedTabWindowRef = useRef<HTMLDivElement | null>(null);
+
+    const tippySingleton = useSingleton({
+        interactive: true,
+        popperOptions: { positionFixed: true },
+        delay: 200
+    });
 
     // Keep track of prevSearchStr so we can detect when it
     // changes from non-empty to empty:
@@ -501,6 +508,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                         expandAll={expandAll}
                         showRelNotes={appState.showRelNotes}
                         currentWindowId={appState.currentWindowId}
+                        tippySingleton={tippySingleton}
                     />
                 </div>
                 <div className={popupFooterStyle(theme)}>

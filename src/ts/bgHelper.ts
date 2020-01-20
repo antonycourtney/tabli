@@ -359,6 +359,79 @@ const onTabUpdated = async (
     }
 };
 
+/*
+ * Take a snapshot of the active tab for the specified chrome
+ * window id and update tab and window state.
+ */
+const snapActiveTab = async (
+    stateRef: StateRef<TabManagerState>,
+    windowId: number
+) => {
+    log.debug('capturing visible tab:');
+    try {
+        const dataUrl = await chromep.tabs.captureVisibleTab(windowId);
+        log.debug(
+            'captureVisibleTab succeeded. image size: ',
+            Math.round(dataUrl.length / 1024),
+            'kb'
+        );
+        // log.debug('captureVisibleTab returned: ', dataUrl);
+        // And let's hope the active tab hasn't changed since the capture....
+        // Chrome captureVisibleTab should really return the tab id with the data.
+        const tabs = await chromep.tabs.query({
+            windowId,
+            windowType: 'normal',
+            active: true
+        });
+        if (tabs.length !== 1) {
+            log.warn('snapActiveTab: unable to get active tab for window');
+            return;
+        }
+        const tab = tabs[0];
+        if (tab.id === undefined) {
+            log.warn('snapActiveTab: unable to get active tab id for window');
+            return;
+        }
+        update(stateRef, state => {
+            const tabWindow = state.getTabWindowByChromeId(windowId);
+
+            if (!tabWindow) {
+                return state;
+            }
+
+            const st = state.updateTabScreenshot(tabWindow, tab.id!, dataUrl);
+            return st;
+        });
+    } catch (e) {
+        log.debug('captureVisibleTab threw (ignoring): ', e);
+    }
+};
+
+const onTabActivated = (
+    stateRef: StateRef<TabManagerState>,
+    activeInfo: chrome.tabs.TabActiveInfo
+) => {
+    chromeEventLog.debug('Chrome Event: tabs.onActivated: ', activeInfo);
+    update(stateRef, state => {
+        const tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
+
+        if (!tabWindow) {
+            log.warn(
+                'tabs.onActivated: window id not found: ',
+                activeInfo.windowId,
+                activeInfo
+            );
+            return state;
+        }
+
+        const st = tabWindow
+            ? state.handleTabActivated(tabWindow, activeInfo.tabId)
+            : state;
+        return st;
+    });
+    snapActiveTab(stateRef, activeInfo.windowId);
+};
+
 const onBookmarkCreated = (
     stateRef: StateRef<TabManagerState>,
     id: string,
@@ -569,39 +642,17 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
         update(stateRef, state => {
             return state.setCurrentWindowId(windowId);
         });
+        snapActiveTab(stateRef, windowId);
     });
-    /*      
-        {
-            windowTypes: ['normal']
-        }
-    ); 
-    */
 
     // tab events:
     chrome.tabs.onCreated.addListener(tab => onTabCreated(stateRef, tab));
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) =>
         onTabUpdated(stateRef, tabId, changeInfo, tab)
     );
-    chrome.tabs.onActivated.addListener(activeInfo => {
-        chromeEventLog.debug('Chrome Event: tabs.onActivated: ', activeInfo);
-        update(stateRef, state => {
-            const tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
-
-            if (!tabWindow) {
-                log.warn(
-                    'tabs.onActivated: window id not found: ',
-                    activeInfo.windowId,
-                    activeInfo
-                );
-                return state;
-            }
-
-            const st = tabWindow
-                ? state.handleTabActivated(tabWindow, activeInfo.tabId)
-                : state;
-            return st;
-        });
-    });
+    chrome.tabs.onActivated.addListener(activeInfo =>
+        onTabActivated(stateRef, activeInfo)
+    );
     chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
         chromeEventLog.debug(
             'Chrome Event: tabs.onRemoved: ',

@@ -21,6 +21,7 @@ import {
     DroppableStateSnapshot
 } from 'react-beautiful-dnd';
 import { Theme, ThemeContext } from './themeContext';
+import * as tippy from 'tippy.js';
 
 const expandablePanelContentOpenStyle = css({
     marginTop: 4
@@ -49,6 +50,7 @@ export interface FilteredTabWindowUIBaseProps {
     selectedTabIndex: number;
     onItemSelected: () => void; // N.B. just clears selection; tab or window selected both trigger this
     expandAll: boolean;
+    tippySingleton?: (instance: tippy.Instance) => void;
 }
 
 // factored out to allow wrapping in a local
@@ -69,7 +71,8 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     onItemSelected,
     selectedTabIndex,
     modalActions,
-    expandAll
+    expandAll,
+    tippySingleton
 }: FilteredTabWindowUIProps) => {
     log.trace(
         '  FilteredTabWindowUI: rendering ',
@@ -133,6 +136,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
                     tabIndex={i}
                     isSelected={isSelected}
                     onItemSelected={onItemSelected}
+                    tippySingleton={tippySingleton}
                 />
             );
             items.push(tabItem);

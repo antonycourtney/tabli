@@ -17,7 +17,9 @@
         "tabs",
         "bookmarks",
         "chrome://favicon/*",
-        "sessions"
+        "sessions",
+        "<all_urls>",
+        "activeTab"
     ],
     "icons": {
         "16": "images/glyphicons_154_more_windows.png",

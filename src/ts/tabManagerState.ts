@@ -165,6 +165,29 @@ export default class TabManagerState extends Immutable.Record(
         return this.registerTabWindow(updWindow);
     }
 
+    updateTabScreenshot(
+        tabWindow: TabWindow,
+        tabId: number,
+        screenshot: string
+    ) {
+        const updWindow = tabWindowUtils.updateTabScreenshot(
+            tabWindow,
+            tabId,
+            screenshot
+        );
+        const tab = updWindow.getTabByChromeId(tabId);
+        if (tab) {
+            console.log(
+                'updateTabScreenshot: ',
+                tab.title,
+                tab.hasScreenshot()
+            );
+        } else {
+            console.log('updateTabScreenshot: tab id ', tabId, ' not found');
+        }
+        return this.registerTabWindow(updWindow);
+    }
+
     handleTabCreated(tabWindow: TabWindow, tab: chrome.tabs.Tab) {
         const updWindow = tabWindowUtils.createTab(tabWindow, tab);
         return this.registerTabWindow(updWindow);

@@ -10,6 +10,7 @@ import { HeaderButton } from './HeaderButton';
 import HeaderCheckbox from './HeaderCheckbox';
 import { ThemeContext } from './themeContext';
 import * as tabItemUtil from './tabItemUtil';
+import { TabPreview } from './TabPreview';
 import {
     Draggable,
     DraggableProvided,
@@ -22,6 +23,9 @@ import { StateRef, mutableGet } from 'oneref';
 import { areEqualShallow } from '../utils';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
+import Tippy from '@tippy.js/react';
+import 'tippy.js/dist/tippy.css';
+import * as tippy from 'tippy.js';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -52,6 +56,7 @@ export interface TabItemUIProps {
     tabIndex: number;
     isSelected: boolean;
     onItemSelected: (item: TabItem) => void;
+    tippySingleton?: (instance: tippy.Instance) => void;
 
     isOver?: boolean;
     stateRef: StateRef<TabManagerState>;
@@ -64,7 +69,8 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     isSelected,
     isOver,
     onItemSelected,
-    stateRef
+    stateRef,
+    tippySingleton
 }: TabItemUIProps) => {
     // log.debug('  --TabItemUI: rendering: ', tab.title);
     const theme = useContext(ThemeContext);
@@ -120,8 +126,6 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     const managed = tabWindow.saved;
 
     const tabTitle = tab.title;
-
-    const tooltipContent = tabTitle + '\n' + tab.url;
 
     // span style depending on whether open or closed window
     let tabOpenStateStyle: string | null = null;
@@ -235,6 +239,12 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const draggableId = tab.key;
 
+    const screenshot = tab.open ? tab.openState!.screenshot : null;
+
+    const previewContent = (
+        <TabPreview title={tabTitle} url={tab.url} screenshot={screenshot} />
+    );
+
     return (
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
             {(
@@ -254,32 +264,37 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                             dragSnapshot
                         )}
                     >
-                        <div
-                            className={
-                                getTabItemStyle(dragSnapshot.isDragging) +
-                                ' tabItemHoverContainer'
-                            }
-                            data-testid="tabItem-container"
-                            onClick={handleClick}
+                        <Tippy
+                            content={previewContent}
+                            singleton={tippySingleton}
                         >
-                            <div className={styles.rowItemsFixedWidth}>
-                                {tabCheckItem}
-                                {tabFavIcon}
-                            </div>
-                            <a
-                                href={tab.url}
-                                className={tabTitleStyle}
-                                title={tooltipContent}
+                            <div
+                                className={
+                                    getTabItemStyle(dragSnapshot.isDragging) +
+                                    ' tabItemHoverContainer'
+                                }
+                                data-testid="tabItem-container"
                                 onClick={handleClick}
                             >
-                                {tabTitle}
-                            </a>
-                            <div className={styles.rowItemsFixedWidth}>
-                                {suspendedIcon}
-                                {audibleIcon}
-                                {closeButton}
+                                <div className={styles.rowItemsFixedWidth}>
+                                    {tabCheckItem}
+                                    <div>{tabFavIcon}</div>
+                                </div>
+                                <a
+                                    href={tab.url}
+                                    className={tabTitleStyle}
+                                    onClick={handleClick}
+                                >
+                                    {tabTitle}
+                                </a>
+
+                                <div className={styles.rowItemsFixedWidth}>
+                                    {suspendedIcon}
+                                    {audibleIcon}
+                                    {closeButton}
+                                </div>
                             </div>
-                        </div>
+                        </Tippy>
                         {dragProvided.placeholder}
                     </div>
                 );
