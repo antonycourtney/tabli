@@ -18,13 +18,15 @@ interface PreferencesProps {
     dedupeTabs: boolean; // close tab if URL matches existing tab
     revertOnOpen: boolean; // revert to anchor tabs when opening saved window
     theme: string;
+    layout: string;
 }
 
 const defaultPreferencesProps: PreferencesProps = {
     popoutOnStart: false,
     dedupeTabs: false,
     revertOnOpen: true,
-    theme: 'light'
+    theme: 'light',
+    layout: 'normal'
 };
 
 export class Preferences extends Immutable.Record(defaultPreferencesProps) {

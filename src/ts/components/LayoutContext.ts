@@ -14,12 +14,24 @@ export interface Layout {
 }
 
 export interface LayoutMap {
-    normal: Layout;
     compact: Layout;
+    normal: Layout;
 }
 export type LayoutName = keyof LayoutMap;
 
 export const layouts: LayoutMap = {
+    compact: {
+        tabPaddingTop: 0,
+        tabPaddingBottom: 0,
+        tabMarginTop: 0,
+        tabMarginBottom: 0,
+        windowHeaderHeight: 26,
+        sectionPaddingTop: 6,
+        sectionPaddingBottom: 4,
+        sectionHeaderFontSize: 12,
+        sectionHeaderMarginBottom: 4,
+        popupHeaderHeight: 40
+    },
     normal: {
         tabPaddingTop: 2,
         tabPaddingBottom: 2,
@@ -31,18 +43,6 @@ export const layouts: LayoutMap = {
         sectionHeaderFontSize: 14,
         sectionHeaderMarginBottom: 8,
         popupHeaderHeight: 44
-    },
-    compact: {
-        tabPaddingTop: 0,
-        tabPaddingBottom: 0,
-        tabMarginTop: 0,
-        tabMarginBottom: 0,
-        windowHeaderHeight: 26,
-        sectionPaddingTop: 6,
-        sectionPaddingBottom: 4,
-        sectionHeaderFontSize: 13,
-        sectionHeaderMarginBottom: 4,
-        popupHeaderHeight: 40
     }
 };
 export const LayoutContext = React.createContext(

@@ -7,7 +7,7 @@ import { css } from 'emotion';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
-import { LayoutContext, Layout, layouts } from './LayoutContext';
+import { LayoutContext, Layout, layouts, LayoutName } from './LayoutContext';
 import * as utils from '../utils';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
@@ -47,6 +47,9 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     log.trace('Popup: ', appState.toJS());
     const themeName = appState.preferences.theme as ThemeName;
     const theme = themes[themeName];
+
+    const layoutName = appState.preferences.layout as LayoutName;
+    const layout = layouts[layoutName];
 
     const tabWindows = appState.getAll();
     var cmpFn = utils.windowCmp(appState.currentWindowId);
@@ -138,7 +141,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     ) : null;
 
     return (
-        <LayoutContext.Provider value={layouts.compact}>
+        <LayoutContext.Provider value={layout}>
             <ThemeContext.Provider value={theme}>
                 <div className={popupOuterStyle(theme)}>
                     <SelectablePopup

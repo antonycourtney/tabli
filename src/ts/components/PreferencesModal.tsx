@@ -7,6 +7,7 @@ import { themes } from './themeContext';
 import { css } from 'emotion';
 import { Preferences } from '../preferences';
 import { useState } from 'react';
+import { layouts } from './LayoutContext';
 
 const themeSelectStyle = css({
     width: 80,
@@ -75,6 +76,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         setPrefs(nextPrefs);
     };
 
+    const handleLayoutChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const oldPrefs = prefs;
+        const nextPrefs = oldPrefs.set('layout', e.target.value);
+        log.debug('handleThemeChange: nextPrefs:', nextPrefs.toJS());
+        setPrefs(nextPrefs);
+    };
+
     const popStart = prefs.popoutOnStart;
     const dedupeTabs = prefs.dedupeTabs;
     const revertOnOpen = prefs.revertOnOpen;
@@ -96,6 +104,25 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             {themeOpts}
         </select>
     );
+
+    const currentLayout = prefs.layout;
+    const layoutNames = Object.keys(layouts);
+    const layoutOpts = layoutNames.map(nm => (
+        <option key={nm} value={nm}>
+            {nm}
+        </option>
+    ));
+    const layoutSelect = (
+        <select
+            className={themeSelectStyle}
+            name="layout"
+            value={currentLayout}
+            onChange={e => handleLayoutChange(e)}
+        >
+            {layoutOpts}
+        </select>
+    );
+
     return (
         <Modal.Dialog title="Tabli Preferences" onClose={onClose}>
             <Modal.Body>
@@ -139,6 +166,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                             <label className={selectLabelStyle}>
                                 Theme
                                 {themeSelect}
+                            </label>
+                        </div>
+                        <div>
+                            <label className={selectLabelStyle}>
+                                Layout
+                                {layoutSelect}
                             </label>
                         </div>
                     </form>
