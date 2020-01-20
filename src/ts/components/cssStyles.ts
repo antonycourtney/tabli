@@ -10,6 +10,7 @@ import { Theme } from './themeContext';
  */
 
 import { css, cx } from 'emotion';
+import { Layout } from './LayoutContext';
 export const rowItemsFixedWidth = css`
     display: inline-flex;
     align-items: center;
@@ -36,19 +37,19 @@ export const audibleIcon = css({
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
     backgroundColor: '#505050'
 });
-export const tabItem = (theme: Theme) =>
+export const tabItem = (theme: Theme, layout: Layout) =>
     css({
         borderRadius: 3,
         height: Constants.TAB_ITEM_HEIGHT,
         maxHeight: Constants.TAB_ITEM_HEIGHT,
         paddingLeft: 3,
         paddingRight: 3,
-        paddingTop: 2,
-        paddingBottom: 2,
+        paddingTop: layout.tabPaddingTop,
+        paddingBottom: layout.tabPaddingBottom,
         marginLeft: 6,
         marginRight: 6,
-        marginTop: 2,
-        marginBottom: 2,
+        marginTop: layout.tabMarginTop,
+        marginBottom: layout.tabMarginBottom,
         display: 'flex',
         alignItems: 'center',
         border:
@@ -106,12 +107,12 @@ export const noWrap = css({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
 });
-export const windowHeader = (theme: Theme) =>
+export const windowHeader = (theme: Theme, layout: Layout) =>
     css({
         backgroundColor: theme.headerBackground,
         borderBottom: '1px solid #bababa',
-        height: Constants.WINDOW_HEADER_HEIGHT,
-        maxHeight: Constants.WINDOW_HEADER_HEIGHT,
+        height: layout.windowHeaderHeight,
+        maxHeight: layout.windowHeaderHeight,
         paddingLeft: 3,
         paddingRight: 3,
         // marginBottom: 3,
@@ -203,12 +204,13 @@ export const tabWindow = (theme: Theme) =>
         display: 'flex',
         flexDirection: 'column'
     });
-export const expandablePanel = css({
-    width: '100%',
-    position: 'relative',
-    minHeight: Constants.WINDOW_HEADER_HEIGHT,
-    overflow: 'hidden'
-});
+export const expandablePanel = (layout: Layout) =>
+    css({
+        width: '100%',
+        position: 'relative',
+        minHeight: layout.windowHeaderHeight,
+        overflow: 'hidden'
+    });
 export const dialogInfoContents = css({
     marginLeft: 10,
     marginTop: 4,

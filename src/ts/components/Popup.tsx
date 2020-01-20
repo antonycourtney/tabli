@@ -7,6 +7,7 @@ import { css } from 'emotion';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
+import { LayoutContext, Layout, layouts } from './LayoutContext';
 import * as utils from '../utils';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
@@ -137,21 +138,23 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     ) : null;
 
     return (
-        <ThemeContext.Provider value={theme}>
-            <div className={popupOuterStyle(theme)}>
-                <SelectablePopup
-                    onSearchInput={handleSearchInput}
-                    appState={appState}
-                    stateRef={stateRef}
-                    filteredWindows={filteredWindows}
-                    modalActions={modalActions}
-                    searchStr={searchStr}
-                    searchRE={searchRE}
-                    isPopout={isPopout}
-                />
-                {revertModal}
-                {saveModal}
-            </div>
-        </ThemeContext.Provider>
+        <LayoutContext.Provider value={layouts.compact}>
+            <ThemeContext.Provider value={theme}>
+                <div className={popupOuterStyle(theme)}>
+                    <SelectablePopup
+                        onSearchInput={handleSearchInput}
+                        appState={appState}
+                        stateRef={stateRef}
+                        filteredWindows={filteredWindows}
+                        modalActions={modalActions}
+                        searchStr={searchStr}
+                        searchRE={searchRE}
+                        isPopout={isPopout}
+                    />
+                    {revertModal}
+                    {saveModal}
+                </div>
+            </ThemeContext.Provider>
+        </LayoutContext.Provider>
     );
 };

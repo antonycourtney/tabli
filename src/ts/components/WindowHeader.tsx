@@ -19,6 +19,7 @@ import { TabWindow } from '../tabWindow';
 import ModalActions from './modalActions';
 import { useContext, useState, useCallback } from 'react';
 import { StateRef } from 'oneref';
+import { LayoutContext } from './LayoutContext';
 
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput);
 
@@ -66,6 +67,8 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     onItemSelected
 }: WindowHeaderProps) => {
     const theme = useContext(ThemeContext);
+    const layout = useContext(LayoutContext);
+
     const [editingTitle, setEditingTitle] = useState(false);
     const [titleInput, setTitleInput] = useState<HTMLInputElement | null>(null);
     const titleInputRef = useCallback((titleElem: HTMLInputElement) => {
@@ -221,7 +224,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     return (
         <div
             className={
-                cx(styles.windowHeader(theme), styles.noWrap) +
+                cx(styles.windowHeader(theme, layout), styles.noWrap) +
                 ' windowHeaderHoverContainer'
             }
             onClick={onOpen}

@@ -5,6 +5,7 @@ import { css, cx } from 'emotion';
 import { ThemeContext, Theme } from './themeContext';
 import { HeaderButton } from './HeaderButton';
 import { useContext } from 'react';
+import { LayoutContext } from './LayoutContext';
 
 /*
  * generic modal dialog component
@@ -75,6 +76,7 @@ export const Dialog: React.FC<DialogProps> = ({
     children
 }: DialogProps) => {
     const theme = useContext(ThemeContext);
+    const layout = useContext(LayoutContext);
 
     const handleClose = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault();
@@ -97,7 +99,7 @@ export const Dialog: React.FC<DialogProps> = ({
             <div className={modalContainerStyle(theme)}>
                 <div
                     className={
-                        cx(styles.windowHeader(theme), styles.noWrap) +
+                        cx(styles.windowHeader(theme, layout), styles.noWrap) +
                         ' windowHeaderHoverContainer'
                     }
                 >

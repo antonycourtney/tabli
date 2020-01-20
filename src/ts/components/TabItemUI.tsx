@@ -22,6 +22,7 @@ import { StateRef, mutableGet } from 'oneref';
 import { areEqualShallow, windowIsPopout } from '../utils';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
+import { LayoutContext } from './LayoutContext';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -68,6 +69,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 }: TabItemUIProps) => {
     // log.debug('  --TabItemUI: rendering: ', tab.title);
     const theme = useContext(ThemeContext);
+    const layout = useContext(LayoutContext);
 
     const handleClick = (event: React.MouseEvent) => {
         event.preventDefault();
@@ -189,7 +191,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         const dragStyle = isDragging ? styles.tabItemDragging(theme) : null;
         const tabItemStyle = cx(
             styles.noWrap,
-            styles.tabItem(theme),
+            styles.tabItem(theme, layout),
             activeStyle,
             selectedStyle,
             dropStyle,

@@ -21,6 +21,7 @@ import {
     DroppableStateSnapshot
 } from 'react-beautiful-dnd';
 import { Theme, ThemeContext } from './themeContext';
+import { LayoutContext } from './LayoutContext';
 
 const expandablePanelContentOpenStyle = css({
     marginTop: 4
@@ -71,6 +72,8 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     modalActions,
     expandAll
 }: FilteredTabWindowUIProps) => {
+    const layout = useContext(LayoutContext);
+
     log.trace(
         '  FilteredTabWindowUI: rendering ',
         tabWindow.key,
@@ -190,7 +193,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     const focusedStyle = isFocused ? styles.tabWindowFocused(theme) : null;
     const windowStyles = cx(
         styles.tabWindow(theme),
-        styles.expandablePanel,
+        styles.expandablePanel(layout),
         selectedStyle,
         focusedStyle
     );

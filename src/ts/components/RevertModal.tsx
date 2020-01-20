@@ -15,6 +15,7 @@ import TabManagerState from '../tabManagerState';
 import { StateRef } from 'oneref';
 import { useContext, useRef, useEffect } from 'react';
 import * as tabWindowUtils from '../tabWindowUtils';
+import { LayoutContext } from './LayoutContext';
 
 /*
  * Modal dialog for reverting a bookmarked window
@@ -31,6 +32,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
     onSubmit
 }: RevertModalProps) => {
     const theme = useContext(ThemeContext);
+    const layout = useContext(LayoutContext);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.keyCode === Constants.KEY_ESC) {
@@ -59,7 +61,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
             tabActiveStyle
         );
         const id = 'tabItem-' + idx;
-        const tabItemStyle = styles.tabItem(theme);
+        const tabItemStyle = styles.tabItem(theme, layout);
         return (
             <div key={id} className={cx(styles.noWrap, tabItemStyle)}>
                 {tabFavIcon}

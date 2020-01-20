@@ -1,4 +1,3 @@
-export const WINDOW_HEADER_HEIGHT = 30;
 export const HEADER_BUTTON_SIZE = 16;
 export const WINDOW_MIN_WIDTH = 345;
 export const WINDOW_MAX_WIDTH = 700;
