@@ -71,16 +71,16 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
 
-    const handleClick = (event: React.MouseEvent) => {
+    const handleClick = async (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
 
         // log.debug("TabItem: handleClick: tab: ", tab)
 
-        actions.activateOrRestoreTab(tabWindow, tab, tabIndex, stateRef);
+        await actions.activateOrRestoreTab(tabWindow, tab, tabIndex, stateRef);
 
         if (onItemSelected) {
-            onItemSelected(tab);
+            await onItemSelected(tab);
         }
         if (!windowIsPopout()) {
             window.close();

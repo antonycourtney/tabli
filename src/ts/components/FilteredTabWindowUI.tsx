@@ -94,8 +94,8 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
         setPrevIsSelected(isSelected);
     }
 
-    const handleOpen = () => {
-        actions.openWindow(tabWindow, stateRef);
+    const handleOpen = async () => {
+        await actions.openWindow(tabWindow, stateRef);
         if (onItemSelected) {
             onItemSelected();
         }
