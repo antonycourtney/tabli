@@ -128,7 +128,25 @@ function initRelNotes(st: TabManagerState, storedVersion: string) {
 
 const initWinStore = async () => {
     const tree = await chromep.bookmarks.getTree();
-    var otherBookmarksNode = tree[0].children![1]; // log.debug( "otherBookmarksNode: ", otherBookmarksNode )
+    // log.debug('initWinStore: chrome bookmarks tree: ', tree);
+
+    const rootChildren = tree[0].children!;
+    // Try the fixed child index for Chrome:
+    let otherBookmarksNode = rootChildren[1];
+    if (otherBookmarksNode === undefined) {
+        log.warn(
+            "Could not attach to Chrome predefined 'Other Bookmarks' folder"
+        );
+        log.warn(
+            'Attempting to attach to root (Boomarks Bar) as a workaround for Brave Browser issue'
+        );
+        log.warn(
+            'See https://github.com/brave/brave-browser/issues/7639 for additional info'
+        );
+        otherBookmarksNode = rootChildren[rootChildren.length - 1];
+    } else {
+        log.debug("'Other Bookmarks' folder acquired");
+    }
 
     const tabliFolder = await ensureChildFolder(
         otherBookmarksNode,
