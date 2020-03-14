@@ -27,7 +27,7 @@ import {
     ResponderProvided,
     DragStart
 } from 'react-beautiful-dnd';
-import { getTabIndices } from '../utils';
+import { getTabIndices, windowIsPopout } from '../utils';
 import { Layout, LayoutContext } from './LayoutContext';
 
 function matchingTabs(
@@ -378,7 +378,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         }
     };
 
-    const handleSelectionEnter = (
+    const handleSelectionEnter = async (
         inputRef: MutableRefObject<HTMLInputElement | null>
     ) => {
         if (filteredWindows.length === 0) {
@@ -390,7 +390,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (selectedTabIndex === -1) {
             if (currentWindow) {
                 // no specific tab, but still active / open window
-                actions.openWindow(selectedWindow.tabWindow, stateRef);
+                await actions.openWindow(selectedWindow.tabWindow, stateRef);
             }
         } else {
             const selectedTabItem = selectedTab(
@@ -398,7 +398,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 searchStr,
                 selectedTabIndex
             );
-            actions.activateOrRestoreTab(
+            await actions.activateOrRestoreTab(
                 selectedWindow.tabWindow,
                 selectedTabItem,
                 selectedTabIndex,
@@ -408,6 +408,9 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         // And reset the search field:
         inputRef!.current!.value = '';
         onSearchInput('');
+        if (!windowIsPopout()) {
+            window.close();
+        }
     };
 
     const handleSelectionExpandToggle = () => {
