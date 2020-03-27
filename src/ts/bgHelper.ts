@@ -307,23 +307,25 @@ const dedupeTab = async (
     try {
         const url = changeInfo.url;
 
-        // log.debug('dedupeTab: ', st.toJS(), tabId, changeInfo, tab);
-
-        const tabItem = st.getTabItemByChromeTabId(tabId);
-
-        // If url matches tabItem.openerUrl, this is usually a user-initiated Duplicate
-        // operation (via tab context menu), so skip de-dup'ing:
-        if (tabItem && tabItem.open && tabItem.openState!.openerUrl === url) {
-            log.debug(
-                'dedupeTab: user-initiated Duplicate of ',
-                url,
-                ', skipping...'
-            );
-            return;
-        }
-
         // TODO: We should really look at pendingUrl, to try and dedupe tabs earlier...
         if (url != null && url.length > 0) {
+            const tabItem = st.getTabItemByChromeTabId(tabId);
+
+            // If url matches tabItem.openerUrl, this is usually a user-initiated Duplicate
+            // operation (via tab context menu), so skip de-dup'ing:
+            if (
+                tabItem &&
+                tabItem.open &&
+                tabItem.openState!.openerUrl === url
+            ) {
+                log.debug(
+                    'dedupeTab: user-initiated Duplicate of ',
+                    url,
+                    ', skipping...'
+                );
+                return;
+            }
+
             const matchPairs = st.findURL(url); // and filter out the tab we're checking:
 
             const isSelf = (tw: TabWindow, ti: TabItem) =>
