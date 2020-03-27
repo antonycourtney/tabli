@@ -36,6 +36,8 @@ export interface OpenTabStateProps {
     muted: boolean;
     pinned: boolean;
     isSuspended: boolean;
+    openerTabId: number | undefined;
+    openerUrl: string | undefined; // url of openerTabId at time tab created
 }
 
 const defaultOpenTabStateProps: OpenTabStateProps = {
@@ -48,7 +50,9 @@ const defaultOpenTabStateProps: OpenTabStateProps = {
     audible: false,
     muted: false,
     pinned: false,
-    isSuspended: false
+    isSuspended: false,
+    openerTabId: undefined,
+    openerUrl: undefined
 };
 
 /*

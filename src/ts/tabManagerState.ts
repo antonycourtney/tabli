@@ -165,8 +165,12 @@ export default class TabManagerState extends Immutable.Record(
         return this.registerTabWindow(updWindow);
     }
 
-    handleTabCreated(tabWindow: TabWindow, tab: chrome.tabs.Tab) {
-        const updWindow = tabWindowUtils.createTab(tabWindow, tab);
+    handleTabCreated(
+        tabWindow: TabWindow,
+        tab: chrome.tabs.Tab,
+        openerUrl: string | undefined
+    ) {
+        const updWindow = tabWindowUtils.createTab(tabWindow, tab, openerUrl);
         return this.registerTabWindow(updWindow);
     }
 
@@ -400,7 +404,20 @@ export default class TabManagerState extends Immutable.Record(
             w => w.findChromeTabId(tabId) !== null
         );
         return tw ? tw : null;
-    } // returns a tabWindow or undefined
+    }
+
+    getTabItemByChromeTabId(tabId: number): TabItem | null {
+        const tw = this.getTabWindowByChromeTabId(tabId);
+        if (tw) {
+            const entry = tw.findChromeTabId(tabId);
+            if (entry) {
+                const [_, tabItem] = entry;
+                return tabItem;
+            }
+        }
+        return null;
+    }
+
     // Note: this is the bookmark id of the folder, not saved tab
 
     getSavedWindowByBookmarkId(bookmarkId: string): TabWindow | null {

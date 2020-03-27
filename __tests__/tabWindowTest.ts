@@ -174,6 +174,7 @@ test('chromeTabWindow', () => {
                     openTabId: 734,
                     active: true,
                     openTabIndex: 6,
+                    openerTabId: 449,
                     favIconUrl:
                         'https://www.google.com/images/icons/product/chrome-32.png',
                     title: 'Declare Permissions - Google Chrome',

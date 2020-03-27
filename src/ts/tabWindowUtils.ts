@@ -132,7 +132,7 @@ function makeBookmarkedTabItem(bm: chrome.bookmarks.BookmarkTreeNode) {
 /*
  * initialize OpenTabState from a browser tab
  */
-function makeOpenTabState(tab: chrome.tabs.Tab) {
+function makeOpenTabState(tab: chrome.tabs.Tab, openerUrl?: string) {
     const rawURL = _.get(tab, 'url', '');
 
     const [url, isSuspended] = suspender.getURI(rawURL);
@@ -149,7 +149,9 @@ function makeOpenTabState(tab: chrome.tabs.Tab) {
         openTabIndex: tab.index,
         pinned: tab.pinned,
         isSuspended,
-        muted
+        muted,
+        openerTabId: tab.openerTabId,
+        openerUrl
     });
     return ts;
 }
@@ -157,8 +159,8 @@ function makeOpenTabState(tab: chrome.tabs.Tab) {
 /*
  * Initialize a TabItem from an open Chrome tab
  */
-export function makeOpenTabItem(tab: chrome.tabs.Tab) {
-    const openState = makeOpenTabState(tab);
+export function makeOpenTabItem(tab: chrome.tabs.Tab, openerUrl?: string) {
+    const openState = makeOpenTabState(tab, openerUrl);
 
     const tabItem = new TabItem({
         open: true,
@@ -285,7 +287,7 @@ export function makeChromeTabWindow(
     chromeWindow: chrome.windows.Window
 ): TabWindow {
     const chromeTabs = chromeWindow.tabs ? chromeWindow.tabs : [];
-    const tabItems = chromeTabs.map(makeOpenTabItem);
+    const tabItems = chromeTabs.map(ti => makeOpenTabItem(ti));
     const tabWindow = new TabWindow({
         open: true,
         openWindowId: chromeWindow.id,
@@ -361,7 +363,9 @@ function mergeOpenTabs(
     openTabs: chrome.tabs.Tab[]
 ): Immutable.List<TabItem> {
     const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
-    const chromeOpenTabItems = Immutable.List(openTabs.map(makeOpenTabItem));
+    const chromeOpenTabItems = Immutable.List(
+        openTabs.map(ti => makeOpenTabItem(ti))
+    );
 
     const mergedTabItems = mergeSavedOpenTabs(
         baseSavedItems,
@@ -383,7 +387,8 @@ function mergeOpenTabs(
 function mergeTabWindowTabItems(
     tabWindow: TabWindow,
     optChromeTab?: chrome.tabs.Tab,
-    optBookmark?: chrome.bookmarks.BookmarkTreeNode
+    optBookmark?: chrome.bookmarks.BookmarkTreeNode,
+    openerUrl?: string
 ) {
     const tabItems = tabWindow.tabItems;
 
@@ -412,7 +417,10 @@ function mergeTabWindowTabItems(
     const updOpenItems = optChromeTab
         ? baseOpenItems
               .toList()
-              .insert(optChromeTab.index, makeOpenTabItem(optChromeTab))
+              .insert(
+                  optChromeTab.index,
+                  makeOpenTabItem(optChromeTab, openerUrl)
+              )
         : baseOpenItems;
 
     const updSavedItems = optBookmark
@@ -432,9 +440,10 @@ function mergeTabWindowTabItems(
  */
 export function createTab(
     tabWindow: TabWindow,
-    tab: chrome.tabs.Tab
+    tab: chrome.tabs.Tab,
+    openerUrl: string | undefined
 ): TabWindow {
-    return mergeTabWindowTabItems(tabWindow, tab);
+    return mergeTabWindowTabItems(tabWindow, tab, undefined, openerUrl);
 }
 
 /*

@@ -253,7 +253,16 @@ async function onTabCreated(
             log.warn('tabs.onCreated: window id not found: ', tab.windowId);
             return [state, null];
         }
-        const st = state.handleTabCreated(tabWindow, tab);
+        let openerUrl: string | undefined = undefined;
+        if (tab.openerTabId) {
+            const entry = tabWindow.findChromeTabId(tab.openerTabId);
+
+            if (entry) {
+                const [_, openerTabItem] = entry;
+                openerUrl = openerTabItem.url;
+            }
+        }
+        const st = state.handleTabCreated(tabWindow, tab, openerUrl);
         const nw = st.getTabWindowByChromeId(tab.windowId);
         const ast = markActive ? st.handleTabActivated(nw!, tab.id!) : st;
         return [ast, null];
@@ -300,6 +309,19 @@ const dedupeTab = async (
 
         // log.debug('dedupeTab: ', st.toJS(), tabId, changeInfo, tab);
 
+        const tabItem = st.getTabItemByChromeTabId(tabId);
+
+        // If url matches tabItem.openerUrl, this is usually a user-initiated Duplicate
+        // operation (via tab context menu), so skip de-dup'ing:
+        if (tabItem && tabItem.open && tabItem.openState!.openerUrl === url) {
+            log.debug(
+                'dedupeTab: user-initiated Duplicate of ',
+                url,
+                ', skipping...'
+            );
+            return;
+        }
+
         // TODO: We should really look at pendingUrl, to try and dedupe tabs earlier...
         if (url != null && url.length > 0) {
             const matchPairs = st.findURL(url); // and filter out the tab we're checking:
@@ -317,8 +339,8 @@ const dedupeTab = async (
             /*             log.debug('dedupeTab: ', {
                 matchPairs: jsifyPairs(matchPairs),
                 filteredMatchPairs: jsifyPairs(filteredMatchPairs)
-            });
- */
+            }); */
+
             if (filteredMatchPairs.length > 0) {
                 const [origTabWindow, origTab] = filteredMatchPairs[0];
                 // if we wanted to programatically go back instead of closing:
