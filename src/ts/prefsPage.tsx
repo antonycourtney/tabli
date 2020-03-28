@@ -20,11 +20,18 @@ const onClose = async () => {
     }
 };
 
-const onUpdatePreferences = async (
+const onApplyPreferences = async (
     stateRef: StateRef<TabManagerState>,
     newPrefs: Preferences
 ) => {
     await actions.savePreferences(newPrefs, stateRef);
+};
+
+const onUpdatePreferences = async (
+    stateRef: StateRef<TabManagerState>,
+    newPrefs: Preferences
+) => {
+    await onApplyPreferences(stateRef, newPrefs);
     await onClose();
 };
 
@@ -38,6 +45,7 @@ const renderPrefs = async () => {
             <PreferencesModal
                 onClose={onClose}
                 initialPrefs={st.preferences}
+                onApply={prefs => onApplyPreferences(stateRef, prefs)}
                 onSubmit={prefs => onUpdatePreferences(stateRef, prefs)}
             />
         );

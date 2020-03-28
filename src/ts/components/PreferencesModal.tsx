@@ -8,8 +8,17 @@ import { css } from 'emotion';
 import { Preferences } from '../preferences';
 import { useState } from 'react';
 import { layouts } from './LayoutContext';
-
+import {
+    fontScaleFactorToSize,
+    fontSizeToScaleFactor,
+    fontSizeVals
+} from '../renderUtils';
 const themeSelectStyle = css({
+    width: 80,
+    marginLeft: 5
+});
+
+const fontSizeSelectStyle = css({
     width: 80,
     marginLeft: 5
 });
@@ -21,12 +30,14 @@ const selectLabelStyle = css({
 interface PreferencesModalProps {
     initialPrefs: Preferences;
     onClose: () => void;
+    onApply: (newPrefs: Preferences) => void;
     onSubmit: (newPrefs: Preferences) => void;
 }
 
 const PreferencesModal: React.FC<PreferencesModalProps> = ({
     initialPrefs,
     onClose,
+    onApply,
     onSubmit
 }) => {
     const [prefs, setPrefs] = useState(initialPrefs);
@@ -39,6 +50,11 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         } else if (e.keyCode === Constants.KEY_ENTER) {
             handleSubmit(e);
         }
+    };
+
+    const handleApply = (e: React.SyntheticEvent) => {
+        e.preventDefault();
+        onApply(prefs);
     };
 
     const handleSubmit = (e: React.SyntheticEvent) => {
@@ -83,6 +99,21 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         setPrefs(nextPrefs);
     };
 
+    const handleFontSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const oldPrefs = prefs;
+        const nextScaleFactor = fontSizeToScaleFactor(
+            Number.parseInt(e.target.value)
+        );
+        const nextPrefs = oldPrefs.set('fontScaleFactor', nextScaleFactor);
+        log.debug(
+            'handleFontSizeChange: fontSize: ',
+            e.target.value,
+            ', nextPrefs:',
+            nextPrefs.toJS()
+        );
+        setPrefs(nextPrefs);
+    };
+
     const popStart = prefs.popoutOnStart;
     const dedupeTabs = prefs.dedupeTabs;
     const revertOnOpen = prefs.revertOnOpen;
@@ -120,6 +151,23 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             onChange={e => handleLayoutChange(e)}
         >
             {layoutOpts}
+        </select>
+    );
+
+    const currentFontSize = fontScaleFactorToSize(prefs.fontScaleFactor);
+    const fontSizeOpts = fontSizeVals.map(sz => (
+        <option key={sz.toString()} value={sz}>
+            {sz.toString()}
+        </option>
+    ));
+    const fontSizeSelect = (
+        <select
+            className={fontSizeSelectStyle}
+            name="fontSize"
+            value={currentFontSize}
+            onChange={e => handleFontSizeChange(e)}
+        >
+            {fontSizeOpts}
         </select>
     );
 
@@ -174,9 +222,24 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 {layoutSelect}
                             </label>
                         </div>
+                        <div>
+                            <label className={selectLabelStyle}>
+                                Font Size
+                                {fontSizeSelect}
+                            </label>
+                        </div>
                     </form>
                     <hr />
                     <div className={styles.dialogButtonRow}>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm tabli-dialog-button"
+                            onClick={e => handleApply(e)}
+                            tabIndex={0}
+                            onKeyDown={handleKeyDown}
+                        >
+                            Apply
+                        </button>
                         <button
                             type="button"
                             className="btn btn-primary btn-sm tabli-dialog-button"

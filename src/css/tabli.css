@@ -3,6 +3,7 @@
 }
 html {
     height: 100%;
+    font-size: 12px;
 }
 .popup-html {
     width: 450px;
@@ -13,7 +14,6 @@ body {
     font-family: sans-serif;
     /* max-width: 400px; */
     /* overflow-x: hidden; */
-    font-size: 12px;
     cursor: default;
     overflow: hidden;
     margin: 0px;

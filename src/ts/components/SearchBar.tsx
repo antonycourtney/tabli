@@ -76,7 +76,6 @@ const searchInputStyle = css`
     padding-bottom: 1px;
     padding-left: 4px;
     padding-right: 4px;
-    font-size: 12px;
     height: 26px;
 `;
 

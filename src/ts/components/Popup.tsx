@@ -16,6 +16,7 @@ import { TabWindow } from '../tabWindow';
 import SelectablePopup from './SelectablePopup';
 import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
+import { setRootFontSize } from '../renderUtils';
 
 const _ = { debounce };
 
@@ -50,6 +51,10 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
 
     const layoutName = appState.preferences.layout as LayoutName;
     const layout = layouts[layoutName];
+
+    React.useLayoutEffect(() => {
+        setRootFontSize(appState.preferences.fontScaleFactor);
+    }, [appState.preferences.fontScaleFactor]);
 
     const tabWindows = appState.getAll();
     var cmpFn = utils.windowCmp(appState.currentWindowId);

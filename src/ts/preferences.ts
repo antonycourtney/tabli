@@ -19,6 +19,7 @@ interface PreferencesProps {
     revertOnOpen: boolean; // revert to anchor tabs when opening saved window
     theme: string;
     layout: string;
+    fontScaleFactor: number;
 }
 
 const defaultPreferencesProps: PreferencesProps = {
@@ -26,7 +27,8 @@ const defaultPreferencesProps: PreferencesProps = {
     dedupeTabs: false,
     revertOnOpen: true,
     theme: 'light',
-    layout: 'normal'
+    layout: 'normal',
+    fontScaleFactor: 0.75
 };
 
 export class Preferences extends Immutable.Record(defaultPreferencesProps) {

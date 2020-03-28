@@ -131,7 +131,7 @@ export const closed = (theme: Theme) =>
         color: theme.closedGray
     });
 export const text = css({
-    fontSize: 12,
+    fontSize: '1rem',
     marginTop: 'auto',
     marginBottom: 'auto',
     marginLeft: 3
@@ -270,7 +270,6 @@ export const toolbarButton = (theme: Theme) => css`
     width: ${toolbarButtonSize + 'px'};
     width: ${toolbarButtonSize + 'px'};
     padding: 0px;
-    font-size: 12px;
     line-height: 1.5;
     border-radius: 3px;
     border: 1px solid #ccc;
