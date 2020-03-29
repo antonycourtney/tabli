@@ -1,8 +1,16 @@
 import * as React from 'react';
-import { css } from 'emotion';
+import { cx, css } from 'emotion';
+
+const svgIconStyle = css({
+    display: 'block',
+});
 
 export const popout = (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <svg
+        className={svgIconStyle}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 100 100"
+    >
         <g transform="translate(50 50) scale(0.69 0.69) rotate(-90) translate(-50 -50)">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -27,7 +35,11 @@ export const popout = (
 );
 
 export const popin = (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <svg
+        className={svgIconStyle}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 100 100"
+    >
         <g transform="translate(50 50) scale(0.69 0.69) rotate(-90) translate(-50 -50)">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +69,7 @@ const menuStyle = css`
 
 export const menu = (
     <svg
-        className={menuStyle}
+        className={cx(svgIconStyle, menuStyle)}
         xmlns="http://www.w3.org/2000/svg"
         width="20"
         height="20"
@@ -70,10 +82,11 @@ export const menu = (
 
 export const expandMore = (
     <svg
+        className={svgIconStyle}
         xmlns="http://www.w3.org/2000/svg"
         width="100%"
         height="100%"
-        viewBox="4 5 16 16"
+        viewBox="4 4 16 16"
     >
         <path opacity=".87" fill="none" d="M24 24H0V0h24v24z" />
         <path d="M15.88 9.29L12 13.17 8.12 9.29c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.39-.39.39-1.02 0-1.41-.39-.38-1.03-.39-1.42 0z" />
@@ -81,15 +94,16 @@ export const expandMore = (
 );
 
 const debugHelper = css({
-    backgroundColor: 'yellow'
+    backgroundColor: 'yellow',
 });
 
 export const expandLess = (
     <svg
+        className={svgIconStyle}
         xmlns="http://www.w3.org/2000/svg"
         width="100%"
         height="100%"
-        viewBox="4 5 16 16"
+        viewBox="4 4 16 16"
     >
         <path fill="none" d="M0 0h24v24H0V0z" />
         <path d="M11.29 8.71L6.7 13.3c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 10.83l3.88 3.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L12.7 8.71c-.38-.39-1.02-.39-1.41 0z" />

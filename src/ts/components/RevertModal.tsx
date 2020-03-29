@@ -29,7 +29,7 @@ interface RevertModalProps {
 const RevertModal: React.FC<RevertModalProps> = ({
     tabWindow,
     onClose,
-    onSubmit
+    onSubmit,
 }: RevertModalProps) => {
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
@@ -83,15 +83,15 @@ const RevertModal: React.FC<RevertModalProps> = ({
         false
     );
     const savedUrlsSet = Immutable.Set(
-        revertedTabWindow.tabItems.map(ti => ti.url)
+        revertedTabWindow.tabItems.map((ti) => ti.url)
     );
 
     const itemsToClose = tabWindow.tabItems.filter(
-        ti => !savedUrlsSet.has(ti.url)
+        (ti) => !savedUrlsSet.has(ti.url)
     );
     const closeItemsElem = renderTabItems(itemsToClose);
 
-    const itemsToReload = tabWindow.tabItems.filter(ti =>
+    const itemsToReload = tabWindow.tabItems.filter((ti) =>
         savedUrlsSet.has(ti.url)
     );
     const reloadItemsElem = renderTabItems(itemsToReload);
@@ -133,8 +133,8 @@ const RevertModal: React.FC<RevertModalProps> = ({
                 <div className={styles.dialogButtonRow}>
                     <button
                         type="button"
-                        className="btn btn-primary btn-sm tabli-dialog-button"
-                        onClick={e => handleSubmit(e)}
+                        className="btn btn-primary tabli-dialog-button"
+                        onClick={(e) => handleSubmit(e)}
                         ref={defaultButtonRef}
                         tabIndex={0}
                         onKeyDown={handleKeyDown}
@@ -143,7 +143,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
                     </button>
                     <button
                         type="button"
-                        className="btn btn-default btn-light btn-sm tabli-dialog-button"
+                        className="btn btn-default btn-light tabli-dialog-button"
                         onClick={onClose}
                         tabIndex={0}
                     >

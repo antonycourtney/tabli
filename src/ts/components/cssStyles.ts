@@ -267,6 +267,9 @@ export const titleOpen = cx(titleBaseStyle, open);
 export const titleClosed = (theme: Theme) => cx(titleBaseStyle, closed(theme));
 export const toolbarButtonSize = 26;
 export const toolbarButton = (theme: Theme) => css`
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: ${toolbarButtonSize + 'px'};
     width: ${toolbarButtonSize + 'px'};
     padding: 0px;
