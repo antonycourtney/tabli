@@ -21,7 +21,7 @@ const modalOverlayStyle = css({
     height: '100%',
     display: 'flex',
     alignItems: 'center',
-    flexDirection: 'column'
+    flexDirection: 'column',
 });
 
 const popperBaseStyle = (theme: Theme) =>
@@ -29,7 +29,7 @@ const popperBaseStyle = (theme: Theme) =>
         backgroundColor: theme.background,
         zIndex: 1000,
         border: '1px solid ' + theme.lightBorder,
-        borderRadius: '.25rem'
+        borderRadius: '.25rem',
     });
 
 const menuItemStyle = (theme: Theme) =>
@@ -41,40 +41,40 @@ const menuItemStyle = (theme: Theme) =>
         fontSize: 14,
         padding: '4px 24px 4px 24px',
         '&:hover': {
-            backgroundColor: theme.menuItemHover
-        }
+            backgroundColor: theme.menuItemHover,
+        },
     });
 
 type ClickEvent = React.SyntheticEvent<HTMLElement, MouseEvent>;
 type ClickHandler = (event: ClickEvent) => void;
 
-const handleHelpClick: ClickHandler = e => {
+const handleHelpClick: ClickHandler = (e) => {
     e.preventDefault();
     actions.showHelp();
 };
 
-const handleAboutClick: ClickHandler = e => {
+const handleAboutClick: ClickHandler = (e) => {
     e.preventDefault();
     actions.showAbout();
 };
 
-const handlePreferencesClick: ClickHandler = e => {
+const handlePreferencesClick: ClickHandler = (e) => {
     e.preventDefault();
     actions.showPreferences();
 };
 
-const handleReloadClick: ClickHandler = e => {
+const handleReloadClick: ClickHandler = (e) => {
     e.preventDefault();
     log.debug('handleReloadClick');
     actions.reload();
 };
 
-const handleReviewClick: ClickHandler = e => {
+const handleReviewClick: ClickHandler = (e) => {
     e.preventDefault();
     actions.showReview();
 };
 
-const handleFeedbackClick: ClickHandler = e => {
+const handleFeedbackClick: ClickHandler = (e) => {
     e.preventDefault();
     actions.sendFeedback();
 };
@@ -83,17 +83,22 @@ type MenuButtonProps = {
     stateRef: StateRef<TabManagerState>;
 };
 
+/*
 const menuStyle = css({
     display: 'flex',
     flexDirection: 'column',
     width: 200,
     minWidth: '10rem',
     padding: '.5rem 0',
-    margin: '.125rem 0 0'
+    margin: '.125rem 0 0',
+});
+*/
+const menuStyle = css({
+    width: 200,
 });
 
 const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
-    stateRef
+    stateRef,
 }: MenuButtonProps) => {
     const theme = useContext(ThemeContext);
     const [dropdownOpen, setDropDownOpen] = useState(false);
@@ -101,7 +106,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
     const toggleDropDown = () => {
         setDropDownOpen((isOpen: boolean) => !isOpen);
     };
-    const handleRelNotesClick: ClickHandler = e => {
+    const handleRelNotesClick: ClickHandler = (e) => {
         e.preventDefault();
         actions.showRelNotes(stateRef);
     };
@@ -114,46 +119,49 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
             return handler(e);
         };
         return (
-            <button
-                className={menuItemStyle(theme)}
+            <a
+                href="#"
+                className="dropdown-item"
                 onClick={wrapItemHandler(handler)}
             >
                 {label}
-            </button>
+            </a>
         );
     };
 
-    const handleCopyClick: ClickHandler = e => {
+    const handleCopyClick: ClickHandler = (e) => {
         e.preventDefault();
         actions.copyWindowsToClipboard(stateRef);
     };
 
-    const handleTidyClick: ClickHandler = e => {
+    const handleTidyClick: ClickHandler = (e) => {
         e.preventDefault();
         actions.tidyWindows(stateRef);
     };
-    const handleUntidyClick: ClickHandler = e => {
+    const handleUntidyClick: ClickHandler = (e) => {
         e.preventDefault();
         actions.untidyWindows(stateRef);
     };
 
     const menu = (
-        <div className={menuStyle}>
+        /* <div className={cx('dropdown-menu', menuStyle)}> */
+        <div className="dropdown-content">
             {renderMenuItem(handlePreferencesClick, 'Preferences...')}
-            <hr />
+            <hr className="dropdown-divider" />
             {renderMenuItem(handleCopyClick, 'Copy Window Summary')}
-            <hr />
+            <hr className="dropdown-divider" />
             {renderMenuItem(handleHelpClick, 'Help (Manual)')}
             {renderMenuItem(handleRelNotesClick, 'Release Notes')}
-            <hr />
+            <hr className="dropdown-divider" />
             {renderMenuItem(handleTidyClick, 'Tidy (Minimize All)')}
             {renderMenuItem(handleUntidyClick, 'Untidy (Restore All)')}
-            <hr />
+            <hr className="dropdown-divider" />
             {renderMenuItem(handleReloadClick, 'Reload Tabli')}
-            <hr />
+            <hr className="dropdown-divider" />
             {renderMenuItem(handleReviewClick, 'Review Tabli')}
             {renderMenuItem(handleFeedbackClick, 'Send Feedback')}
         </div>
+        /* </div> */
     );
 
     const popperVisStyle = dropdownOpen ? styles.visible : styles.hidden;
@@ -174,7 +182,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
                         className={styles.toolbarButton(theme)}
                         ref={ref}
                         title="Tabli Menu"
-                        onClick={e => toggleDropDown()}
+                        onClick={(e) => toggleDropDown()}
                     >
                         <div
                             className={cx(
@@ -195,7 +203,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
                             ref={ref}
                             style={style}
                             data-placement={placement}
-                            onKeyDown={e => toggleDropDown()}
+                            onKeyDown={(e) => toggleDropDown()}
                         >
                             {menu}
                         </div>
@@ -203,7 +211,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
                     const wrappedMenuDiv = dropdownOpen ? (
                         <div
                             className={modalOverlayStyle}
-                            onClick={e => toggleDropDown()}
+                            onClick={(e) => toggleDropDown()}
                         >
                             {menuDiv}
                         </div>

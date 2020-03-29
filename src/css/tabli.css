@@ -4,6 +4,7 @@
 html {
     height: 100%;
     font-size: 12px;
+    overflow-y: hidden; /* needed for bulma; see https://github.com/jgthms/bulma/issues/527 */
 }
 .popup-html {
     width: 450px;
