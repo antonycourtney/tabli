@@ -4,7 +4,7 @@ import * as styles from './cssStyles';
 import * as Constants from './constants';
 import * as Modal from './Modal';
 import { themes } from './themeContext';
-import { css } from 'emotion';
+import { css, cx } from 'emotion';
 import { Preferences } from '../preferences';
 import { useState } from 'react';
 import { layouts } from './LayoutContext';
@@ -24,7 +24,14 @@ const fontSizeSelectStyle = css({
 });
 
 const selectLabelStyle = css({
-    marginLeft: 8
+    marginTop: 0,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 4
+});
+
+const checkLabelStyle = css({
+    margin: 0
 });
 
 interface PreferencesModalProps {
@@ -171,62 +178,65 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         </select>
     );
 
+    const rightCol = styles.prefsGridRightCol;
+
     return (
         <Modal.Dialog title="Tabli Preferences" onClose={onClose}>
             <Modal.Body>
-                <div className="modal-body-container">
-                    <form
-                        className="dialog-form preferences-form"
-                        onSubmit={handleSubmit}
-                    >
-                        <div className="checkbox">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={popStart}
-                                    onChange={e => handlePopStartChange(e)}
-                                />
-                                Show Tabli popout window at startup
-                            </label>
-                        </div>
-                        <div className="checkbox">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={dedupeTabs}
-                                    onChange={e => handleTabDedupeChange()}
-                                />
-                                Automatically close duplicate tabs
-                            </label>
-                        </div>
-                        <div className="checkbox">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={revertOnOpen}
-                                    onChange={e => handleRevertOnOpenChange(e)}
-                                />
-                                Only re-open saved tabs when re-opening saved
-                                windows
-                            </label>
-                        </div>
-                        <div>
-                            <label className={selectLabelStyle}>
-                                Theme
-                                {themeSelect}
-                            </label>
-                        </div>
-                        <div>
-                            <label className={selectLabelStyle}>
-                                Layout
-                                {layoutSelect}
-                            </label>
-                        </div>
-                        <div>
-                            <label className={selectLabelStyle}>
-                                Font Size
-                                {fontSizeSelect}
-                            </label>
+                <div className={styles.modalBodyContainer}>
+                    <form className={styles.prefsForm} onSubmit={handleSubmit}>
+                        <div className={styles.prefsGridContainer}>
+                            <div className={cx('checkbox', rightCol)}>
+                                <label className={checkLabelStyle}>
+                                    <input
+                                        type="checkbox"
+                                        checked={popStart}
+                                        onChange={e => handlePopStartChange(e)}
+                                    />
+                                    Show Tabli popout window at startup
+                                </label>
+                            </div>
+                            <div className={cx('checkbox', rightCol)}>
+                                <label className={checkLabelStyle}>
+                                    <input
+                                        type="checkbox"
+                                        checked={dedupeTabs}
+                                        onChange={e => handleTabDedupeChange()}
+                                    />
+                                    Automatically close duplicate tabs
+                                </label>
+                            </div>
+                            <div className={cx('checkbox', rightCol)}>
+                                <label className={checkLabelStyle}>
+                                    <input
+                                        type="checkbox"
+                                        checked={revertOnOpen}
+                                        onChange={e =>
+                                            handleRevertOnOpenChange(e)
+                                        }
+                                    />
+                                    Only re-open saved tabs when re-opening
+                                    saved windows
+                                </label>
+                            </div>
+                            <div className={styles.prefsGridLabel}>
+                                <label className={selectLabelStyle}>
+                                    Theme
+                                </label>
+                            </div>
+                            {themeSelect}
+                            <div className={styles.prefsGridLabel}>
+                                <label className={selectLabelStyle}>
+                                    Layout
+                                </label>
+                            </div>
+                            {layoutSelect}
+                            <div className={styles.prefsGridLabel}>
+                                <label className={selectLabelStyle}>
+                                    Font Size
+                                </label>
+                            </div>
+                            {fontSizeSelect}
                         </div>
                     </form>
                     <hr />

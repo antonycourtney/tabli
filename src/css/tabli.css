@@ -45,14 +45,6 @@ fieldset {
     padding: 5px;
     font-weight: bold;
 }
-.preferences-form {
-    font-size: 14px;
-    min-height: 100px;
-    margin-top: 10px;
-    margin-left: 8px;
-    margin-right: 8px;
-    margin-bottom: 10px;
-}
 .tabli-menu {
     font-size: 14px;
     font-weight: 400;
@@ -133,9 +125,6 @@ input[type='search']::-webkit-search-cancel-button {
 /* GRRRRRR. @#!@#$ CSS */
 .popout-button {
     line-height: 1;
-}
-.modal-body-container {
-    margin: 8px;
 }
 .preferences-form input[type='checkbox'] {
     margin: 8px;

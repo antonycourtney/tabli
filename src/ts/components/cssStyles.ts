@@ -309,3 +309,31 @@ export const toolbarButtonIconMaskImage = (theme: Theme, path: string) =>
 
 export const expandAllIconStyle = (theme: Theme) =>
     toolbarButtonIconMaskImage(theme, 'images/triangle-small-1-01.png');
+
+export const modalBodyContainer = css({
+    margin: 8
+});
+
+export const prefsForm = css`
+    font-size: 1.25rem;
+    min-height: 100px;
+    margin-top: 10px;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 10px;
+`;
+
+export const prefsGridContainer = css({
+    display: 'grid',
+    gridTemplateColumns: '1fr 4fr',
+    gridRowGap: 12
+});
+
+export const prefsGridRightCol = css({
+    gridColumnStart: 2
+});
+
+export const prefsGridLabel = css({
+    justifySelf: 'end',
+    alignSelf: 'center'
+});
