@@ -24,7 +24,7 @@ const modalOverlayStyle = css({
     height: '100%',
     display: 'flex',
     alignItems: 'center',
-    flexDirection: 'column'
+    flexDirection: 'column',
 });
 const selectedBorder = '2px solid #a0a0a0';
 const modalContainerStyle = (theme: Theme) =>
@@ -40,7 +40,7 @@ const modalContainerStyle = (theme: Theme) =>
         border: selectedBorder,
         flexGrow: 0,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
     });
 const modalBodyContainerStyle = css({
     display: 'flex',
@@ -48,32 +48,34 @@ const modalBodyContainerStyle = css({
     maxHeight: Constants.MODAL_BODY_MAX_HEIGHT,
     overflow: 'auto',
     flexDirection: 'column',
-    margin: 8
+    margin: 8,
 });
 
 const modalTitleBase = css({
     fontWeight: 'bold',
     paddingLeft: 7,
-    maxWidth: 243
+    maxWidth: 243,
 });
 
 const titleStyle = cx(styles.text, styles.noWrap, modalTitleBase, styles.open);
 
 const dialogInfoStyle = css({
     borderBottom: '1px solid #bababa',
-    paddingLeft: 3
+    paddingLeft: 3,
 });
 
 interface DialogProps {
     title: String;
     onClose: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    className?: string;
     children: React.ReactNode;
 }
 
 export const Dialog: React.FC<DialogProps> = ({
     title,
     onClose,
-    children
+    className,
+    children,
 }: DialogProps) => {
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
@@ -96,7 +98,7 @@ export const Dialog: React.FC<DialogProps> = ({
     // see https://emotion.sh/docs/nested for more info.
     const modalDiv = (
         <div className={modalOverlayStyle}>
-            <div className={modalContainerStyle(theme)}>
+            <div className={cx(className, modalContainerStyle(theme))}>
                 <div
                     className={
                         cx(styles.windowHeader(theme, layout), styles.noWrap) +

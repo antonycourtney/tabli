@@ -11,27 +11,42 @@ import { layouts } from './LayoutContext';
 import {
     fontScaleFactorToSize,
     fontSizeToScaleFactor,
-    fontSizeVals
+    fontSizeVals,
 } from '../renderUtils';
 const themeSelectStyle = css({
-    width: 80,
-    marginLeft: 5
+    width: 100,
+    marginLeft: 5,
 });
 
 const fontSizeSelectStyle = css({
-    width: 80,
-    marginLeft: 5
+    width: 100,
+    marginLeft: 5,
 });
 
 const selectLabelStyle = css({
     marginTop: 0,
     marginBottom: 0,
     marginLeft: 0,
-    marginRight: 4
+    marginRight: 4,
 });
 
 const checkLabelStyle = css({
-    margin: 0
+    marginTop: 0,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+});
+
+const prefsCheckbox = css({
+    marginLeft: 8,
+    marginRight: 4,
+    marginTop: 'auto',
+    marginBottom: 'auto',
+});
+
+const prefsLabeledCheckbox = css({
+    display: 'flex',
+    alignContent: 'flex-start',
 });
 
 interface PreferencesModalProps {
@@ -45,8 +60,9 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     initialPrefs,
     onClose,
     onApply,
-    onSubmit
+    onSubmit,
 }) => {
+    log.debug('PreferencesModal: initialPrefs: ', initialPrefs.toJS());
     const [prefs, setPrefs] = useState(initialPrefs);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -57,6 +73,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         } else if (e.keyCode === Constants.KEY_ENTER) {
             handleSubmit(e);
         }
+    };
+
+    const handleCancel = (e: React.SyntheticEvent) => {
+        e.preventDefault();
+        // put back initial prefs:
+        onApply(initialPrefs);
     };
 
     const handleApply = (e: React.SyntheticEvent) => {
@@ -127,7 +149,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
     const currentTheme = prefs.theme;
     const themeNames = Object.keys(themes);
-    const themeOpts = themeNames.map(nm => (
+    const themeOpts = themeNames.map((nm) => (
         <option key={nm} value={nm}>
             {nm}
         </option>
@@ -137,7 +159,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             className={themeSelectStyle}
             name="theme"
             value={currentTheme}
-            onChange={e => handleThemeChange(e)}
+            onChange={(e) => handleThemeChange(e)}
         >
             {themeOpts}
         </select>
@@ -145,7 +167,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
     const currentLayout = prefs.layout;
     const layoutNames = Object.keys(layouts);
-    const layoutOpts = layoutNames.map(nm => (
+    const layoutOpts = layoutNames.map((nm) => (
         <option key={nm} value={nm}>
             {nm}
         </option>
@@ -155,14 +177,14 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             className={themeSelectStyle}
             name="layout"
             value={currentLayout}
-            onChange={e => handleLayoutChange(e)}
+            onChange={(e) => handleLayoutChange(e)}
         >
             {layoutOpts}
         </select>
     );
 
     const currentFontSize = fontScaleFactorToSize(prefs.fontScaleFactor);
-    const fontSizeOpts = fontSizeVals.map(sz => (
+    const fontSizeOpts = fontSizeVals.map((sz) => (
         <option key={sz.toString()} value={sz}>
             {sz.toString()}
         </option>
@@ -172,7 +194,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             className={fontSizeSelectStyle}
             name="fontSize"
             value={currentFontSize}
-            onChange={e => handleFontSizeChange(e)}
+            onChange={(e) => handleFontSizeChange(e)}
         >
             {fontSizeOpts}
         </select>
@@ -181,44 +203,71 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     const rightCol = styles.prefsGridRightCol;
 
     return (
-        <Modal.Dialog title="Tabli Preferences" onClose={onClose}>
+        <Modal.Dialog
+            className={styles.prefsDialog}
+            title="Tabli Preferences"
+            onClose={onClose}
+        >
             <Modal.Body>
                 <div className={styles.modalBodyContainer}>
                     <form className={styles.prefsForm} onSubmit={handleSubmit}>
                         <div className={styles.prefsGridContainer}>
-                            <div className={cx('checkbox', rightCol)}>
+                            <div
+                                className={cx(
+                                    'checkbox',
+                                    rightCol,
+                                    prefsLabeledCheckbox
+                                )}
+                            >
+                                <input
+                                    type="checkbox"
+                                    className={prefsCheckbox}
+                                    checked={popStart}
+                                    onChange={(e) => handlePopStartChange(e)}
+                                />
                                 <label className={checkLabelStyle}>
-                                    <input
-                                        type="checkbox"
-                                        checked={popStart}
-                                        onChange={e => handlePopStartChange(e)}
-                                    />
                                     Show Tabli popout window at startup
                                 </label>
                             </div>
-                            <div className={cx('checkbox', rightCol)}>
+                            <div
+                                className={cx(
+                                    'checkbox',
+                                    rightCol,
+                                    prefsLabeledCheckbox
+                                )}
+                            >
+                                <input
+                                    type="checkbox"
+                                    className={prefsCheckbox}
+                                    checked={dedupeTabs}
+                                    onChange={(e) => handleTabDedupeChange()}
+                                />
                                 <label className={checkLabelStyle}>
-                                    <input
-                                        type="checkbox"
-                                        checked={dedupeTabs}
-                                        onChange={e => handleTabDedupeChange()}
-                                    />
                                     Automatically close duplicate tabs
                                 </label>
                             </div>
-                            <div className={cx('checkbox', rightCol)}>
+                            <div
+                                className={cx(
+                                    'checkbox',
+                                    rightCol,
+                                    prefsLabeledCheckbox
+                                )}
+                            >
+                                <input
+                                    type="checkbox"
+                                    className={prefsCheckbox}
+                                    checked={revertOnOpen}
+                                    onChange={(e) =>
+                                        handleRevertOnOpenChange(e)
+                                    }
+                                />
                                 <label className={checkLabelStyle}>
-                                    <input
-                                        type="checkbox"
-                                        checked={revertOnOpen}
-                                        onChange={e =>
-                                            handleRevertOnOpenChange(e)
-                                        }
-                                    />
                                     Only re-open saved tabs when re-opening
                                     saved windows
                                 </label>
                             </div>
+                            <div />
+                            <div />
                             <div className={styles.prefsGridLabel}>
                                 <label className={selectLabelStyle}>
                                     Theme
@@ -243,8 +292,20 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     <div className={styles.dialogButtonRow}>
                         <button
                             type="button"
-                            className="btn btn-primary btn-sm tabli-dialog-button"
-                            onClick={e => handleApply(e)}
+                            className="btn btn-default btn-light btn-lg tabli-dialog-button"
+                            onClick={(e) => {
+                                handleCancel(e);
+                                onClose();
+                            }}
+                            tabIndex={0}
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            className="btn btn-lg btn-info tabli-dialog-button"
+                            onClick={(e) => handleApply(e)}
                             tabIndex={0}
                             onKeyDown={handleKeyDown}
                         >
@@ -252,20 +313,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         </button>
                         <button
                             type="button"
-                            className="btn btn-primary btn-sm tabli-dialog-button"
-                            onClick={e => handleSubmit(e)}
+                            className="btn btn-primary btn-lg btn-default tabli-dialog-button"
+                            onClick={(e) => handleSubmit(e)}
                             tabIndex={0}
                             onKeyDown={handleKeyDown}
                         >
                             OK
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-default btn-light btn-sm tabli-dialog-button"
-                            onClick={e => onClose()}
-                            tabIndex={0}
-                        >
-                            Cancel
                         </button>
                     </div>
                 </div>

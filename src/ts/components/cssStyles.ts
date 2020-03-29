@@ -17,7 +17,7 @@ export const rowItemsFixedWidth = css`
     flex: 0 0 auto;
 `;
 export const activeSpan = css({
-    fontWeight: 'bold'
+    fontWeight: 'bold',
 });
 export const tabTitle = css({
     minWidth: Constants.TAB_TITLE_MIN_WIDTH,
@@ -26,16 +26,16 @@ export const tabTitle = css({
     flexGrow: 1,
     '&:hover': {
         color: 'inherit',
-        textDecoration: 'none'
+        textDecoration: 'none',
     },
-    cursor: 'default'
+    cursor: 'default',
 });
 export const simpleTabTitle = css({
-    width: Constants.SIMPLE_TAB_TITLE_WIDTH
+    width: Constants.SIMPLE_TAB_TITLE_WIDTH,
 });
 export const audibleIcon = css({
     WebkitMaskImage: mkUrl('images/Multimedia-64.png'),
-    backgroundColor: '#505050'
+    backgroundColor: '#505050',
 });
 export const tabItem = (theme: Theme, layout: Layout) =>
     css({
@@ -55,29 +55,29 @@ export const tabItem = (theme: Theme, layout: Layout) =>
         border:
             '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
         '&:hover': {
-            backgroundColor: theme.tabItemHover
-        }
+            backgroundColor: theme.tabItemHover,
+        },
     });
 export const tabItemSelected = (theme: Theme) =>
     css({
-        border: '1px solid ' + theme.windowSelectedBorder // #cacaca
+        border: '1px solid ' + theme.windowSelectedBorder, // #cacaca
     });
 
 // Styling to denote the active tab in each window:
 export const tabItemActive = (theme: Theme) =>
     css({
         border: '1px solid ' + theme.tabItemHover,
-        boxShadow: '0px 0px 3px 1px ' + theme.tabItemHover
+        boxShadow: '0px 0px 3px 1px ' + theme.tabItemHover,
     });
 
 export const tabItemDragging = (theme: Theme) =>
     css({
         border: '1px solid #cacaca',
-        backgroundColor: theme.tabItemHover
+        backgroundColor: theme.tabItemHover,
     });
 
 export const tabItemDropOver = css({
-    borderBottom: '2px solid #333333'
+    borderBottom: '2px solid #333333',
 });
 export const headerButton = css({
     outline: 'none',
@@ -87,25 +87,25 @@ export const headerButton = css({
     height: 16,
     marginLeft: 3,
     marginRight: 3,
-    flex: 'none'
+    flex: 'none',
 });
 export const headerCheckBoxInput = css({
     width: 10,
-    height: 10
+    height: 10,
 });
 export const headerCheckboxContainer = cx(
     headerButton,
     css({
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     })
 );
 
 export const noWrap = css({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
 });
 export const windowHeader = (theme: Theme, layout: Layout) =>
     css({
@@ -119,64 +119,64 @@ export const windowHeader = (theme: Theme, layout: Layout) =>
         display: 'inline-flex',
         // justifyContent: 'space-between',
         alignItems: 'center',
-        flexGrow: 1
+        flexGrow: 1,
     });
 export const windowManagedButton = css({
     WebkitMaskImage: mkUrl('images/Status-9.png'),
-    backgroundColor: '#7472ff'
+    backgroundColor: '#7472ff',
 });
 export const open = css({});
 export const closed = (theme: Theme) =>
     css({
-        color: theme.closedGray
+        color: theme.closedGray,
     });
 export const text = css({
-    fontSize: '1rem',
+    /* fontSize: '1rem', */
     marginTop: 'auto',
     marginBottom: 'auto',
-    marginLeft: 3
+    marginLeft: 3,
 });
 export const windowTitle = css({
     fontWeight: 'bold',
     minWidth: Constants.WINDOW_TITLE_MIN_WIDTH,
 
     /* NOPE -- let flexbox do it: maxWidth: Constants.WINDOW_TITLE_MAX_WIDTH, */
-    flexGrow: 1
+    flexGrow: 1,
 });
 export const windowTitleInput = css({
     fontWeight: 'bold',
     minWidth: Constants.WINDOW_TITLE_MIN_WIDTH,
-    flexGrow: 1
+    flexGrow: 1,
 });
 export const spacer = css({
     // backgroundColor: 'red', // for debugging
     // height: 8, // for debugging
-    flex: 1
+    flex: 1,
 });
 export const favIcon = css({
     width: 16,
     height: 16,
     marginRight: 4,
     marginLeft: 2,
-    flex: 'none'
+    flex: 'none',
 });
 export const emptyFavIcon = css({
     width: 18,
     marginRight: 3,
     WebkitMaskImage: mkUrl('images/Files-26.png'),
-    backgroundColor: '#969696'
+    backgroundColor: '#969696',
 });
 export const favIconClosed = css({
-    WebkitFilter: 'grayscale(1) opacity(50%)'
+    WebkitFilter: 'grayscale(1) opacity(50%)',
 });
 export const imageButtonClosed = (theme: Theme) =>
     css({
-        backgroundColor: theme.closedGray
+        backgroundColor: theme.closedGray,
     });
 export const tabList = css({
     marginLeft: 0,
     marginTop: 4,
-    marginBottom: 4
+    marginBottom: 4,
 });
 export const simpleTabContainer = css({
     width: 250,
@@ -187,11 +187,11 @@ export const simpleTabContainer = css({
     paddingTop: 4,
     paddingBottom: 4,
     border: '1px solid #bababa',
-    borderRadius: 3
+    borderRadius: 3,
 });
 export const tabWindowFocused = (theme: Theme) =>
     css({
-        boxShadow: '0px 0px 5px 2px ' + theme.windowBorder
+        boxShadow: '0px 0px 5px 2px ' + theme.windowBorder,
     });
 
 export const tabWindow = (theme: Theme) =>
@@ -202,29 +202,29 @@ export const tabWindow = (theme: Theme) =>
         minWidth: Constants.WINDOW_MIN_WIDTH,
         maxWidth: Constants.WINDOW_MAX_WIDTH,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
     });
 export const expandablePanel = (layout: Layout) =>
     css({
         width: '100%',
         position: 'relative',
         minHeight: layout.windowHeaderHeight,
-        overflow: 'hidden'
+        overflow: 'hidden',
     });
 export const dialogInfoContents = css({
     marginLeft: 10,
     marginTop: 4,
-    marginBottom: 0
+    marginBottom: 0,
 });
 export const dialogButtonRow = css({
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
     flexShrink: 0,
-    marginRight: 22
+    marginRight: 22,
 });
 export const centerContents = css({
-    margin: 'auto'
+    margin: 'auto',
 }); // Note explicit global css class name windowHeaderHoverContainer there
 // Due to limitation of nested class selectors with composition;
 // see https://emotion.sh/docs/nested for more info.
@@ -282,19 +282,19 @@ export const toolbarIconSize = 16;
 export const toolbarButtonIconContainer = (theme: Theme) =>
     css({
         width: toolbarIconSize,
-        height: toolbarIconSize
+        height: toolbarIconSize,
     });
 export const toolbarSVGIconSize = toolbarButtonSize - 2;
 export const toolbarButtonSVGIconContainer = (theme: Theme) =>
     css({
         width: toolbarSVGIconSize,
         height: toolbarSVGIconSize,
-        fill: theme.foreground
+        fill: theme.foreground,
     });
 
 export const toolbarButtonIconMaskBG = (theme: Theme) =>
     css({
-        backgroundColor: theme.foreground
+        backgroundColor: theme.foreground,
     });
 
 export const toolbarButtonIconMaskImage = (theme: Theme, path: string) =>
@@ -303,7 +303,7 @@ export const toolbarButtonIconMaskImage = (theme: Theme, path: string) =>
         toolbarButtonIconMaskBG(theme),
         css({
             margin: '1px 5px',
-            WebkitMaskImage: mkUrl(path)
+            WebkitMaskImage: mkUrl(path),
         })
     );
 
@@ -311,11 +311,14 @@ export const expandAllIconStyle = (theme: Theme) =>
     toolbarButtonIconMaskImage(theme, 'images/triangle-small-1-01.png');
 
 export const modalBodyContainer = css({
-    margin: 8
+    margin: 8,
 });
 
-export const prefsForm = css`
+export const prefsDialog = css`
     font-size: 1.25rem;
+`;
+
+export const prefsForm = css`
     min-height: 100px;
     margin-top: 10px;
     margin-left: 8px;
@@ -326,14 +329,14 @@ export const prefsForm = css`
 export const prefsGridContainer = css({
     display: 'grid',
     gridTemplateColumns: '1fr 4fr',
-    gridRowGap: 12
+    gridRowGap: 12,
 });
 
 export const prefsGridRightCol = css({
-    gridColumnStart: 2
+    gridColumnStart: 2,
 });
 
 export const prefsGridLabel = css({
     justifySelf: 'end',
-    alignSelf: 'center'
+    alignSelf: 'center',
 });
