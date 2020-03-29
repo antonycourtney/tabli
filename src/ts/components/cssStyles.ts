@@ -318,7 +318,7 @@ export const modalBodyContainer = css({
 });
 
 export const prefsDialog = css`
-    font-size: 1.25rem;
+    font-size: 1rem;
 `;
 
 export const prefsForm = css`

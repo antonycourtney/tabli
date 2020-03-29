@@ -7,12 +7,12 @@ const flatButtonStyle = css({
     display: 'inline-block',
     backgroundColor: 'rgba(0,0,0,0)',
     fontFamily: 'Roboto, sans-serif',
-    fontSize: 14,
+    fontSize: '1.167rem',
     color: '#4285f4',
     cursor: 'pointer',
     '&:hover': {
-        textDecoration: 'none'
-    }
+        textDecoration: 'none',
+    },
 });
 
 interface FlatButtonProps {
@@ -22,7 +22,7 @@ interface FlatButtonProps {
 
 const FlatButton: React.FunctionComponent<FlatButtonProps> = ({
     label,
-    onClick
+    onClick,
 }: FlatButtonProps) => {
     const handleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.stopPropagation();

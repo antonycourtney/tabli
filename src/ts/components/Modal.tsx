@@ -30,7 +30,7 @@ const selectedBorder = '2px solid #a0a0a0';
 const modalContainerStyle = (theme: Theme) =>
     css({
         minWidth: 300,
-        maxWidth: 640,
+        /* maxWidth: 640, */
         maxHeight: '80%',
         position: 'relative',
         zIndex: 10,

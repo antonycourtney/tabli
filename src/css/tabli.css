@@ -3,7 +3,7 @@
 }
 html {
     height: 100%;
-    font-size: 12px;
+    font-size: 1rem;
 }
 .popup-html {
     width: 450px;
@@ -46,7 +46,7 @@ fieldset {
     font-weight: bold;
 }
 .tabli-menu {
-    font-size: 14px;
+    font-size: 1.167rem;
     font-weight: 400;
     line-height: 1.42;
 }
@@ -69,22 +69,22 @@ fieldset {
     padding-right: 16px;
     padding-bottom: 8px;
     padding-top: 8px;
-    font-size: 16px;
+    font-size: 1.333rem;
 }
 .card-title {
     font-weight: bold;
-    font-size: 20px;
+    font-size: 1.667rem;
     padding-bottom: 0px;
 }
 .card-subtitle {
-    font-size: 14px;
+    font-size: 1.167rem;
     /* color: rgba(0, 0, 0, 0.541176); */
 }
 .card-body {
     padding-left: 16px;
     padding-right: 16px;
     padding-top: 0px;
-    font-size: 12px;
+    font-size: 1rem;
 }
 a.card-link {
     text-decoration: none;

@@ -13,13 +13,16 @@ import {
     fontSizeToScaleFactor,
     fontSizeVals,
 } from '../renderUtils';
+
+const SELECT_WIDTH = 120;
+
 const themeSelectStyle = css({
-    width: 100,
+    width: SELECT_WIDTH,
     marginLeft: 5,
 });
 
 const fontSizeSelectStyle = css({
-    width: 100,
+    width: SELECT_WIDTH,
     marginLeft: 5,
 });
 
@@ -292,7 +295,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     <div className={styles.dialogButtonRow}>
                         <button
                             type="button"
-                            className="btn btn-default btn-light btn-lg tabli-dialog-button"
+                            className="btn btn-default btn-light tabli-dialog-button"
                             onClick={(e) => {
                                 handleCancel(e);
                                 onClose();
@@ -304,7 +307,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
                         <button
                             type="button"
-                            className="btn btn-lg btn-info tabli-dialog-button"
+                            className="btn btn-info tabli-dialog-button"
                             onClick={(e) => handleApply(e)}
                             tabIndex={0}
                             onKeyDown={handleKeyDown}
@@ -313,7 +316,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         </button>
                         <button
                             type="button"
-                            className="btn btn-primary btn-lg btn-default tabli-dialog-button"
+                            className="btn btn-primary btn-default tabli-dialog-button"
                             onClick={(e) => handleSubmit(e)}
                             tabIndex={0}
                             onKeyDown={handleKeyDown}
