@@ -285,7 +285,6 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 {closeButton}
                             </div>
                         </div>
-                        {dragProvided.placeholder}
                     </div>
                 );
             }}
