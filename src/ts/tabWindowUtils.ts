@@ -6,7 +6,7 @@ import {
     OpenTabState,
     TabItem,
     TabWindow,
-    SavedTabStateProps
+    SavedTabStateProps,
 } from './tabWindow';
 import * as suspender from './suspender';
 import get from 'lodash/get';
@@ -109,7 +109,7 @@ function makeSavedTabState(bm: chrome.bookmarks.BookmarkTreeNode) {
         url,
         title: _.get(bm, 'title', url),
         bookmarkId: bm.id,
-        bookmarkIndex: bm.index
+        bookmarkIndex: bm.index,
     });
     return ts;
 }
@@ -124,7 +124,7 @@ function makeBookmarkedTabItem(bm: chrome.bookmarks.BookmarkTreeNode) {
 
     const tabItem = new TabItem({
         saved: true,
-        savedState
+        savedState,
     });
     return tabItem;
 }
@@ -151,7 +151,7 @@ function makeOpenTabState(tab: chrome.tabs.Tab, openerUrl?: string) {
         isSuspended,
         muted,
         openerTabId: tab.openerTabId,
-        openerUrl
+        openerUrl,
     });
     return ts;
 }
@@ -164,7 +164,7 @@ export function makeOpenTabItem(tab: chrome.tabs.Tab, openerUrl?: string) {
 
     const tabItem = new TabItem({
         open: true,
-        openState
+        openState,
     });
     return tabItem;
 }
@@ -185,7 +185,7 @@ function cleanOpenState(ti: TabItem): TabItem {
     if (!ti.open) {
         return ti;
     }
-    return ti.update('openState', os => os!.remove('openTabId'));
+    return ti.update('openState', (os) => os!.remove('openTabId'));
 }
 
 /*
@@ -214,7 +214,7 @@ export function removeOpenWindowState(
     if (!snapshot) {
         // Not snapshotting, so revert -- only keep saved items,
         // and discard their open state.
-        const savedTabItems = tabItems.filter(ti => ti.saved);
+        const savedTabItems = tabItems.filter((ti) => ti.saved);
         updTabItems = savedTabItems.map(resetSavedItem);
     } else {
         // Snapshot -- leave the tab items untouched and
@@ -254,7 +254,7 @@ export function makeFolderTabWindow(
 ): TabWindow {
     const bmChildren = bookmarkFolder.children;
     const itemChildren = bmChildren
-        ? bmChildren.filter(node => 'url' in node)
+        ? bmChildren.filter((node) => 'url' in node)
         : [];
     const tabItems = Immutable.List(itemChildren.map(makeBookmarkedTabItem));
     var fallbackTitle = '';
@@ -274,7 +274,7 @@ export function makeFolderTabWindow(
         saved: true,
         savedTitle: _.get(bookmarkFolder, 'title', fallbackTitle),
         savedFolderId: bookmarkFolder.id,
-        tabItems: tabItems.sort(tabItemCompare)
+        tabItems: tabItems.sort(tabItemCompare),
     });
 
     return tabWindow;
@@ -287,14 +287,14 @@ export function makeChromeTabWindow(
     chromeWindow: chrome.windows.Window
 ): TabWindow {
     const chromeTabs = chromeWindow.tabs ? chromeWindow.tabs : [];
-    const tabItems = chromeTabs.map(ti => makeOpenTabItem(ti));
+    const tabItems = chromeTabs.map((ti) => makeOpenTabItem(ti));
     const tabWindow = new TabWindow({
         open: true,
         openWindowId: chromeWindow.id,
         windowType: chromeWindow.type,
         width: chromeWindow.width,
         height: chromeWindow.height,
-        tabItems: Immutable.List(tabItems).sort(tabItemCompare)
+        tabItems: Immutable.List(tabItems).sort(tabItemCompare),
     });
     return tabWindow;
 }
@@ -311,10 +311,10 @@ export function mergeSavedOpenTabs(
     savedItems: Immutable.List<TabItem>,
     openItems: Immutable.List<TabItem>
 ): Immutable.List<TabItem> {
-    const openUrlSet = Immutable.Set(openItems.map(ti => ti.url));
-    const savedItemPairs = savedItems.map<[string, TabItem]>(ti => [
+    const openUrlSet = Immutable.Set(openItems.map((ti) => ti.url));
+    const savedItemPairs = savedItems.map<[string, TabItem]>((ti) => [
         ti.safeSavedState.url,
-        ti
+        ti,
     ]);
     const savedUrlMap: Immutable.Map<string, TabItem> = Immutable.Map(
         savedItemPairs
@@ -326,7 +326,7 @@ export function mergeSavedOpenTabs(
      * Note that we by doing a map on openItems sequence, we preserve the ordering of openItems; this
      * is crucial since openTabIndex isn't maintained in tab update events.
      */
-    const openTabItems = openItems.map(openItem => {
+    const openTabItems = openItems.map((openItem) => {
         const savedItem = openItem.openState
             ? savedUrlMap.get(openItem.openState.url, null)
             : null;
@@ -340,7 +340,7 @@ export function mergeSavedOpenTabs(
 
     // now grab those saved items that aren't currently open:
     const closedTabItems = savedItems.filter(
-        savedItem =>
+        (savedItem) =>
             savedItem.savedState && !openUrlSet.has(savedItem.savedState.url)
     );
 
@@ -362,9 +362,11 @@ function mergeOpenTabs(
     tabItems: Immutable.List<TabItem>,
     openTabs: chrome.tabs.Tab[]
 ): Immutable.List<TabItem> {
-    const baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
+    const baseSavedItems = tabItems
+        .filter((ti) => ti.saved)
+        .map(resetSavedItem);
     const chromeOpenTabItems = Immutable.List(
-        openTabs.map(ti => makeOpenTabItem(ti))
+        openTabs.map((ti) => makeOpenTabItem(ti))
     );
 
     const mergedTabItems = mergeSavedOpenTabs(
@@ -395,22 +397,22 @@ function mergeTabWindowTabItems(
     // If this tab is active, clear active from all other tabs:
     const clearActive = optChromeTab && optChromeTab.active;
 
-    let baseSavedItems = tabItems.filter(ti => ti.saved).map(resetSavedItem);
+    let baseSavedItems = tabItems.filter((ti) => ti.saved).map(resetSavedItem);
     let baseOpenItems = tabItems
-        .filter(ti => ti.open)
-        .map(ti => resetOpenItem(ti, clearActive));
+        .filter((ti) => ti.open)
+        .map((ti) => resetOpenItem(ti, clearActive));
 
     if (optChromeTab && optChromeTab.id) {
         // filter out existing open tab with same chrome id, use optChromeTab's instead:
         baseOpenItems = baseOpenItems.filter(
-            ti => ti.openState!.openTabId !== optChromeTab.id
+            (ti) => ti.openState!.openTabId !== optChromeTab.id
         );
     }
 
     if (optBookmark) {
         // filter out any matching bookmark with same bookmark id:
         baseSavedItems = baseSavedItems.filter(
-            ti => ti.savedState!.bookmarkId !== optBookmark.id
+            (ti) => ti.savedState!.bookmarkId !== optBookmark.id
         );
     }
 
@@ -546,6 +548,8 @@ export function saveTab(
     tabItem: TabItem,
     tabNode: chrome.bookmarks.BookmarkTreeNode
 ): TabWindow {
+    log.debug('saveTab: ', tabWindow.toJS(), tabItem.toJS());
+    log.debug('saveTab: tabNode: ', tabNode);
     const entry = tabWindow.findChromeTabId(tabItem.safeOpenState.openTabId);
     if (!entry) {
         log.error(
@@ -558,13 +562,16 @@ export function saveTab(
     }
     const [index] = entry;
 
-    const savedState = new SavedTabState(tabNode);
+    const savedState = makeSavedTabState(tabNode);
 
     const updTabItem = tabItem.set('saved', true).set('savedState', savedState);
 
+    log.debug('saveTab: updTabItem: ', updTabItem.toJS());
+
     const updItems = tabWindow.tabItems.splice(index, 1, updTabItem);
 
-    return tabWindow.setTabItems(updItems);
+    const ret = tabWindow.setTabItems(updItems);
+    return ret;
 }
 
 /*
@@ -578,7 +585,7 @@ export function saveTab(
 export function unsaveTab(tabWindow: TabWindow, tabItem: TabItem) {
     log.debug('unsaveTab: ', tabWindow.toJS(), tabItem.toJS());
     const entry = tabWindow.tabItems.findEntry(
-        ti =>
+        (ti) =>
             ti.saved &&
             ti.safeSavedState.bookmarkId === tabItem.safeSavedState.bookmarkId
     );

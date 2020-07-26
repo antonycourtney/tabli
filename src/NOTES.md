@@ -856,8 +856,46 @@ A quick thought on performance:
 
 Profiling suggests that at this point, DnD overhead may be the most significant component of rendering performance.
 Some thoughts:
-  - We could try tweaking bigRenderTest to run with no DnD contexts and see if it impacts perf significantly.
-If so, we could
-  - Only support DnD in the popout window
-  - Make an "editing / organize" mode and only turn on DnD in that mode.
-   
+
+-   We could try tweaking bigRenderTest to run with no DnD contexts and see if it impacts perf significantly.
+    If so, we could
+-   Only support DnD in the popout window
+-   Make an "editing / organize" mode and only turn on DnD in that mode.
+
+## Debugging #149
+
+In test case, I un-checked "Apache Hive". Logging in bg page console indicated that the Hive
+tab was being unsaved, but still showing checked in the Tabli UI and different tab was showing
+as unchecked (!).
+
+Looking at logs, unsaveTab had the right tab item in the log on function enter, but then
+had the wrong sourceTabItem (!).
+
+Yikes! That's because we have:
+
+bookmarkId as "" in tabItem.savedState!
+
+How is that happening?
+What happens in saveTab to update the bookmark in savedState?
+
+in TabWindowUtils.saveTab, we update savedState based on tabNode (from chrome Bookmarks).
+Let's add logging to ensure this is good on entry, and the right properties are getting
+copied to the immutable SavedTabState.
+
+OK, clearly this undecorated new SavedTabState(tabNode) is just bogus -- the property names don't
+match, this just won't work.
+
+Seems almost certain that the bug is:
+TabWindowUtils:563:
+
+```js
+const savedState = new SavedTabState(tabNode);
+```
+
+which should be:
+
+```js
+const savedState = makeSavedTabState(tabNode);
+```
+
+But before fixing, let's add a test that will catch this!

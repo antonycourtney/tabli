@@ -2,6 +2,7 @@ import * as TabWindow from '../src/ts/tabWindow';
 import * as tabWindowUtils from '../src/ts/tabWindowUtils';
 import difflet from 'difflet';
 import * as rawTestData from '../test-data/testData';
+import log from 'loglevel';
 
 const testData = rawTestData as any;
 
@@ -70,8 +71,8 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
+                    muted: false,
+                },
             },
             {
                 saved: false,
@@ -87,8 +88,8 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
+                    muted: false,
+                },
             },
             {
                 saved: false,
@@ -107,8 +108,8 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
+                    muted: false,
+                },
             },
             {
                 saved: false,
@@ -126,8 +127,8 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
+                    muted: false,
+                },
             },
             {
                 saved: false,
@@ -143,8 +144,8 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
+                    muted: false,
+                },
             },
             {
                 saved: false,
@@ -161,8 +162,8 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
+                    muted: false,
+                },
             },
             {
                 saved: false,
@@ -181,13 +182,13 @@ test('chromeTabWindow', () => {
                     audible: false,
                     pinned: false,
                     isSuspended: false,
-                    muted: false
-                }
-            }
+                    muted: false,
+                },
+            },
         ],
         snapshot: false,
         chromeSessionId: null,
-        expanded: null
+        expanded: null,
     };
 
     // dumpDiffs(tabWindowJS, expectedTabWindow);
@@ -237,15 +238,15 @@ test('missingSourceFieldsTests', () => {
                 parentId: '431',
 
                 // title deliberately omitted
-                url: 'https://github.com/mbostock/d3/wiki/API-Reference'
-            }
+                url: 'https://github.com/mbostock/d3/wiki/API-Reference',
+            },
         ],
         dateAdded: 1395768341427,
         dateGroupModified: 1430260300118,
         id: '431',
         index: 4,
         parentId: '377',
-        title: 'd3 docs'
+        title: 'd3 docs',
     };
 
     const tabWindow = tabWindowUtils.makeFolderTabWindow(
@@ -276,14 +277,14 @@ test('missingSourceFieldsTests', () => {
                 index: 0,
                 parentId: '431',
                 title: 'd3 API Reference',
-                url: 'https://github.com/mbostock/d3/wiki/API-Reference'
-            }
+                url: 'https://github.com/mbostock/d3/wiki/API-Reference',
+            },
         ],
         dateAdded: 1395768341427,
         dateGroupModified: 1430260300118,
         id: '431',
         index: 4,
-        parentId: '377'
+        parentId: '377',
 
         // title deliberately omitted
     };
@@ -326,9 +327,9 @@ test('missingSourceFieldsTests', () => {
                 // title deliberately omitted
                 url: 'http://facebook.github.io/react/docs/component-api.html',
                 width: 1258,
-                windowId: 442
-            }
-        ]
+                windowId: 442,
+            },
+        ],
     };
 
     const chromeTabWindow = tabWindowUtils.makeChromeTabWindow(
@@ -383,8 +384,8 @@ test('attachChromeWindow', () => {
     expect(updTabWindowJS).toEqual(testData.d3AttachedExpectedTabWindow);
 
     const tabCount = updTabWindow.tabItems.count();
-    const openCount = updTabWindow.tabItems.count(t => t.open);
-    const savedCount = updTabWindow.tabItems.count(t => t.saved);
+    const openCount = updTabWindow.tabItems.count((t) => t.open);
+    const savedCount = updTabWindow.tabItems.count((t) => t.saved);
 
     /*
     console.log(
@@ -408,8 +409,8 @@ test('attachChromeWindow', () => {
     );
 
     const revTabCount = revTabWindow.tabItems.count();
-    const revOpenCount = revTabWindow.tabItems.count(t => t.open);
-    const revSavedCount = revTabWindow.tabItems.count(t => t.saved);
+    const revOpenCount = revTabWindow.tabItems.count((t) => t.open);
+    const revSavedCount = revTabWindow.tabItems.count((t) => t.saved);
 
     /*
     console.log(
@@ -425,4 +426,65 @@ test('attachChromeWindow', () => {
     expect(revTabCount).toBe(6);
     expect(revOpenCount).toBe(0);
     expect(revSavedCount).toBe(6);
+});
+
+const TEST_SAVE_TAB_ID = 445;
+
+test('saveTab', () => {
+    log.setLevel(log.levels.DEBUG);
+    const baseTabWindow = tabWindowUtils.makeChromeTabWindow(
+        testData.chromeWindowSnap
+    );
+
+    const tabWindowJS = JSON.parse(JSON.stringify(baseTabWindow.toJS()));
+
+    /*
+        console.log("makeChromeTabWindow returned: ")
+        console.log(">>>>>")
+        console.log(JSON.stringify(tabWindowJS,null,2))
+        console.log(">>>>>")
+    */
+
+    const entry = baseTabWindow.findChromeTabId(TEST_SAVE_TAB_ID);
+
+    expect(entry.length).toBe(2);
+    const [tabIndex, baseTabItem] = entry;
+
+    console.log('saveTab: base tab item: ', baseTabItem.toJS());
+    expect(baseTabItem.saved).toBe(false);
+    expect(baseTabItem.savedState).toBe(null);
+
+    const saveTabNode: chrome.bookmarks.BookmarkTreeNode = {
+        dateAdded: 1405471223073,
+        id: '999',
+        index: 5,
+        parentId: '777',
+        title: 'React Tutorial',
+        url: 'http://facebook.github.io/react/docs/tutorial.html',
+    };
+
+    const savedTabWindow = tabWindowUtils.saveTab(
+        baseTabWindow,
+        baseTabItem,
+        saveTabNode
+    );
+    const savedTabWindowJS = JSON.parse(JSON.stringify(savedTabWindow.toJS()));
+
+    /*
+    console.log('savedTab returned: ');
+    console.log('>>>>>');
+    console.log(JSON.stringify(savedTabWindowJS, null, 2));
+    console.log('>>>>>');
+    */
+
+    const savedEntry = savedTabWindow.findChromeTabId(TEST_SAVE_TAB_ID);
+
+    expect(savedEntry.length).toBe(2);
+    const [savedTabIndex, savedTabItem] = savedEntry;
+
+    console.log('saveTab: savedTabItem:', savedTabItem.toJS());
+    expect(savedTabItem.saved).toBe(true);
+    expect(savedTabItem.savedState.bookmarkId).toBe(saveTabNode.id);
+    expect(savedTabItem.savedState.bookmarkIndex).toBe(saveTabNode.index);
+    expect(savedTabItem.savedState.url).toBe(saveTabNode.url);
 });
