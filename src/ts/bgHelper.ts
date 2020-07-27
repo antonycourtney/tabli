@@ -21,13 +21,14 @@ import {
     update,
     removeStateChangeListener,
     mkRef,
-    awaitableUpdate
+    awaitableUpdate,
+    mutableGet,
 } from 'oneref';
 import ChromePromise from 'chrome-promise/chrome-promise';
 import { injectGlobal } from 'emotion';
 const _ = {
     has,
-    fromPairs
+    fromPairs,
 };
 const chromeEventLog = log.getLogger('chrome-events');
 const tabliFolderTitle = 'Tabli Saved Windows';
@@ -99,7 +100,7 @@ async function ensureChildFolder(
 
     var folderObj = {
         parentId: parentNode.id,
-        title: childFolderName
+        title: childFolderName,
     };
     return chromep.bookmarks.create(folderObj);
 }
@@ -164,11 +165,11 @@ const initWinStore = async () => {
 
     const baseWinStore = new TabManagerState({
         folderId: tabliFolderId,
-        archiveFolderId
+        archiveFolderId,
     });
     const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0]);
     const items = await chromep.storage.local.get({
-        readRelNotesVersion: ''
+        readRelNotesVersion: '',
     });
     const relNotesStore = initRelNotes(
         loadedWinStore,
@@ -178,7 +179,7 @@ const initWinStore = async () => {
 };
 
 function setupConnectionListener(stateRef: StateRef<TabManagerState>) {
-    chrome.runtime.onConnect.addListener(port => {
+    chrome.runtime.onConnect.addListener((port) => {
         chromeEventLog.debug('Chrome Event: onConnect');
 
         port.onMessage.addListener((msg: any) => {
@@ -199,12 +200,12 @@ function setupConnectionListener(stateRef: StateRef<TabManagerState>) {
 function downloadJSON(dumpObj: any, filename: string) {
     const dumpStr = JSON.stringify(dumpObj, null, 2);
     const winBlob = new Blob([dumpStr], {
-        type: 'application/json'
+        type: 'application/json',
     });
     const url = URL.createObjectURL(winBlob);
     chrome.downloads.download({
         url,
-        filename
+        filename,
     });
 }
 /**
@@ -216,9 +217,9 @@ function downloadJSON(dumpObj: any, filename: string) {
 function dumpAll(winStore: TabManagerState) {
     // eslint-disable-line no-unused-vars
     const allWindows = winStore.getAll();
-    const jsWindows = allWindows.map(tw => tw.toJS());
+    const jsWindows = allWindows.map((tw) => tw.toJS());
     const dumpObj = {
-        allWindows: jsWindows
+        allWindows: jsWindows,
     };
     downloadJSON(dumpObj, 'winStoreSnap.json');
 }
@@ -227,12 +228,12 @@ function dumpChromeWindows() {
     // eslint-disable-line no-unused-vars
     chrome.windows.getAll(
         {
-            populate: true
+            populate: true,
         },
-        chromeWindows => {
+        (chromeWindows) => {
             downloadJSON(
                 {
-                    chromeWindows
+                    chromeWindows,
                 },
                 'chromeWindowSnap.json'
             );
@@ -246,7 +247,7 @@ async function onTabCreated(
     markActive: boolean = false
 ) {
     chromeEventLog.debug('Chrome Event: tabs.onCreated: ', tab);
-    const [st, _] = await awaitableUpdate(stateRef, state => {
+    const [st, _] = await awaitableUpdate(stateRef, (state) => {
         const tabWindow = state.getTabWindowByChromeId(tab.windowId);
 
         if (!tabWindow) {
@@ -281,7 +282,7 @@ function onTabRemoved(
     tabId: number
 ) {
     log.debug('onTabRemoved: ', windowId, tabId);
-    update(stateRef, state => {
+    update(stateRef, (state) => {
         const tabWindow = state.getTabWindowByChromeId(windowId);
 
         if (!tabWindow) {
@@ -385,7 +386,7 @@ const onTabUpdated = async (
         changeInfo,
         tab
     );
-    const [st, _] = await awaitableUpdate(stateRef, state => {
+    const [st, _] = await awaitableUpdate(stateRef, (state) => {
         const tabWindow = state.getTabWindowByChromeId(tab.windowId);
 
         if (!tabWindow) {
@@ -407,7 +408,7 @@ const onBookmarkCreated = (
     bookmark: chrome.bookmarks.BookmarkTreeNode
 ) => {
     chromeEventLog.debug('Chrome Event: boomarks.onCreated: ', id, bookmark);
-    update(stateRef, state => {
+    update(stateRef, (state) => {
         let nextSt = state;
         /* is this bookmark a folder? */
 
@@ -468,7 +469,7 @@ const handleBookmarkUpdate = (
     handleTabWindow: WindowHandler
 ) => {
     log.debug('handleBookmarkUpdate: ', bookmark);
-    update(stateRef, state => {
+    update(stateRef, (state) => {
         let nextSt = state;
         /* is this bookmark a folder? */
 
@@ -560,7 +561,7 @@ const onBookmarkMoved = (
         moveInfo.parentId === archiveFolderId
     ) {
         // looks like window was unmanaged:
-        update(stateRef, state => {
+        update(stateRef, (state) => {
             let nextSt = state;
             const tabWindow = state.getSavedWindowByBookmarkId(id.toString());
 
@@ -575,22 +576,33 @@ const onBookmarkMoved = (
 
 function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
     // window events:
-    chrome.windows.onRemoved.addListener(windowId => {
+    chrome.windows.onRemoved.addListener((windowId) => {
         chromeEventLog.debug('Chrome Event:: windows.onRemoved: ', windowId);
-        update(stateRef, state => {
-            const tabWindow = state.getTabWindowByChromeId(windowId);
-            const st = tabWindow
-                ? state.handleTabWindowClosed(tabWindow)
-                : state;
+        update(stateRef, (state) => {
+            let st: TabManagerState;
+            if (
+                windowId !== chrome.windows.WINDOW_ID_NONE &&
+                windowId === state.popoutWindowId
+            ) {
+                log.debug(
+                    'detected close of popout window id ',
+                    windowId,
+                    ' -- clearing'
+                );
+                st = state.set('popoutWindowId', chrome.windows.WINDOW_ID_NONE);
+            } else {
+                const tabWindow = state.getTabWindowByChromeId(windowId);
+                st = tabWindow ? state.handleTabWindowClosed(tabWindow) : state;
+            }
             return st;
         });
     });
-    chrome.windows.onCreated.addListener(chromeWindow => {
+    chrome.windows.onCreated.addListener((chromeWindow) => {
         chromeEventLog.debug(
             'Chrome Event:: windows.onCreated: ',
             chromeWindow
         );
-        update(stateRef, state => {
+        update(stateRef, (state) => {
             return state.syncChromeWindow(chromeWindow);
         });
     });
@@ -598,7 +610,7 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
      * in the call to addListener, but the TypeScript bindings suggest this is an argument to the
      * callback, which doesn't make a ton of sense...
      */
-    chrome.windows.onFocusChanged.addListener(windowId => {
+    chrome.windows.onFocusChanged.addListener((windowId) => {
         chromeEventLog.debug(
             'Chrome Event:: windows.onFocusChanged: ',
             windowId
@@ -608,7 +620,7 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
             return;
         }
 
-        update(stateRef, state => {
+        update(stateRef, (state) => {
             return state.setCurrentWindowId(windowId);
         });
     });
@@ -620,13 +632,13 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
     */
 
     // tab events:
-    chrome.tabs.onCreated.addListener(tab => onTabCreated(stateRef, tab));
+    chrome.tabs.onCreated.addListener((tab) => onTabCreated(stateRef, tab));
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) =>
         onTabUpdated(stateRef, tabId, changeInfo, tab)
     );
-    chrome.tabs.onActivated.addListener(activeInfo => {
+    chrome.tabs.onActivated.addListener((activeInfo) => {
         chromeEventLog.debug('Chrome Event: tabs.onActivated: ', activeInfo);
-        update(stateRef, state => {
+        update(stateRef, (state) => {
             const tabWindow = state.getTabWindowByChromeId(activeInfo.windowId);
 
             if (!tabWindow) {
@@ -666,7 +678,7 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
                 ', removed: ',
                 removedTabId
             );
-            update(stateRef, state => {
+            update(stateRef, (state) => {
                 const tabWindow = state.getTabWindowByChromeTabId(removedTabId);
 
                 if (!tabWindow) {
@@ -679,7 +691,9 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
 
                 const nextSt = state.handleTabClosed(tabWindow, removedTabId); // And arrange for the added tab to be added to the window:
 
-                chrome.tabs.get(addedTabId, tab => onTabCreated(stateRef, tab));
+                chrome.tabs.get(addedTabId, (tab) =>
+                    onTabCreated(stateRef, tab)
+                );
                 return nextSt;
             });
         }
@@ -707,7 +721,7 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
             attachInfo
         ); // handle like tab creation:
 
-        chrome.tabs.get(tabId, tab => onTabCreated(stateRef, tab, true));
+        chrome.tabs.get(tabId, (tab) => onTabCreated(stateRef, tab, true));
     });
     chrome.bookmarks.onCreated.addListener((id, bookmark) =>
         onBookmarkCreated(stateRef, id, bookmark)
@@ -736,7 +750,7 @@ const defaultMatchInfoProps: MatchInfoProps = {
     windowId: -1,
     matches: Immutable.Map(),
     bestMatch: null,
-    tabCount: 0
+    tabCount: 0,
 };
 class MatchInfo extends Immutable.Record(defaultMatchInfoProps) {}
 
@@ -746,13 +760,13 @@ const getWindowMatchInfo = (
     w: chrome.windows.Window
 ): MatchInfo => {
     const matchSets = w
-        .tabs!.map(t => urlIdMap.get(t.url!, null))
-        .filter(x => x !== null) as Immutable.Set<string>[];
+        .tabs!.map((t) => urlIdMap.get(t.url!, null))
+        .filter((x) => x !== null) as Immutable.Set<string>[];
 
     type CountMap = Immutable.Map<string, number>;
 
     // countMaps :: Array<Map<BookmarkId,Num>>
-    const countMaps = matchSets.map(s => s.countBy(v => v));
+    const countMaps = matchSets.map((s) => s.countBy((v) => v));
 
     // Now let's reduce array, merging all maps into a single map, aggregating counts:
     const aggMerge = (mA: CountMap, mB: CountMap): CountMap =>
@@ -786,7 +800,7 @@ const getWindowMatchInfo = (
         windowId: w.id,
         matches: matchMap,
         bestMatch,
-        tabCount: w.tabs!.length
+        tabCount: w.tabs!.length,
     });
 };
 /**
@@ -814,20 +828,20 @@ function attachWindowList(
     // (Could be improved by sorting entries on number of matches and picking best (if there is one))
 
     const windowMatchInfo = Immutable.Seq(windowList)
-        .map(w => getWindowMatchInfo(bmStore, urlIdMap, w))
-        .filter(mi => mi.bestMatch); // log.debug("windowMatchInfo: ", windowMatchInfo.toJS())
+        .map((w) => getWindowMatchInfo(bmStore, urlIdMap, w))
+        .filter((mi) => mi.bestMatch); // log.debug("windowMatchInfo: ", windowMatchInfo.toJS())
     // Now gather an inverse map of the form:
     // Map<BookmarkId,Map<WindowId,Num>>
 
     const bmMatches = windowMatchInfo.groupBy(
-        mi => mi.bestMatch
+        (mi) => mi.bestMatch
     ) as Immutable.Seq.Keyed<string, Immutable.Seq.Indexed<MatchInfo>>; // log.debug("bmMatches: ", bmMatches.toJS())
     // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
 
-    const bmMatchMaps = bmMatches.map(mis => {
+    const bmMatchMaps = bmMatches.map((mis) => {
         // mis :: Seq<MatchInfo>
         // mercifully each mi will have a distinct windowId at this point:
-        const entries = mis.map(mi => {
+        const entries = mis.map((mi) => {
             const matchTabCount = mi.matches.get(mi.bestMatch!);
             return [mi.windowId, matchTabCount] as [number, number];
         });
@@ -837,12 +851,12 @@ function attachWindowList(
 
     // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>
     const bestBMMatches = bmMatchMaps
-        .map(mm => utils.bestMatch(mm))
-        .filter(ct => ct); // log.debug("bestBMMatches: ", bestBMMatches.toJS())
+        .map((mm) => utils.bestMatch(mm))
+        .filter((ct) => ct); // log.debug("bestBMMatches: ", bestBMMatches.toJS())
     // Form a map from chrome window ids to chrome window snapshots:
 
     const chromeWinMap = _.fromPairs(
-        windowList.map(w => [w.id, w] as [number, chrome.windows.Window])
+        windowList.map((w) => [w.id, w] as [number, chrome.windows.Window])
     ); // And build up our attached state by attaching to each window in bestBMMatches:
 
     const attacher = (
@@ -865,7 +879,7 @@ function attachWindowList(
 
 async function reattachWindows(bmStore: TabManagerState) {
     const windowList = await chromep.windows.getAll({
-        populate: true
+        populate: true,
     });
     return attachWindowList(bmStore, windowList);
 }
@@ -887,7 +901,7 @@ async function maybeAttachNewWindow(
     try {
         const chromeWindow = await chromep.windows.get(windowId, {
             populate: true,
-            windowTypes: ['normal']
+            windowTypes: ['normal'],
         });
 
         if (!chromeWindow) {
@@ -895,7 +909,7 @@ async function maybeAttachNewWindow(
             return;
         }
 
-        update(stRef, st => {
+        update(stRef, (st) => {
             return attachWindowList(st, [chromeWindow]);
         });
     } catch (e) {
@@ -925,7 +939,9 @@ async function loadSnapState(bmStore: TabManagerState) {
 
     const savedWindowState = JSON.parse(savedWindowStateStr);
     log.debug('loadSnapState: read: ', savedWindowState);
-    const closedWindowsMap = bmStore.bookmarkIdMap.filter(bmWin => !bmWin.open);
+    const closedWindowsMap = bmStore.bookmarkIdMap.filter(
+        (bmWin) => !bmWin.open
+    );
     const closedWindowIds = closedWindowsMap.keys();
     let savedOpenTabsMap: { [id: string]: Immutable.List<TabItem> } = {};
 
@@ -957,7 +973,7 @@ async function loadSnapState(bmStore: TabManagerState) {
         }
 
         const baseSavedItems = tabWindow.tabItems
-            .filter(ti => ti.saved)
+            .filter((ti) => ti.saved)
             .map(tabWindowUtils.resetSavedItem);
         const mergedTabs = tabWindowUtils.mergeSavedOpenTabs(
             baseSavedItems,
@@ -968,6 +984,17 @@ async function loadSnapState(bmStore: TabManagerState) {
     const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap);
     log.debug('merged window state snapshot from local storage');
     return nextStore;
+}
+
+async function cleanOldPopouts(stateRef: StateRef<TabManagerState>) {
+    const st = mutableGet(stateRef);
+    const popupTabWindows = st
+        .getTabWindowsByType('popup')
+        .filter((tw: TabWindow) => tw.open && tw.title === 'Tabli');
+    const closePromises = popupTabWindows
+        .map((tw: TabWindow) => chromep.windows.remove(tw.openWindowId))
+        .toJS();
+    await Promise.all(closePromises);
 }
 
 async function main() {
@@ -997,6 +1024,8 @@ async function main() {
         // might be hanging around...
         // log.debug('store before hiding popout: ', syncedStore.toJS())
 
+        cleanOldPopouts(stateRef);
+
         const noPopStore = await actions.hidePopout(stateRef); // log.debug('noPopStore: ', noPopStore)
 
         log.info('main: popoutOnStart: ', noPopStore.preferences.popoutOnStart);
@@ -1004,7 +1033,7 @@ async function main() {
             actions.showPopout(stateRef);
         }
 
-        chrome.commands.onCommand.addListener(command => {
+        chrome.commands.onCommand.addListener((command) => {
             chromeEventLog.debug('Chrome Event: onCommand: ', command);
 
             if (command === 'show_popout') {

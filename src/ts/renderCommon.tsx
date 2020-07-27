@@ -103,10 +103,23 @@ export async function renderPopup(
                 ? syncStore.setCurrentWindow(currentChromeWindow)
                 : syncStore;
             if (!nextStore.equals(syncStore)) {
-                update(storeRef, st => nextStore);
+                update(storeRef, (st) => nextStore);
             } else {
                 log.debug(
                     'doRender: nextStore.equals(savedStore) -- skipping setValue'
+                );
+            }
+            if (
+                isPopout &&
+                currentChromeWindow &&
+                nextStore.popoutWindowId !== currentChromeWindow.id
+            ) {
+                log.debug(
+                    'Setting popout window id to ',
+                    currentChromeWindow.id
+                );
+                update(storeRef, (st) =>
+                    st.set('popoutWindowId', currentChromeWindow.id)
                 );
             }
 
@@ -130,7 +143,7 @@ export function getFocusedAndRender(isPopout: boolean, doSync: boolean = true) {
     var bgPage = chrome.extension.getBackgroundPage();
     var storeRef = (bgPage as any).stateRef;
     (window as any)._tabliIsPopout = isPopout;
-    chrome.windows.getCurrent({}, currentChromeWindow => {
+    chrome.windows.getCurrent({}, (currentChromeWindow) => {
         renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
     });
 }

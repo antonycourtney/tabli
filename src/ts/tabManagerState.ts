@@ -24,7 +24,7 @@ const _ = {
     flatten,
     get,
     map,
-    reduce
+    reduce,
 };
 
 function validChromeWindow(
@@ -50,13 +50,20 @@ interface TabManagerStateProps {
     // maps from bookmark id for saved windows
     folderId: string;
     archiveFolderId: string;
-    currentWindowId: number;
+    currentWindowId: number; // current browser window (or none)
+    popoutWindowId: number; // Tabli popout window, if open (or none)
     // chrome window id of window with focus
     showRelNotes: boolean;
     expandAll: boolean;
     // state of global collapse / expand toggle button
     preferences: prefs.Preferences;
 }
+
+// We should *really* be using chrome.windows.WINDOW_ID_NONE here, but unfortunately
+// the chrome.windows API isn't available in Node for tests, and I couldn't
+// get sinon-chrome mock to play nicely with the TS import system so here
+// is my shitty workaround:
+const CHROME_WINDOW_ID_NONE = -1; // same as chrome.windows.WINDOW_ID_NONE
 
 const tabManagerStateDefaults: TabManagerStateProps = {
     windowIdMap: Immutable.Map(),
@@ -66,12 +73,13 @@ const tabManagerStateDefaults: TabManagerStateProps = {
     // These ids should always be specified during state initialization:
     folderId: 'ERROR_ID',
     archiveFolderId: 'ERROR_ID',
-    currentWindowId: -1,
+    currentWindowId: CHROME_WINDOW_ID_NONE,
+    popoutWindowId: CHROME_WINDOW_ID_NONE,
     // chrome window id of window with focus
     showRelNotes: true,
     expandAll: true,
     // state of global collapse / expand toggle button
-    preferences: new prefs.Preferences()
+    preferences: new prefs.Preferences(),
 };
 
 export default class TabManagerState extends Immutable.Record(
@@ -275,7 +283,7 @@ export default class TabManagerState extends Immutable.Record(
 
     syncWindowList(rawChromeWindowList: chrome.windows.Window[]) {
         // restrict our management to normal chrome windows that have at least 1 tab:
-        const chromeWindowList = _.filter(rawChromeWindowList, cw =>
+        const chromeWindowList = _.filter(rawChromeWindowList, (cw) =>
             validChromeWindow(cw, false)
         );
 
@@ -286,7 +294,7 @@ export default class TabManagerState extends Immutable.Record(
 
         var chromeIdSet = new Set(chromeIds);
         var closedWindows = tabWindows.filter(
-            tw => !chromeIdSet.has(tw.openWindowId)
+            (tw) => !chromeIdSet.has(tw.openWindowId)
         );
         var closedWinStore = closedWindows.reduce(
             (acc, tw) => acc.handleTabWindowClosed(tw),
@@ -375,19 +383,19 @@ export default class TabManagerState extends Immutable.Record(
         const openWindows = this.getOpen().toArray();
         const closedSavedWindows = this.bookmarkIdMap
             .toIndexedSeq()
-            .filter(w => !w.open)
+            .filter((w) => !w.open)
             .toArray();
         return openWindows.concat(closedSavedWindows);
     }
 
     findTabWindowByKey(targetKey: string): TabWindow | undefined {
         const allWindows = this.getAll();
-        return allWindows.find(w => w.key === targetKey);
+        return allWindows.find((w) => w.key === targetKey);
     }
 
     getTabWindowsByType(windowType: string): Immutable.Seq.Indexed<TabWindow> {
         const openWindows = this.getOpen();
-        return openWindows.filter(w => w.windowType === windowType);
+        return openWindows.filter((w) => w.windowType === windowType);
     }
 
     getTabWindowByChromeId(windowId: number): TabWindow | null {
@@ -401,7 +409,7 @@ export default class TabManagerState extends Immutable.Record(
      */
     getTabWindowByChromeTabId(tabId: number): TabWindow | null {
         const tw = this.windowIdMap.find(
-            w => w.findChromeTabId(tabId) !== null
+            (w) => w.findChromeTabId(tabId) !== null
         );
         return tw ? tw : null;
     }
@@ -427,7 +435,7 @@ export default class TabManagerState extends Immutable.Record(
 
     getSavedWindowByTabBookmarkId(bookmarkId: string): TabWindow | null {
         const ret = this.bookmarkIdMap.find(
-            w => w.findChromeBookmarkId(bookmarkId) !== undefined
+            (w) => w.findChromeBookmarkId(bookmarkId) !== undefined
         );
         return ret ? ret : null;
     }
@@ -456,10 +464,10 @@ export default class TabManagerState extends Immutable.Record(
     getUrlBookmarkIdMap() {
         const bmEnts = this.bookmarkIdMap.entrySeq(); // bmEnts ::  Iterator<[BookmarkId,TabWindow]>
 
-        const getSavedUrls = (tw: TabWindow) => tw.tabItems.map(ti => ti.url);
+        const getSavedUrls = (tw: TabWindow) => tw.tabItems.map((ti) => ti.url);
 
         const bmUrls = bmEnts
-            .map(([bmid, tw]) => getSavedUrls(tw).map(url => [url, bmid]))
+            .map(([bmid, tw]) => getSavedUrls(tw).map((url) => [url, bmid]))
             .flatten(true) as Immutable.Seq.Indexed<[string, string]>;
 
         const groupedUrls = bmUrls.groupBy(
@@ -468,21 +476,12 @@ export default class TabManagerState extends Immutable.Record(
             string,
             Immutable.Seq.Indexed<[string, string]>
         >;
-        const groupedIds = groupedUrls.map(vs =>
+        const groupedIds = groupedUrls.map((vs) =>
             Immutable.Set(vs.map(([url, bmid]) => bmid))
         );
         return Immutable.Map(groupedIds);
     }
 
-    getPopoutTabWindow() {
-        const popupTabWindows = this.getTabWindowsByType('popup');
-
-        if (popupTabWindows.count() > 0) {
-            return popupTabWindows.get(0);
-        }
-
-        return null;
-    }
     /**
      * find tabs matching a given URL
      *
@@ -500,14 +499,14 @@ export default class TabManagerState extends Immutable.Record(
                 {
                     matchUrl: true,
                     matchTitle: false,
-                    openOnly: true
+                    openOnly: true,
                 }
             ); // expand to a simple array of [TabWindow,TabItem] pairs:
 
-            const rawMatches = filteredWindows.map(ftw => {
+            const rawMatches = filteredWindows.map((ftw) => {
                 const { tabWindow: targetTabWindow, itemMatches } = ftw;
                 const rawMatchPairs = itemMatches.map(
-                    match =>
+                    (match) =>
                         [targetTabWindow, match.tabItem] as [TabWindow, TabItem]
                 );
                 return rawMatchPairs.toArray();

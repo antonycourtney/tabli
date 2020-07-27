@@ -3,7 +3,7 @@ import TabManagerState from '../src/ts/tabManagerState';
 import * as actions from '../src/ts/actions';
 import React from 'react';
 import ReactTestUtils, {
-    findRenderedDOMComponentWithClass
+    findRenderedDOMComponentWithClass,
 } from 'react-dom/test-utils';
 import { PopupBaseProps, Popup } from '../src/ts/components/Popup';
 import SelectablePopup from '../src/ts/components/SelectablePopup';
@@ -18,7 +18,7 @@ import {
     fireEvent,
     waitForElement,
     getByTestId,
-    waitForDomChange
+    waitForDomChange,
 } from '@testing-library/react';
 
 beforeAll(() => {
@@ -29,8 +29,8 @@ beforeAll(() => {
                 setEnd: () => {},
                 commonAncestorContainer: {
                     nodeName: 'BODY',
-                    ownerDocument: document
-                }
+                    ownerDocument: document,
+                },
             };
             return ret;
         };
@@ -51,7 +51,7 @@ function initialWinStore() {
     const archiveFolderId = 7777;
     const baseWinStore = new TabManagerState({
         folderId,
-        archiveFolderId
+        archiveFolderId,
     } as any);
 
     const windowList = getWindowSnap();

@@ -78,6 +78,7 @@
         "react-addons-test-utils": "^15.6.2",
         "react-docgen-typescript-loader": "^3.7.1",
         "sinon": "^9.0.1",
+        "sinon-chrome": "^3.0.1",
         "source-map-loader": "^0.2.4",
         "standard": "^14.3.3",
         "tap-spec": "^5.0.0",
