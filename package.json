@@ -17,7 +17,7 @@
         "escape-string-regexp": "^4.0.0",
         "events": "^3.2.0",
         "immutable": "^4.0.0-rc.12",
-        "jquery": "^3.5.1",
+        "jquery": "^3.5.0",
         "lodash": "^4.17.20",
         "loglevel": "^1.7.1",
         "object-assign": "^4.1.1",
