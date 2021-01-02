@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as actions from '../actions';
 import * as searchOps from '../searchOps';
 import * as oneref from 'oneref';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import RevertModal from './RevertModal';
 import SaveModal from './SaveModal';
 import { ThemeContext, Theme, themes, ThemeName } from './themeContext';
@@ -29,7 +29,7 @@ const popupOuterStyle = (theme: Theme) =>
         // adding this border is useful for debugging styling issues:
         // border: '1px solid #bababa'
         background: theme.background,
-        color: theme.foreground
+        color: theme.foreground,
     });
 
 export interface PopupBaseProps {
@@ -43,7 +43,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     appState,
     stateRef,
     isPopout,
-    noListener
+    noListener,
 }: PopupProps) => {
     log.trace('Popup: ', appState.toJS());
     const themeName = appState.preferences.theme as ThemeName;
@@ -124,7 +124,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     const modalActions: ModalActions = React.useMemo(
         () => ({
             openSaveModal,
-            openRevertModal
+            openRevertModal,
         }),
         [openSaveModal, openRevertModal]
     );

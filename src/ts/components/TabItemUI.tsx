@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as oneref from 'oneref';
 import * as React from 'react';
 import * as styles from './cssStyles';
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import * as actions from '../actions';
 import { DragItemTypes } from './constants';
 import { HeaderButton } from './HeaderButton';
@@ -13,7 +13,7 @@ import * as tabItemUtil from './tabItemUtil';
 import {
     Draggable,
     DraggableProvided,
-    DraggableStateSnapshot
+    DraggableStateSnapshot,
 } from 'react-beautiful-dnd';
 import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
@@ -43,7 +43,7 @@ const getDragContainerStyle = (
 ) => {
     return {
         // styles we need to apply on draggables
-        ...draggableStyle
+        ...draggableStyle,
     };
 };
 
@@ -65,7 +65,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     isSelected,
     isOver,
     onItemSelected,
-    stateRef
+    stateRef,
 }: TabItemUIProps) => {
     // log.debug('  --TabItemUI: rendering: ', tab.title);
     const theme = useContext(ThemeContext);
@@ -136,8 +136,8 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     if (managed) {
         const tabTitleClosedHover = css({
             '&:hover': {
-                color: theme.closedGray
-            }
+                color: theme.closedGray,
+            },
         });
         const tabTitleClosed = cx(styles.closed(theme), tabTitleClosedHover);
 

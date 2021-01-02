@@ -4,7 +4,7 @@ import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
 import * as svg from './svg';
 import { Manager, Reference, Popper } from 'react-popper';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import { mkUrl } from '../utils';
 import * as actions from '../actions';
 import { StateRef } from 'oneref';

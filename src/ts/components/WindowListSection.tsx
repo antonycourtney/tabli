@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as Constants from './constants';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Layout, LayoutContext } from './LayoutContext';
 import { useContext } from 'react';
 
@@ -13,7 +13,7 @@ const windowListSectionStyle = (layout: Layout) =>
         paddingBottom: layout.sectionPaddingBottom,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'stretch'
+        alignItems: 'stretch',
     });
 
 const windowListSectionHeaderStyle = (layout: Layout) =>
@@ -22,11 +22,11 @@ const windowListSectionHeaderStyle = (layout: Layout) =>
         maxWidth: Constants.WINDOW_MAX_WIDTH,
         fontWeight: 900,
         fontSize: layout.sectionHeaderFontSize,
-        marginBottom: layout.sectionHeaderMarginBottom
+        marginBottom: layout.sectionHeaderMarginBottom,
     });
 
 const windowListChildrenContainerStyle = css({
-    marginLeft: 8
+    marginLeft: 8,
 });
 
 interface WindowListSectionProps {
@@ -43,7 +43,7 @@ interface SectionDivProps {
 const WindowListSection: React.FC<WindowListSectionProps> = ({
     title,
     focusedRef,
-    children
+    children,
 }: WindowListSectionProps) => {
     const layout = useContext(LayoutContext);
 
@@ -56,7 +56,7 @@ const WindowListSection: React.FC<WindowListSectionProps> = ({
         );
     }
     var sectionDivProps: SectionDivProps = {
-        className: windowListSectionStyle(layout)
+        className: windowListSectionStyle(layout),
     };
     if (focusedRef) {
         sectionDivProps.ref = focusedRef;

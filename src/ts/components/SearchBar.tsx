@@ -4,7 +4,7 @@ import * as Constants from './constants';
 import * as actions from '../actions';
 import * as styles from './cssStyles';
 import { ThemeContext } from './themeContext';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import MenuButton from './MenuButton';
 import * as svg from './svg';
 import { StateRef } from 'oneref';
@@ -102,7 +102,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     onSearchExit,
     onSearchExpandToggle,
     isPopout,
-    searchInputRef
+    searchInputRef,
 }: SearchBarProps) => {
     const theme = useContext(ThemeContext);
 
@@ -247,7 +247,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
 
     const devLabelStyle = css({
         fontSize: 10,
-        marginRight: 25
+        marginRight: 25,
     });
     const nodeEnv = process.env.NODE_ENV;
     const devLabel =

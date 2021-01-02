@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './cssStyles';
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import { TabItem } from '../tabWindow';
 import * as utils from '../utils';
 import { HEADER_BUTTON_SIZE } from './constants';

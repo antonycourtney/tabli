@@ -6,7 +6,7 @@ import * as actions from '../actions';
 import * as Constants from './constants';
 import { ThemeContext, Theme } from './themeContext';
 
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import * as styles from './cssStyles';
 import * as svg from './svg';
 
@@ -24,7 +24,7 @@ import { LayoutContext } from './LayoutContext';
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput);
 
 const revertButtonBaseStyle = css({
-    marginRight: '20px'
+    marginRight: '20px',
 });
 const revertButtonStyle = cx(styles.headerHoverVisible, revertButtonBaseStyle);
 
@@ -47,11 +47,11 @@ interface WindowHeaderProps {
 }
 
 const debugRedBG = css({
-    backgroundColor: 'lightcoral'
+    backgroundColor: 'lightcoral',
 });
 
 const debugBlueBG = css({
-    backgroundColor: 'lightblue'
+    backgroundColor: 'lightblue',
 });
 
 const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
@@ -64,7 +64,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     onRevert,
     onOpen,
     onClose,
-    onItemSelected
+    onItemSelected,
 }: WindowHeaderProps) => {
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
@@ -195,7 +195,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
                     autoComplete="off"
                     defaultValue={windowTitle}
                     onKeyDown={handleTitleKeyDown}
-                    onClick={e => {
+                    onClick={(e) => {
                         e.stopPropagation();
                     }}
                 />
@@ -207,7 +207,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
 
     const titleContainerStyle = css({
         display: 'flex',
-        alignItems: 'normal'
+        alignItems: 'normal',
     });
 
     const titleStyle = cx(titleTextStyle, titleContainerStyle);

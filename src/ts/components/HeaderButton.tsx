@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './cssStyles';
-import { cx } from 'emotion';
+import { cx } from '@emotion/css';
 
 export const headerButtonSpacer = (
     <button className={cx(styles.headerButton, styles.hidden)} />

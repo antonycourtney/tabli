@@ -13,9 +13,9 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "react",
         "downlevelIteration": true,
-        "rootDirs": ["src/ts", "stories"]
+        "rootDirs": ["src/ts", "stories"],
+        "jsx": "react"
     },
     "include": ["src/ts"],
     "types": ["chrome", "react=dom/experimental"]

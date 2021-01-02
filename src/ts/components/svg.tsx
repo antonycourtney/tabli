@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cx, css } from 'emotion';
+import { css, cx } from '@emotion/css';
 
 const svgIconStyle = css({
     display: 'block',

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as styles from './cssStyles';
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import FlatButton from './FlatButton';
 import { Theme, ThemeContext } from './themeContext';
 
 const messageCardBaseStyle = css({
-    padding: 0
+    padding: 0,
 });
 const messageCardStyle = (theme: Theme) =>
     cx(
@@ -19,7 +19,7 @@ const cardActionsStyle = css({
     flexDirection: 'row-reverse',
     paddingRight: 16,
     paddingBottom: 16,
-    position: 'relative'
+    position: 'relative',
 });
 
 interface MessageCardProps {
@@ -34,7 +34,7 @@ interface MessageCardProps {
  */
 const MessageCard: React.FunctionComponent<MessageCardProps> = ({
     content,
-    onClick
+    onClick,
 }: MessageCardProps) => {
     const rawMarkup = { __html: content };
     const theme = React.useContext(ThemeContext);

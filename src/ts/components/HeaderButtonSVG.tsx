@@ -3,11 +3,11 @@ import { useContext } from 'react';
 import {
     HeaderButtonProps,
     HeaderButton,
-    headerButtonSpacer
+    headerButtonSpacer,
 } from './HeaderButton';
 import { HEADER_BUTTON_SIZE } from './constants';
 import { ThemeContext, Theme } from './themeContext';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import * as styles from './cssStyles';
 
 type HeaderButtonSVGProps = {
@@ -19,7 +19,7 @@ type HeaderButtonSVGProps = {
 } & typeof headerButtonSVGDefaultProps;
 
 const headerButtonSVGDefaultProps = {
-    visible: true
+    visible: true,
 };
 
 const svgContainerStyle = (theme: Theme) => css`
@@ -65,7 +65,7 @@ export const HeaderButtonSVG = ({
     title,
     visible,
     onClick,
-    svgClassName
+    svgClassName,
 }: HeaderButtonSVGProps) => {
     const theme = useContext(ThemeContext);
 

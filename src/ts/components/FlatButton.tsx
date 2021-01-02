@@ -1,6 +1,6 @@
 import log from 'loglevel';
 import * as React from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 
 const flatButtonStyle = css({
     border: '0px',

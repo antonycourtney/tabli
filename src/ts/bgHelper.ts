@@ -25,7 +25,7 @@ import {
     mutableGet,
 } from 'oneref';
 import ChromePromise from 'chrome-promise/chrome-promise';
-import { injectGlobal } from 'emotion';
+import injectGlobal from '@emotion/css/types';
 const _ = {
     has,
     fromPairs,

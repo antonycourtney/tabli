@@ -4,7 +4,7 @@ import * as styles from './cssStyles';
 import * as Constants from './constants';
 import * as Modal from './Modal';
 import { themes } from './themeContext';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import { Preferences } from '../preferences';
 import { useState } from 'react';
 import { layouts } from './LayoutContext';
@@ -68,7 +68,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     log.debug('PreferencesModal: initialPrefs: ', initialPrefs.toJS());
     const [prefs, setPrefs] = useState(initialPrefs);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
         if (e.keyCode === Constants.KEY_ESC) {
             // ESC key
             e.preventDefault();

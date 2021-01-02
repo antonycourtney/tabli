@@ -3,6 +3,7 @@
 var webpack = require('webpack');
 var path = require('path');
 var fs = require('fs');
+const { profileEnd } = require('console');
 process.traceDeprecation = true;
 
 function config(nodeEnv) {
@@ -33,22 +34,25 @@ function config(nodeEnv) {
                 { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
                 {
                     test: /\.less$/,
-                    loader: 'style-loader!css-loader!less-loader'
+                    use: ['style-loader', 'css-loader', 'less-loader' ]
                 },
                 {
                     test: /\.css$/,
-                    loader: 'style-loader!css-loader'
+                    use: ['style-loader', 'css-loader' ]
                 },
                 {
                     test: /\.(jpe?g|png|gif|svg)$/i,
-                    loaders: [
+                    type: 'asset'
+/*                    loaders: [
                         'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
                         'image-webpack-loader?bypassOnDebug&optipng.optimizationLevel=7&gifsicle.interlaced=false'
                     ]
+*/
                 },
                 {
                     test: /\.(eot|svg|ttf|woff|woff2)$/,
-                    loader: 'file-loader?name=public/fonts/[name].[ext]'
+                    type: 'asset'
+/*                    loader: 'file-loader?name=public/fonts/[name].[ext]' */
                 },
                 { test: /\.html$/, loader: 'html-loader' }
             ]
@@ -91,9 +95,9 @@ function production() {
             'process.env.NODE_ENV': JSON.stringify('production')
         })
     );
-    prod.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(true));
+    prod.optimization.chunkIds = 'total-size';
     prod.optimization.minimize = true;
-
+    
     // for profiling:
     /*
     prod.optimization.minimize = false; // avoids mangling
@@ -111,9 +115,8 @@ const configMap = {
     prod: production()
 };
 
-module.exports = function(env) {
-    if (!env) {
-        env = 'dev';
-    }
-    return configMap[env];
+module.exports = function(env, argv) {
+    let mode = (argv.mode === 'production') ? 'prod' : 'dev';
+    let ret = configMap[mode];
+    return ret;
 };

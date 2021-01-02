@@ -9,7 +9,7 @@ import { Theme } from './themeContext';
  * to here
  */
 
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import { Layout } from './LayoutContext';
 export const rowItemsFixedWidth = css`
     display: inline-flex;

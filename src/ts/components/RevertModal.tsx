@@ -2,7 +2,7 @@ import log from 'loglevel';
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as styles from './cssStyles';
-import { cx } from 'emotion';
+import { cx } from '@emotion/css';
 
 import * as Constants from './constants';
 
@@ -34,7 +34,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
         if (e.keyCode === Constants.KEY_ESC) {
             // ESC key
             e.preventDefault();

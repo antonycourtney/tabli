@@ -2,7 +2,7 @@ import * as log from 'loglevel'; // eslint-disable-line no-unused-consts
 import * as React from 'react';
 import { StateRef } from 'oneref';
 import * as Immutable from 'immutable';
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import * as styles from './cssStyles';
 import * as actions from '../actions';
 import * as Constants from './constants';
@@ -18,27 +18,27 @@ import { areEqualShallow, windowIsPopout } from '../utils';
 import {
     Droppable,
     DroppableProvided,
-    DroppableStateSnapshot
+    DroppableStateSnapshot,
 } from 'react-beautiful-dnd';
 import { Theme, ThemeContext } from './themeContext';
 import { LayoutContext } from './LayoutContext';
 
 const expandablePanelContentOpenStyle = css({
-    marginTop: 4
+    marginTop: 4,
 });
 const expandablePanelContentClosedStyle = css({
-    marginTop: '-999px'
+    marginTop: '-999px',
 });
 const tabWindowSelectedStyle = (theme: Theme) =>
     css({
-        border: '2px solid ' + theme.windowSelectedBorder
+        border: '2px solid ' + theme.windowSelectedBorder,
     });
 
 const getListStyle = (isDraggingOver: boolean) =>
     css({
         display: 'flex',
         flexDirection: 'column',
-        width: '100%'
+        width: '100%',
     });
 
 export interface FilteredTabWindowUIBaseProps {
@@ -70,7 +70,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     onItemSelected,
     selectedTabIndex,
     modalActions,
-    expandAll
+    expandAll,
 }: FilteredTabWindowUIProps) => {
     const layout = useContext(LayoutContext);
 
@@ -160,7 +160,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     if (itemMatches === null) {
         tabs = tabWindow.tabItems;
     } else {
-        tabs = itemMatches.map(fti => fti.tabItem);
+        tabs = itemMatches.map((fti) => fti.tabItem);
     }
 
     /*
@@ -200,7 +200,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
 
     const windowDivProps = {
         className: windowStyles,
-        ref: windowDivRef
+        ref: windowDivRef,
     };
 
     /* N.B.: On inner div, may want to set class name / styling with:

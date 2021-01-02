@@ -6,7 +6,7 @@
  */
 import * as React from 'react';
 
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
 import get from 'lodash/get';
@@ -22,7 +22,7 @@ const containerStyle = css({
     height: 16,
     marginLeft: 4,
     marginRight: 4,
-    flex: 'none'
+    flex: 'none',
 });
 
 interface HeaderCheckboxProps {
@@ -38,7 +38,7 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
     value,
     open,
     onClick,
-    extraUncheckedStyle
+    extraUncheckedStyle,
 }: HeaderCheckboxProps) => {
     const theme = useContext(ThemeContext);
     const checked = !!value;

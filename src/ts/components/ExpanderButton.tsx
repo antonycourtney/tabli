@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { mkUrl } from '../utils';
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import { ThemeContext, Theme } from './themeContext';
 import * as styles from './cssStyles';
 import * as svg from './svg';
@@ -36,7 +36,7 @@ interface ExpanderButtonProps {
 // expand / contract button for a window
 const ExpanderButton: React.FunctionComponent<ExpanderButtonProps> = ({
     expanded,
-    onClick
+    onClick,
 }: ExpanderButtonProps) => {
     const theme = useContext(ThemeContext);
     const handleClicked = (
@@ -52,7 +52,7 @@ const ExpanderButton: React.FunctionComponent<ExpanderButtonProps> = ({
         backgroundColor: 'yellow',
         width: 14,
         height: 14,
-        overflow: 'hidden'
+        overflow: 'hidden',
     });
     return (
         <div

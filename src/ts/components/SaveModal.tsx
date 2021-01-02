@@ -31,7 +31,7 @@ const SaveModal: React.FC<SaveModalProps> = ({
         }
     }, []);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.keyCode === Constants.KEY_ESC) {
             // ESC key
             e.preventDefault();

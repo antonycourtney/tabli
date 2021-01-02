@@ -1,7 +1,7 @@
 import * as log from 'loglevel';
 import * as React from 'react';
 import * as styles from './cssStyles';
-import { cx, css } from 'emotion';
+import { cx, css } from '@emotion/css';
 import * as Constants from './constants';
 
 import * as actions from '../actions';
@@ -17,7 +17,7 @@ import {
     useState,
     Ref,
     MutableRefObject,
-    useCallback
+    useCallback,
 } from 'react';
 import { TabItem } from '../tabWindow';
 import ModalActions from './modalActions';
@@ -25,7 +25,7 @@ import {
     DragDropContext,
     DropResult,
     ResponderProvided,
-    DragStart
+    DragStart,
 } from 'react-beautiful-dnd';
 import { getTabIndices, windowIsPopout } from '../utils';
 import { Layout, LayoutContext } from './LayoutContext';
@@ -36,7 +36,7 @@ function matchingTabs(
 ) {
     var ret =
         searchStr && searchStr.length > 0
-            ? filteredTabWindow.itemMatches.map(fti => fti.tabItem)
+            ? filteredTabWindow.itemMatches.map((fti) => fti.tabItem)
             : filteredTabWindow.tabWindow.tabItems;
     return ret;
 }
@@ -67,7 +67,7 @@ const popupInnerStyle = css({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    flexWrap: 'nowrap'
+    flexWrap: 'nowrap',
 });
 
 const popupHeaderStyle = (layout: Layout) =>
@@ -79,7 +79,7 @@ const popupHeaderStyle = (layout: Layout) =>
         height: layout.popupHeaderHeight,
         borderBottom: '1px solid #bababa',
         padding: 0,
-        flex: '0 0 auto'
+        flex: '0 0 auto',
     });
 
 // We attempted to include scrollbarColor here, but it appears that is
@@ -93,7 +93,7 @@ const popupBodyStyle = (theme: Theme, layout: Layout) => {
         minHeight: popupBodyHeight,
         position: 'relative',
         overflow: 'auto',
-        flex: '1 1 auto'
+        flex: '1 1 auto',
     });
 };
 
@@ -112,10 +112,10 @@ const popupFooterStyle = (theme: Theme) =>
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        margin: 0
+        margin: 0,
     });
 const summarySpanBaseStyle = css({
-    marginRight: 5
+    marginRight: 5,
 });
 
 interface SelectablePopupProps {
@@ -144,7 +144,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     searchStr,
     searchRE,
     isPopout,
-    modalActions
+    modalActions,
 }: SelectablePopupProps) => {
     const layout = useContext(LayoutContext);
     const bodyRef = useRef<HTMLDivElement | null>(null);
@@ -170,7 +170,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         selectedWindowIndex,
         selectedTabIndex,
         searchStr,
-        filteredWindowsLength
+        filteredWindowsLength,
     });
 
     // truly just for debugging:
@@ -298,7 +298,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             const selectedTabs = matchingTabs(searchStr, selectedWindow);
 
             const activeEntry = selectedTabs.findEntry(
-                t => t.open && t.openState!.active
+                (t) => t.open && t.openState!.active
             );
             const activeTabIndex = activeEntry ? activeEntry[0] : 0;
             const activeTabId = appState.getActiveTabId();

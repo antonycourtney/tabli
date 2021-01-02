@@ -6,7 +6,7 @@ import { linkTo } from '@storybook/addon-links';
 
 import { themes, ThemeContext } from '../src/ts/components/themeContext';
 import * as styles from '../src/ts/components/cssStyles';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import TabItemUI from '../src/ts/components/TabItemUI';
 import { PopupBaseProps, Popup } from '../src/ts/components/Popup';
 import * as tabWindowUtils from '../src/ts/tabWindowUtils';
@@ -21,7 +21,7 @@ import windowSnapshot from '../test-data/windowSnapshot.json';
 import { mkRef, appContainer, mutableGet, StateRefProps } from 'oneref';
 import FilteredTabWindowUI, {
     FilteredTabWindowUIBaseProps,
-    FilteredTabWindowUIProps
+    FilteredTabWindowUIProps,
 } from '../src/ts/components/FilteredTabWindowUI';
 import { TabWindow } from '../src/ts/tabWindow';
 import { matchTabWindow } from '../src/ts/searchOps';
@@ -76,8 +76,9 @@ const modalActions = { openSaveModal, openRevertModal };
 
 const TEST_UNSAVED_OPEN_WINDOW_ID = 13;
 
-const StatefulFilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIBaseProps &
-    StateRefProps<TabManagerState>> = props => {
+const StatefulFilteredTabWindowUI: React.FunctionComponent<
+    FilteredTabWindowUIBaseProps & StateRefProps<TabManagerState>
+> = (props) => {
     const { stateRef } = props;
     const appState = mutableGet(stateRef);
     const tabWindow = appState.getTabWindowByChromeId(TEST_OPEN_WINDOW_ID);
@@ -115,13 +116,13 @@ const rootStyle = css({
     paddingTop: 10,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
 });
 
 const rootInnerStyle = css({
     width: 450,
     height: 600,
-    border: '1px solid #888888'
+    border: '1px solid #888888',
 });
 
 const StoryRoot: React.FunctionComponent = ({ children }) => {
@@ -133,19 +134,19 @@ const StoryRoot: React.FunctionComponent = ({ children }) => {
 };
 
 const debugBorder = css({
-    border: '1px solid #ff0000'
+    border: '1px solid #ff0000',
 });
 
 const debugBlueBorder = css({
-    border: '1px solid #0000ff'
+    border: '1px solid #0000ff',
 });
 
 const debugRedBG = css({
-    backgroundColor: 'lightcoral'
+    backgroundColor: 'lightcoral',
 });
 
 const debugBlueBG = css({
-    backgroundColor: 'lightblue'
+    backgroundColor: 'lightblue',
 });
 
 const buttonContainerStyle = css({
@@ -153,7 +154,7 @@ const buttonContainerStyle = css({
     width: '100%',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    height: 24
+    height: 24,
 });
 
 const AllSVGButtons = ({}) => {
@@ -169,7 +170,7 @@ const AllSVGButtons = ({}) => {
         svg.sound,
         svg.silent,
         svg.chevron,
-        svg.closeIcon
+        svg.closeIcon,
     ];
     const buttons = svgs.map((svgElem, idx) => (
         <HeaderButtonSVG
