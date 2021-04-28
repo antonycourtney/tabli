@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Tabli",
     "description": "A simple, powerful tab manager",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "browser_action": {
         "default_icon": "images/glyphicons_154_more_windows.png",
         "default_popup": "popup.html",
@@ -12,13 +12,7 @@
         "scripts": ["js/common.bundle.js", "js/bgHelper.bundle.js"],
         "persistent": true
     },
-    "permissions": [
-        "storage",
-        "tabs",
-        "bookmarks",
-        "chrome://favicon/*",
-        "sessions"
-    ],
+    "permissions": ["storage", "tabs", "bookmarks", "chrome://favicon/*"],
     "icons": {
         "16": "images/glyphicons_154_more_windows.png",
         "48": "images/Multimedia-12-48.png",

@@ -17,6 +17,9 @@
         "rootDirs": ["src/ts", "stories"],
         "jsx": "react"
     },
+    "awesomeTypescriptLoaderOptions": {
+        "silent": true
+    },
     "include": ["src/ts"],
     "types": ["chrome", "react=dom/experimental"]
 }
