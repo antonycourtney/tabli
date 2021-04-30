@@ -3,14 +3,20 @@
 //
 import * as log from 'loglevel'; // eslint-disable-line
 
-const SUSPEND_PREFIX =
-    'chrome-extension://klbibkeccnjlkjkiokjodocebajanakg/suspended.html#';
-const ALT_SUSPEND_PREFIX =
-    'chrome-extension://lehkeldejnkfomdefgfhkhihdocphbdg/suspended.html#';
-const SUSPEND_PREFIX_LEN = SUSPEND_PREFIX.length;
+const SUSPEND_PREFIXES = [
+    'chrome-extension://klbibkeccnjlkjkiokjodocebajanakg/suspended.html#',
+    'chrome-extension://lehkeldejnkfomdefgfhkhihdocphbdg/suspended.html#',
+    'chrome-extension://ahmkjjgdligadogjedmnogbpbcpofeeo/suspended.html#',
+    'chrome-extension://ainlmpkfinfbbgdpimmldfdgpenmclmk/suspended.html#',
+    'chrome-extension://jaekigmcljkkalnicnjoafgfjoefkpeg/suspended.html#',
+    'chrome-extension://noogafoofpebimajpfpamcfhoaifemoa/suspended.html#',
+];
+const SUSPEND_PREFIX_LEN = SUSPEND_PREFIXES[0].length;
 
 const isSuspended = (url: string) =>
-    url.startsWith(SUSPEND_PREFIX) || url.startsWith(ALT_SUSPEND_PREFIX);
+    SUSPEND_PREFIXES.find((prefix: string) =>
+        url.startsWith(prefix)
+    );
 /*
  * given a URI, return a [URI, boolean] pair with true URI and
  * suspended state
