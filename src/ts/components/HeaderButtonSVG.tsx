@@ -10,17 +10,14 @@ import { ThemeContext, Theme } from './themeContext';
 import { css, cx } from '@emotion/css';
 import * as styles from './cssStyles';
 
-type HeaderButtonSVGProps = {
+export interface HeaderButtonSVGProps {
     className?: string;
     title?: string;
     onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     svgElem: JSX.Element;
     svgClassName?: string;
-} & typeof headerButtonSVGDefaultProps;
-
-const headerButtonSVGDefaultProps = {
-    visible: true,
-};
+    visible?: boolean;
+}
 
 const svgContainerStyle = (theme: Theme) => css`
     width: ${HEADER_BUTTON_SIZE + 'px'};
@@ -63,11 +60,12 @@ export const HeaderButtonSVG = ({
     svgElem,
     className,
     title,
-    visible,
+    visible: maybeVisible,
     onClick,
     svgClassName,
 }: HeaderButtonSVGProps) => {
     const theme = useContext(ThemeContext);
+    const visible = maybeVisible ?? true;
 
     const handleClick = onClick
         ? (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -102,5 +100,3 @@ export const HeaderButtonSVG = ({
         </div>
     );
 };
-
-HeaderButtonSVG.defaultProps = headerButtonSVGDefaultProps;
