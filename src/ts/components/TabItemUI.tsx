@@ -14,7 +14,7 @@ import {
     Draggable,
     DraggableProvided,
     DraggableStateSnapshot,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
 import { useContext } from 'react';
@@ -39,7 +39,7 @@ const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon);
 const getDragContainerStyle = (
     isDragging: boolean,
     draggableStyle: any,
-    snapshot: any
+    snapshot: any,
 ) => {
     return {
         // styles we need to apply on draggables
@@ -175,7 +175,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         styles.tabTitle,
         styles.noWrap,
         tabOpenStateStyle,
-        tabActiveTextStyle
+        tabActiveTextStyle,
     );
 
     const selectedStyle = isSelected ? styles.tabItemSelected(theme) : null;
@@ -195,7 +195,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
             activeStyle,
             selectedStyle,
             dropStyle,
-            dragStyle
+            dragStyle,
         );
         return tabItemStyle;
     };
@@ -225,7 +225,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     const tabItemCloseButtonStyle = cx(
         styles.headerButton,
         tabItemHoverVisible,
-        styles.closeButtonBaseStyle(theme)
+        styles.closeButtonBaseStyle(theme),
     );
 
     const closeButton = (
@@ -244,7 +244,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
             {(
                 dragProvided: DraggableProvided,
-                dragSnapshot: DraggableStateSnapshot
+                dragSnapshot: DraggableStateSnapshot,
             ) => {
                 // console.log({ dragProvided, dragSnapshot });
                 // for debugging: const blueBorder = css({ border: '1px solid #0000ff' });
@@ -256,7 +256,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                         style={getDragContainerStyle(
                             dragSnapshot.isDragging,
                             dragProvided.draggableProps.style,
-                            dragSnapshot
+                            dragSnapshot,
                         )}
                     >
                         <div

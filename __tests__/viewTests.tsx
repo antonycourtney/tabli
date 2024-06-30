@@ -15,7 +15,7 @@ import TabItemUI from '../src/ts/components/TabItemUI';
 import * as popperJS from 'popper.js';
 import * as sinon from 'sinon';
 import { appContainer } from 'oneref';
-import { resetServerContext } from 'react-beautiful-dnd';
+import { resetServerContext } from '@hello-pangea/dnd';
 import {
     render,
     fireEvent,

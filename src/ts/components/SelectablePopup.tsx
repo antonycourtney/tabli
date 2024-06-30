@@ -26,13 +26,13 @@ import {
     DropResult,
     ResponderProvided,
     DragStart,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { getTabIndices, windowIsPopout } from '../utils';
 import { Layout, LayoutContext } from './LayoutContext';
 
 function matchingTabs(
     searchStr: string | null,
-    filteredTabWindow: FilteredTabWindow
+    filteredTabWindow: FilteredTabWindow,
 ) {
     var ret =
         searchStr && searchStr.length > 0
@@ -43,7 +43,7 @@ function matchingTabs(
 
 function matchingTabsCount(
     searchStr: string | null,
-    filteredTabWindow: FilteredTabWindow
+    filteredTabWindow: FilteredTabWindow,
 ) {
     return matchingTabs(searchStr, filteredTabWindow).count();
 }
@@ -51,7 +51,7 @@ function matchingTabsCount(
 function selectedTab(
     filteredTabWindow: FilteredTabWindow,
     searchStr: string | null,
-    tabIndex: number
+    tabIndex: number,
 ): TabItem {
     if (!searchStr || searchStr.length === 0) {
         const tabWindow = filteredTabWindow.tabWindow;
@@ -190,7 +190,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 var lastWindow = filteredWindows[filteredWindows.length - 1];
                 setSelectedWindowIndex(filteredWindows.length - 1);
                 setSelectedTabIndex(
-                    matchingTabsCount(searchStr, lastWindow) - 1
+                    matchingTabsCount(searchStr, lastWindow) - 1,
                 );
             }
         } else {
@@ -298,7 +298,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             const selectedTabs = matchingTabs(searchStr, selectedWindow);
 
             const activeEntry = selectedTabs.findEntry(
-                (t) => t.open && t.openState!.active
+                (t) => t.open && t.openState!.active,
             );
             const activeTabIndex = activeEntry ? activeEntry[0] : 0;
             const activeTabId = appState.getActiveTabId();
@@ -379,7 +379,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     };
 
     const handleSelectionEnter = async (
-        inputRef: MutableRefObject<HTMLInputElement | null>
+        inputRef: MutableRefObject<HTMLInputElement | null>,
     ) => {
         if (filteredWindows.length === 0) {
             return;
@@ -396,13 +396,13 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             const selectedTabItem = selectedTab(
                 selectedWindow,
                 searchStr,
-                selectedTabIndex
+                selectedTabIndex,
             );
             await actions.activateOrRestoreTab(
                 selectedWindow.tabWindow,
                 selectedTabItem,
                 selectedTabIndex,
-                stateRef
+                stateRef,
             );
         }
         // And reset the search field:
@@ -474,7 +474,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             source.index,
             destination.index,
             sourceTab,
-            stateRef
+            stateRef,
         );
         log.debug('onDragEnd: moveTabItem completed, resetting indices....:');
         // reset selected indices; should pick up active window/tab next render:

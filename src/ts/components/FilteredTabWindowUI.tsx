@@ -19,7 +19,7 @@ import {
     Droppable,
     DroppableProvided,
     DroppableStateSnapshot,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { Theme, ThemeContext } from './themeContext';
 import { LayoutContext } from './LayoutContext';
 
@@ -61,7 +61,9 @@ export interface FilteredTabWindowStateRefProps {
 export type FilteredTabWindowUIProps = FilteredTabWindowUIBaseProps &
     FilteredTabWindowStateRefProps;
 
-const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = ({
+const FilteredTabWindowUI: React.FunctionComponent<
+    FilteredTabWindowUIProps
+> = ({
     tabWindow,
     itemMatches,
     isSelected,
@@ -77,7 +79,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
     log.trace(
         '  FilteredTabWindowUI: rendering ',
         tabWindow.key,
-        tabWindow.title
+        tabWindow.title,
     );
     const theme = useContext(ThemeContext);
     const [prevIsSelected, setPrevIsSelected] = useState(false);
@@ -124,7 +126,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
 
     const renderTabItems = (
         tabWindow: TabWindow,
-        tabs: Immutable.Collection.Indexed<TabItem>
+        tabs: Immutable.Collection.Indexed<TabItem>,
     ) => {
         const items = [];
         for (let i = 0; i < tabs.count(); i++) {
@@ -195,7 +197,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
         styles.tabWindow(theme),
         styles.expandablePanel(layout),
         selectedStyle,
-        focusedStyle
+        focusedStyle,
     );
 
     const windowDivProps = {
@@ -212,7 +214,7 @@ const FilteredTabWindowUI: React.FunctionComponent<FilteredTabWindowUIProps> = (
             <Droppable droppableId={droppableId}>
                 {(
                     provided: DroppableProvided,
-                    snapshot: DroppableStateSnapshot
+                    snapshot: DroppableStateSnapshot,
                 ) => (
                     <div
                         ref={provided.innerRef}

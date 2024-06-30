@@ -13,7 +13,7 @@ import * as tabWindowUtils from '../src/ts/tabWindowUtils';
 
 import testData from '../test-data/renderTest-chromeWindowSnap';
 import TabManagerState from '../src/ts/tabManagerState';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 // Prevent VS Code from complaining about this JSON import:
 // @ts-ignore
 import windowSnapshot from '../test-data/windowSnapshot.json';
