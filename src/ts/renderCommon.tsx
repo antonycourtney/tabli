@@ -5,7 +5,7 @@ import * as log from 'loglevel';
 import * as utils from './utils';
 import * as React from 'react';
 import {} from 'react-dom/experimental';
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { PopupBaseProps, Popup } from './components/Popup';
 import TabManagerState from './tabManagerState';
 import * as actions from './actions';
@@ -56,32 +56,9 @@ export async function renderPopup(
         if (utils.inExtension()) {
             sendHelperMessage({ listenerId });
         }
-        /* non-concurrent (blocking) mode: */
-        ReactDOM.render(
+        createRoot(parentNode!).render(
             <App isPopout={isPopout} noListener={renderTest} />,
-            parentNode,
-            () => {
-                const searchBoxElem = document.getElementById('searchBox');
-                if (searchBoxElem) {
-                    searchBoxElem.focus();
-                }
-            },
         );
-        /*
-         * experimenting with concurrent mode:
-
-        ReactDOM.createRoot(parentNode!).render(
-            <App isPopout={isPopout} noListener={renderTest} />,
-            () => {
-                const searchBoxElem = document.getElementById('searchBox');
-                if (searchBoxElem) {
-                    searchBoxElem.focus();
-                }
-            }
-        );
-        // For testing:
-        // ReactDOM.createRoot(parentNode!).render(<span>Hello, wordl!</span>);
-        */
 
         var tPostRender = performance.now();
         log.info(

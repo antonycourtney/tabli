@@ -11,7 +11,7 @@ import { LayoutContext, Layout, layouts, LayoutName } from './LayoutContext';
 import * as utils from '../utils';
 import debounce from 'lodash/debounce';
 import TabManagerState from '../tabManagerState';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { TabWindow } from '../tabWindow';
 import SelectablePopup from './SelectablePopup';
 import { FilteredTabWindow } from '../searchOps';
@@ -66,7 +66,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     const [saveTabWindow, setSaveTabWindow] = useState<TabWindow | null>(null);
     const [revertModalIsOpen, setRevertModalIsOpen] = useState(false);
     const [revertTabWindow, setRevertTabWindow] = useState<TabWindow | null>(
-        null
+        null,
     );
     const [searchStr, setSearchStr] = useState('');
     const [searchRE, setSearchRE] = useState<RegExp | null>(null);
@@ -91,7 +91,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
             setSaveInitialTitle(initialTitle);
             setSaveTabWindow(tabWindow);
         },
-        [setSaveModalIsOpen, setSaveInitialTitle, setSaveTabWindow]
+        [setSaveModalIsOpen, setSaveInitialTitle, setSaveTabWindow],
     );
     const closeSaveModal = () => {
         setSaveModalIsOpen(false);
@@ -108,7 +108,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
             setRevertModalIsOpen(true);
             setRevertTabWindow(tabWindow);
         },
-        [setRevertModalIsOpen, setRevertTabWindow]
+        [setRevertModalIsOpen, setRevertTabWindow],
     );
 
     const closeRevertModal = () => {
@@ -126,7 +126,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
             openSaveModal,
             openRevertModal,
         }),
-        [openSaveModal, openRevertModal]
+        [openSaveModal, openRevertModal],
     );
 
     const revertModal = revertModalIsOpen ? (
@@ -144,6 +144,13 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
             onSubmit={doSave}
         />
     ) : null;
+
+    useEffect(() => {
+        const searchBoxElem = document.getElementById('searchBox');
+        if (searchBoxElem) {
+            searchBoxElem.focus();
+        }
+    }, []);
 
     return (
         <LayoutContext.Provider value={layout}>
