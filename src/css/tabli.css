@@ -119,7 +119,6 @@ a.card-link {
     font-size: 12px;
 }
 input[type='search']::-webkit-search-cancel-button {
-    -webkit-appearance: searchfield-cancel-button;
     margin-right: 5px;
 }
 /* GRRRRRR. @#!@#$ CSS */
