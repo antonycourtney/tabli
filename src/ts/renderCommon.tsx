@@ -37,7 +37,7 @@ export async function renderPopup(
     currentChromeWindow: chrome.windows.Window | null,
     isPopout: boolean,
     doSync: boolean,
-    renderTest: boolean = false
+    renderTest: boolean = false,
 ) {
     try {
         utils.setLogLevel(log);
@@ -50,7 +50,7 @@ export async function renderPopup(
         const [App, listenerId] = refContainer<TabManagerState, PopupBaseProps>(
             storeRef,
             Popup,
-            DEBOUNCE_WAIT
+            DEBOUNCE_WAIT,
         );
         log.debug('refContainer listener id: ', listenerId);
         if (utils.inExtension()) {
@@ -65,7 +65,7 @@ export async function renderPopup(
                 if (searchBoxElem) {
                     searchBoxElem.focus();
                 }
-            }
+            },
         );
         /*
          * experimenting with concurrent mode:
@@ -87,7 +87,7 @@ export async function renderPopup(
         log.info(
             'full render complete. render time: (',
             tPostRender - tPreRender,
-            ' ms)'
+            ' ms)',
         );
 
         // And sync our window state, which may update the UI...
@@ -97,7 +97,7 @@ export async function renderPopup(
             // And set current focused window:
             log.debug(
                 'renderPopup: setting current window to ',
-                currentChromeWindow
+                currentChromeWindow,
             );
             const nextStore = currentChromeWindow
                 ? syncStore.setCurrentWindow(currentChromeWindow)
@@ -106,20 +106,21 @@ export async function renderPopup(
                 update(storeRef, (st) => nextStore);
             } else {
                 log.debug(
-                    'doRender: nextStore.equals(savedStore) -- skipping setValue'
+                    'doRender: nextStore.equals(savedStore) -- skipping setValue',
                 );
             }
             if (
                 isPopout &&
                 currentChromeWindow &&
-                nextStore.popoutWindowId !== currentChromeWindow.id
+                nextStore.popoutWindowId !== currentChromeWindow.id &&
+                currentChromeWindow.id !== undefined
             ) {
                 log.debug(
                     'Setting popout window id to ',
-                    currentChromeWindow.id
+                    currentChromeWindow.id,
                 );
                 update(storeRef, (st) =>
-                    st.set('popoutWindowId', currentChromeWindow.id)
+                    st.set('popoutWindowId', currentChromeWindow.id!),
                 );
             }
 
@@ -128,12 +129,12 @@ export async function renderPopup(
             log.info(
                 'syncChromeWindows and update complete: ',
                 tPostSyncUpdate - tPreRender,
-                ' ms'
+                ' ms',
             );
         }
     } catch (e) {
         log.error('renderPopup: caught exception invoking function: ');
-        log.error(e.stack);
+        log.error((e as Error).stack);
         throw e;
     }
 }

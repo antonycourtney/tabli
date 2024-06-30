@@ -63,7 +63,7 @@ module.exports = {
         '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
         '^react-dnd-touch-backend$': 'react-dnd-touch-backend/dist/cjs',
         '^react-dnd-test-backend$': 'react-dnd-test-backend/dist/cjs',
-        '^react-dnd-test-utils$': 'react-dnd-test-utils/dist/cjs'
+        '^react-dnd-test-utils$': 'react-dnd-test-utils/dist/cjs',
     },
     // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
     // modulePathIgnorePatterns: [],
@@ -94,7 +94,7 @@ module.exports = {
     // Allows you to use a custom runner instead of Jest's default test runner
     // runner: "jest-runner",
     // The paths to modules that run some code to configure or set up the testing environment before each test
-    setupFiles: ['jest-webextension-mock']
+    setupFiles: ['jest-webextension-mock'],
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
     // setupFilesAfterEnv: [],
     // A list of paths to snapshot serializer modules Jest should use for snapshot testing
@@ -138,4 +138,10 @@ module.exports = {
     // watchPathIgnorePatterns: [],
     // Whether to use watchman for file crawling
     // watchman: true,
+    /*
+    transformIgnorePatterns: [
+        'node_modules/(?!(escape-string-regexp)/)',
+        'node_modules/(?!(sinon)/)',
+    ],
+    */
 };

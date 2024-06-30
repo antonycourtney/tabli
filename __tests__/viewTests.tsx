@@ -1,7 +1,10 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as fs from 'fs';
 import TabManagerState from '../src/ts/tabManagerState';
 import * as actions from '../src/ts/actions';
-import React from 'react';
+import React, { act } from 'react';
 import ReactTestUtils, {
     findRenderedDOMComponentWithClass,
 } from 'react-dom/test-utils';
@@ -20,6 +23,32 @@ import {
     getByTestId,
     waitForDomChange,
 } from '@testing-library/react';
+
+// Mock the IntersectionObserver, see https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
+
+export class IntersectionObserver {
+    root = null;
+    rootMargin = '';
+    thresholds = [];
+
+    disconnect() {
+        return null;
+    }
+
+    observe() {
+        return null;
+    }
+
+    takeRecords() {
+        return [];
+    }
+
+    unobserve() {
+        return null;
+    }
+}
+window.IntersectionObserver = IntersectionObserver;
+global.IntersectionObserver = IntersectionObserver;
 
 beforeAll(() => {
     if (window.document)
@@ -143,7 +172,7 @@ test('basic render test', () => {
     const { getByTestId } = render(
         <ClassWrapper>
             <App isPopout={false} noListener={true} />
-        </ClassWrapper>
+        </ClassWrapper>,
     );
 
     expect(getByTestId).not.toBe(null);
@@ -194,7 +223,7 @@ test('isearch test', () => {
     const { getAllByTestId, getByTestId } = render(
         <ClassWrapper>
             <App isPopout={false} noListener={true} />
-        </ClassWrapper>
+        </ClassWrapper>,
     );
 
     // console.log('isearch test: component: ', component);
@@ -211,13 +240,15 @@ test('isearch test', () => {
     // This doesn't seem to work, but ye old ReactTestUtils.Simulate does, so we'll skip:
     // fireEvent.change(searchInput, { target: searchInput });
 
-    ReactTestUtils.Simulate.change(searchInput);
+    act(() => {
+        ReactTestUtils.Simulate.change(searchInput);
+    });
 
     const filteredTabItems = getAllByTestId('tabItem-container');
 
     console.log(
         'isearch test: filtered tab items found: ',
-        filteredTabItems.length
+        filteredTabItems.length,
     );
 
     expect(filteredTabItems.length).toBe(8);
@@ -238,14 +269,14 @@ test('search and open test', async () => {
     const { getAllByTestId, getByTestId } = render(
         <ClassWrapper>
             <App isPopout={false} noListener={true} />
-        </ClassWrapper>
+        </ClassWrapper>,
     );
 
     const baseTabItems = getAllByTestId('tabItem-container');
 
     console.log(
         'search and open test: initial tab items found: ',
-        baseTabItems.length
+        baseTabItems.length,
     );
 
     expect(baseTabItems.length).toBe(14);
@@ -255,7 +286,9 @@ test('search and open test', async () => {
     const searchInput = getByTestId('searchBox') as HTMLInputElement;
     searchInput.value = 'git';
 
-    ReactTestUtils.Simulate.change(searchInput);
+    act(() => {
+        ReactTestUtils.Simulate.change(searchInput);
+    });
 
     console.log('simulated input value update applied.');
 
@@ -263,13 +296,10 @@ test('search and open test', async () => {
 
     console.log(
         'search and open test: filtered tab items found: ',
-        filteredTabItems.length
+        filteredTabItems.length,
     );
 
     expect(filteredTabItems.length).toBe(8);
-
-    // Let changes to state to propogate:
-    await waitForDomChange();
 
     /*
      * This closes the window, so let's skip it.

@@ -22,14 +22,14 @@ const onClose = async () => {
 
 const onApplyPreferences = async (
     stateRef: StateRef<TabManagerState>,
-    newPrefs: Preferences
+    newPrefs: Preferences,
 ) => {
     await actions.savePreferences(newPrefs, stateRef);
 };
 
 const onUpdatePreferences = async (
     stateRef: StateRef<TabManagerState>,
-    newPrefs: Preferences
+    newPrefs: Preferences,
 ) => {
     await onApplyPreferences(stateRef, newPrefs);
     await onClose();
@@ -45,14 +45,14 @@ const renderPrefs = async () => {
             <PreferencesModal
                 onClose={onClose}
                 initialPrefs={st.preferences}
-                onApply={prefs => onApplyPreferences(stateRef, prefs)}
-                onSubmit={prefs => onUpdatePreferences(stateRef, prefs)}
+                onApply={(prefs) => onApplyPreferences(stateRef, prefs)}
+                onSubmit={(prefs) => onUpdatePreferences(stateRef, prefs)}
             />
         );
         ReactDOM.render(modal, parentNode);
     } catch (e) {
         log.error('caught exception rendering preferences page:');
-        log.error(e.stack);
+        log.error((e as Error).stack);
         throw e;
     }
 };

@@ -9,7 +9,7 @@ import MenuButton from './MenuButton';
 import * as svg from './svg';
 import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
-import { useRef, useContext, Ref, MutableRefObject } from 'react';
+import { useRef, useContext, Ref, MutableRefObject, ReactNode } from 'react';
 import { mkUrl } from '../utils';
 
 const toolbarOuterContainerStyle = css`
@@ -40,8 +40,12 @@ const growRightStyle = css`
     flex-grow: 1;
 `;
 
+interface GrowRightProps {
+    children: ReactNode;
+}
+
 // A container that will grow to the right:
-const GrowRight: React.FunctionComponent = ({ children }) => (
+const GrowRight: React.FunctionComponent<GrowRightProps> = ({ children }) => (
     <div className={growRightStyle}>{children}</div>
 );
 
@@ -57,8 +61,12 @@ const centeredStyle = css`
     flex-grow: 1;
 `;
 
+interface CenteredProps {
+    children: ReactNode;
+}
+
 // A flex container with 'justify-content: center':
-const Centered: React.FunctionComponent = ({ children }) => (
+const Centered: React.FunctionComponent<CenteredProps> = ({ children }) => (
     <div className={centeredStyle}>{children}</div>
 );
 
@@ -205,7 +213,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     };
 
     const handlePopoutClick = (
-        e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+        e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     ) => {
         if (isPopout) {
             actions.hidePopout(stateRef);

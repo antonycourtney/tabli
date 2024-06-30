@@ -23,7 +23,7 @@ type SearchOpts = {
 const defaultSearchOpts: SearchOpts = {
     matchUrl: true,
     matchTitle: true,
-    openOnly: false
+    openOnly: false,
 };
 
 interface FilteredTabItemProps {
@@ -35,14 +35,14 @@ interface FilteredTabItemProps {
 const defaultFilteredTabItemProps: FilteredTabItemProps = {
     tabItem: new TW.TabItem(),
     urlMatches: null,
-    titleMatches: null
+    titleMatches: null,
 };
 
 /**
  * A TabItem augmented with search results
  */
 export class FilteredTabItem extends Immutable.Record(
-    defaultFilteredTabItemProps
+    defaultFilteredTabItemProps,
 ) {}
 
 /**
@@ -53,7 +53,7 @@ export class FilteredTabItem extends Immutable.Record(
 export function matchTabItem(
     tabItem: TW.TabItem,
     searchExp: SearchSpec,
-    options: SearchOpts
+    options: SearchOpts,
 ): FilteredTabItem | null {
     let urlMatches = null;
     if (options.openOnly && tabItem.open === false) {
@@ -85,15 +85,15 @@ interface FilteredTabWindowProps {
 
 const defaultFilteredTabWindowProps: FilteredTabWindowProps = {
     tabWindow: new TW.TabWindow(),
-    titleMatches: [],
-    itemMatches: Immutable.List<FilteredTabItem>() // matching tab items
+    titleMatches: null,
+    itemMatches: Immutable.List<FilteredTabItem>(), // matching tab items
 };
 
 /**
  * A TabWindow augmented with search results
  */
 export class FilteredTabWindow extends Immutable.Record(
-    defaultFilteredTabWindowProps
+    defaultFilteredTabWindowProps,
 ) {}
 
 /**
@@ -103,14 +103,14 @@ export class FilteredTabWindow extends Immutable.Record(
 export function matchTabWindow(
     tabWindow: TW.TabWindow,
     searchExp: SearchSpec,
-    options: SearchOpts = defaultSearchOpts
+    options: SearchOpts = defaultSearchOpts,
 ): FilteredTabWindow | null {
     if (searchExp === null) {
         return null;
     }
     const itemMatches = tabWindow.tabItems
-        .map(ti => matchTabItem(ti, searchExp, options))
-        .filter(fti => fti !== null) as Immutable.List<FilteredTabItem>;
+        .map((ti) => matchTabItem(ti, searchExp, options))
+        .filter((fti) => fti !== null) as Immutable.List<FilteredTabItem>;
     let titleMatches = null;
     if (options.matchTitle) {
         titleMatches = tabWindow.title.match(searchExp);
@@ -130,25 +130,28 @@ export function matchTabWindow(
 export function filterTabWindows(
     tabWindows: Array<TW.TabWindow>,
     searchExp: SearchSpec,
-    options: SearchOpts = defaultSearchOpts
+    options: SearchOpts = defaultSearchOpts,
 ): FilteredTabWindow[] {
     var res: (FilteredTabWindow | null)[];
     if (searchExp === null) {
-        res = _.map(tabWindows, tw => new FilteredTabWindow({ tabWindow: tw }));
-    } else {
-        const mappedWindows = _.map(tabWindows, tw =>
-            matchTabWindow(tw, searchExp, options)
+        res = _.map(
+            tabWindows,
+            (tw) => new FilteredTabWindow({ tabWindow: tw }),
         );
-        res = _.filter(mappedWindows, fw => fw !== null);
+    } else {
+        const mappedWindows = _.map(tabWindows, (tw) =>
+            matchTabWindow(tw, searchExp, options),
+        );
+        res = _.filter(mappedWindows, (fw) => fw !== null);
     }
 
     // And restrict to windows with "normal" windowType:
     res = _.filter(
         res,
-        fw =>
+        (fw) =>
             fw !== null &&
             fw.tabWindow !== null &&
-            (!fw.tabWindow.open || fw.tabWindow.windowType === 'normal')
+            (!fw.tabWindow.open || fw.tabWindow.windowType === 'normal'),
     );
 
     return res as FilteredTabWindow[];
