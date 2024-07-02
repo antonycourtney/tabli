@@ -5,7 +5,7 @@ import log from 'loglevel';
 import defaultsDeep from 'lodash/defaultsDeep';
 import * as Immutable from 'immutable';
 const _ = {
-    defaultsDeep
+    defaultsDeep,
 };
 type VersionedObject = {
     version: number;
@@ -28,7 +28,7 @@ const defaultPreferencesProps: PreferencesProps = {
     revertOnOpen: true,
     theme: 'light',
     layout: 'normal',
-    fontScaleFactor: 0.75
+    fontScaleFactor: 0.75,
 };
 
 export class Preferences extends Immutable.Record(defaultPreferencesProps) {
@@ -47,9 +47,14 @@ export class Preferences extends Immutable.Record(defaultPreferencesProps) {
         const jsPrefs = this.toJS();
         const serPrefs: VersionedObject = {
             version: PREFS_VERSION,
-            contents: jsPrefs
+            contents: jsPrefs,
         };
         return JSON.stringify(serPrefs);
+    }
+
+    // deserialize a JS representation from service worker:
+    static deserializeJS(jsPrefs: any): Preferences {
+        return new Preferences(jsPrefs);
     }
 }
 export const defaultPrefsJS = new Preferences().toJS();

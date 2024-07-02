@@ -882,17 +882,15 @@ export const savePreferences = async (
     return awaitableUpdate_(storeRef, (st) => st.set('preferences', userPrefs));
 };
 
+let reloadHandler: (() => void) | null = null;
+
 export const setReloadHandler = (reloadFn: () => void) => {
-    const bgPage = chrome.extension.getBackgroundPage();
-    (bgPage as any).reloadHandler = reloadFn;
+    reloadHandler = reloadFn;
+    // TODO: register an onMessage handler to handle an 'onReload' message
 };
 
 export const reload = async () => {
-    const bgPage = chrome.extension.getBackgroundPage();
-    const reloadHandler = (bgPage as any).reloadHandler;
-    if (reloadHandler) {
-        reloadHandler();
-    }
+    // TODO: send a 'reload' message to background service worker
 };
 
 export const tidyWindows = async (stateRef: TMSRef) => {

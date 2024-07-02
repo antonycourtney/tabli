@@ -1,25 +1,25 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "Tabli",
     "description": "A simple, powerful tab manager",
     "version": "2.1.2",
-    "browser_action": {
+    "action": {
         "default_icon": "images/glyphicons_154_more_windows.png",
         "default_popup": "popup.html",
         "default_title": "Tabli"
     },
     "background": {
-        "scripts": ["js/common.bundle.js", "js/bgHelper.bundle.js"],
-        "persistent": true
+        "service_worker": "js/service-worker.js"
     },
-    "permissions": ["storage", "tabs", "bookmarks", "chrome://favicon/*"],
+    "permissions": ["storage", "tabs", "bookmarks", "favicon"],
     "icons": {
         "16": "images/glyphicons_154_more_windows.png",
         "48": "images/Multimedia-12-48.png",
         "128": "images/Multimedia-12-128.png"
     },
+
     "commands": {
-        "_execute_browser_action": {
+        "_execute_action": {
             "suggested_key": {
                 "default": "Ctrl+Period",
                 "mac": "MacCtrl+Period"
@@ -33,5 +33,12 @@
                 "mac": "MacCtrl+Comma"
             }
         }
-    }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["_favicon/*"],
+            "matches": ["<all_urls>"],
+            "extension_ids": ["*"]
+        }
+    ]
 }

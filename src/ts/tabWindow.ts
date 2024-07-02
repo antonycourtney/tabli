@@ -15,15 +15,20 @@ const defaultSavedTabStateProps: SavedTabStateProps = {
     bookmarkId: '',
     bookmarkIndex: 0, // position in bookmark folder
     title: '',
-    url: ''
+    url: '',
 };
 
 /*
  * Tab state that is persisted as a bookmark
  */
-export class SavedTabState extends Immutable.Record(
-    defaultSavedTabStateProps
-) {}
+export class SavedTabState extends Immutable.Record(defaultSavedTabStateProps) {
+    static fromJS(js: any): SavedTabState | null {
+        if (js === null) {
+            return null;
+        }
+        return new SavedTabState(js);
+    }
+}
 
 export interface OpenTabStateProps {
     url: string;
@@ -52,13 +57,20 @@ const defaultOpenTabStateProps: OpenTabStateProps = {
     pinned: false,
     isSuspended: false,
     openerTabId: undefined,
-    openerUrl: undefined
+    openerUrl: undefined,
 };
 
 /*
  * Tab state associated with an open browser tab
  */
-export class OpenTabState extends Immutable.Record(defaultOpenTabStateProps) {}
+export class OpenTabState extends Immutable.Record(defaultOpenTabStateProps) {
+    static fromJS(js: any): OpenTabState | null {
+        if (js === null) {
+            return null;
+        }
+        return new OpenTabState(js);
+    }
+}
 
 interface TabItemProps {
     saved: boolean;
@@ -72,7 +84,7 @@ const defaultTabItemProps: TabItemProps = {
     savedState: null, // SavedTabState iff saved
 
     open: false, // Note: Saved tabs may be closed even when containing window is open
-    openState: null // OpenTabState iff open
+    openState: null, // OpenTabState iff open
 };
 
 // Use a counter to generate unique keys for tab items on-demand...
@@ -165,6 +177,18 @@ export class TabItem extends Immutable.Record(defaultTabItemProps) {
         }
         throw new Error('Unexpected access of openState on non-open tab');
     }
+
+    static fromJS(js: any): TabItem {
+        const savedState = SavedTabState.fromJS(js.savedState);
+        const openState = OpenTabState.fromJS(js.openState);
+
+        return new TabItem({
+            saved: js.saved,
+            savedState,
+            open: js.open,
+            openState,
+        });
+    }
 }
 
 /*
@@ -219,7 +243,7 @@ const defaultTabWindowProps: TabWindowProps = {
     // one window component per window right now, we want to be able to toggle
     // this state via a keyboard handler much higher in the hierarchy,
     // and cost to factor out view state would be high.
-    expanded: null // tri-state: null, true or false
+    expanded: null, // tri-state: null, true or false
 };
 
 export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
@@ -240,17 +264,17 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
         }
 
         const activeTab = this.tabItems.find(
-            t => t.open && t.openState!.active
+            (t) => t.open && t.openState!.active,
         );
 
         if (!activeTab) {
             // shouldn't happen!
             log.debug(
                 'TabWindow.get title(): No active tab found: ',
-                this.toJS()
+                this.toJS(),
             );
 
-            var openTabItem = this.tabItems.find(t => t.open);
+            var openTabItem = this.tabItems.find((t) => t.open);
             if (!openTabItem) {
                 return '';
             }
@@ -281,7 +305,7 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
     }
 
     get openTabCount(): number {
-        return this.tabItems.count(ti => ti.open);
+        return this.tabItems.count((ti) => ti.open);
     }
 
     /*
@@ -289,10 +313,10 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
      */
     findChromeTabId(tabId: number): [number, TabItem] | null {
         const ret = this.tabItems.findEntry(
-            ti =>
+            (ti) =>
                 !!ti.open &&
                 ti.openState !== null &&
-                ti.openState.openTabId === tabId
+                ti.openState.openTabId === tabId,
         );
         return ret ? ret : null;
     }
@@ -301,22 +325,22 @@ export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
      */
     findChromeBookmarkId(bookmarkId: string): [number, TabItem] | null {
         const ret = this.tabItems.findEntry(
-            ti =>
+            (ti) =>
                 !!ti.saved &&
                 ti.savedState !== null &&
-                ti.savedState.bookmarkId === bookmarkId
+                ti.savedState.bookmarkId === bookmarkId,
         );
         return ret ? ret : null;
     }
 
     findTabByKey(key: string): [number, TabItem] | null {
-        const ret = this.tabItems.findEntry(ti => ti.key === key);
+        const ret = this.tabItems.findEntry((ti) => ti.key === key);
         return ret ? ret : null;
     }
 
     getActiveTabId(): number | null {
         const activeTab = this.tabItems.find(
-            t => t.open && t.openState!.active
+            (t) => t.open && t.openState!.active,
         );
         const tabId = activeTab ? activeTab.openState!.openTabId : null;
         return tabId;
@@ -368,5 +392,25 @@ Title                                  | URL
             return expandAll && this.open;
         }
         return this.expanded;
+    }
+
+    static fromJS(js: any): TabWindow {
+        const tabItems = Immutable.List<TabItem>(
+            js.tabItems.map(TabItem.fromJS),
+        );
+        return new TabWindow({
+            saved: js.saved,
+            savedTitle: js.savedTitle,
+            savedFolderId: js.savedFolderId,
+            open: js.open,
+            openWindowId: js.openWindowId,
+            windowType: js.windowType,
+            width: js.width,
+            height: js.height,
+            tabItems,
+            snapshot: js.snapshot,
+            chromeSessionId: js.chromeSessionId,
+            expanded: js.expanded,
+        });
     }
 }

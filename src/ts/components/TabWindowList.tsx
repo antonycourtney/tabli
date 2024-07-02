@@ -45,7 +45,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     focusedTabWindowRef,
     expandAll,
     showRelNotes,
-    currentWindowId
+    currentWindowId,
 }) => {
     /* acknowledge release notes (and hide them) */
     const ackRelNotes = () => {
@@ -64,6 +64,12 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     var focusedWindowElem: JSX.Element[] = [];
     var openWindows: JSX.Element[] = [];
     var savedWindows: JSX.Element[] = [];
+
+    console.log(
+        '*** TabWindowList: filteredWindows: ',
+        filteredWindows.length,
+        filteredWindows,
+    );
 
     for (var i = 0; i < filteredWindows.length; i++) {
         var filteredTabWindow = filteredWindows[i];

@@ -193,6 +193,21 @@ function setupConnectionListener(stateRef: StateRef<TabManagerState>) {
         });
     });
 }
+
+function setupMessageListener(stateRef: StateRef<TabManagerState>) {
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+        chromeEventLog.debug('Chrome Event: onMessage: ', msg);
+        const { type } = msg;
+
+        if (type === 'getTabliState') {
+            const st = mutableGet(stateRef);
+            const serSt = st.toJS();
+            chromeEventLog.debug('sending state: ', serSt);
+            sendResponse(serSt);
+        }
+    });
+}
+
 /**
  * Download the specified object as JSON (for testing)
  */
@@ -1008,6 +1023,7 @@ async function cleanOldPopouts(stateRef: StateRef<TabManagerState>) {
 
 async function main() {
     try {
+        console.log('*** bgHelper started ***');
         utils.setLogLevel(log);
         utils.setLogLevel(chromeEventLog);
         // Can also do:
@@ -1019,16 +1035,16 @@ async function main() {
         const attachBMStore = await reattachWindows(rawBMStore);
         const bmStore = await loadSnapState(attachBMStore);
         const stateRef = mkRef(bmStore);
-        (window as any).stateRef = stateRef;
-        (window as any).isExtension = true;
         await actions.loadPreferences(stateRef);
         await actions.syncChromeWindows(stateRef);
         log.debug('initial sync of chrome windows complete.');
         log.debug('before sync: stateRef: ', stateRef);
-        const syncedStore = await actions.syncCurrent(stateRef); // dumpAll(syncedStore)
+        const syncedStore = await actions.syncCurrent(stateRef);
+        // dumpAll(syncedStore)
         // dumpChromeWindows()
 
         setupConnectionListener(stateRef);
+        setupMessageListener(stateRef);
         registerEventHandlers(stateRef); // In case of restart: hide any previously open popout that
         // might be hanging around...
         // log.debug('store before hiding popout: ', syncedStore.toJS())

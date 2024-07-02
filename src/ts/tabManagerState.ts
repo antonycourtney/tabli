@@ -384,6 +384,16 @@ export default class TabManagerState extends Immutable.Record(
             .toIndexedSeq()
             .filter((w) => !w.open)
             .toArray();
+        console.log(
+            '*** getAll: openWindows: ',
+            openWindows.length,
+            openWindows,
+        );
+        console.log(
+            '*** getAll: closedSavedWindows: ',
+            closedSavedWindows.length,
+            closedSavedWindows,
+        );
         return openWindows.concat(closedSavedWindows);
     }
 
@@ -519,5 +529,40 @@ export default class TabManagerState extends Immutable.Record(
         } else {
             return [];
         }
+    }
+
+    static deserialize(snapshot: any): TabManagerState {
+        const openWindows = Object.values(snapshot.windowIdMap).map(
+            TabWindow.fromJS,
+        );
+        const bookmarkWindows = Object.values(snapshot.bookmarkIdMap).map(
+            TabWindow.fromJS,
+        );
+        const preferences = prefs.Preferences.deserializeJS(
+            snapshot.preferences,
+        );
+
+        const {
+            folderId,
+            archiveFolderId,
+            currentWindowId,
+            popoutWindowId,
+            showRelNotes,
+            expandAll,
+        } = snapshot;
+
+        const st0 = new TabManagerState({
+            preferences,
+            folderId,
+            archiveFolderId,
+            currentWindowId,
+            popoutWindowId,
+            showRelNotes,
+            expandAll,
+        });
+        const st1 = st0.registerTabWindows(openWindows);
+        const st2 = st1.registerTabWindows(bookmarkWindows);
+
+        return st2;
     }
 }

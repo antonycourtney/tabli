@@ -2,6 +2,7 @@
  * common rendering entry point for popup and popout
  */
 import * as log from 'loglevel';
+import chromep from 'chrome-promise';
 import * as utils from './utils';
 import * as React from 'react';
 import {} from 'react-dom/experimental';
@@ -70,7 +71,13 @@ export async function renderPopup(
         // And sync our window state, which may update the UI...
         if (doSync) {
             const syncStore = await actions.syncChromeWindows(storeRef);
-            log.debug('postLoadRender: window sync complete: ', syncStore);
+            log.debug(
+                '*** renderPopup: after window sync, open windows: ',
+                syncStore.windowIdMap.size,
+            );
+            const m = syncStore.windowIdMap;
+            const syncStoreJS = syncStore.toJS() as any;
+            log.debug('*** renderPopup: window sync complete: ', syncStoreJS);
             // And set current focused window:
             log.debug(
                 'renderPopup: setting current window to ',
@@ -116,10 +123,31 @@ export async function renderPopup(
     }
 }
 
-export function getFocusedAndRender(isPopout: boolean, doSync: boolean = true) {
+async function fetchSnapshot(): Promise<TabManagerState> {
+    const storeStateSnap = await chrome.runtime.sendMessage({
+        type: 'getTabliState',
+    });
+    console.log('*** fetchSnapshot: storeStateSnap: ', storeStateSnap);
+
+    const storeState = TabManagerState.deserialize(storeStateSnap);
+
+    console.log('*** fetchSnapshot: storeState: ', storeState.toJS());
+    console.log(
+        '*** fetchSnapshot: open window count: ',
+        storeState.windowIdMap.size,
+    );
+    const m = storeState.windowIdMap;
+
+    return storeState;
+}
+
+export async function getFocusedAndRender(
+    isPopout: boolean,
+    doSync: boolean = true,
+) {
     log.setLevel('debug');
-    var bgPage = chrome.extension.getBackgroundPage();
-    var storeRef = (bgPage as any).stateRef;
+    const storeState = await fetchSnapshot();
+    const storeRef = oneref.mkRef(storeState);
     (window as any)._tabliIsPopout = isPopout;
     chrome.windows.getCurrent({}, (currentChromeWindow) => {
         renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
