@@ -39,7 +39,7 @@ const svgContainerStyle = css`
 `;
 const emptyFavIcon = <div className={svgContainerStyle}>{svg.page}</div>;
 
-export const mkFavIcon = (tab: TabItem) => {
+export const mkFavIcon = (tab: TabItem): JSX.Element => {
     const favIconStyle = tab.open ? favIconOpenStyle : favIconClosedStyle;
     let fiSrc: string = '';
 
@@ -67,7 +67,12 @@ export const mkFavIcon = (tab: TabItem) => {
         // just yields a placeholder FavIcon, while chrome://favicon
         // seems to be more reliable...
         // fiSrc = httpFavIconUrl(tab.url);
-        fiSrc = 'chrome://favicon/size/16/' + utils.baseURL(tab.url);
+
+        // 3Jul24: New URL format for Manifest V3:
+        // fiSrc = 'chrome://favicon/size/16/' + utils.baseURL(tab.url);
+        const extensionId = chrome.runtime.id;
+        const tabUrl = utils.baseURL(tab.url);
+        fiSrc = `chrome-extension://${extensionId}/_favicon/?pageUrl=${tabUrl}&size=16`;
     }
 
     // Skip the chrome FAVICONs; they just throw when accessed.

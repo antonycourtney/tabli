@@ -7,7 +7,7 @@ export const mkUrl = (relPath: string) =>
     'url("' + BC.BROWSER_PATH_PREFIX + relPath + '")';
 
 const _ = {
-    findLastIndex
+    findLastIndex,
 };
 
 /**
@@ -56,7 +56,7 @@ export function windowCmp(currentWindowId: number) {
         var tA = tabWindowA.title;
         var tB = tabWindowB.title;
         const ret = tA.localeCompare(tB, navigator.language, {
-            sensitivity: 'base'
+            sensitivity: 'base',
         });
         return ret;
     };
@@ -128,7 +128,7 @@ export function parseURL(url: string): ParsedURL {
         // eslint-disable-line
         relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [null, ''])[1],
         // eslint-disable-line
-        segments: a.pathname.replace(/^\//, '').split('/') // eslint-disable-line
+        segments: a.pathname.replace(/^\//, '').split('/'), // eslint-disable-line
     };
 }
 
@@ -259,12 +259,12 @@ let cachedIsExtension: boolean | undefined = undefined;
 
 export const inExtension = (): boolean => {
     if (cachedIsExtension === undefined) {
-        const app = (chrome as any).app;
-        if (app === undefined) {
+        const runtime = (chrome as any).runtime;
+        if (runtime === undefined) {
             return false; // should only happen when testing under jest
         }
-        const details = app.getDetails();
-        cachedIsExtension = details !== null;
+        const { id } = runtime;
+        cachedIsExtension = id !== null;
     }
     return cachedIsExtension;
 };
@@ -273,7 +273,7 @@ type MbIndex = number | undefined;
 
 export const getTabIndices = (tabWindow: TabWindow): [MbIndex, MbIndex][] => {
     const indices = tabWindow.tabItems
-        .map(ti => {
+        .map((ti) => {
             const openIndex = ti.open ? ti.openState!.openTabIndex : undefined;
             const savedIndex = ti.saved
                 ? ti.savedState!.bookmarkIndex
@@ -287,7 +287,7 @@ export const getTabIndices = (tabWindow: TabWindow): [MbIndex, MbIndex][] => {
 // find the right open tab index for use in chrome.tabs.move:
 export const getOpenTabIndex = (
     indices: [MbIndex, MbIndex][],
-    dropIndex: number
+    dropIndex: number,
 ): number => {
     let entry = indices[dropIndex];
     if (entry && entry[0] !== undefined) {
@@ -296,8 +296,8 @@ export const getOpenTabIndex = (
     }
     let lastOpenIndex = _.findLastIndex(
         indices,
-        p => p[0] !== undefined,
-        dropIndex
+        (p) => p[0] !== undefined,
+        dropIndex,
     );
     let lastOpenEntry = indices[lastOpenIndex];
     return lastOpenEntry[0]! + 1;
@@ -311,9 +311,9 @@ export const getOpenTabIndex = (
 // in tab index order...
 export const getSavedTabIndex = (
     indices: [MbIndex, MbIndex][],
-    dropIndex: number
+    dropIndex: number,
 ): number | undefined => {
-    let lastOpenIndex = _.findLastIndex(indices, p => p[0] !== undefined);
+    let lastOpenIndex = _.findLastIndex(indices, (p) => p[0] !== undefined);
     if (dropIndex > lastOpenIndex && dropIndex < indices.length) {
         const entry = indices[dropIndex];
         return entry[1];
