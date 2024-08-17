@@ -569,6 +569,7 @@ export async function showPreferences() {
 
 export const showPopout = (stateRef: StateRef<TabManagerState>) => {
     const popoutId = mutableGet(stateRef).popoutWindowId;
+    console.log('*** showPopout: popoutId: ', popoutId);
     if (popoutId !== chrome.windows.WINDOW_ID_NONE) {
         chromep.windows.update(popoutId, { focused: true });
     } else {

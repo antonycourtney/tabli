@@ -5,7 +5,6 @@ import * as log from 'loglevel';
 import chromep from 'chrome-promise';
 import * as utils from './utils';
 import * as React from 'react';
-import {} from 'react-dom/experimental';
 import { createRoot } from 'react-dom/client';
 import { PopupBaseProps, Popup } from './components/Popup';
 import TabManagerState from './tabManagerState';
@@ -13,19 +12,8 @@ import * as actions from './actions';
 import * as oneref from 'oneref';
 import { update, refContainer } from 'oneref';
 import { utimesSync } from 'fs';
-
-/**
- * send message to BGhelper with listener id.
- * This allows the BGhelper to de-registered the listener
- * when the popout or popup goes away and the connection breaks.
- */
-function sendHelperMessage(msg: any) {
-    var port = chrome.runtime.connect({ name: 'renderedWindow' });
-    port.postMessage(msg);
-    port.onMessage.addListener((response: any) => {
-        log.debug('Got response message: ', response);
-    });
-}
+import { init } from './savedState';
+import { initState } from './state';
 
 // full state update no more than 5 times a second:
 const DEBOUNCE_WAIT = 200;
@@ -54,9 +42,9 @@ export async function renderPopup(
             DEBOUNCE_WAIT,
         );
         log.debug('refContainer listener id: ', listenerId);
-        if (utils.inExtension()) {
-            sendHelperMessage({ listenerId });
-        }
+        // TODO: We may want to record this listenerId, and clean it up on a reload
+        // (used to be achieved by sending a message to bgHelper)
+
         createRoot(parentNode!).render(
             <App isPopout={isPopout} noListener={renderTest} />,
         );
@@ -146,8 +134,9 @@ export async function getFocusedAndRender(
     doSync: boolean = true,
 ) {
     log.setLevel('debug');
-    const storeState = await fetchSnapshot();
-    const storeRef = oneref.mkRef(storeState);
+    // const storeState = await fetchSnapshot();
+    // const storeRef = oneref.mkRef(storeState);
+    const storeRef = await initState();
     (window as any)._tabliIsPopout = isPopout;
     chrome.windows.getCurrent({}, (currentChromeWindow) => {
         renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
