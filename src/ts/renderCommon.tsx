@@ -111,31 +111,11 @@ export async function renderPopup(
     }
 }
 
-async function fetchSnapshot(): Promise<TabManagerState> {
-    const storeStateSnap = await chrome.runtime.sendMessage({
-        type: 'getTabliState',
-    });
-    console.log('*** fetchSnapshot: storeStateSnap: ', storeStateSnap);
-
-    const storeState = TabManagerState.deserialize(storeStateSnap);
-
-    console.log('*** fetchSnapshot: storeState: ', storeState.toJS());
-    console.log(
-        '*** fetchSnapshot: open window count: ',
-        storeState.windowIdMap.size,
-    );
-    const m = storeState.windowIdMap;
-
-    return storeState;
-}
-
 export async function getFocusedAndRender(
     isPopout: boolean,
     doSync: boolean = true,
 ) {
     log.setLevel('debug');
-    // const storeState = await fetchSnapshot();
-    // const storeRef = oneref.mkRef(storeState);
     const storeRef = await initState();
     (window as any)._tabliIsPopout = isPopout;
     chrome.windows.getCurrent({}, (currentChromeWindow) => {

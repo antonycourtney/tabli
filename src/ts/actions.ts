@@ -18,8 +18,6 @@ const chromep = ChromePromise;
 
 type TabId = number;
 
-const USER_PREFS_KEY = 'UserPreferences';
-
 const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
 const TABLI_REVIEW_URL =
@@ -861,9 +859,9 @@ export function showRelNotes(storeRef: TMSRef) {
 }
 
 export async function readPreferences(): Promise<prefs.Preferences> {
-    const items = await chromep.storage.local.get(USER_PREFS_KEY);
+    const items = await chromep.storage.local.get(prefs.USER_PREFS_KEY);
     log.debug('readPreferences: read: ', items);
-    const prefsStr = items[USER_PREFS_KEY];
+    const prefsStr = items[prefs.USER_PREFS_KEY];
     return prefs.Preferences.deserialize(prefsStr);
 }
 
@@ -880,7 +878,7 @@ export const savePreferences = async (
     storeRef: TMSRef,
 ): Promise<TabManagerState> => {
     let saveObj: any = {};
-    saveObj[USER_PREFS_KEY] = userPrefs.serialize();
+    saveObj[prefs.USER_PREFS_KEY] = userPrefs.serialize();
     await chromep.storage.local.set(saveObj);
     log.debug('wrote preferences to local storage: ', saveObj);
     // and update application state:

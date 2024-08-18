@@ -27,6 +27,7 @@ import {
 
 import ChromePromise from 'chrome-promise/chrome-promise';
 import injectGlobal from '@emotion/css/types';
+import { Preferences, USER_PREFS_KEY } from './preferences';
 const _ = {
     has,
     fromPairs,
@@ -596,6 +597,42 @@ const onBookmarkMoved = (
     }
 };
 
+/*
+ * examine change event data for storage, and return a stored Preferences update if found
+ */
+function prefsStorageChange(
+    changes: any,
+    namespace: string,
+): Preferences | null {
+    if (namespace === 'local') {
+        const maybePrefsStr = changes[USER_PREFS_KEY];
+        if (!maybePrefsStr) {
+            return null;
+        }
+        const prefsStr = maybePrefsStr.newValue;
+        if (!prefsStr) {
+            return null;
+        }
+        return Preferences.deserialize(prefsStr);
+    }
+
+    return null;
+}
+
+async function onStorageChanged(
+    stateRef: StateRef<TabManagerState>,
+    changes: any,
+    namespace: string,
+) {
+    const maybePrefs = prefsStorageChange(changes, namespace);
+    if (maybePrefs != null) {
+        log.debug('onStorageChanged: prefs changed: ', maybePrefs.toJS());
+        update(stateRef, (state) => {
+            return state.set('preferences', maybePrefs);
+        });
+    }
+}
+
 function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
     // window events:
     chrome.windows.onRemoved.addListener((windowId) => {
@@ -756,6 +793,9 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
     );
     chrome.bookmarks.onChanged.addListener((id, changeInfo) =>
         onBookmarkChanged(stateRef, id, changeInfo),
+    );
+    chrome.storage.onChanged.addListener((changes, namespace) =>
+        onStorageChanged(stateRef, changes, namespace),
     );
 }
 
@@ -1065,7 +1105,7 @@ export async function readSnapStateStr(): Promise<string | null> {
     return snapStateStr;
 }
 
-async function loadSnapState(): Promise<StateRef<TabManagerState> | null> {
+export async function loadSnapState(): Promise<StateRef<TabManagerState> | null> {
     log.debug(
         'loadSnapState: attempting to load state snapshot from session storage...:',
     );
@@ -1097,10 +1137,11 @@ export async function initState(): Promise<StateRef<TabManagerState>> {
 
     registerEventHandlers(stateRef);
 
+    // (This is something we had in place from Manifest V2 era; doesn't seem
+    // to be necessary anymore, but leaving commented out for now, just in case
+    // I'm mistaken)
     // In case of restart: hide any previously open popout that
     // might be hanging around...
-    // log.debug('store before hiding popout: ', syncedStore.toJS())
-
     /* cleanOldPopouts(stateRef); */
 
     chrome.commands.onCommand.addListener((command) => {

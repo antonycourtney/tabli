@@ -12,6 +12,7 @@ type VersionedObject = {
     contents: any;
 };
 export const PREFS_VERSION = 6;
+export const USER_PREFS_KEY = 'UserPreferences';
 
 interface PreferencesProps {
     popoutOnStart: boolean; // show popout on startup?

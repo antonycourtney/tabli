@@ -9,6 +9,8 @@ import ChromePromise from 'chrome-promise';
 import { StateRef, mutableGet } from 'oneref';
 import TabManagerState from './tabManagerState';
 import { Preferences } from './preferences';
+import { loadSnapState } from './state';
+import { createRoot } from 'react-dom/client';
 const chromep = ChromePromise;
 
 const onClose = async () => {
@@ -37,8 +39,14 @@ const onUpdatePreferences = async (
 
 const renderPrefs = async () => {
     try {
-        const bgPage = chrome.extension.getBackgroundPage();
-        const stateRef = (bgPage as any).stateRef as StateRef<TabManagerState>;
+        const maybeStateRef = await loadSnapState();
+        if (!maybeStateRef) {
+            log.error(
+                'prefsPage: could not load snap state from session storage -- exiting',
+            );
+            return;
+        }
+        const stateRef = maybeStateRef as StateRef<TabManagerState>;
         const st = mutableGet(stateRef);
         const parentNode = document.getElementById('prefsContent');
         const modal = (
@@ -49,7 +57,7 @@ const renderPrefs = async () => {
                 onSubmit={(prefs) => onUpdatePreferences(stateRef, prefs)}
             />
         );
-        ReactDOM.render(modal, parentNode);
+        createRoot(parentNode!).render(modal);
     } catch (e) {
         log.error('caught exception rendering preferences page:');
         log.error((e as Error).stack);
