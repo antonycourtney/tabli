@@ -24,6 +24,7 @@ import {
     awaitableUpdate,
     mutableGet,
 } from 'oneref';
+
 import ChromePromise from 'chrome-promise/chrome-promise';
 import injectGlobal from '@emotion/css/types';
 const _ = {
@@ -944,25 +945,38 @@ async function maybeAttachNewWindow(
  * load window state for saved windows from local storage and attach to
  * any closed, saved windows
  */
-
-async function loadSnapState(bmStore: TabManagerState) {
+export async function readSavedState(): Promise<{ [id: string]: any } | null> {
     const items = await chromep.storage.local.get('savedWindowState');
 
     if (!items) {
-        return bmStore;
+        log.debug(
+            'readSavedState: no saved window state found in local storage',
+        );
+        return null;
     }
 
     const savedWindowStateStr = items.savedWindowState;
 
     if (!savedWindowStateStr) {
         log.debug(
-            'loadSnapState: no saved window state found in local storage',
+            'readSavedState: no saved window state found in local storage',
         );
-        return bmStore;
+        return null;
     }
 
     const savedWindowState = JSON.parse(savedWindowStateStr);
-    log.debug('loadSnapState: read: ', savedWindowState);
+    return savedWindowState;
+}
+
+async function loadSavedState(
+    bmStore: TabManagerState,
+): Promise<TabManagerState> {
+    const savedWindowState = await readSavedState();
+    if (!savedWindowState) {
+        return bmStore;
+    }
+
+    log.debug('loadSavedState: read from local storage: ', savedWindowState);
     const closedWindowsMap = bmStore.bookmarkIdMap.filter(
         (bmWin) => !bmWin.open,
     );
@@ -988,7 +1002,11 @@ async function loadSnapState(bmStore: TabManagerState) {
     }
 
     const keyCount = Object.keys(savedOpenTabsMap).length;
-    log.debug('read window snapshot state for ', keyCount, ' saved windows');
+    log.debug(
+        'loadSavedState: read saved window state for ',
+        keyCount,
+        ' saved windows',
+    );
     const updBookmarkMap = bmStore.bookmarkIdMap.map((tabWindow, bmId) => {
         const snapTabs = savedOpenTabsMap[bmId];
 
@@ -1006,7 +1024,7 @@ async function loadSnapState(bmStore: TabManagerState) {
         return tabWindow.set('tabItems', mergedTabs).set('snapshot', true);
     });
     const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap);
-    log.debug('merged window state snapshot from local storage');
+    log.debug('merged window state from local storage');
     return nextStore;
 }
 
@@ -1027,8 +1045,48 @@ async function cleanOldPopouts(stateRef: StateRef<TabManagerState>) {
 async function initNoSnapshot(): Promise<StateRef<TabManagerState>> {
     const rawBMStore = await initWinStore();
     const attachBMStore = await reattachWindows(rawBMStore);
-    const bmStore = await loadSnapState(attachBMStore);
+    const bmStore = await loadSavedState(attachBMStore);
     const stateRef = mkRef(bmStore);
+    return stateRef;
+
+    return stateRef;
+}
+
+export async function readSnapStateStr(): Promise<string | null> {
+    const items = await chrome.storage.session.get('stateSnapshot');
+    log.debug('loadSnapState: items: ', items);
+    if (!items) {
+        return null;
+    }
+    const snapStateStr = items.stateSnapshot;
+    if (!snapStateStr) {
+        return null;
+    }
+    return snapStateStr;
+}
+
+async function loadSnapState(): Promise<StateRef<TabManagerState> | null> {
+    log.debug(
+        'loadSnapState: attempting to load state snapshot from session storage...:',
+    );
+    const snapStateStr = await readSnapStateStr();
+    if (!snapStateStr) {
+        return null;
+    }
+    const snapState = JSON.parse(snapStateStr);
+    log.debug('loadSnapState: read from session storage: ', snapState);
+    const stRef = mkRef(TabManagerState.deserialize(snapState));
+    return stRef;
+}
+
+export async function initState(): Promise<StateRef<TabManagerState>> {
+    // check for existing state snapshot in chome.storage.session
+    log.debug('initState: initializing state...');
+    const snapStateRef = await loadSnapState();
+
+    const stateRef =
+        snapStateRef == null ? await initNoSnapshot() : snapStateRef;
+
     await actions.loadPreferences(stateRef);
     await actions.syncChromeWindows(stateRef);
     log.debug('initial sync of chrome windows complete.');
@@ -1036,12 +1094,6 @@ async function initNoSnapshot(): Promise<StateRef<TabManagerState>> {
     const syncedStore = await actions.syncCurrent(stateRef);
 
     savedState.init(stateRef);
-    return stateRef;
-}
-
-export async function initState(): Promise<StateRef<TabManagerState>> {
-    // TODO: check for existing state snapshot in chome.storage.session
-    const stateRef = await initNoSnapshot();
 
     registerEventHandlers(stateRef);
 
@@ -1050,16 +1102,6 @@ export async function initState(): Promise<StateRef<TabManagerState>> {
     // log.debug('store before hiding popout: ', syncedStore.toJS())
 
     /* cleanOldPopouts(stateRef); */
-
-    // const noPopStore = await actions.hidePopout(stateRef);
-
-    const noPopStore = mutableGet(stateRef);
-
-    log.info('main: popoutOnStart: ', noPopStore.preferences.popoutOnStart);
-    if (noPopStore.preferences.popoutOnStart) {
-        console.log('showPopout is is true on start, would show popup...');
-        // actions.showPopout(stateRef);
-    }
 
     chrome.commands.onCommand.addListener((command) => {
         chromeEventLog.debug('Chrome Event: onCommand: ', command);
@@ -1088,7 +1130,8 @@ async function oldMain() {
         actions.setReloadHandler(oldMain);
         const rawBMStore = await initWinStore();
         const attachBMStore = await reattachWindows(rawBMStore);
-        const bmStore = await loadSnapState(attachBMStore);
+        const bmStore = await loadSavedState(attachBMStore);
+
         const stateRef = mkRef(bmStore);
         await actions.loadPreferences(stateRef);
         await actions.syncChromeWindows(stateRef);

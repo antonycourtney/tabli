@@ -301,12 +301,24 @@ export default class TabManagerState extends Immutable.Record(
             this,
         ); // Now update all open windows:
 
-        const nextSt = _.reduce(
+        let nextSt = _.reduce(
             chromeWindowList,
             (acc, cw) => acc.syncChromeWindow(cw),
             closedWinStore,
         );
 
+        // validate popoutWindowId using rawChromeWindowList:
+        if (nextSt.popoutWindowId !== CHROME_WINDOW_ID_NONE) {
+            const popoutWindow = rawChromeWindowList.find(
+                (cw) => cw.id === nextSt.popoutWindowId,
+            );
+            if (popoutWindow === undefined) {
+                log.debug(
+                    'syncWindowList: popout window id not found in chrome window list, clearing....',
+                );
+                nextSt = nextSt.set('popoutWindowId', CHROME_WINDOW_ID_NONE);
+            }
+        }
         return nextSt;
     }
 
@@ -384,6 +396,7 @@ export default class TabManagerState extends Immutable.Record(
             .toIndexedSeq()
             .filter((w) => !w.open)
             .toArray();
+        /*
         console.log(
             '*** getAll: openWindows: ',
             openWindows.length,
@@ -394,6 +407,7 @@ export default class TabManagerState extends Immutable.Record(
             closedSavedWindows.length,
             closedSavedWindows,
         );
+        */
         return openWindows.concat(closedSavedWindows);
     }
 

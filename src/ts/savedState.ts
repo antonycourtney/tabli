@@ -1,7 +1,7 @@
 import log from 'loglevel';
 import throttle from 'lodash/throttle';
 import TabManagerState from './tabManagerState';
-import { StateRef, addStateChangeListener } from 'oneref';
+import { StateRef, addStateChangeListener, mutableGet } from 'oneref';
 import * as Immutable from 'immutable';
 import { TabWindow, TabItem } from './tabWindow';
 const _ = { throttle };
@@ -19,7 +19,7 @@ let latestBookmarkIdMap: Immutable.Map<string, TabWindow> | null = null; // most
  */
 const getDiffs = (
     prevMap: Immutable.Map<string, TabWindow>,
-    curMap: Immutable.Map<string, TabWindow>
+    curMap: Immutable.Map<string, TabWindow>,
 ) => {
     // find deleted keys:
     const prevKeySet = prevMap.keySeq().toSet();
@@ -28,8 +28,8 @@ const getDiffs = (
 
     const updatedKeys = curMap
         .keySeq()
-        .filter(k => !deletes.has(k) && prevMap.get(k) !== curMap.get(k));
-    const updates = updatedKeys.map(k => curMap.get(k));
+        .filter((k) => !deletes.has(k) && prevMap.get(k) !== curMap.get(k));
+    const updates = updatedKeys.map((k) => curMap.get(k));
 
     return { deletes, updates };
 };
@@ -39,7 +39,7 @@ const getDiffs = (
  */
 const hasDiffs = (
     prevMap: Immutable.Map<string, TabWindow>,
-    curMap: Immutable.Map<string, TabWindow>
+    curMap: Immutable.Map<string, TabWindow>,
 ) => {
     const diffs = getDiffs(prevMap, curMap);
     return diffs.deletes.count() > 0 || diffs.updates.count() > 0;
@@ -51,8 +51,8 @@ const savedWindowStateVersion = 1;
 const saveState = () => {
     prevBookmarkIdMap = latestBookmarkIdMap;
     // never persist a chrome session id -- we'll set during startup from sessions API
-    const serBookmarkIdMap = latestBookmarkIdMap!.map(tw =>
-        tw.remove('chromeSessionId')
+    const serBookmarkIdMap = latestBookmarkIdMap!.map((tw) =>
+        tw.remove('chromeSessionId'),
     );
     const savedWindowState = JSON.stringify(serBookmarkIdMap, null, 2);
     const savedState = { savedWindowStateVersion, savedWindowState };
@@ -67,7 +67,7 @@ const saveState = () => {
 const throttledSaveState = _.throttle(saveState, 30 * 1000);
 
 export const init = (stRef: StateRef<TabManagerState>) => {
-    const listener = (appState: TabManagerState) => {
+    const saveStateListener = (appState: TabManagerState) => {
         latestBookmarkIdMap = appState.bookmarkIdMap;
         if (prevBookmarkIdMap == null) {
             prevBookmarkIdMap = latestBookmarkIdMap;
@@ -77,6 +77,32 @@ export const init = (stRef: StateRef<TabManagerState>) => {
             }
         }
     };
-    addStateChangeListener(stRef, listener);
-    log.debug('savedState.init: registered state change listener');
+
+    // Save a snapshot of the current state to session storage every 10 seconds
+    let lastSnaphotState: TabManagerState | null = null;
+
+    const saveSnapshot = () => {
+        const appState = mutableGet(stRef);
+        if (lastSnaphotState == null || appState !== lastSnaphotState) {
+            lastSnaphotState = appState;
+            const snap = appState.toJS();
+            const stateSnapshot = JSON.stringify(snap, null, 2);
+            chrome.storage.session.set({ stateSnapshot }, () => {
+                log.debug('saveSnapshot: saved snapshot');
+            });
+        } else {
+            // pretty much never hit, since listener only invoked when state
+            // actually updated
+            log.debug('saveSnapshot: no change in state, skipping snapshot');
+        }
+    };
+    const throttledSaveSnapshot = _.throttle(saveSnapshot, 10 * 1000);
+
+    // We combine our two listeners to work around stupid bug in oneref, which
+    // uses .on() instead of .addListener()
+    const mergedListener = (appState: TabManagerState) => {
+        saveStateListener(appState);
+        throttledSaveSnapshot();
+    };
+    addStateChangeListener(stRef, mergedListener);
 };

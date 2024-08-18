@@ -860,13 +860,17 @@ export function showRelNotes(storeRef: TMSRef) {
     update(storeRef, (st) => st.set('showRelNotes', true));
 }
 
+export async function readPreferences(): Promise<prefs.Preferences> {
+    const items = await chromep.storage.local.get(USER_PREFS_KEY);
+    log.debug('readPreferences: read: ', items);
+    const prefsStr = items[USER_PREFS_KEY];
+    return prefs.Preferences.deserialize(prefsStr);
+}
+
 export const loadPreferences = async (
     storeRef: TMSRef,
 ): Promise<TabManagerState> => {
-    const items = await chromep.storage.local.get(USER_PREFS_KEY);
-    log.debug('loadPreferences: read: ', items);
-    const prefsStr = items[USER_PREFS_KEY];
-    const userPrefs = prefs.Preferences.deserialize(prefsStr);
+    const userPrefs = await readPreferences();
     log.debug('loadPreferences: userPrefs: ', userPrefs.toJS());
     return awaitableUpdate_(storeRef, (st) => st.set('preferences', userPrefs));
 };

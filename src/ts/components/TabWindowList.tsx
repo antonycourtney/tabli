@@ -65,12 +65,6 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     var openWindows: JSX.Element[] = [];
     var savedWindows: JSX.Element[] = [];
 
-    console.log(
-        '*** TabWindowList: filteredWindows: ',
-        filteredWindows.length,
-        filteredWindows,
-    );
-
     for (var i = 0; i < filteredWindows.length; i++) {
         var filteredTabWindow = filteredWindows[i];
         var tabWindow = filteredTabWindow.tabWindow;
