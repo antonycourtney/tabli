@@ -1153,6 +1153,8 @@ export async function initState(): Promise<StateRef<TabManagerState>> {
         }
     });
 
+    savedState.saveSnapshot(stateRef);
+
     return stateRef;
 }
 

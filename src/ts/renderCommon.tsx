@@ -30,7 +30,7 @@ export async function renderPopup(
 ) {
     try {
         utils.setLogLevel(log);
-        log.debug('renderPopup: isPopout: ', isPopout);
+        log.debug('renderPopup: isPopout: ', isPopout, ' doSync: ', doSync);
 
         var tPreRender = performance.now();
 
