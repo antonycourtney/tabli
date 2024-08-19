@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as oneref from 'oneref';
+import * as log from 'loglevel'; // eslint-disable-line no-unused-vars
 import FilteredTabWindowUI from './FilteredTabWindowUI';
 import WindowListSection from './WindowListSection';
 import MessageCard from './MessageCard';
@@ -12,10 +13,10 @@ import ModalActions from './modalActions';
 import { FilteredTabWindow } from '../searchOps';
 import { StateRef } from 'oneref';
 
-var relNotesStr = '';
+let relNotesModule: any = null;
 if (!isNode) {
     // in browser
-    relNotesStr = require('../../html/relnotes.html');
+    relNotesModule = require('../../html/relnotes.html');
 }
 
 interface TabWindowListProps {
@@ -52,6 +53,8 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
         actions.hideRelNotes(stateRef);
     };
 
+    const relNotesStr = relNotesModule ? relNotesModule.default : '';
+    log.debug('TabWindowList: showRelNotes: ', showRelNotes);
     var relNotesSection = null;
     if (showRelNotes) {
         relNotesSection = (
