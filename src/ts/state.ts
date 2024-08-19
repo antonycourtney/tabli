@@ -1159,6 +1159,7 @@ export async function initState(): Promise<StateRef<TabManagerState>> {
 /**
  * old main from bgHelper.  Now subsumed into initStoreRef / getStoreRef
  */
+/*
 async function oldMain() {
     try {
         console.log('*** bgHelper started ***');
@@ -1211,3 +1212,4 @@ async function oldMain() {
         log.error('*** caught top level exception: ', e);
     }
 }
+*/

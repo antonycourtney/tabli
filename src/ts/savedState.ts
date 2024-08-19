@@ -66,6 +66,29 @@ const saveState = () => {
 // bookmark state at most once every 30 sec
 const throttledSaveState = _.throttle(saveState, 30 * 1000);
 
+// Save a snapshot of the current state to session storage every 10 seconds
+let lastSnaphotState: TabManagerState | null = null;
+
+export const saveSnapshot = (stRef: StateRef<TabManagerState>) => {
+    const appState = mutableGet(stRef);
+    if (lastSnaphotState == null || appState !== lastSnaphotState) {
+        lastSnaphotState = appState;
+        const snap = appState.toJS();
+        const stateSnapshot = JSON.stringify(snap, null, 2);
+        chrome.storage.session.set({ stateSnapshot }, () => {
+            log.debug('saveSnapshot: saved snapshot');
+            log.debug(
+                'saveSnapshot: snapshot popoutWindowId: ',
+                appState.popoutWindowId,
+            );
+        });
+    } else {
+        // pretty much never hit, since listener only invoked when state
+        // actually updated
+        log.debug('saveSnapshot: no change in state, skipping snapshot');
+    }
+};
+
 export const init = (stRef: StateRef<TabManagerState>) => {
     const saveStateListener = (appState: TabManagerState) => {
         latestBookmarkIdMap = appState.bookmarkIdMap;
@@ -78,25 +101,10 @@ export const init = (stRef: StateRef<TabManagerState>) => {
         }
     };
 
-    // Save a snapshot of the current state to session storage every 10 seconds
-    let lastSnaphotState: TabManagerState | null = null;
-
-    const saveSnapshot = () => {
-        const appState = mutableGet(stRef);
-        if (lastSnaphotState == null || appState !== lastSnaphotState) {
-            lastSnaphotState = appState;
-            const snap = appState.toJS();
-            const stateSnapshot = JSON.stringify(snap, null, 2);
-            chrome.storage.session.set({ stateSnapshot }, () => {
-                log.debug('saveSnapshot: saved snapshot');
-            });
-        } else {
-            // pretty much never hit, since listener only invoked when state
-            // actually updated
-            log.debug('saveSnapshot: no change in state, skipping snapshot');
-        }
-    };
-    const throttledSaveSnapshot = _.throttle(saveSnapshot, 10 * 1000);
+    const throttledSaveSnapshot = _.throttle(
+        () => saveSnapshot(stRef),
+        10 * 1000,
+    );
 
     // We combine our two listeners to work around stupid bug in oneref, which
     // uses .on() instead of .addListener()

@@ -565,13 +565,13 @@ export async function showPreferences() {
     chromep.windows.update(tab.windowId, { focused: true });
 }
 
-export const showPopout = (stateRef: StateRef<TabManagerState>) => {
+export const showPopout = async (stateRef: StateRef<TabManagerState>) => {
     const popoutId = mutableGet(stateRef).popoutWindowId;
     console.log('*** showPopout: popoutId: ', popoutId);
     if (popoutId !== chrome.windows.WINDOW_ID_NONE) {
         chromep.windows.update(popoutId, { focused: true });
     } else {
-        chromep.windows.create({
+        const popoutWindow = await chromep.windows.create({
             url: 'popout.html',
             type: 'popup',
             left: 0,
@@ -579,6 +579,11 @@ export const showPopout = (stateRef: StateRef<TabManagerState>) => {
             width: Constants.POPOUT_DEFAULT_WIDTH,
             height: Constants.POPOUT_DEFAULT_HEIGHT,
         });
+        if (popoutWindow.id) {
+            update(stateRef, (st) =>
+                st.set('popoutWindowId', popoutWindow.id!),
+            );
+        }
     }
 };
 

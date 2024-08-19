@@ -12,7 +12,7 @@ import * as actions from './actions';
 import * as oneref from 'oneref';
 import { update, refContainer } from 'oneref';
 import { utimesSync } from 'fs';
-import { init } from './savedState';
+import { init, saveSnapshot } from './savedState';
 import { initState } from './state';
 
 // full state update no more than 5 times a second:
@@ -103,6 +103,7 @@ export async function renderPopup(
                 tPostSyncUpdate - tPreRender,
                 ' ms',
             );
+            saveSnapshot(storeRef);
         }
     } catch (e) {
         log.error('renderPopup: caught exception invoking function: ');
