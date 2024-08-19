@@ -23,7 +23,8 @@
             "suggested_key": {
                 "default": "Ctrl+Period",
                 "mac": "MacCtrl+Period"
-            }
+            },
+            "description": "Show the Tabli popup"
         },
         "show_popout": {
             "description": "Show the Tabli popout window",
