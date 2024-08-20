@@ -215,11 +215,18 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     const handlePopoutClick = (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     ) => {
+        // We'll now send a message to the background script to
+        // hide or show the popout, so that the state gets updated
+        // appropriately:
+        const action = isPopout ? 'hidePopout' : 'showPopout';
+        chrome.runtime.sendMessage({ action });
+        /*
         if (isPopout) {
             actions.hidePopout(stateRef);
         } else {
             actions.showPopout(stateRef);
         }
+        */
     };
 
     const handleExpandToggleClick = () => {

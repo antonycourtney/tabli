@@ -14,6 +14,9 @@ const chromep = ChromePromise;
  * Reads the latest snapshot of window state, and either sends focus to existing
  * popout or opens a new one.
  */
+/*
+ * This was a weird, bad dup of actions.showPopout.
+ * We should no longer need this now that 
 async function showPopout() {
     // first, check for existence of session state -- if it exists, we're already running
     const stateRef = await loadSnapState();
@@ -45,29 +48,47 @@ async function showPopout() {
 
     actions.showPopout(stateRef);
 }
+*/
 
 async function main() {
-    console.log('in bgHelper...:');
+    console.log('*** bgHelper: started at ', new Date().toString());
     utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
     console.log('bgHelper: Read userPrefs: ', userPrefs.toJS());
+
+    // Check for existence of snap state -- if it exists, we're already running
+    const snapStateStr = await readSnapStateStr();
+
+    // initalLoad will be set to true the very first time bgHelper is loaded in a Chrome session:
+    const initialLoad = snapStateStr == null;
+    log.debug('bgHelper: initialLoad: ', initialLoad);
 
     const stateRef = await initState(true);
 
     log.debug('bgHelper: initialized stateRef');
 
-    if (userPrefs.popoutOnStart) {
-        console.log('bgHelper: popoutOnStart is true, creating popout');
-        showPopout();
+    if (initialLoad && userPrefs.popoutOnStart) {
+        log.debug('bgHelper: popoutOnStart is true, creating popout');
+        actions.showPopout(stateRef);
     } else {
-        console.log('bgHelper: popoutOnStart is false, skipping popout');
+        log.debug('bgHelper: skipping popout');
     }
     chrome.commands.onCommand.addListener((command) => {
-        console.log('Chrome Event: onCommand: ', command);
+        log.debug('Chrome Event: onCommand: ', command);
 
         if (command === 'show_popout') {
-            showPopout();
+            actions.showPopout(stateRef);
         }
+    });
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        log.debug('bgHelper: Received message:', message);
+        if (message.action === 'showPopout') {
+            actions.showPopout(stateRef);
+        }
+        if (message.action === 'hidePopout') {
+            actions.hidePopout(stateRef);
+        }
+        return true;
     });
 }
 
