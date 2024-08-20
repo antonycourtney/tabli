@@ -1,8 +1,10 @@
 import * as Constants from './components/constants';
 import ChromePromise from 'chrome-promise';
-import { loadSnapState, readSnapStateStr } from './state';
+import * as log from 'loglevel';
+import { initState, loadSnapState, readSnapStateStr } from './state';
 import * as actions from './actions';
 import { mutableGet } from 'oneref';
+import * as utils from './utils';
 
 const chromep = ChromePromise;
 
@@ -46,8 +48,13 @@ async function showPopout() {
 
 async function main() {
     console.log('in bgHelper...:');
+    utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
     console.log('bgHelper: Read userPrefs: ', userPrefs.toJS());
+
+    const stateRef = await initState(true);
+
+    log.debug('bgHelper: initialized stateRef');
 
     if (userPrefs.popoutOnStart) {
         console.log('bgHelper: popoutOnStart is true, creating popout');

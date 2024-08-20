@@ -1119,7 +1119,9 @@ export async function loadSnapState(): Promise<StateRef<TabManagerState> | null>
     return stRef;
 }
 
-export async function initState(): Promise<StateRef<TabManagerState>> {
+export async function initState(
+    writer: boolean = false,
+): Promise<StateRef<TabManagerState>> {
     // check for existing state snapshot in chome.storage.session
     log.debug('initState: initializing state...');
     const snapStateRef = await loadSnapState();
@@ -1133,7 +1135,10 @@ export async function initState(): Promise<StateRef<TabManagerState>> {
     log.debug('before sync: stateRef: ', stateRef);
     const syncedStore = await actions.syncCurrent(stateRef);
 
-    savedState.init(stateRef);
+    if (writer) {
+        log.debug('initState: writer mode, setting up saved state listener...');
+        savedState.init(stateRef);
+    }
 
     registerEventHandlers(stateRef);
 
@@ -1143,15 +1148,6 @@ export async function initState(): Promise<StateRef<TabManagerState>> {
     // In case of restart: hide any previously open popout that
     // might be hanging around...
     /* cleanOldPopouts(stateRef); */
-
-    chrome.commands.onCommand.addListener((command) => {
-        chromeEventLog.debug('Chrome Event: onCommand: ', command);
-
-        if (command === 'show_popout') {
-            console.log('show_popout command received');
-            // actions.showPopout(stateRef);
-        }
-    });
 
     savedState.saveSnapshot(stateRef);
 
