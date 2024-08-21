@@ -17,6 +17,7 @@ import SelectablePopup from './SelectablePopup';
 import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
 import { setRootFontSize } from '../renderUtils';
+import UnmanageModal from './UnmanageModal';
 
 const _ = { debounce };
 
@@ -69,6 +70,9 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     );
     const [searchStr, setSearchStr] = useState('');
     const [searchRE, setSearchRE] = useState<RegExp | null>(null);
+    const [unmanageModalIsOpen, setUnmanageModalIsOpen] = useState(false);
+    const [unmanageTabWindow, setUnmanageTabWindow] =
+        useState<TabWindow | null>(null);
 
     const handleSearchInput = (rawSearchStr: string) => {
         const nextSearchStr = rawSearchStr.trim();
@@ -120,12 +124,31 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
         closeRevertModal();
     };
 
+    const openUnmanageModal = useCallback(
+        (tabWindow: TabWindow) => {
+            setUnmanageModalIsOpen(true);
+            setUnmanageTabWindow(tabWindow);
+        },
+        [setUnmanageModalIsOpen, setUnmanageTabWindow],
+    );
+
+    const closeUnmanageModal = () => {
+        setUnmanageModalIsOpen(false);
+        setUnmanageTabWindow(null);
+    };
+
+    const doUnmanage = (tabWindow: TabWindow) => {
+        actions.unmanageWindow(unmanageTabWindow!, stateRef);
+        closeUnmanageModal();
+    };
+
     const modalActions: ModalActions = React.useMemo(
         () => ({
             openSaveModal,
             openRevertModal,
+            openUnmanageModal,
         }),
-        [openSaveModal, openRevertModal],
+        [openSaveModal, openRevertModal, openUnmanageModal],
     );
 
     const revertModal = revertModalIsOpen ? (
@@ -133,6 +156,14 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
             tabWindow={revertTabWindow!}
             onClose={closeRevertModal}
             onSubmit={doRevert}
+        />
+    ) : null;
+
+    const unmanageModal = unmanageModalIsOpen ? (
+        <UnmanageModal
+            tabWindow={unmanageTabWindow!}
+            onClose={closeUnmanageModal}
+            onSubmit={doUnmanage}
         />
     ) : null;
 
@@ -167,6 +198,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
                     />
                     {revertModal}
                     {saveModal}
+                    {unmanageModal}
                 </div>
             </ThemeContext.Provider>
         </LayoutContext.Provider>

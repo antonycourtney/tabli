@@ -619,16 +619,54 @@ function prefsStorageChange(
     return null;
 }
 
+/*
+ * examine session change event data for stateSnapshot, and return a tabManagerState if found
+ */
+function stateSnapshotStorageChange(
+    changes: any,
+    namespace: string,
+): TabManagerState | null {
+    if (namespace === 'session') {
+        const maybeStateSnapStr = changes.stateSnapshot;
+        if (!maybeStateSnapStr) {
+            return null;
+        }
+        const stateSnapStr = maybeStateSnapStr.newValue;
+        if (!stateSnapStr) {
+            return null;
+        }
+        const snapState = JSON.parse(stateSnapStr);
+        log.debug(
+            '*** stateSnapshotStorageChange: read from session storage: ',
+            snapState,
+        );
+        const st = TabManagerState.deserialize(snapState);
+
+        return st;
+    }
+
+    return null;
+}
+
 async function onStorageChanged(
     stateRef: StateRef<TabManagerState>,
     changes: any,
     namespace: string,
 ) {
+    log.debug('onStorageChanged: ', namespace);
     const maybePrefs = prefsStorageChange(changes, namespace);
     if (maybePrefs != null) {
         log.debug('onStorageChanged: prefs changed: ', maybePrefs.toJS());
         update(stateRef, (state) => {
             return state.set('preferences', maybePrefs);
+        });
+    }
+
+    const maybeState = stateSnapshotStorageChange(changes, namespace);
+    if (maybeState != null) {
+        log.debug('onStorageChanged: state snapshot changed');
+        update(stateRef, (state) => {
+            return maybeState;
         });
     }
 }

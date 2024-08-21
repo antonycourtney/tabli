@@ -80,16 +80,17 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         }
     }, []);
     const handleUnmanageClick = (
-        event: React.MouseEvent<HTMLElement, MouseEvent>
+        event: React.MouseEvent<HTMLElement, MouseEvent>,
     ) => {
         log.debug('unamange: ', tabWindow);
         event.preventDefault();
-        actions.unmanageWindow(tabWindow, stateRef);
+        modalActions.openUnmanageModal(tabWindow);
+        // actions.unmanageWindow(tabWindow, stateRef);
         event.stopPropagation();
     };
 
     const handleManageClick = (
-        event: React.MouseEvent<HTMLElement, MouseEvent>
+        event: React.MouseEvent<HTMLElement, MouseEvent>,
     ) => {
         log.debug('manage: ', tabWindow);
         event.preventDefault();
@@ -99,7 +100,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     };
 
     const handleTitleRename = (
-        event: React.MouseEvent<HTMLElement, MouseEvent>
+        event: React.MouseEvent<HTMLElement, MouseEvent>,
     ) => {
         event.preventDefault();
         setEditingTitle(true);
@@ -154,7 +155,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
 
     const editButtonStyle = cx(
         styles.headerHoverVisible,
-        editButtonBaseStyle(theme)
+        editButtonBaseStyle(theme),
     );
     const editButton = (
         <HeaderButtonSVG

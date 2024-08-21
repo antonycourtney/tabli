@@ -88,7 +88,7 @@ async function main() {
         if (message.action === 'hidePopout') {
             actions.hidePopout(stateRef);
         }
-        return true;
+        return false;
     });
 }
 
