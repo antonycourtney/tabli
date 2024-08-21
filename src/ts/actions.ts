@@ -19,6 +19,8 @@ const chromep = ChromePromise;
 type TabId = number;
 
 const TABLI_ABOUT_URL = 'http://www.gettabli.com/contact.html';
+const TABLI_TUTORIAL_URL =
+    'https://medium.com/@antonycourtney/taming-tab-hell-with-tabli-83f080e32d17?source=friends_link&sk=d121d5ba0114d9eea9cd29a23e202d37';
 const TABLI_HELP_URL = 'http://www.gettabli.com/tabli-usage.html';
 const TABLI_REVIEW_URL =
     'https://chrome.google.com/webstore/detail/tabli/igeehkedfibbnhbfponhjjplpkeomghi/reviews';
@@ -546,6 +548,10 @@ export async function setWindowTitle(
 
 export function showHelp() {
     chrome.tabs.create({ url: TABLI_HELP_URL });
+}
+
+export function showTutorial() {
+    chrome.tabs.create({ url: TABLI_TUTORIAL_URL });
 }
 
 export function showAbout() {

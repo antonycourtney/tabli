@@ -48,6 +48,11 @@ const menuItemStyle = (theme: Theme) =>
 type ClickEvent = React.SyntheticEvent<HTMLElement, MouseEvent>;
 type ClickHandler = (event: ClickEvent) => void;
 
+const handleTutorialClick: ClickHandler = (e) => {
+    e.preventDefault();
+    actions.showTutorial();
+};
+
 const handleHelpClick: ClickHandler = (e) => {
     e.preventDefault();
     actions.showHelp();
@@ -143,6 +148,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
             <hr />
             {renderMenuItem(handleCopyClick, 'Copy Window Summary')}
             <hr />
+            {renderMenuItem(handleTutorialClick, 'Help (Tutorial)')}
             {renderMenuItem(handleHelpClick, 'Help (Manual)')}
             {renderMenuItem(handleRelNotesClick, 'Release Notes')}
             <hr />
@@ -163,7 +169,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
     }
     const menuIconStyle = styles.toolbarButtonIconMaskImage(
         theme,
-        'images/hamburger-menu.png'
+        'images/hamburger-menu.png',
     );
     return (
         <Manager>
@@ -178,7 +184,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
                     >
                         <div
                             className={cx(
-                                styles.toolbarButtonSVGIconContainer(theme)
+                                styles.toolbarButtonSVGIconContainer(theme),
                             )}
                         >
                             {svg.menu}
