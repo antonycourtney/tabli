@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Tabli",
     "description": "A simple, powerful tab manager",
-    "version": "2.1.2",
+    "version": "3.0.0",
     "action": {
         "default_icon": "images/glyphicons_154_more_windows.png",
         "default_popup": "popup.html",
