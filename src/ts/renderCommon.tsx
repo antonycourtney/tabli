@@ -1,7 +1,7 @@
 /**
  * common rendering entry point for popup and popout
  */
-import * as log from 'loglevel';
+import { initGlobalLogger, log } from './globals';
 import chromep from 'chrome-promise';
 import * as utils from './utils';
 import * as React from 'react';
@@ -31,6 +31,10 @@ export async function renderPopup(
     try {
         utils.setLogLevel(log);
         log.debug('renderPopup: isPopout: ', isPopout, ' doSync: ', doSync);
+
+        const portName = isPopout ? 'popout' : 'popup';
+        const port = chrome.runtime.connect({ name: portName });
+        log.debug('renderPopup: connected to service worker');
 
         var tPreRender = performance.now();
 
@@ -116,6 +120,7 @@ export async function getFocusedAndRender(
     isPopout: boolean,
     doSync: boolean = true,
 ) {
+    initGlobalLogger(isPopout ? 'popout' : 'popup');
     const storeRef = await initState(true);
     (window as any)._tabliIsPopout = isPopout;
     chrome.windows.getCurrent({}, (currentChromeWindow) => {

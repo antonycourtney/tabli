@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import { log } from '../globals';
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as styles from './cssStyles';
@@ -58,7 +58,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
             styles.simpleTabTitle,
             styles.noWrap,
             tabOpenStyle,
-            tabActiveStyle
+            tabActiveStyle,
         );
         const id = 'tabItem-' + idx;
         const tabItemStyle = styles.tabItem(theme, layout);
@@ -80,19 +80,19 @@ const RevertModal: React.FC<RevertModalProps> = ({
     // reverted state
     const revertedTabWindow = tabWindowUtils.removeOpenWindowState(
         tabWindow,
-        false
+        false,
     );
     const savedUrlsSet = Immutable.Set(
-        revertedTabWindow.tabItems.map((ti) => ti.url)
+        revertedTabWindow.tabItems.map((ti) => ti.url),
     );
 
     const itemsToClose = tabWindow.tabItems.filter(
-        (ti) => !savedUrlsSet.has(ti.url)
+        (ti) => !savedUrlsSet.has(ti.url),
     );
     const closeItemsElem = renderTabItems(itemsToClose);
 
     const itemsToReload = tabWindow.tabItems.filter((ti) =>
-        savedUrlsSet.has(ti.url)
+        savedUrlsSet.has(ti.url),
     );
     const reloadItemsElem = renderTabItems(itemsToReload);
 

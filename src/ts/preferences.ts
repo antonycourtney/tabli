@@ -1,7 +1,7 @@
 /*
  * Serializable, immutable user preferences
  */
-import log from 'loglevel';
+import { log } from './globals';
 import defaultsDeep from 'lodash/defaultsDeep';
 import * as Immutable from 'immutable';
 const _ = {

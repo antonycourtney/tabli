@@ -1,7 +1,7 @@
 /**
  * Search and filter operations on TabWindows
  */
-import log from 'loglevel';
+import { log } from './globals';
 import map from 'lodash/map';
 import filter from 'lodash/filter';
 import * as Immutable from 'immutable';

@@ -8,7 +8,7 @@ import has from 'lodash/has';
 import fromPairs from 'lodash/fromPairs';
 import * as Immutable from 'immutable';
 import * as semver from 'semver';
-import log from 'loglevel';
+import { getLogger, log } from './globals';
 import TabManagerState from './tabManagerState';
 import * as utils from './utils';
 import * as actions from './actions';
@@ -32,7 +32,7 @@ const _ = {
     has,
     fromPairs,
 };
-const chromeEventLog = log.getLogger('chrome-events');
+const chromeEventLog = getLogger('chrome-events');
 const tabliFolderTitle = 'Tabli Saved Windows';
 const archiveFolderTitle = '_Archive';
 let tabliFolderId: string | null = null;
@@ -1132,7 +1132,7 @@ async function initNoSnapshot(): Promise<StateRef<TabManagerState>> {
 
 export async function readSnapStateStr(): Promise<string | null> {
     const items = await chrome.storage.session.get('stateSnapshot');
-    log.debug('loadSnapState: items: ', items);
+    log.debug('readSnapStateStr: items: ', items);
     if (!items) {
         return null;
     }

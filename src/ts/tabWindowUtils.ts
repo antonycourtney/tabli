@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import { log } from './globals';
 import * as Immutable from 'immutable';
 import {
     SavedTabState,

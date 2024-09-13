@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import { log } from './globals';
 import throttle from 'lodash/throttle';
 import TabManagerState from './tabManagerState';
 import { StateRef, addStateChangeListener, mutableGet } from 'oneref';

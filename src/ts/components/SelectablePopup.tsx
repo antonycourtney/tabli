@@ -1,4 +1,4 @@
-import * as log from 'loglevel';
+import { log } from '../globals';
 import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx, css } from '@emotion/css';

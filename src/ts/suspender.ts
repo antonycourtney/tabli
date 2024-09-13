@@ -1,7 +1,7 @@
 //
 // Simple utilities to support Great Suspender integration
 //
-import * as log from 'loglevel'; // eslint-disable-line
+import { log } from './globals'; // eslint-disable-line
 
 const SUSPEND_PREFIX =
     'chrome-extension://klbibkeccnjlkjkiokjodocebajanakg/suspended.html#';

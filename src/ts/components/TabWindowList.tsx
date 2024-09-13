@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as oneref from 'oneref';
-import * as log from 'loglevel'; // eslint-disable-line no-unused-vars
+import { log } from '../globals'; // eslint-disable-line no-unused-vars
 import FilteredTabWindowUI from './FilteredTabWindowUI';
 import WindowListSection from './WindowListSection';
 import MessageCard from './MessageCard';

@@ -1,4 +1,4 @@
-import * as log from 'loglevel';
+import { log } from '../globals';
 import * as React from 'react';
 import * as oneref from 'oneref';
 import { mkUrl } from '../utils';

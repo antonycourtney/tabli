@@ -1,6 +1,6 @@
 import * as Constants from './components/constants';
 import ChromePromise from 'chrome-promise';
-import * as log from 'loglevel';
+import { initGlobalLogger, log } from './globals';
 import { initState, loadSnapState, readSnapStateStr } from './state';
 import * as actions from './actions';
 import { mutableGet } from 'oneref';
@@ -52,6 +52,7 @@ async function showPopout() {
 
 async function main() {
     console.log('*** bgHelper: started at ', new Date().toString());
+    initGlobalLogger('bgHelper');
     utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
     console.log('bgHelper: Read userPrefs: ', userPrefs.toJS());
@@ -63,7 +64,9 @@ async function main() {
     const initialLoad = snapStateStr == null;
     log.debug('bgHelper: initialLoad: ', initialLoad);
 
-    const stateRef = await initState(true);
+    // 8/23/24: Passing false for now to avoid horrid race condition when opening saved windows.
+    // Means that popout window Id will often be wrong.
+    const stateRef = await initState(false);
 
     log.debug('bgHelper: initialized stateRef');
 
@@ -88,7 +91,24 @@ async function main() {
         if (message.action === 'hidePopout') {
             actions.hidePopout(stateRef);
         }
+        if (message.action === 'getPopoutWindowId') {
+            const appState = mutableGet(stateRef);
+            sendResponse({
+                windowId: appState.popoutWindowId,
+            });
+        }
         return false;
+    });
+
+    // Use a port to track popout window
+    chrome.runtime.onConnect.addListener((port) => {
+        log.debug('bgHelper: onConnect: ', port, ' name: ', port.name);
+        port.onMessage.addListener((message, port) => {
+            return true;
+        });
+        port.onDisconnect.addListener(() => {
+            log.debug('bgHelper: port disconnected: ');
+        });
     });
 }
 

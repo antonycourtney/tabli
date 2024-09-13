@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import { log } from './globals';
 import * as Immutable from 'immutable';
 import * as RenderCommon from './renderCommon';
 
@@ -45,7 +45,7 @@ function makeTabWindow() {
         open: true,
         windowType: 'normal',
         openWindowId,
-        tabItems
+        tabItems,
     });
     return tabWindow;
 }
@@ -89,7 +89,7 @@ function renderPage() {
     log.info(
         'initial render complete. render time: (',
         tPostRender - tPreRender,
-        ' ms)'
+        ' ms)',
     );
 }
 

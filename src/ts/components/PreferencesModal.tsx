@@ -1,4 +1,4 @@
-import log from 'loglevel'; // eslint-disable-line no-unused-vars
+import { log } from '../globals'; // eslint-disable-line no-unused-vars
 import * as React from 'react';
 import * as styles from './cssStyles';
 import * as Constants from './constants';
@@ -98,7 +98,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         const oldPrefs = prefs;
         const nextPrefs = oldPrefs.set(
             'popoutOnStart',
-            !oldPrefs.popoutOnStart
+            !oldPrefs.popoutOnStart,
         );
         setPrefs(nextPrefs);
     };
@@ -110,7 +110,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     };
 
     const handleRevertOnOpenChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+        e: React.ChangeEvent<HTMLInputElement>,
     ) => {
         const oldPrefs = prefs;
         const nextPrefs = oldPrefs.set('revertOnOpen', !oldPrefs.revertOnOpen);
@@ -134,14 +134,14 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     const handleFontSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const oldPrefs = prefs;
         const nextScaleFactor = fontSizeToScaleFactor(
-            Number.parseInt(e.target.value)
+            Number.parseInt(e.target.value),
         );
         const nextPrefs = oldPrefs.set('fontScaleFactor', nextScaleFactor);
         log.debug(
             'handleFontSizeChange: fontSize: ',
             e.target.value,
             ', nextPrefs:',
-            nextPrefs.toJS()
+            nextPrefs.toJS(),
         );
         setPrefs(nextPrefs);
     };
@@ -219,7 +219,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 className={cx(
                                     'checkbox',
                                     rightCol,
-                                    prefsLabeledCheckbox
+                                    prefsLabeledCheckbox,
                                 )}
                             >
                                 <input
@@ -236,7 +236,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 className={cx(
                                     'checkbox',
                                     rightCol,
-                                    prefsLabeledCheckbox
+                                    prefsLabeledCheckbox,
                                 )}
                             >
                                 <input
@@ -253,7 +253,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 className={cx(
                                     'checkbox',
                                     rightCol,
-                                    prefsLabeledCheckbox
+                                    prefsLabeledCheckbox,
                                 )}
                             >
                                 <input

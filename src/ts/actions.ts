@@ -1,4 +1,5 @@
-import log from 'loglevel';
+import { log } from './globals';
+import prefix from 'loglevel-plugin-prefix';
 import * as utils from './utils';
 import * as prefs from './preferences';
 import * as Constants from './components/constants';

@@ -4,7 +4,7 @@
  * We'll instantiate and initialize this in the bgHelper and attach it to the background window,
  * and then retrieve the instance from the background window in the popup
  */
-import log from 'loglevel';
+import { log } from './globals';
 import filter from 'lodash/filter';
 import flatten from 'lodash/flatten';
 import get from 'lodash/get';

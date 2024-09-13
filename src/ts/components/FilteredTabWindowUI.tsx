@@ -1,4 +1,4 @@
-import * as log from 'loglevel'; // eslint-disable-line no-unused-consts
+import { log } from '../globals'; // eslint-disable-line no-unused-consts
 import * as React from 'react';
 import { StateRef } from 'oneref';
 import * as Immutable from 'immutable';

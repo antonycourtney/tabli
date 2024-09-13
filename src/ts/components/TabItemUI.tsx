@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import { log } from '../globals';
 import PropTypes from 'prop-types';
 import * as oneref from 'oneref';
 import * as React from 'react';

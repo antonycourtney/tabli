@@ -1,3 +1,4 @@
+import { log } from './globals';
 import * as RenderCommon from './renderCommon';
 
 /*
@@ -10,7 +11,24 @@ import * as RenderCommon from './renderCommon';
  * See https://code.google.com/p/chromium/issues/detail?id=511699
  *
  */
-function main() {
+
+async function getPopoutWindowId(): Promise<number> {
+    const response = await chrome.runtime.sendMessage({
+        action: 'getPopoutWindowId',
+    });
+    log.debug('getPopoutWindowId: got response: ', response);
+    return response.windowId;
+}
+
+async function main() {
+    const popoutWindowId = await getPopoutWindowId();
+    log.debug('renderPopup: popoutWindowId: ', popoutWindowId);
+    if (popoutWindowId !== chrome.windows.WINDOW_ID_NONE) {
+        log.debug('popout window found, closing popup');
+        window.close();
+        chrome.windows.update(popoutWindowId, { focused: true });
+    }
+
     RenderCommon.getFocusedAndRender(false, false);
 }
 

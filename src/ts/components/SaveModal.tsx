@@ -1,4 +1,4 @@
-import * as log from 'loglevel';
+import { log } from '../globals';
 import * as React from 'react';
 import * as styles from './cssStyles';
 import * as Constants from './constants';
@@ -14,7 +14,7 @@ interface SaveModalProps {
 const SaveModal: React.FC<SaveModalProps> = ({
     initialTitle,
     onClose,
-    onSubmit
+    onSubmit,
 }) => {
     const titleInputRef = useRef<HTMLInputElement | null>(null);
 

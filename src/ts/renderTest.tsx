@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import { log } from './globals';
 import * as Immutable from 'immutable';
 import * as RenderCommon from './renderCommon';
 
@@ -11,11 +11,11 @@ import { mkRef, utils as oneRefUtils, StateRef, update } from 'oneref';
 function makeTabWindow(jsWin: any) {
     // eslint-disable-line no-unused-vars
     const decItems = jsWin.tabItems.map(
-        (tiFields: any[]) => new TabWindow.TabItem(tiFields)
+        (tiFields: any[]) => new TabWindow.TabItem(tiFields),
     );
 
     const itemWin = Object.assign({}, jsWin, {
-        tabItems: Immutable.Seq(decItems)
+        tabItems: Immutable.Seq(decItems),
     });
 
     const decWin = new TabWindow.TabWindow(itemWin);
@@ -26,10 +26,10 @@ function makeTabWindow(jsWin: any) {
 function onTabRemoved(
     stateRef: StateRef<TabManagerState>,
     windowId: number,
-    tabId: number
+    tabId: number,
 ) {
     log.debug('onTabRemoved: ', windowId, tabId);
-    update(stateRef, state => {
+    update(stateRef, (state) => {
         const tabWindow = state.getTabWindowByChromeId(windowId);
 
         if (!tabWindow) {
@@ -51,7 +51,7 @@ const tabsToRemove = [
     [5285, 5288],
     [5285, 5290],
     [5285, 5294],
-    [5285, 5296]
+    [5285, 5296],
 ];
 
 const runEventTests = async (stateRef: StateRef<TabManagerState>) => {
@@ -97,7 +97,7 @@ function renderPage(testData: any) {
     log.info(
         'initial render complete. render time: (',
         tPostRender - tPreRender,
-        ' ms)'
+        ' ms)',
     );
     runEventTests(storeRef);
 }

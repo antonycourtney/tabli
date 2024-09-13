@@ -1,5 +1,5 @@
 import * as Immutable from 'immutable';
-import * as log from 'loglevel';
+import { log } from './globals';
 import * as BC from './browserConstants';
 import { TabWindow } from './tabWindow';
 import findLastIndex from 'lodash/findLastIndex';

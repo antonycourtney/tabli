@@ -1,4 +1,4 @@
-import * as log from 'loglevel'; // eslint-disable-line no-unused-vars
+import { log } from '../globals'; // eslint-disable-line no-unused-vars
 import * as React from 'react';
 import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
