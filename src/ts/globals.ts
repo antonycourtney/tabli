@@ -7,7 +7,17 @@ export var log: loglevel.Logger = loglevel.default;
 
 export var componentName: string;
 
+let initialized = false;
+
+function ensurePrefixInitialized() {
+    if (!initialized) {
+        prefix.reg(loglevel);
+        initialized = true;
+    }
+}
+
 export function initGlobalLogger(component: string) {
+    ensurePrefixInitialized();
     componentName = component;
     log = loglevel.getLogger(componentName);
     prefix.apply(log, { template: '%l (%n):' });
@@ -17,6 +27,7 @@ export function initGlobalLogger(component: string) {
 const knownLoggers: { [loggerName: string]: Logger } = {};
 
 export function getLogger(loggerName: string) {
+    ensurePrefixInitialized();
     let logger = knownLoggers[loggerName];
     if (!logger) {
         logger = loglevel.getLogger(loggerName);

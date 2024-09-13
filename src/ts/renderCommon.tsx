@@ -70,19 +70,25 @@ export async function renderPopup(
             const m = syncStore.windowIdMap;
             const syncStoreJS = syncStore.toJS() as any;
             log.debug('*** renderPopup: window sync complete: ', syncStoreJS);
+            let nextStore = syncStore;
             // And set current focused window:
-            log.debug(
-                'renderPopup: setting current window to ',
-                currentChromeWindow,
-            );
-            const nextStore = currentChromeWindow
-                ? syncStore.setCurrentWindow(currentChromeWindow)
-                : syncStore;
-            if (!nextStore.equals(syncStore)) {
+            if (
+                currentChromeWindow &&
+                currentChromeWindow.id !== syncStore.currentWindowId
+            ) {
+                log.debug(
+                    `renderPopup: setting current window from ${syncStore.currentWindowId} to ${currentChromeWindow.id}: `,
+                    currentChromeWindow,
+                );
+                nextStore = syncStore.setCurrentWindow(currentChromeWindow);
+                log.debug(
+                    'renderPopup: after call to setCurrentWindow: nextStore: ',
+                    nextStore,
+                );
                 update(storeRef, (st) => nextStore);
             } else {
                 log.debug(
-                    'doRender: nextStore.equals(savedStore) -- skipping setValue',
+                    'doRender: no change in current window -- skipping setValue',
                 );
             }
             if (

@@ -40,6 +40,11 @@ function validChromeWindow(
     const isNormal = cw.type === 'normal' && cwTabs.length > 0;
     const isPopout =
         cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === 'Tabli';
+    /*
+        log.debug(
+        `validChromeWindow: isNormal: ${isNormal}, isPopout: ${isPopout}`,
+    );
+    */
     return isNormal || (!normalOnly && isPopout);
 }
 

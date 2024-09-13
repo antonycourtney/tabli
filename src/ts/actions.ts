@@ -89,7 +89,9 @@ export const syncCurrent = async (
     storeRef: TMSRef,
 ): Promise<TabManagerState> => {
     try {
-        const currentChromeWindow = await chromep.windows.getCurrent({});
+        const currentChromeWindow = await chromep.windows.getCurrent({
+            populate: true,
+        });
         const nextSt = await awaitableUpdate_(storeRef, (st) =>
             st.setCurrentWindow(currentChromeWindow),
         );

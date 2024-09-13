@@ -29,7 +29,7 @@ async function main() {
         chrome.windows.update(popoutWindowId, { focused: true });
     }
 
-    RenderCommon.getFocusedAndRender(false, false);
+    RenderCommon.getFocusedAndRender(false, true);
 }
 
 main();

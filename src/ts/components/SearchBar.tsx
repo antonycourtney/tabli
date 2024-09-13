@@ -220,13 +220,9 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
         // appropriately:
         const action = isPopout ? 'hidePopout' : 'showPopout';
         chrome.runtime.sendMessage({ action });
-        /*
-        if (isPopout) {
-            actions.hidePopout(stateRef);
-        } else {
-            actions.showPopout(stateRef);
+        if (!isPopout) {
+            window.close();
         }
-        */
     };
 
     const handleExpandToggleClick = () => {

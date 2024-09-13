@@ -650,6 +650,7 @@ function stateSnapshotStorageChange(
 
 async function onStorageChanged(
     stateRef: StateRef<TabManagerState>,
+    writer: boolean,
     changes: any,
     namespace: string,
 ) {
@@ -662,16 +663,24 @@ async function onStorageChanged(
         });
     }
 
-    const maybeState = stateSnapshotStorageChange(changes, namespace);
-    if (maybeState != null) {
-        log.debug('onStorageChanged: state snapshot changed');
-        update(stateRef, (state) => {
-            return maybeState;
-        });
+    // We only check for state changes on storage if we are not the main
+    // writer. Otherwise we would be reverting state changes since
+    // the last write!
+    if (!writer) {
+        const maybeState = stateSnapshotStorageChange(changes, namespace);
+        if (maybeState != null) {
+            log.debug('onStorageChanged: state snapshot changed');
+            update(stateRef, (state) => {
+                return maybeState;
+            });
+        }
     }
 }
 
-function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
+function registerEventHandlers(
+    stateRef: StateRef<TabManagerState>,
+    writer: boolean,
+) {
     // window events:
     chrome.windows.onRemoved.addListener((windowId) => {
         chromeEventLog.debug('Chrome Event:: windows.onRemoved: ', windowId);
@@ -833,7 +842,7 @@ function registerEventHandlers(stateRef: StateRef<TabManagerState>) {
         onBookmarkChanged(stateRef, id, changeInfo),
     );
     chrome.storage.onChanged.addListener((changes, namespace) =>
-        onStorageChanged(stateRef, changes, namespace),
+        onStorageChanged(stateRef, writer, changes, namespace),
     );
 }
 
@@ -1178,7 +1187,7 @@ export async function initState(
         savedState.init(stateRef);
     }
 
-    registerEventHandlers(stateRef);
+    registerEventHandlers(stateRef, writer);
 
     // (This is something we had in place from Manifest V2 era; doesn't seem
     // to be necessary anymore, but leaving commented out for now, just in case

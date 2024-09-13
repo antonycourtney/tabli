@@ -19,7 +19,7 @@ function main() {
             elem.focus();
         }
     };
-    RenderCommon.getFocusedAndRender(true);
+    RenderCommon.getFocusedAndRender(true, true);
 }
 
 main();
