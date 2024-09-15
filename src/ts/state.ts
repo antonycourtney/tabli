@@ -33,6 +33,7 @@ const _ = {
     fromPairs,
 };
 const chromeEventLog = getLogger('chrome-events');
+utils.setLogLevel(chromeEventLog);
 const tabliFolderTitle = 'Tabli Saved Windows';
 const archiveFolderTitle = '_Archive';
 let tabliFolderId: string | null = null;

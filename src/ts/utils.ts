@@ -247,12 +247,15 @@ export function areEqualShallow(a: any, b: any, debug = false): boolean {
 export function setLogLevel(log: any) {
     const nodeEnv = process.env.NODE_ENV;
 
-    if (nodeEnv === 'development') {
-        // more detail, generally:
-        log.setLevel('debug');
-    } else {
-        log.setLevel('info');
-    }
+    const logLevel = nodeEnv === 'development' ? 'debug' : 'info';
+
+    log.setLevel(logLevel);
+    log.info(
+        'utils.setLogLevel: Set log level to ',
+        logLevel,
+        ', log.getLevel(): ',
+        log.getLevel(),
+    );
 }
 
 let cachedIsExtension: boolean | undefined = undefined;
