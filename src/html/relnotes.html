@@ -1,14 +1,27 @@
 <div class="card">
     <div class="card-header">
-        <div class="card-title">Tabli 3.0.0</div>
-        <div class="card-subtitle">Aug. 20, 2024</div>
+        <div class="card-title">Tabli 3.0.1</div>
+        <div class="card-subtitle">Sep. 14, 2024</div>
     </div>
     <div class="card-body">
         <div>
-            <span>What's New (3.0.0):</span>
+            <span>What's New (3.0.1):</span>
             <br>
-            This is mostly a maintenance release to upgrade to the latest
-            Chrome Extension manifest format (V3).
+            This release updates Tabli  
+            to the latest extension manifest format (V3) and a service worker, a 
+            <a target="_blank" href="https://blog.chromium.org/2024/05/manifest-v2-phase-out-begins.html">mandatory requirement</a> for
+            all Chrome extensions.
+            <p>
+            As a consequence of this update, Tabli now only supports a free-standing popout window.
+            While this has been the recommended way to use Tabli for many years, until now Tabli
+            also continued to support an in-browser popup window.
+            <P>
+            Unfortunately, continuing to
+            support the in-browser popup window would have required a complete rewrite of Tabli's
+            internals, which was not feasible.
+            <p>
+            I did not make this change lightly, and explored all reasonable options for
+            avoiding this change. I apologize for any inconvenience this may cause. 
             <br>
             Other Changes:
             <ul>
