@@ -129,7 +129,7 @@ export async function getFocusedAndRender(
     initGlobalLogger(isPopout ? 'popout' : 'popup');
     const storeRef = await initState(true);
     (window as any)._tabliIsPopout = isPopout;
-    chrome.windows.getCurrent({}, (currentChromeWindow) => {
+    chrome.windows.getCurrent({ populate: true }, (currentChromeWindow) => {
         renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
     });
 }
