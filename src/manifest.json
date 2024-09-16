@@ -11,13 +11,12 @@
     "background": {
         "service_worker": "js/service-worker.js"
     },
-    "permissions": ["storage", "tabs", "bookmarks", "favicon"],
+    "permissions": ["storage", "tabs", "bookmarks", "favicon", "sidePanel"],
     "icons": {
         "16": "images/glyphicons_154_more_windows.png",
         "48": "images/Multimedia-12-48.png",
         "128": "images/Multimedia-12-128.png"
     },
-
     "commands": {
         "_execute_action": {
             "suggested_key": {
@@ -34,6 +33,9 @@
                 "mac": "MacCtrl+Comma"
             }
         }
+    },
+    "side_panel": {
+        "default_path": "popout.html"
     },
     "web_accessible_resources": [
         {

@@ -70,12 +70,20 @@ async function main() {
 
     log.debug('bgHelper: initialized stateRef');
 
+    /*
     if (initialLoad && userPrefs.popoutOnStart) {
         log.debug('bgHelper: popoutOnStart is true, creating popout');
         actions.showPopout(stateRef);
     } else {
         log.debug('bgHelper: skipping popout');
     }
+    */
+
+    // Allows users to open the side panel by clicking on the action toolbar icon
+    chrome.sidePanel
+        .setPanelBehavior({ openPanelOnActionClick: true })
+        .catch((error) => log.error(error));
+
     chrome.commands.onCommand.addListener((command) => {
         log.debug('Chrome Event: onCommand: ', command);
 

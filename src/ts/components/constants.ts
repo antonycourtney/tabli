@@ -1,5 +1,5 @@
 export const HEADER_BUTTON_SIZE = 16;
-export const WINDOW_MIN_WIDTH = 345;
+export const WINDOW_MIN_WIDTH = 320;
 export const WINDOW_MAX_WIDTH = 700;
 export const WINDOW_TITLE_MIN_WIDTH = 210;
 export const WINDOW_TITLE_MAX_WIDTH = WINDOW_MIN_WIDTH - 126;
@@ -29,5 +29,5 @@ export const KEY_N = 78;
 export const KEY_P = 80;
 
 export const DragItemTypes = {
-    TAB_ITEM: 'tabItem'
+    TAB_ITEM: 'tabItem',
 };
