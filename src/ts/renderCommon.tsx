@@ -36,6 +36,23 @@ export async function renderPopup(
         const port = chrome.runtime.connect({ name: portName });
         log.debug('renderPopup: connected to service worker');
 
+        port.onMessage.addListener((msg) => {
+            log.debug('renderPopup: received message: ', msg);
+            const { type } = msg;
+            if (type === 'stateChange') {
+                const { stateSnapshot } = msg;
+                /*
+                log.debug(
+                    'renderPopup: received state change: ',
+                    stateSnapshot,
+                );
+                const stateJS = JSON.parse(stateSnapshot);
+                const nextAppState = TabManagerState.deserialize(stateJS);
+                update(storeRef, (st) => nextAppState);
+                */
+            }
+        });
+
         var tPreRender = performance.now();
 
         var parentNode = document.getElementById('windowList-region');
