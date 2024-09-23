@@ -515,27 +515,32 @@ export default class TabManagerState extends Immutable.Record(
      */
 
     findURL(url: string): [TabWindow, TabItem][] {
-        const normalizedTargetUrl = utils.normalizeGoogleDocURL(url);
+        if (url === 'chrome://newtab/' || url.startsWith('chrome-extension://')) {
+            return [];
+        }
 
-        if (normalizedTargetUrl !== 'chrome://newtab/' && !normalizedTargetUrl.startsWith('chrome-extension://')) {
-            const openWindows = this.getOpen().toArray();
-            const matches: [TabWindow, TabItem][] = [];
+        const openWindows = this.getOpen().toArray();
+        const matches: [TabWindow, TabItem][] = [];
+        const isGoogleDoc = utils.isGoogleDocURL(url);
+        const shouldNormalize = isGoogleDoc && this.preferences.dedupeGoogleDocs;
 
-            for (const tabWindow of openWindows) {
-                for (const tabItem of tabWindow.tabItems) {
-                    if (tabItem.open) {
-                        const normalizedItemUrl = utils.normalizeGoogleDocURL(tabItem.url);
-                        if (normalizedItemUrl === normalizedTargetUrl) {
-                            matches.push([tabWindow, tabItem]);
-                        }
+        const targetUrl = shouldNormalize ? utils.normalizeGoogleDocURL(url) : url;
+
+        for (const tabWindow of openWindows) {
+            for (const tabItem of tabWindow.tabItems) {
+                if (tabItem.open) {
+                    const itemUrl = shouldNormalize 
+                        ? utils.normalizeGoogleDocURL(tabItem.url) 
+                        : tabItem.url;
+                    
+                    if (itemUrl === targetUrl) {
+                        matches.push([tabWindow, tabItem]);
                     }
                 }
             }
-
-            return matches;
-        } else {
-            return [];
         }
+
+        return matches;
     }
 
     static deserialize(snapshot: any): TabManagerState {
