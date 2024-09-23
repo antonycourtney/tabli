@@ -380,17 +380,15 @@ const dedupeTab = async (
                     tabId,
                 );
                 const tabWindow = st.getTabWindowByChromeId(tab.windowId);
-                const tabClosedSt = await actions.closeTab(
-                    tabWindow!,
-                    tabId,
-                    stateRef,
-                );
-                actions.activateOrRestoreTab(
-                    origTabWindow,
-                    origTab,
-                    0,
-                    stateRef,
-                );
+                if (tabWindow) {
+                    await actions.closeTab(tabWindow, tabId, stateRef);
+                    await actions.activateOrRestoreTab(
+                        origTabWindow,
+                        origTab,
+                        0,
+                        stateRef,
+                    );
+                }
             }
         }
     } catch (e) {
