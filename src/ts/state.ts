@@ -1171,7 +1171,7 @@ export async function loadSnapState(): Promise<StateRef<TabManagerState> | null>
 }
 
 export async function initState(
-    writer: boolean = false,
+    writer: boolean,
 ): Promise<StateRef<TabManagerState>> {
     // check for existing state snapshot in chome.storage.session
     log.debug('initState: initializing state...');

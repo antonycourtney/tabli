@@ -89,7 +89,7 @@ async function main() {
 
     // 8/23/24: Passing false for now to avoid horrid race condition when opening saved windows.
     // Means that popout window Id will often be wrong.
-    const stateRef = await initState(false);
+    const stateRef = await initState(true);
 
     log.debug('bgHelper: initialized stateRef');
 
