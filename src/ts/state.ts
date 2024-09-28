@@ -330,6 +330,11 @@ const dedupeTab = async (
         pairs.map(([a, b]) => [a.toJS(), b.toJS()]);
 
     try {
+        // Check if general tab deduplication is enabled
+        if (!st.preferences.dedupeTabs) {
+            return; // Exit early if general deduplication is disabled
+        }
+
         const url = changeInfo.url;
 
         // TODO: We should really look at pendingUrl, to try and dedupe tabs earlier...
@@ -380,17 +385,15 @@ const dedupeTab = async (
                     tabId,
                 );
                 const tabWindow = st.getTabWindowByChromeId(tab.windowId);
-                const tabClosedSt = await actions.closeTab(
-                    tabWindow!,
-                    tabId,
-                    stateRef,
-                );
-                actions.activateOrRestoreTab(
-                    origTabWindow,
-                    origTab,
-                    0,
-                    stateRef,
-                );
+                if (tabWindow) {
+                    await actions.closeTab(tabWindow, tabId, stateRef);
+                    await actions.activateOrRestoreTab(
+                        origTabWindow,
+                        origTab,
+                        0,
+                        stateRef,
+                    );
+                }
             }
         }
     } catch (e) {

@@ -12,12 +12,10 @@ import map from 'lodash/map';
 import reduce from 'lodash/reduce';
 import * as Immutable from 'immutable';
 import * as prefs from './preferences';
-import * as searchOps from './searchOps';
-import escapeStringRegexp from 'escape-string-regexp';
 import * as tabWindowUtils from './tabWindowUtils';
 import { TabWindow, TabItem } from './tabWindow';
-import ChromePromise from 'chrome-promise/chrome-promise';
 import { string } from 'prop-types';
+import * as utils from './utils';
 
 const _ = {
     filter,
@@ -517,37 +515,32 @@ export default class TabManagerState extends Immutable.Record(
      */
 
     findURL(url: string): [TabWindow, TabItem][] {
-        // TODO: && !url.startsWith('chrome-extension://')
-        if (url !== 'chrome://newtab/') {
-            const urlRE = new RegExp('^' + escapeStringRegexp(url) + '$');
-            const openWindows = this.getOpen().toArray();
-            const filteredWindows = searchOps.filterTabWindows(
-                openWindows,
-                urlRE,
-                {
-                    matchUrl: true,
-                    matchTitle: false,
-                    openOnly: true,
-                },
-            ); // expand to a simple array of [TabWindow,TabItem] pairs:
-
-            const rawMatches = filteredWindows.map((ftw) => {
-                const { tabWindow: targetTabWindow, itemMatches } = ftw;
-                const rawMatchPairs = itemMatches.map(
-                    (match) =>
-                        [targetTabWindow, match.tabItem] as [
-                            TabWindow,
-                            TabItem,
-                        ],
-                );
-                return rawMatchPairs.toArray();
-            });
-            const matchPairs = _.flatten<[TabWindow, TabItem]>(rawMatches);
-
-            return matchPairs;
-        } else {
+        if (url === 'chrome://newtab/' || url.startsWith('chrome-extension://')) {
             return [];
         }
+
+        const openWindows = this.getOpen().toArray();
+        const matches: [TabWindow, TabItem][] = [];
+        const isGoogleDoc = utils.isGoogleDocURL(url);
+        const shouldNormalize = isGoogleDoc && this.preferences.dedupeGoogleDocs;
+
+        const targetUrl = shouldNormalize ? utils.normalizeGoogleDocURL(url) : url;
+
+        for (const tabWindow of openWindows) {
+            for (const tabItem of tabWindow.tabItems) {
+                if (tabItem.open) {
+                    const itemUrl = shouldNormalize 
+                        ? utils.normalizeGoogleDocURL(tabItem.url) 
+                        : tabItem.url;
+                    
+                    if (itemUrl === targetUrl) {
+                        matches.push([tabWindow, tabItem]);
+                    }
+                }
+            }
+        }
+
+        return matches;
     }
 
     static deserialize(snapshot: any): TabManagerState {

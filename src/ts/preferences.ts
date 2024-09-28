@@ -17,6 +17,7 @@ export const USER_PREFS_KEY = 'UserPreferences';
 interface PreferencesProps {
     popoutOnStart: boolean; // show popout on startup?
     dedupeTabs: boolean; // close tab if URL matches existing tab
+    dedupeGoogleDocs: boolean; // deduplicate google docs regardless of parameters etc.
     revertOnOpen: boolean; // revert to anchor tabs when opening saved window
     theme: string;
     layout: string;
@@ -26,6 +27,7 @@ interface PreferencesProps {
 const defaultPreferencesProps: PreferencesProps = {
     popoutOnStart: false,
     dedupeTabs: false,
+    dedupeGoogleDocs: false,
     revertOnOpen: true,
     theme: 'light',
     layout: 'normal',

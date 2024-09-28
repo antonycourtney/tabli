@@ -142,6 +142,27 @@ export function baseURL(url: string): string {
 }
 
 /**
+ * Normalize a Google Doc URL to the base URL without any parameters
+ * @param url 
+ * @returns 
+ */
+export function normalizeGoogleDocURL(url: string): string {
+    const googleDocsRegex = /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
+    const match = url.match(googleDocsRegex);
+    if (match) {
+        return `${match[0]}`; // Return the base URL without any parameters
+    }
+    return url; // Return the original URL if it's not a Google Doc
+}
+
+export function isGoogleDocURL(url: string): boolean {
+    const googleDocsRegex = /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
+    return googleDocsRegex.test(url);
+}
+
+// ... (rest of the utils.ts file remains the same)
+
+/**
  * chain a sequence of asynchronous actions
  * TODO: Investigate if this can go away with latest iteration of
  * oneRef with awaitableUpdate

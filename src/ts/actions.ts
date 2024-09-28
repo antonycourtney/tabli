@@ -575,41 +575,68 @@ export async function showPreferences() {
 }
 
 export const showPopout = async (stateRef: StateRef<TabManagerState>) => {
-    const popoutId = mutableGet(stateRef).popoutWindowId;
-    console.log('*** showPopout: popoutId: ', popoutId);
-    if (popoutId !== chrome.windows.WINDOW_ID_NONE) {
-        chromep.windows.update(popoutId, { focused: true });
-    } else {
-        const popoutWindow = await chromep.windows.create({
-            url: 'popout.html',
-            type: 'popup',
-            left: 0,
-            top: 0,
-            width: Constants.POPOUT_DEFAULT_WIDTH,
-            height: Constants.POPOUT_DEFAULT_HEIGHT,
-        });
-        if (popoutWindow.id) {
-            update(stateRef, (st) =>
-                st.set('popoutWindowId', popoutWindow.id!),
-            );
+    const st = mutableGet(stateRef);
+    const oldPopoutId = st.popoutWindowId;
+    let oldState = null;
+
+    // Try to capture state of the old window
+    if (oldPopoutId !== chrome.windows.WINDOW_ID_NONE) {
+        try {
+            const oldWindow = await chromep.windows.get(oldPopoutId);
+            oldState = {
+                left: oldWindow.left,
+                top: oldWindow.top,
+                width: oldWindow.width,
+                height: oldWindow.height
+            };
+        } catch (e) {
+            // Old window doesn't exist, ignore
+        }
+    }
+
+    // Create a new popout window
+    const createData: chrome.windows.CreateData = {
+        url: 'popout.html',
+        type: 'popup',
+        left: oldState ? oldState.left : 0,
+        top: oldState ? oldState.top : 0,
+        width: oldState ? oldState.width : Constants.POPOUT_DEFAULT_WIDTH,
+        height: oldState ? oldState.height : Constants.POPOUT_DEFAULT_HEIGHT
+    };
+
+    const newPopoutWindow = await chromep.windows.create(createData);
+
+    if (newPopoutWindow.id) {
+        update(stateRef, (st) =>
+            st.set('popoutWindowId', newPopoutWindow.id!)
+        );
+
+        // Close the old window after a short delay
+        if (oldPopoutId !== chrome.windows.WINDOW_ID_NONE) {
+            setTimeout(() => {
+                chromep.windows.remove(oldPopoutId).catch(() => {
+                    // Ignore errors if window doesn't exist
+                });
+            }, 500);  // 500ms delay
         }
     }
 };
 
-export const hidePopout = async (
-    storeRef: TMSRef,
-): Promise<TabManagerState> => {
+export const hidePopout = async (storeRef: TMSRef): Promise<TabManagerState> => {
     const winStore = mutableGet(storeRef);
     const popoutId = winStore.popoutWindowId;
     if (popoutId !== chrome.windows.WINDOW_ID_NONE) {
         log.debug('hidePopout: Found existing popout window, closing...');
-        await chromep.windows.remove(popoutId);
+        try {
+            await chromep.windows.remove(popoutId);
+        } catch (e) {
+            log.warn('hidePopout: Error closing popout window:', e);
+        }
         log.debug('hidePopout: old popout window closed.');
-        return awaitableUpdate_(storeRef, (state) =>
-            state.set('popoutWindowId', chrome.windows.WINDOW_ID_NONE),
-        );
     }
-    return winStore;
+    return awaitableUpdate_(storeRef, (state) =>
+        state.set('popoutWindowId', chrome.windows.WINDOW_ID_NONE)
+    );
 };
 
 export function toggleExpandAll(storeRef: TMSRef) {
@@ -847,12 +874,12 @@ export const oldMoveTabItem = async (
             const srcTabWindow = st.getSavedWindowByTabBookmarkId(bookmarkId);
             const updSt = srcTabWindow
                 ? st.handleSavedTabMoved(
-                      srcTabWindow,
-                      targetTabWindow,
-                      movedTabItem,
-                      chromeTab!,
-                      bmNode,
-                  )
+                    srcTabWindow,
+                    targetTabWindow,
+                    movedTabItem,
+                    chromeTab!,
+                    bmNode,
+                )
                 : st;
             return updSt;
         });
