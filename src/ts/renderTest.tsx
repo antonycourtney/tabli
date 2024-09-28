@@ -91,7 +91,7 @@ function renderPage(testData: any) {
     var tPreRender = performance.now();
 
     // N.B. false last arg to prevent sync'ing current chrome windows
-    RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false, true);
+    RenderCommon.renderPopup(storeRef, false, true);
 
     var tPostRender = performance.now();
     log.info(

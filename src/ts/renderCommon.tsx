@@ -13,7 +13,7 @@ import * as oneref from 'oneref';
 import { update, refContainer } from 'oneref';
 import { utimesSync } from 'fs';
 import { init, saveSnapshot } from './savedState';
-import { initState } from './state';
+import { initState, loadSnapState } from './state';
 
 // full state update no more than 5 times a second:
 const DEBOUNCE_WAIT = 200;
@@ -23,35 +23,12 @@ const DEBOUNCE_WAIT = 200;
  */
 export async function renderPopup(
     storeRef: oneref.StateRef<TabManagerState>,
-    currentChromeWindow: chrome.windows.Window | null,
     isPopout: boolean,
-    doSync: boolean,
     renderTest: boolean = false,
 ) {
     try {
         utils.setLogLevel(log);
-        log.debug('renderPopup: isPopout: ', isPopout, ' doSync: ', doSync);
-
-        const portName = isPopout ? 'popout' : 'popup';
-        const port = chrome.runtime.connect({ name: portName });
-        log.debug('renderPopup: connected to service worker');
-
-        port.onMessage.addListener((msg) => {
-            log.debug('renderPopup: received message: ', msg);
-            const { type } = msg;
-            if (type === 'stateChange') {
-                const { stateSnapshot } = msg;
-                /*
-                log.debug(
-                    'renderPopup: received state change: ',
-                    stateSnapshot,
-                );
-                const stateJS = JSON.parse(stateSnapshot);
-                const nextAppState = TabManagerState.deserialize(stateJS);
-                update(storeRef, (st) => nextAppState);
-                */
-            }
-        });
+        log.debug('renderPopup: isPopout: ', isPopout);
 
         var tPreRender = performance.now();
 
@@ -76,62 +53,6 @@ export async function renderPopup(
             tPostRender - tPreRender,
             ' ms)',
         );
-
-        // And sync our window state, which may update the UI...
-        if (doSync) {
-            const syncStore = await actions.syncChromeWindows(storeRef);
-            log.debug(
-                '*** renderPopup: after window sync, open windows: ',
-                syncStore.windowIdMap.size,
-            );
-            const m = syncStore.windowIdMap;
-            const syncStoreJS = syncStore.toJS() as any;
-            log.debug('*** renderPopup: window sync complete: ', syncStoreJS);
-            let nextStore = syncStore;
-            // And set current focused window:
-            if (
-                currentChromeWindow &&
-                currentChromeWindow.id !== syncStore.currentWindowId
-            ) {
-                log.debug(
-                    `renderPopup: setting current window from ${syncStore.currentWindowId} to ${currentChromeWindow.id}: `,
-                    currentChromeWindow,
-                );
-                nextStore = syncStore.setCurrentWindow(currentChromeWindow);
-                log.debug(
-                    'renderPopup: after call to setCurrentWindow: nextStore: ',
-                    nextStore,
-                );
-                update(storeRef, (st) => nextStore);
-            } else {
-                log.debug(
-                    'doRender: no change in current window -- skipping setValue',
-                );
-            }
-            if (
-                isPopout &&
-                currentChromeWindow &&
-                nextStore.popoutWindowId !== currentChromeWindow.id &&
-                currentChromeWindow.id !== undefined
-            ) {
-                log.debug(
-                    'Setting popout window id to ',
-                    currentChromeWindow.id,
-                );
-                update(storeRef, (st) =>
-                    st.set('popoutWindowId', currentChromeWindow.id!),
-                );
-            }
-
-            // logHTML("Updated savedHTML", renderedString)
-            var tPostSyncUpdate = performance.now();
-            log.info(
-                'syncChromeWindows and update complete: ',
-                tPostSyncUpdate - tPreRender,
-                ' ms',
-            );
-            saveSnapshot(storeRef);
-        }
     } catch (e) {
         log.error('renderPopup: caught exception invoking function: ');
         log.error((e as Error).stack);
@@ -144,9 +65,31 @@ export async function getFocusedAndRender(
     doSync: boolean = true,
 ) {
     initGlobalLogger(isPopout ? 'popout' : 'popup');
-    const storeRef = await initState(true);
+    // const storeRef = await initState(true);
+    const storeRef = await loadSnapState();
+
+    if (storeRef == null) {
+        throw new Error(
+            'getFocusedAndRender: failed to load state snapshot from session storage',
+        );
+    }
     (window as any)._tabliIsPopout = isPopout;
-    chrome.windows.getCurrent({ populate: true }, (currentChromeWindow) => {
-        renderPopup(storeRef, currentChromeWindow, isPopout, doSync);
+
+    const portName = isPopout ? 'popout' : 'popup';
+    const port = chrome.runtime.connect({ name: portName });
+    log.debug('renderPopup: connected to service worker');
+
+    port.onMessage.addListener((msg) => {
+        log.debug('renderPopup: received message: ', msg);
+        const { type } = msg;
+        if (type === 'stateChange') {
+            const { stateSnapshot } = msg;
+            log.debug('renderPopup: received state change: ', stateSnapshot);
+            const stateJS = JSON.parse(stateSnapshot);
+            const nextAppState = TabManagerState.deserialize(stateJS);
+            update(storeRef, (st) => nextAppState);
+        }
     });
+
+    renderPopup(storeRef, isPopout);
 }
