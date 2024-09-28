@@ -67,7 +67,11 @@ function mkStateUpdater(
         const diffs = diff(prevSnap, snap);
         log.debug('bgHelper: state change diffs: ', diffs);
         prevSnap = snap;
-        port.postMessage({ type: 'stateChange', stateSnapshot });
+        try {
+            port.postMessage({ type: 'stateChange', stateSnapshot });
+        } catch (e) {
+            log.debug('bgHelper: error sending state change (ignoring) ', e);
+        }
     };
     const throttledStateUpdater = _.throttle(stateUpdater, 100);
     return throttledStateUpdater;
