@@ -202,7 +202,6 @@ export class TabWindow {
     snapshot: boolean = false;
     chromeSessionId: string | null = null;
     expanded: boolean | null = null;
-    key: string = '';
 
     private constructor() {}
 
@@ -210,9 +209,6 @@ export class TabWindow {
         return produce(new TabWindow(), (draft: Draft<TabWindow>) => {
             Object.assign(draft, props);
             draft.tabItems = (props.tabItems || []).map(TabItem.create);
-            draft.key = props.openWindowId
-                ? `_open${props.openWindowId}`
-                : `_saved${props.savedFolderId}`;
         });
     }
 
@@ -228,6 +224,13 @@ export class TabWindow {
         });
     }
 
+    get key(): string {
+        if (this.saved) {
+            return '_saved' + this.savedFolderId;
+        } else {
+            return '_open' + this.openWindowId;
+        }
+    }
     updateSavedTitle(title: string): TabWindow {
         return TabWindow.update(this, { savedTitle: title });
     }

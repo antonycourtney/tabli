@@ -1,35 +1,34 @@
 import { log } from './globals';
 import throttle from 'lodash/throttle';
+import mapValues from 'lodash/mapValues';
 import TabManagerState from './tabManagerState';
 import { StateRef, addStateChangeListener, mutableGet } from 'oneref';
 import * as Immutable from 'immutable';
 import { TabWindow, TabItem } from './tabWindow';
-const _ = { throttle };
+const _ = { throttle, mapValues };
 
 // Save previous bookmarkIdMap for efficient diff
-let prevBookmarkIdMap: Immutable.Map<string, TabWindow> | null = null; // last bookmarkIdMap written
+let prevBookmarkIdMap: { [id: string]: TabWindow } | null = null; // last bookmarkIdMap written
 
-let latestBookmarkIdMap: Immutable.Map<string, TabWindow> | null = null; // most recent bookmark map
+let latestBookmarkIdMap: { [id: string]: TabWindow } | null = null; // most recent bookmark map
 
 /**
  * get diffs between old and new version of bookmark id map.
- * Assumes an Immutable.Map() of string to Immutable.Record
- * returns:
- *  { deletes: Immutable.Set<string>, updates: Immutable.Seq<record> }
  */
 const getDiffs = (
-    prevMap: Immutable.Map<string, TabWindow>,
-    curMap: Immutable.Map<string, TabWindow>,
+    prevMap: { [id: string]: TabWindow },
+    curMap: { [id: string]: TabWindow },
 ) => {
-    // find deleted keys:
-    const prevKeySet = prevMap.keySeq().toSet();
-    const curKeySet = curMap.keySeq().toSet();
-    const deletes = prevKeySet.subtract(curKeySet);
+    const prevKeys = new Set(Object.keys(prevMap));
+    const curKeys = new Set(Object.keys(curMap));
 
-    const updatedKeys = curMap
-        .keySeq()
-        .filter((k) => !deletes.has(k) && prevMap.get(k) !== curMap.get(k));
-    const updates = updatedKeys.map((k) => curMap.get(k));
+    // find deleted keys:
+    const deletes = new Set([...prevKeys].filter((x) => !curKeys.has(x)));
+
+    const updatedKeys = Object.keys(curMap).filter(
+        (k) => !deletes.has(k) && prevMap[k] !== curMap[k],
+    );
+    const updates = updatedKeys.map((k) => curMap[k]);
 
     return { deletes, updates };
 };
@@ -38,11 +37,11 @@ const getDiffs = (
  * determines if there are any diffs between prevMap and curMap
  */
 const hasDiffs = (
-    prevMap: Immutable.Map<string, TabWindow>,
-    curMap: Immutable.Map<string, TabWindow>,
+    prevMap: { [id: string]: TabWindow },
+    curMap: { [id: string]: TabWindow },
 ) => {
     const diffs = getDiffs(prevMap, curMap);
-    return diffs.deletes.count() > 0 || diffs.updates.count() > 0;
+    return diffs.deletes.size > 0 || diffs.updates.length > 0;
 };
 
 const savedWindowStateVersion = 1;
@@ -51,7 +50,7 @@ const savedWindowStateVersion = 1;
 const saveState = () => {
     prevBookmarkIdMap = latestBookmarkIdMap;
     // never persist a chrome session id -- we'll set during startup from sessions API
-    const serBookmarkIdMap = latestBookmarkIdMap!.map((tw) =>
+    const serBookmarkIdMap = _.mapValues(latestBookmarkIdMap, (tw: TabWindow) =>
         tw.clearChromeSessionId(),
     );
     const savedWindowState = JSON.stringify(serBookmarkIdMap, null, 2);

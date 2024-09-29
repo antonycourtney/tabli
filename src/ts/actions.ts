@@ -954,7 +954,7 @@ export const tidyWindows = async (stateRef: TMSRef) => {
 export const untidyWindows = async (stateRef: TMSRef) => {
     const st = mutableGet(stateRef);
     const lastFocusedTabWindow = st.getCurrentWindow();
-    const openWindows = st.getOpen().toArray();
+    const openWindows = st.getOpen();
     for (let tw of openWindows) {
         const windowId = tw.openWindowId;
         if (tw.windowType === 'normal') {

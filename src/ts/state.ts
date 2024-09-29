@@ -166,7 +166,7 @@ const initWinStore = async () => {
     archiveFolderId = archiveFolder.id;
     const subTreeNodes = await chromep.bookmarks.getSubTree(tabliFolder.id); // log.debug("bookmarks.getSubTree for tabliFolder: ", subTreeNodes)
 
-    const baseWinStore = new TabManagerState({
+    const baseWinStore = TabManagerState.create({
         folderId: tabliFolderId,
         archiveFolderId,
     });
@@ -852,52 +852,40 @@ function registerEventHandlers(
 
 const MATCH_THRESHOLD = 0.25; // type constructor for match info:
 
-interface MatchInfoProps {
+interface MatchInfo {
     windowId: number;
-    matches: Immutable.Map<string, number>;
+    matches: Map<string, number>;
     bestMatch: string | null;
     tabCount: number;
 }
 
-const defaultMatchInfoProps: MatchInfoProps = {
-    windowId: -1,
-    matches: Immutable.Map(),
-    bestMatch: null,
-    tabCount: 0,
-};
-class MatchInfo extends Immutable.Record(defaultMatchInfoProps) {}
-
 const getWindowMatchInfo = (
     bmStore: TabManagerState,
-    urlIdMap: Immutable.Map<string, Immutable.Set<string>>,
+    urlIdMap: Map<string, Set<string>>,
     w: chrome.windows.Window,
 ): MatchInfo => {
     const matchSets = w
-        .tabs!.map((t) => urlIdMap.get(t.url!, null))
-        .filter((x) => x !== null) as Immutable.Set<string>[];
+        .tabs!.map((t) => urlIdMap.get(t.url!) || new Set<string>())
+        .filter((set) => set.size > 0);
 
-    type CountMap = Immutable.Map<string, number>;
+    const countMaps = matchSets.map((s) => {
+        const countMap = new Map<string, number>();
+        s.forEach((v) => countMap.set(v, (countMap.get(v) || 0) + 1));
+        return countMap;
+    });
 
-    // countMaps :: Array<Map<BookmarkId,Num>>
-    const countMaps = matchSets.map((s) => s.countBy((v) => v));
-
-    // Now let's reduce array, merging all maps into a single map, aggregating counts:
-    const aggMerge = (mA: CountMap, mB: CountMap): CountMap =>
-        mA.mergeWith((prev, next) => prev + next, mB);
-
-    // matchMap :: Map<BookmarkId,Num>
-    const matchMap = countMaps.reduce(aggMerge, Immutable.Map());
-    /*
-     * The logic here is convoluted but seems to work OK
-     * in practice.
-     */
-    // Ensure (# matches / # saved URLs) for each bookmark > MATCH_THRESHOLD
+    const matchMap = new Map<string, number>();
+    countMaps.forEach((map) => {
+        map.forEach((count, id) => {
+            matchMap.set(id, (matchMap.get(id) || 0) + count);
+        });
+    });
 
     function aboveMatchThreshold(matchCount: number, bookmarkId: string) {
         const tabCount = w.tabs!.length;
-        const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId);
-        const savedUrlCount = savedTabWindow!.tabItems.length;
-        const matchRatio = matchCount / savedUrlCount; // log.debug("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
+        const savedTabWindow = bmStore.bookmarkIdMap[bookmarkId];
+        const savedUrlCount = savedTabWindow.tabItems.length;
+        const matchRatio = matchCount / savedUrlCount;
 
         return (
             matchCount > 1 ||
@@ -907,15 +895,23 @@ const getWindowMatchInfo = (
         );
     }
 
-    const threshMap = matchMap.filter(aboveMatchThreshold);
+    const threshMap = new Map<string, number>();
+    matchMap.forEach((count, id) => {
+        if (aboveMatchThreshold(count, id)) {
+            threshMap.set(id, count);
+        }
+    });
+
     const bestMatch = utils.bestMatch(threshMap);
-    return new MatchInfo({
-        windowId: w.id,
+
+    return {
+        windowId: w.id!,
         matches: matchMap,
         bestMatch,
         tabCount: w.tabs!.length,
-    });
+    };
 };
+
 /**
  * Heuristic scan to find any open windows that seem to have come from saved windows
  * and re-attach them on initial load of the background page. Mainly useful for
@@ -931,64 +927,50 @@ const getWindowMatchInfo = (
 function attachWindowList(
     bmStore: TabManagerState,
     windowList: chrome.windows.Window[],
-) {
+): TabManagerState {
     const urlIdMap = bmStore.getUrlBookmarkIdMap();
-    /**
-     * We could come up with better heuristics here, but for now we'll be conservative
-     * and only re-attach when there is an unambiguous best match
-     */
-    // Only look at windows that match exactly one bookmark folder
-    // (Could be improved by sorting entries on number of matches and picking best (if there is one))
 
-    const windowMatchInfo = Immutable.Seq(windowList)
+    const windowMatchInfo = windowList
         .map((w) => getWindowMatchInfo(bmStore, urlIdMap, w))
-        .filter((mi) => mi.bestMatch); // log.debug("windowMatchInfo: ", windowMatchInfo.toJS())
-    // Now gather an inverse map of the form:
-    // Map<BookmarkId,Map<WindowId,Num>>
+        .filter((mi) => mi.bestMatch !== null);
 
-    const bmMatches = windowMatchInfo.groupBy(
-        (mi) => mi.bestMatch,
-    ) as unknown as Immutable.Seq.Keyed<
-        string,
-        Immutable.Seq.Indexed<MatchInfo>
-    >; // log.debug("bmMatches: ", bmMatches.toJS())
-    // bmMatchMaps: Map<BookmarkId,Map<WindowId,Num>>
-
-    const bmMatchMaps = bmMatches.map((mis) => {
-        // mis :: Seq<MatchInfo>
-        // mercifully each mi will have a distinct windowId at this point:
-        const entries = mis.map((mi) => {
-            const matchTabCount = mi.matches.get(mi.bestMatch!);
-            return [mi.windowId, matchTabCount] as [number, number];
-        });
-        return Immutable.Map<number, number>(entries);
+    const bmMatches = new Map<string, Map<number, number>>();
+    windowMatchInfo.forEach((mi) => {
+        if (mi.bestMatch) {
+            if (!bmMatches.has(mi.bestMatch)) {
+                bmMatches.set(mi.bestMatch, new Map());
+            }
+            bmMatches
+                .get(mi.bestMatch)!
+                .set(mi.windowId, mi.matches.get(mi.bestMatch)!);
+        }
     });
-    // log.debug("bmMatchMaps: ", bmMatchMaps.toJS())
 
-    // bestBMMatches :: Seq.Keyed<BookarkId,WindowId>
-    const bestBMMatches = bmMatchMaps
-        .map((mm) => utils.bestMatch(mm))
-        .filter((ct) => ct); // log.debug("bestBMMatches: ", bestBMMatches.toJS())
-    // Form a map from chrome window ids to chrome window snapshots:
+    const bestBMMatches = new Map<string, number>();
+    bmMatches.forEach((windowMatches, bookmarkId) => {
+        const bestMatchForBookmark = utils.bestMatch(windowMatches);
+        if (bestMatchForBookmark !== null) {
+            bestBMMatches.set(bookmarkId, bestMatchForBookmark);
+        }
+    });
 
-    const chromeWinMap = _.fromPairs(
-        windowList.map((w) => [w.id, w] as [number, chrome.windows.Window]),
-    ); // And build up our attached state by attaching to each window in bestBMMatches:
+    const chromeWinMap = new Map(windowList.map((w) => [w.id!, w]));
 
-    const attacher = (
-        st: TabManagerState,
-        windowId: number | null,
-        bookmarkId: string,
-    ) => {
-        const chromeWindow = chromeWinMap[windowId!];
-        const bmTabWindow = st.bookmarkIdMap.get(bookmarkId);
-        const nextSt = st.attachChromeWindow(bmTabWindow!, chromeWindow);
-        return nextSt;
-    };
+    let attachedStore = bmStore;
+    bestBMMatches.forEach((windowId, bookmarkId) => {
+        const chromeWindow = chromeWinMap.get(windowId);
+        const bmTabWindow = bmStore.bookmarkIdMap[bookmarkId];
+        if (chromeWindow && bmTabWindow) {
+            attachedStore = attachedStore.attachChromeWindow(
+                bmTabWindow,
+                chromeWindow,
+            );
+        }
+    });
 
-    const attachedStore = bestBMMatches.reduce(attacher, bmStore);
     return attachedStore;
 }
+
 /**
  * get all Chrome windows and attach to best match:
  */
@@ -1067,11 +1049,12 @@ async function loadSavedState(
         return bmStore;
     }
 
-    log.debug('loadSavedState: read from local storage: ', savedWindowState);
-    const closedWindowsMap = bmStore.bookmarkIdMap.filter(
-        (bmWin) => !bmWin.open,
+    const closedWindowsMap = Object.fromEntries(
+        Object.entries(bmStore.bookmarkIdMap).filter(
+            ([_, bmWin]) => !bmWin.open,
+        ),
     );
-    const closedWindowIds = closedWindowsMap.keys();
+    const closedWindowIds = Object.keys(closedWindowsMap);
     let savedOpenTabsMap: { [id: string]: TabItem[] } = {};
 
     for (let id of closedWindowIds) {
@@ -1098,33 +1081,39 @@ async function loadSavedState(
         keyCount,
         ' saved windows',
     );
-    const updBookmarkMap = bmStore.bookmarkIdMap.map((tabWindow, bmId) => {
-        const snapTabs = savedOpenTabsMap[bmId];
+    const updBookmarkMap = Object.fromEntries(
+        Object.entries(bmStore.bookmarkIdMap).map(([bmId, tabWindow]) => {
+            const snapTabs = savedOpenTabsMap[bmId];
 
-        if (snapTabs == null) {
-            return tabWindow;
-        }
+            if (snapTabs == null) {
+                return [bmId, tabWindow];
+            }
 
-        const baseSavedItems = tabWindow.tabItems
-            .filter((ti) => ti.saved)
-            .map(tabWindowUtils.resetSavedItem);
-        const mergedTabs = tabWindowUtils.mergeSavedOpenTabs(
-            baseSavedItems,
-            snapTabs,
-        );
-        return TabWindow.update(tabWindow, {
-            tabItems: mergedTabs,
-            snapshot: true,
-        });
-    });
-    log.debug('loadSavedState: updated bookmarkIdMap: ', updBookmarkMap.toJS());
-    for (const w of updBookmarkMap.values()) {
+            const baseSavedItems = tabWindow.tabItems
+                .filter((ti) => ti.saved)
+                .map(tabWindowUtils.resetSavedItem);
+            const mergedTabs = tabWindowUtils.mergeSavedOpenTabs(
+                baseSavedItems,
+                snapTabs,
+            );
+            return [
+                bmId,
+                TabWindow.update(tabWindow, {
+                    tabItems: mergedTabs,
+                    snapshot: true,
+                }),
+            ];
+        }),
+    );
+    /*
+    log.debug('loadSavedState: updated bookmarkIdMap: ', updBookmarkMap);
+    for (const w of Object.values(updBookmarkMap)) {
         log.debug('loadSavedState: window: ', w);
         log.debug('loadSavedState: window title: ', w.title);
     }
+    */
 
     const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap);
-    log.debug('merged window state from local storage');
     return nextStore;
 }
 
@@ -1133,9 +1122,9 @@ async function cleanOldPopouts(stateRef: StateRef<TabManagerState>) {
     const popupTabWindows = st
         .getTabWindowsByType('popup')
         .filter((tw: TabWindow) => tw.open && tw.title === 'Tabli');
-    const closePromises = popupTabWindows
-        .map((tw: TabWindow) => chromep.windows.remove(tw.openWindowId))
-        .toJS();
+    const closePromises = popupTabWindows.map((tw: TabWindow) =>
+        chromep.windows.remove(tw.openWindowId),
+    );
     await Promise.all(closePromises);
 }
 

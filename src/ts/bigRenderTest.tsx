@@ -65,7 +65,7 @@ function renderPage() {
 
     // log.info('renderPage: testData: ', testData)
 
-    const emptyWinStore = new TabManagerState();
+    const emptyWinStore = TabManagerState.create();
     const mockWinStore = emptyWinStore
         .registerTabWindows(tabWindows)
         .set('showRelNotes', false);

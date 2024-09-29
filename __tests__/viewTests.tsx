@@ -78,7 +78,7 @@ function getWindowSnap() {
 function initialWinStore() {
     const folderId = 6666;
     const archiveFolderId = 7777;
-    const baseWinStore = new TabManagerState({
+    const baseWinStore = TabManagerState.create({
         folderId,
         archiveFolderId,
     } as any);
