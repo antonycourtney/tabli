@@ -82,7 +82,7 @@ async function main() {
     initGlobalLogger('bgHelper');
     utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
-    console.log('bgHelper: Read userPrefs: ', userPrefs.toJS());
+    console.log('bgHelper: Read userPrefs: ', userPrefs);
 
     // Check for existence of snap state -- if it exists, we're already running
     const snapStateStr = await readSnapStateStr();

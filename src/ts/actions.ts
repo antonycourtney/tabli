@@ -912,7 +912,7 @@ export const loadPreferences = async (
     storeRef: TMSRef,
 ): Promise<TabManagerState> => {
     const userPrefs = await readPreferences();
-    log.debug('loadPreferences: userPrefs: ', userPrefs.toJS());
+    log.debug('loadPreferences: userPrefs: ', userPrefs);
     return awaitableUpdate_(storeRef, (st) => st.set('preferences', userPrefs));
 };
 

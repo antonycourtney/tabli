@@ -661,7 +661,7 @@ async function onStorageChanged(
     log.debug('onStorageChanged: ', namespace);
     const maybePrefs = prefsStorageChange(changes, namespace);
     if (maybePrefs != null) {
-        log.debug('onStorageChanged: prefs changed: ', maybePrefs.toJS());
+        log.debug('onStorageChanged: prefs changed: ', maybePrefs);
         update(stateRef, (state) => {
             return state.set('preferences', maybePrefs);
         });

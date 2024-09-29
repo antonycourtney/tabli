@@ -82,7 +82,7 @@ const tabManagerStateDefaults: TabManagerStateProps = {
     showRelNotes: true,
     expandAll: true,
     // state of global collapse / expand toggle button
-    preferences: new prefs.Preferences(),
+    preferences: prefs.Preferences.create(),
 };
 
 export default class TabManagerState extends Immutable.Record(
