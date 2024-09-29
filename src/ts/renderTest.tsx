@@ -1,5 +1,4 @@
 import { log } from './globals';
-import * as Immutable from 'immutable';
 import * as RenderCommon from './renderCommon';
 
 import * as TabWindow from './tabWindow';
@@ -15,7 +14,7 @@ function makeTabWindow(jsWin: any) {
     );
 
     const itemWin = Object.assign({}, jsWin, {
-        tabItems: Immutable.Seq(decItems),
+        tabItems: decItems,
     });
 
     const decWin = TabWindow.TabWindow.create(itemWin);

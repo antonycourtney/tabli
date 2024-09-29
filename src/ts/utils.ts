@@ -1,4 +1,3 @@
-import * as Immutable from 'immutable';
 import { log } from './globals';
 import * as BC from './browserConstants';
 import { TabWindow } from './tabWindow';

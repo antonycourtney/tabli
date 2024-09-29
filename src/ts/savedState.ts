@@ -3,7 +3,6 @@ import throttle from 'lodash/throttle';
 import mapValues from 'lodash/mapValues';
 import TabManagerState from './tabManagerState';
 import { StateRef, addStateChangeListener, mutableGet } from 'oneref';
-import * as Immutable from 'immutable';
 import { TabWindow, TabItem } from './tabWindow';
 const _ = { throttle, mapValues };
 

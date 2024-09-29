@@ -6,7 +6,6 @@
 
 import has from 'lodash/has';
 import fromPairs from 'lodash/fromPairs';
-import * as Immutable from 'immutable';
 import * as semver from 'semver';
 import { getLogger, log } from './globals';
 import TabManagerState from './tabManagerState';

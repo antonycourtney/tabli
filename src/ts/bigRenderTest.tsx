@@ -1,7 +1,6 @@
 import { log } from './globals';
-import * as Immutable from 'immutable';
-import * as RenderCommon from './renderCommon';
 
+import * as RenderCommon from './renderCommon';
 import { TabWindow, TabItem, OpenTabState } from './tabWindow';
 import TabManagerState from './tabManagerState';
 import rawDomains from '../../test-data/top500Domains.json';

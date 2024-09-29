@@ -1,6 +1,5 @@
 import { log } from '../globals';
 import * as React from 'react';
-import * as Immutable from 'immutable';
 import * as styles from './cssStyles';
 import { cx } from '@emotion/css';
 
@@ -82,7 +81,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
         tabWindow,
         false,
     );
-    const savedUrlsSet = Immutable.Set(
+    const savedUrlsSet = new Set(
         revertedTabWindow.tabItems.map((ti) => ti.url),
     );
 
