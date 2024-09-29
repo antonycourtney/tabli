@@ -1,6 +1,5 @@
 import { log } from '../globals';
 import * as React from 'react';
-import * as Immutable from 'immutable';
 import * as styles from './cssStyles';
 import { cx } from '@emotion/css';
 
@@ -71,7 +70,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
         );
     };
 
-    const renderTabItems = (tabItems: Immutable.List<TabItem>) => {
+    const renderTabItems = (tabItems: TabItem[]) => {
         const itemElems = tabItems.map(renderItem);
         return <div className={styles.tabList}>{itemElems}</div>;
     };
@@ -82,7 +81,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
         tabWindow,
         false,
     );
-    const savedUrlsSet = Immutable.Set(
+    const savedUrlsSet = new Set(
         revertedTabWindow.tabItems.map((ti) => ti.url),
     );
 
@@ -97,7 +96,7 @@ const RevertModal: React.FC<RevertModalProps> = ({
     const reloadItemsElem = renderTabItems(itemsToReload);
 
     var closeSection = null;
-    if (itemsToClose.count() > 0) {
+    if (itemsToClose.length > 0) {
         closeSection = (
             <div>
                 <p>The following tabs will be closed:</p>

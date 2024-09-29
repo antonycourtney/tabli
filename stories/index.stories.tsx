@@ -44,7 +44,7 @@ const testChromeWindows = testData.chromeWindows;
 
 // log.info('renderPage: testData: ', testData)
 
-const emptyWinStore = new TabManagerState();
+const emptyWinStore = TabManagerState.create();
 const mockWinStore = emptyWinStore
     .syncWindowList(testChromeWindows as any)
     .registerTabWindow(testOpenSavedWindow)

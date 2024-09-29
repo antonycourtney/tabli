@@ -12,11 +12,28 @@ import TabManagerState from '../tabManagerState';
 import ModalActions from './modalActions';
 import { FilteredTabWindow } from '../searchOps';
 import { StateRef } from 'oneref';
+import { TabWindow } from '../tabWindow';
 
 let relNotesModule: any = null;
 if (!isNode) {
     // in browser
     relNotesModule = require('../../html/relnotes.html');
+}
+
+function checkKeys(filteredWindows: FilteredTabWindow[]) {
+    // check for duplicate keys
+    var keyMap = new Map<string, TabWindow>();
+    for (var i = 0; i < filteredWindows.length; i++) {
+        var filteredTabWindow = filteredWindows[i];
+        var tabWindow = filteredTabWindow.tabWindow;
+        var key = tabWindow.key;
+        if (keyMap.has(key)) {
+            log.error('Duplicate key: ', key);
+            log.error('First window: ', keyMap.get(key));
+            log.error('Second window: ', tabWindow);
+        }
+        keyMap.set(key, tabWindow);
+    }
 }
 
 interface TabWindowListProps {
@@ -67,6 +84,8 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     var focusedWindowElem: JSX.Element[] = [];
     var openWindows: JSX.Element[] = [];
     var savedWindows: JSX.Element[] = [];
+
+    checkKeys(filteredWindows);
 
     for (var i = 0; i < filteredWindows.length; i++) {
         var filteredTabWindow = filteredWindows[i];

@@ -1,13 +1,9 @@
 import { log } from '../globals';
 import * as React from 'react';
-import * as Immutable from 'immutable';
 import * as styles from './cssStyles';
 import { cx } from '@emotion/css';
-
 import * as Constants from './constants';
-
 import * as Modal from './Modal';
-
 import { TabWindow, TabItem } from '../tabWindow';
 import { ThemeContext } from './themeContext';
 import * as tabItemUtil from './tabItemUtil';

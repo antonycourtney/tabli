@@ -1,7 +1,6 @@
 import { log } from '../globals'; // eslint-disable-line no-unused-consts
 import * as React from 'react';
 import { StateRef } from 'oneref';
-import * as Immutable from 'immutable';
 import { cx, css } from '@emotion/css';
 import * as styles from './cssStyles';
 import * as actions from '../actions';
@@ -43,7 +42,7 @@ const getListStyle = (isDraggingOver: boolean) =>
 
 export interface FilteredTabWindowUIBaseProps {
     tabWindow: TabWindow;
-    itemMatches: Immutable.List<FilteredTabItem> | null;
+    itemMatches: FilteredTabItem[] | null;
     isSelected: boolean;
     isFocused: boolean;
     modalActions: ModalActions;
@@ -124,13 +123,10 @@ const FilteredTabWindowUI: React.FunctionComponent<
         return tabWindow.isExpanded(expandAll);
     };
 
-    const renderTabItems = (
-        tabWindow: TabWindow,
-        tabs: Immutable.Collection.Indexed<TabItem>,
-    ) => {
+    const renderTabItems = (tabWindow: TabWindow, tabs: TabItem[]) => {
         const items = [];
-        for (let i = 0; i < tabs.count(); i++) {
-            const tab = tabs.get(i)!;
+        for (let i = 0; i < tabs.length; i++) {
+            const tab = tabs[i];
             const isSelected = i === selectedTabIndex;
             const tabItem = (
                 <TabItemUI
@@ -174,7 +170,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
         tabItems = renderTabItems(tabWindow, tabs);
     } else {
         // render empty list of tab items to get -ve margin rollup layout right...
-        tabItems = renderTabItems(tabWindow, Immutable.List<TabItem>());
+        tabItems = renderTabItems(tabWindow, []);
     }
 
     const windowHeader = (

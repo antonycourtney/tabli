@@ -1,10 +1,13 @@
 import * as Constants from './components/constants';
 import ChromePromise from 'chrome-promise';
+import diff from 'deep-diff';
 import { initGlobalLogger, log } from './globals';
 import { initState, loadSnapState, readSnapStateStr } from './state';
 import * as actions from './actions';
-import { mutableGet } from 'oneref';
+import { addStateChangeListener, mutableGet, StateRef } from 'oneref';
 import * as utils from './utils';
+import _ from 'lodash';
+import TabManagerState from './tabManagerState';
 
 const chromep = ChromePromise;
 
@@ -50,12 +53,36 @@ async function showPopout() {
 }
 */
 
+function mkStateUpdater(
+    stateRef: StateRef<TabManagerState>,
+    port: chrome.runtime.Port,
+) {
+    const prevState = mutableGet(stateRef);
+    let prevSnap = prevState.toJS();
+
+    const stateUpdater = () => {
+        const appState = mutableGet(stateRef);
+        const snap = appState.toJS();
+        const stateSnapshot = JSON.stringify(snap, null, 2);
+        const diffs = diff(prevSnap, snap);
+        log.debug('bgHelper: state change diffs: ', diffs);
+        prevSnap = snap;
+        try {
+            port.postMessage({ type: 'stateChange', stateSnapshot });
+        } catch (e) {
+            log.debug('bgHelper: error sending state change (ignoring) ', e);
+        }
+    };
+    const throttledStateUpdater = _.throttle(stateUpdater, 100);
+    return throttledStateUpdater;
+}
+
 async function main() {
     console.log('*** bgHelper: started at ', new Date().toString());
     initGlobalLogger('bgHelper');
     utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
-    console.log('bgHelper: Read userPrefs: ', userPrefs.toJS());
+    console.log('bgHelper: Read userPrefs: ', userPrefs);
 
     // Check for existence of snap state -- if it exists, we're already running
     const snapStateStr = await readSnapStateStr();
@@ -66,7 +93,7 @@ async function main() {
 
     // 8/23/24: Passing false for now to avoid horrid race condition when opening saved windows.
     // Means that popout window Id will often be wrong.
-    const stateRef = await initState(false);
+    const stateRef = await initState(true);
 
     log.debug('bgHelper: initialized stateRef');
 
@@ -103,6 +130,11 @@ async function main() {
     // Use a port to track popout window
     chrome.runtime.onConnect.addListener((port) => {
         log.debug('bgHelper: onConnect: ', port, ' name: ', port.name);
+
+        const throttledStateUpdater = mkStateUpdater(stateRef, port);
+        addStateChangeListener(stateRef, (_appState) => {
+            throttledStateUpdater();
+        });
         port.onMessage.addListener((message, port) => {
             return true;
         });

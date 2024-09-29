@@ -1,4 +1,4 @@
-import { log } from '../globals'; // eslint-disable-line no-unused-vars
+import { log } from '../globals';
 import * as React from 'react';
 import * as styles from './cssStyles';
 import * as Constants from './constants';
@@ -65,7 +65,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     onApply,
     onSubmit,
 }) => {
-    log.debug('PreferencesModal: initialPrefs: ', initialPrefs.toJS());
+    log.debug('PreferencesModal: initialPrefs: ', initialPrefs);
     const [prefs, setPrefs] = useState(initialPrefs);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -94,71 +94,45 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         onSubmit(prefs);
     };
 
+    const updatePrefs = (updates: Partial<Preferences>) => {
+        setPrefs(Preferences.update(prefs, updates));
+    };
+
     const handlePopStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const oldPrefs = prefs;
-        const nextPrefs = oldPrefs.set(
-            'popoutOnStart',
-            !oldPrefs.popoutOnStart,
-        );
-        setPrefs(nextPrefs);
+        updatePrefs({ popoutOnStart: !prefs.popoutOnStart });
     };
 
     const handleTabDedupeChange = () => {
-        const oldPrefs = prefs;
-        const nextPrefs = oldPrefs.set('dedupeTabs', !oldPrefs.dedupeTabs);
-        setPrefs(nextPrefs);
+        updatePrefs({ dedupeTabs: !prefs.dedupeTabs });
     };
 
     const handleDedupeGoogleDocsChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+        e: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        const oldPrefs = prefs;
-        const nextPrefs = oldPrefs.set('dedupeGoogleDocs', !oldPrefs.dedupeGoogleDocs);
-        setPrefs(nextPrefs);
+        updatePrefs({ dedupeGoogleDocs: !prefs.dedupeGoogleDocs });
     };
 
     const handleRevertOnOpenChange = (
         e: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        const oldPrefs = prefs;
-        const nextPrefs = oldPrefs.set('revertOnOpen', !oldPrefs.revertOnOpen);
-        setPrefs(nextPrefs);
+        updatePrefs({ revertOnOpen: !prefs.revertOnOpen });
     };
 
     const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const oldPrefs = prefs;
-        const nextPrefs = oldPrefs.set('theme', e.target.value);
-        log.debug('handleThemeChange: nextPrefs:', nextPrefs.toJS());
-        setPrefs(nextPrefs);
+        updatePrefs({ theme: e.target.value });
     };
 
     const handleLayoutChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const oldPrefs = prefs;
-        const nextPrefs = oldPrefs.set('layout', e.target.value);
-        log.debug('handleThemeChange: nextPrefs:', nextPrefs.toJS());
-        setPrefs(nextPrefs);
+        updatePrefs({ layout: e.target.value });
     };
 
     const handleFontSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const oldPrefs = prefs;
         const nextScaleFactor = fontSizeToScaleFactor(
             Number.parseInt(e.target.value),
         );
-        const nextPrefs = oldPrefs.set('fontScaleFactor', nextScaleFactor);
-        log.debug(
-            'handleFontSizeChange: fontSize: ',
-            e.target.value,
-            ', nextPrefs:',
-            nextPrefs.toJS(),
-        );
-        setPrefs(nextPrefs);
+        updatePrefs({ fontScaleFactor: nextScaleFactor });
     };
 
-    const popStart = prefs.popoutOnStart;
-    const dedupeTabs = prefs.dedupeTabs;
-    const revertOnOpen = prefs.revertOnOpen;
-
-    const currentTheme = prefs.theme;
     const themeNames = Object.keys(themes);
     const themeOpts = themeNames.map((nm) => (
         <option key={nm} value={nm}>
@@ -169,14 +143,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         <select
             className={themeSelectStyle}
             name="theme"
-            value={currentTheme}
-            onChange={(e) => handleThemeChange(e)}
+            value={prefs.theme}
+            onChange={handleThemeChange}
         >
             {themeOpts}
         </select>
     );
 
-    const currentLayout = prefs.layout;
     const layoutNames = Object.keys(layouts);
     const layoutOpts = layoutNames.map((nm) => (
         <option key={nm} value={nm}>
@@ -187,8 +160,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         <select
             className={themeSelectStyle}
             name="layout"
-            value={currentLayout}
-            onChange={(e) => handleLayoutChange(e)}
+            value={prefs.layout}
+            onChange={handleLayoutChange}
         >
             {layoutOpts}
         </select>
@@ -205,7 +178,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             className={fontSizeSelectStyle}
             name="fontSize"
             value={currentFontSize}
-            onChange={(e) => handleFontSizeChange(e)}
+            onChange={handleFontSizeChange}
         >
             {fontSizeOpts}
         </select>
@@ -233,8 +206,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 <input
                                     type="checkbox"
                                     className={prefsCheckbox}
-                                    checked={popStart}
-                                    onChange={(e) => handlePopStartChange(e)}
+                                    checked={prefs.popoutOnStart}
+                                    onChange={handlePopStartChange}
                                 />
                                 <label className={checkLabelStyle}>
                                     Show Tabli popout window at startup
@@ -250,8 +223,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 <input
                                     type="checkbox"
                                     className={prefsCheckbox}
-                                    checked={dedupeTabs}
-                                    onChange={(e) => handleTabDedupeChange()}
+                                    checked={prefs.dedupeTabs}
+                                    onChange={handleTabDedupeChange}
                                 />
                                 <label className={checkLabelStyle}>
                                     Automatically close duplicate tabs
@@ -268,10 +241,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                     type="checkbox"
                                     className={prefsCheckbox}
                                     checked={prefs.dedupeGoogleDocs}
-                                    onChange={(e) => handleDedupeGoogleDocsChange(e)}
+                                    onChange={handleDedupeGoogleDocsChange}
                                 />
                                 <label className={checkLabelStyle}>
-                                    Automatically close duplicate Google Docs (requires "Automatically close duplicate tabs")
+                                    Automatically close duplicate Google Docs
+                                    (requires "Automatically close duplicate
+                                    tabs")
                                 </label>
                             </div>
                             <div
@@ -284,10 +259,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 <input
                                     type="checkbox"
                                     className={prefsCheckbox}
-                                    checked={revertOnOpen}
-                                    onChange={(e) =>
-                                        handleRevertOnOpenChange(e)
-                                    }
+                                    checked={prefs.revertOnOpen}
+                                    onChange={handleRevertOnOpenChange}
                                 />
                                 <label className={checkLabelStyle}>
                                     Only re-open saved tabs when re-opening
@@ -333,7 +306,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         <button
                             type="button"
                             className="btn btn-info tabli-dialog-button"
-                            onClick={(e) => handleApply(e)}
+                            onClick={handleApply}
                             tabIndex={0}
                             onKeyDown={handleKeyDown}
                         >
@@ -342,7 +315,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         <button
                             type="button"
                             className="btn btn-primary btn-default tabli-dialog-button"
-                            onClick={(e) => handleSubmit(e)}
+                            onClick={handleSubmit}
                             tabIndex={0}
                             onKeyDown={handleKeyDown}
                         >

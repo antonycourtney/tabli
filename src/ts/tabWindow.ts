@@ -1,9 +1,4 @@
-/*
- * Representation of tabbed windows using Immutable.js
- */
-import { log } from './globals';
-import * as Immutable from 'immutable';
-import { escapeTableCell } from './utils';
+import { produce, immerable, Draft } from 'immer';
 
 export interface SavedTabStateProps {
     bookmarkId: string;
@@ -11,22 +6,30 @@ export interface SavedTabStateProps {
     title: string;
     url: string;
 }
-const defaultSavedTabStateProps: SavedTabStateProps = {
-    bookmarkId: '',
-    bookmarkIndex: 0, // position in bookmark folder
-    title: '',
-    url: '',
-};
 
-/*
- * Tab state that is persisted as a bookmark
- */
-export class SavedTabState extends Immutable.Record(defaultSavedTabStateProps) {
-    static fromJS(js: any): SavedTabState | null {
-        if (js === null) {
-            return null;
-        }
-        return new SavedTabState(js);
+export class SavedTabState {
+    [immerable] = true;
+
+    bookmarkId: string = '';
+    bookmarkIndex: number = 0;
+    title: string = '';
+    url: string = '';
+
+    private constructor() {}
+
+    static create(props: Partial<SavedTabStateProps> = {}): SavedTabState {
+        return produce(new SavedTabState(), (draft: Draft<SavedTabState>) => {
+            Object.assign(draft, props);
+        });
+    }
+
+    static update(
+        state: SavedTabState,
+        updates: Partial<SavedTabStateProps>,
+    ): SavedTabState {
+        return produce(state, (draft: Draft<SavedTabState>) => {
+            Object.assign(draft, updates);
+        });
     }
 }
 
@@ -41,128 +44,114 @@ export interface OpenTabStateProps {
     muted: boolean;
     pinned: boolean;
     isSuspended: boolean;
-    openerTabId: number | undefined;
-    openerUrl: string | undefined; // url of openerTabId at time tab created
+    openerTabId?: number;
+    openerUrl?: string;
 }
 
-const defaultOpenTabStateProps: OpenTabStateProps = {
-    url: '',
-    openTabId: -1,
-    active: false,
-    openTabIndex: 0, // index of open tab in its window
-    favIconUrl: '',
-    title: '',
-    audible: false,
-    muted: false,
-    pinned: false,
-    isSuspended: false,
-    openerTabId: undefined,
-    openerUrl: undefined,
-};
+export class OpenTabState {
+    [immerable] = true;
 
-/*
- * Tab state associated with an open browser tab
- */
-export class OpenTabState extends Immutable.Record(defaultOpenTabStateProps) {
-    static fromJS(js: any): OpenTabState | null {
-        if (js === null) {
-            return null;
-        }
-        return new OpenTabState(js);
+    url: string = '';
+    openTabId: number = -1;
+    active: boolean = false;
+    openTabIndex: number = -1;
+    favIconUrl: string = '';
+    title: string = '';
+    audible: boolean = false;
+    muted: boolean = false;
+    pinned: boolean = false;
+    isSuspended: boolean = false;
+    openerTabId?: number;
+    openerUrl?: string;
+
+    private constructor() {}
+
+    static create(props: Partial<OpenTabStateProps> = {}): OpenTabState {
+        return produce(new OpenTabState(), (draft: Draft<OpenTabState>) => {
+            Object.assign(draft, props);
+        });
+    }
+
+    static update(
+        state: OpenTabState,
+        updates: Partial<OpenTabStateProps>,
+    ): OpenTabState {
+        return produce(state, (draft: Draft<OpenTabState>) => {
+            Object.assign(draft, updates);
+        });
     }
 }
 
-interface TabItemProps {
+export interface TabItemProps {
     saved: boolean;
     savedState: SavedTabState | null;
     open: boolean;
     openState: OpenTabState | null;
 }
 
-const defaultTabItemProps: TabItemProps = {
-    saved: false,
-    savedState: null, // SavedTabState iff saved
-
-    open: false, // Note: Saved tabs may be closed even when containing window is open
-    openState: null, // OpenTabState iff open
-};
-
-// Use a counter to generate unique keys for tab items on-demand...
-// lets
 let tabItemKeyCounter = 500;
-
 const genTabItemKey = () => '_tabItem-' + tabItemKeyCounter++;
 
-/*
- * An item in a tabbed window.
- *
- * May be associated with an open tab, a bookmark, or both
- */
-export class TabItem extends Immutable.Record(defaultTabItemProps) {
-    private _id: string | undefined;
+export class TabItem {
+    [immerable] = true;
+
+    saved: boolean = false;
+    savedState: SavedTabState | null = null;
+    open: boolean = false;
+    openState: OpenTabState | null = null;
+    key: string = '';
+
+    private constructor() {}
+
+    static create(props: Partial<TabItemProps> = {}): TabItem {
+        return produce(new TabItem(), (draft: Draft<TabItem>) => {
+            Object.assign(draft, props);
+            draft.key = genTabItemKey();
+            if (props.savedState) {
+                draft.savedState = SavedTabState.create(props.savedState);
+            }
+            if (props.openState) {
+                draft.openState = OpenTabState.create(props.openState);
+            }
+        });
+    }
+
+    static update(tabItem: TabItem, updates: Partial<TabItemProps>): TabItem {
+        return produce(tabItem, (draft: Draft<TabItem>) => {
+            Object.assign(draft, updates);
+            if (updates.savedState) {
+                draft.savedState = SavedTabState.create(updates.savedState);
+            }
+            if (updates.openState) {
+                draft.openState = OpenTabState.create(updates.openState);
+            }
+        });
+    }
 
     get title(): string {
-        /*
-        hold-over from exploring showing saved titles instead of current title:
-        if (this.saved && this.open) {
-            if (this.savedState!.title !== this.openState!.title) {
-                log.debug(
-                    'tabItem saved title: ',
-                    this.savedState!.title,
-                    '|',
-                    this.openState!.title
-                );
-            }
-        }
-        */
-        if (this.open && this.openState) {
-            return this.openState.title;
-        }
-
-        return this.savedState ? this.savedState.title : '';
-    }
-
-    // get a unique key for this TabItem
-    // useful as key in React arrays
-    // Note: not unique across persisted sessions / Chrome restart
-    // We briefly tried to use open tab ids or bookmarks ids, but this gets horribly confusing
-    // and risks collisions when, for example, we persist the last opened state of a tab and
-    // re-hydrate it.
-    get key(): string {
-        if (this._id === undefined) {
-            this._id = genTabItemKey();
-        }
-        return this._id;
-    }
-
-    // just for debugging:
-    get rawKey(): string | undefined {
-        return this._id;
+        return this.open && this.openState
+            ? this.openState.title
+            : this.savedState
+              ? this.savedState.title
+              : '';
     }
 
     get url(): string {
-        if (this.open && this.openState) {
-            return this.openState.url;
-        }
-
-        return this.savedState ? this.savedState.url : '';
+        return this.open && this.openState
+            ? this.openState.url
+            : this.savedState
+              ? this.savedState.url
+              : '';
     }
 
     get pinned(): boolean {
-        if (this.open && this.openState) {
-            return this.openState.pinned;
-        }
-        return false;
+        return this.open && this.openState ? this.openState.pinned : false;
     }
 
     get active(): boolean {
-        if (this.open && this.openState) {
-            return this.openState.active;
-        }
-        return false;
+        return this.open && this.openState ? this.openState.active : false;
     }
 
-    // safe accessor for savedState:
     get safeSavedState(): SavedTabState {
         if (this.saved && this.savedState) {
             return this.savedState;
@@ -170,7 +159,6 @@ export class TabItem extends Immutable.Record(defaultTabItemProps) {
         throw new Error('Unexpected access of savedState on unsaved tab');
     }
 
-    // safe accessor for openState:
     get safeOpenState(): OpenTabState {
         if (this.open && this.openState) {
             return this.openState;
@@ -178,215 +166,158 @@ export class TabItem extends Immutable.Record(defaultTabItemProps) {
         throw new Error('Unexpected access of openState on non-open tab');
     }
 
-    static fromJS(js: any): TabItem {
-        const savedState = SavedTabState.fromJS(js.savedState);
-        const openState = OpenTabState.fromJS(js.openState);
-
-        return new TabItem({
-            saved: js.saved,
-            savedState,
-            open: js.open,
-            openState,
-        });
+    // helper for migration from immutable:
+    toJS() {
+        return this;
     }
 }
 
-/*
- * A TabWindow
- *
- * Tab windows have a title and a set of tab items.
- *
- * A TabWindow has 4 possible states:
- *   (open,!saved)   - An open Chrome window that has not had its tabs saved
- *   (open,saved)    - An open Chrome window that has also had its tabs saved (as bookmarks)
- *   (!open,saved,!snapshot)   - A previously saved window that is not currently
- *                           open and has no snapshot. tabItems will consist solely
- *                           of saved tabs (persisted as boookmarks).
- *
- *   (!open,saved,snapshot) - A previously saved window that is not currently open but
- *                            where tabItems contains the tab state the last time the
- *                            window was open
- */
-interface TabWindowProps {
+export interface TabWindowProps {
     saved: boolean;
     savedTitle: string;
     savedFolderId: string;
-
     open: boolean;
     openWindowId: number;
     windowType: string;
     width: number;
     height: number;
-    tabItems: Immutable.List<TabItem>;
+    tabItems: TabItem[];
     snapshot: boolean;
     chromeSessionId: string | null;
     expanded: boolean | null;
 }
 
-const defaultTabWindowProps: TabWindowProps = {
-    saved: false,
-    savedTitle: '',
-    savedFolderId: '',
+export class TabWindow {
+    [immerable] = true;
 
-    open: false,
-    openWindowId: -1,
-    windowType: '',
-    width: 0,
-    height: 0,
+    saved: boolean = false;
+    savedTitle: string = '';
+    savedFolderId: string = '';
+    open: boolean = false;
+    openWindowId: number = -1;
+    windowType: string = '';
+    width: number = 0;
+    height: number = 0;
+    tabItems: TabItem[] = [];
+    snapshot: boolean = false;
+    chromeSessionId: string | null = null;
+    expanded: boolean | null = null;
 
-    tabItems: Immutable.List(), // <TabItem>
+    private constructor() {}
 
-    snapshot: false, // Set if tabItems contains snapshot of last open state
-    chromeSessionId: null, // Chrome session id for restore (if found)
-
-    // This is view state, so technically doesn't belong here, but we only have
-    // one window component per window right now, we want to be able to toggle
-    // this state via a keyboard handler much higher in the hierarchy,
-    // and cost to factor out view state would be high.
-    expanded: null, // tri-state: null, true or false
-};
-
-export class TabWindow extends Immutable.Record(defaultTabWindowProps) {
-    private _title: string | undefined;
-    private _key: string | undefined;
-
-    get title(): string {
-        if (this._title === undefined) {
-            this._title = this.computeTitle();
-        }
-
-        return this._title;
+    static create(props: Partial<TabWindowProps> = {}): TabWindow {
+        return produce(new TabWindow(), (draft: Draft<TabWindow>) => {
+            Object.assign(draft, props);
+            draft.tabItems = (props.tabItems || []).map(TabItem.create);
+        });
     }
 
-    computeTitle(): string {
+    static update(
+        tabWindow: TabWindow,
+        updates: Partial<TabWindowProps>,
+    ): TabWindow {
+        return produce(tabWindow, (draft: Draft<TabWindow>) => {
+            Object.assign(draft, updates);
+            if (updates.tabItems) {
+                draft.tabItems = updates.tabItems.map(TabItem.create);
+            }
+        });
+    }
+
+    get key(): string {
+        if (this.saved) {
+            return '_saved' + this.savedFolderId;
+        } else {
+            return '_open' + this.openWindowId;
+        }
+    }
+    updateSavedTitle(title: string): TabWindow {
+        return TabWindow.update(this, { savedTitle: title });
+    }
+
+    get title(): string {
         if (this.saved) {
             return this.savedTitle;
         }
 
         const activeTab = this.tabItems.find(
-            (t) => t.open && t.openState!.active,
+            (t) => t.open && t.openState && t.openState.active,
         );
 
         if (!activeTab) {
-            // shouldn't happen!
-            log.debug(
-                'TabWindow.get title(): No active tab found: ',
-                this.toJS(),
-            );
-
-            var openTabItem = this.tabItems.find((t) => t.open);
-            if (!openTabItem) {
-                return '';
-            }
-            return openTabItem.title;
+            // If no active tab is found, fall back to the first open tab
+            const openTabItem = this.tabItems.find((t) => t.open);
+            return openTabItem ? openTabItem.title : '';
         }
 
         return activeTab.title;
     }
 
-    updateSavedTitle(title: string): TabWindow {
-        delete this._title;
-        return this.set('savedTitle', title);
-    }
-
-    // get a unique key for this window
-    // useful as key in React arrays
-    // Should be adequate as a key for React, but does not uniquely
-    // determine the immutable record state.
-    get key(): string {
-        if (this._key === undefined) {
-            if (this.saved) {
-                this._key = '_saved' + this.savedFolderId;
-            } else {
-                this._key = '_open' + this.openWindowId;
-            }
-        }
-        return this._key;
-    }
-
     get openTabCount(): number {
-        return this.tabItems.count((ti) => ti.open);
+        return this.tabItems.filter((ti) => ti.open).length;
     }
 
-    /*
-     * Returns [index,TabItem] pair if window contains chrome tab id or else null
-     */
-    findChromeTabId(tabId: number): [number, TabItem] | null {
-        const ret = this.tabItems.findEntry(
-            (ti) =>
-                !!ti.open &&
-                ti.openState !== null &&
-                ti.openState.openTabId === tabId,
-        );
-        return ret ? ret : null;
-    }
-    /*
-     * Returns [index,TabItem] pair if window contains chrome bookmark id or else null
-     */
-    findChromeBookmarkId(bookmarkId: string): [number, TabItem] | null {
-        const ret = this.tabItems.findEntry(
-            (ti) =>
-                !!ti.saved &&
-                ti.savedState !== null &&
-                ti.savedState.bookmarkId === bookmarkId,
-        );
-        return ret ? ret : null;
+    addTabItem(tabItem: TabItem): TabWindow {
+        return produce(this, (draft: Draft<TabWindow>) => {
+            draft.tabItems.push(TabItem.create(tabItem));
+        });
     }
 
-    findTabByKey(key: string): [number, TabItem] | null {
-        const ret = this.tabItems.findEntry((ti) => ti.key === key);
-        return ret ? ret : null;
+    removeTabItem(index: number): TabWindow {
+        return produce(this, (draft: Draft<TabWindow>) => {
+            draft.tabItems.splice(index, 1);
+        });
+    }
+
+    updateTabItemInWindow(
+        index: number,
+        updates: Partial<TabItemProps>,
+    ): TabWindow {
+        return produce(this, (draft: Draft<TabWindow>) => {
+            draft.tabItems[index] = TabItem.update(
+                draft.tabItems[index],
+                updates,
+            );
+        });
+    }
+
+    setTabItems(tabItems: TabItem[]): TabWindow {
+        return produce(this, (draft: Draft<TabWindow>) => {
+            draft.tabItems = tabItems.map(TabItem.create);
+        });
     }
 
     getActiveTabId(): number | null {
         const activeTab = this.tabItems.find(
-            (t) => t.open && t.openState!.active,
+            (t) => t.open && t.openState && t.openState.active,
         );
-        const tabId = activeTab ? activeTab.openState!.openTabId : null;
-        return tabId;
+        return activeTab && activeTab.openState
+            ? activeTab.openState.openTabId
+            : null;
     }
 
-    /*
-     * set tabItems.
-     * Used to sort, but openTabIndex from Chrome isn't maintained by tab updates
-     * so we reverted that.
-     * Then we briefly used .cacheResult() when tabItems was (supposedly) a Seq,
-     * but it turned out that certain code paths (such as inserting a tab) would
-     * result in nextItems being a List.
-     * Seems to make the most sense to just make tabItems a List not a Seq
-     */
-    setTabItems(nextItems: Immutable.List<TabItem>): TabWindow {
-        /* HACK: debugging only check; get rid of this! */
-        if (!nextItems) {
-            log.error('setTabItems: bad nextItems: ', nextItems);
-        }
-        return this.set('tabItems', nextItems);
+    findChromeTabId(tabId: number): [number, TabItem] | null {
+        const index = this.tabItems.findIndex(
+            (ti) => ti.open && ti.openState && ti.openState.openTabId === tabId,
+        );
+        return index !== -1 ? [index, this.tabItems[index]] : null;
     }
 
-    /*
-     * get index of an item in this TabWindow
-     */
-    indexOf(target: TabItem): number | null {
-        return this.tabItems.indexOf(target);
+    findChromeBookmarkId(bookmarkId: string): [number, TabItem] | null {
+        const index = this.tabItems.findIndex(
+            (ti) =>
+                ti.saved &&
+                ti.savedState &&
+                ti.savedState.bookmarkId === bookmarkId,
+        );
+        return index !== -1 ? [index, this.tabItems[index]] : null;
     }
 
-    exportStr(): string {
-        const fmtTabItem = (ti: TabItem) => {
-            const urls = ti.url != null ? ti.url : '';
-            const ret = escapeTableCell(ti.title) + ' | ' + urls + '\n';
-            return ret;
-        };
-        const titleStr = '### ' + this.title;
-        const headerStr = `
-Title                                  | URL
----------------------------------------|-----------
-`;
-        const s0 = titleStr + '\n' + headerStr;
-        const s = this.tabItems.reduce((rs, ti) => rs + fmtTabItem(ti), s0);
-        return s;
+    findTabByKey(key: string): [number, TabItem] | null {
+        const index = this.tabItems.findIndex((ti) => ti.key === key);
+        return index !== -1 ? [index, this.tabItems[index]] : null;
     }
 
-    // combine local expanded state with global expanded state to determine if expanded:
     isExpanded(expandAll: boolean): boolean {
         if (this.expanded === null) {
             return expandAll && this.open;
@@ -394,23 +325,42 @@ Title                                  | URL
         return this.expanded;
     }
 
-    static fromJS(js: any): TabWindow {
-        const tabItems = Immutable.List<TabItem>(
-            js.tabItems.map(TabItem.fromJS),
-        );
-        return new TabWindow({
-            saved: js.saved,
-            savedTitle: js.savedTitle,
-            savedFolderId: js.savedFolderId,
-            open: js.open,
-            openWindowId: js.openWindowId,
-            windowType: js.windowType,
-            width: js.width,
-            height: js.height,
-            tabItems,
-            snapshot: js.snapshot,
-            chromeSessionId: js.chromeSessionId,
-            expanded: js.expanded,
+    exportStr(): string {
+        const fmtTabItem = (ti: TabItem) => {
+            const urls = ti.url;
+            const title = ti.title.replace(/\|/g, '-');
+            return `${title} | ${urls}\n`;
+        };
+        const titleStr = '### ' + this.title;
+        const headerStr = `
+Title                                  | URL
+---------------------------------------|-----------
+`;
+        const s0 = titleStr + '\n' + headerStr;
+        return this.tabItems.reduce((rs, ti) => rs + fmtTabItem(ti), s0);
+    }
+
+    clearExpanded(): TabWindow {
+        return produce(this, (draft: Draft<TabWindow>) => {
+            draft.expanded = null;
         });
+    }
+
+    clearChromeSessionId(): TabWindow {
+        return produce(this, (draft: Draft<TabWindow>) => {
+            draft.chromeSessionId = null;
+        });
+    }
+
+    static fromJS(js: any): TabWindow {
+        return TabWindow.create({
+            ...js,
+            tabItems: js.tabItems.map(TabItem.create),
+        });
+    }
+
+    // helper for migration from immutable
+    toJS() {
+        return this;
     }
 }

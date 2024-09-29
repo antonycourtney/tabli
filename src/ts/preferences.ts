@@ -1,24 +1,24 @@
-/*
- * Serializable, immutable user preferences
- */
 import { log } from './globals';
+import { produce, immerable } from 'immer';
 import defaultsDeep from 'lodash/defaultsDeep';
-import * as Immutable from 'immutable';
+
 const _ = {
     defaultsDeep,
 };
+
 type VersionedObject = {
     version: number;
     contents: any;
 };
+
 export const PREFS_VERSION = 6;
 export const USER_PREFS_KEY = 'UserPreferences';
 
 interface PreferencesProps {
-    popoutOnStart: boolean; // show popout on startup?
-    dedupeTabs: boolean; // close tab if URL matches existing tab
-    dedupeGoogleDocs: boolean; // deduplicate google docs regardless of parameters etc.
-    revertOnOpen: boolean; // revert to anchor tabs when opening saved window
+    popoutOnStart: boolean;
+    dedupeTabs: boolean;
+    dedupeGoogleDocs: boolean;
+    revertOnOpen: boolean;
     theme: string;
     layout: string;
     fontScaleFactor: number;
@@ -34,7 +34,42 @@ const defaultPreferencesProps: PreferencesProps = {
     fontScaleFactor: 0.75,
 };
 
-export class Preferences extends Immutable.Record(defaultPreferencesProps) {
+export class Preferences {
+    [immerable] = true;
+
+    popoutOnStart: boolean;
+    dedupeTabs: boolean;
+    dedupeGoogleDocs: boolean;
+    revertOnOpen: boolean;
+    theme: string;
+    layout: string;
+    fontScaleFactor: number;
+
+    private constructor() {
+        this.popoutOnStart = defaultPreferencesProps.popoutOnStart;
+        this.dedupeTabs = defaultPreferencesProps.dedupeTabs;
+        this.dedupeGoogleDocs = defaultPreferencesProps.dedupeGoogleDocs;
+        this.revertOnOpen = defaultPreferencesProps.revertOnOpen;
+        this.theme = defaultPreferencesProps.theme;
+        this.layout = defaultPreferencesProps.layout;
+        this.fontScaleFactor = defaultPreferencesProps.fontScaleFactor;
+    }
+
+    static create(props: Partial<PreferencesProps> = {}): Preferences {
+        return produce(new Preferences(), (draft) => {
+            Object.assign(draft, defaultPreferencesProps, props);
+        });
+    }
+
+    static update(
+        preferences: Preferences,
+        updates: Partial<PreferencesProps>,
+    ): Preferences {
+        return produce(preferences, (draft) => {
+            Object.assign(draft, updates);
+        });
+    }
+
     static deserialize(blob: string | undefined | null): Preferences {
         let jsPrefs: any = defaultPrefsJS;
 
@@ -43,11 +78,11 @@ export class Preferences extends Immutable.Record(defaultPreferencesProps) {
             jsPrefs = migrate(storedPrefsObj);
         }
 
-        return new Preferences(jsPrefs);
+        return Preferences.create(jsPrefs);
     }
 
     serialize(): string {
-        const jsPrefs = this.toJS();
+        const jsPrefs = this;
         const serPrefs: VersionedObject = {
             version: PREFS_VERSION,
             contents: jsPrefs,
@@ -55,27 +90,21 @@ export class Preferences extends Immutable.Record(defaultPreferencesProps) {
         return JSON.stringify(serPrefs);
     }
 
-    // deserialize a JS representation from service worker:
     static deserializeJS(jsPrefs: any): Preferences {
-        return new Preferences(jsPrefs);
+        return Preferences.create(jsPrefs);
     }
 }
-export const defaultPrefsJS = new Preferences().toJS();
-/*
- * migrate a potentially older version of preferences
- * Takes a VersionedObject as input, returns a JS encoded version of
- * preferences
- */
 
-export const migrate = (storedPrefs: VersionedObject): Object => {
+export const defaultPrefsJS = Preferences.create();
+
+export const migrate = (storedPrefs: VersionedObject): PreferencesProps => {
     if (storedPrefs.version < 2) {
         log.warn('prefs.migrate: reverting v1 preferences');
-        return defaultPrefsJS;
-    } // otherwise, just grab contents, which should be a JS store of preferences:
+        return defaultPreferencesProps;
+    }
 
-    const jsPrefs = storedPrefs.contents; // should be an identity op, but just in case:
-
-    const userJSPrefs = _.defaultsDeep(jsPrefs, defaultPrefsJS);
+    const jsPrefs = storedPrefs.contents;
+    const userJSPrefs = _.defaultsDeep(jsPrefs, defaultPreferencesProps);
 
     return userJSPrefs;
 };
