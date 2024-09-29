@@ -896,7 +896,7 @@ const getWindowMatchInfo = (
     function aboveMatchThreshold(matchCount: number, bookmarkId: string) {
         const tabCount = w.tabs!.length;
         const savedTabWindow = bmStore.bookmarkIdMap.get(bookmarkId);
-        const savedUrlCount = savedTabWindow!.tabItems.count();
+        const savedUrlCount = savedTabWindow!.tabItems.length;
         const matchRatio = matchCount / savedUrlCount; // log.debug("match threshold for '", savedTabWindow.title, "': ", matchRatio, matchCount, savedUrlCount)
 
         return (
@@ -1072,7 +1072,7 @@ async function loadSavedState(
         (bmWin) => !bmWin.open,
     );
     const closedWindowIds = closedWindowsMap.keys();
-    let savedOpenTabsMap: { [id: string]: Immutable.List<TabItem> } = {};
+    let savedOpenTabsMap: { [id: string]: TabItem[] } = {};
 
     for (let id of closedWindowIds) {
         const savedState = savedWindowState[id];
@@ -1086,7 +1086,7 @@ async function loadSavedState(
                 const convTabItems = openTabItems.map((ti: any) =>
                     tabWindowUtils.tabItemFromJS(ti),
                 );
-                const tiList = Immutable.List(convTabItems);
+                const tiList = convTabItems;
                 savedOpenTabsMap[id] = tiList;
             }
         }
@@ -1112,8 +1112,17 @@ async function loadSavedState(
             baseSavedItems,
             snapTabs,
         );
-        return tabWindow.set('tabItems', mergedTabs).set('snapshot', true);
+        return TabWindow.update(tabWindow, {
+            tabItems: mergedTabs,
+            snapshot: true,
+        });
     });
+    log.debug('loadSavedState: updated bookmarkIdMap: ', updBookmarkMap.toJS());
+    for (const w of updBookmarkMap.values()) {
+        log.debug('loadSavedState: window: ', w);
+        log.debug('loadSavedState: window title: ', w.title);
+    }
+
     const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap);
     log.debug('merged window state from local storage');
     return nextStore;

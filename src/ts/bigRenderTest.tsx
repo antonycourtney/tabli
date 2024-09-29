@@ -22,9 +22,9 @@ function makeTabItem(active: boolean) {
 
     const openTabId = tabIdCounter++;
 
-    const openState = new OpenTabState({ url, title, openTabId, active });
+    const openState = OpenTabState.create({ url, title, openTabId, active });
 
-    const item = new TabItem({ open: true, openState });
+    const item = TabItem.create({ open: true, openState });
 
     return item;
 }
@@ -33,15 +33,13 @@ let windowIdCounter = 9000;
 const TABS_PER_WINDOW = 10;
 
 function makeTabWindow() {
-    let tabItemsArr = [];
+    let tabItems: TabItem[] = [];
     for (let i = 0; i < TABS_PER_WINDOW; i++) {
-        tabItemsArr.push(makeTabItem(i == 0));
+        tabItems.push(makeTabItem(i == 0));
     }
     const openWindowId = windowIdCounter++;
 
-    const tabItems: Immutable.List<TabItem> = Immutable.List(tabItemsArr);
-
-    const tabWindow = new TabWindow({
+    const tabWindow = TabWindow.create({
         open: true,
         windowType: 'normal',
         openWindowId,

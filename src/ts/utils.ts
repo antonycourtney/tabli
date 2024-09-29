@@ -143,11 +143,12 @@ export function baseURL(url: string): string {
 
 /**
  * Normalize a Google Doc URL to the base URL without any parameters
- * @param url 
- * @returns 
+ * @param url
+ * @returns
  */
 export function normalizeGoogleDocURL(url: string): string {
-    const googleDocsRegex = /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
+    const googleDocsRegex =
+        /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
     const match = url.match(googleDocsRegex);
     if (match) {
         return `${match[0]}`; // Return the base URL without any parameters
@@ -156,7 +157,8 @@ export function normalizeGoogleDocURL(url: string): string {
 }
 
 export function isGoogleDocURL(url: string): boolean {
-    const googleDocsRegex = /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
+    const googleDocsRegex =
+        /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
     return googleDocsRegex.test(url);
 }
 
@@ -296,15 +298,11 @@ export const inExtension = (): boolean => {
 type MbIndex = number | undefined;
 
 export const getTabIndices = (tabWindow: TabWindow): [MbIndex, MbIndex][] => {
-    const indices = tabWindow.tabItems
-        .map((ti) => {
-            const openIndex = ti.open ? ti.openState!.openTabIndex : undefined;
-            const savedIndex = ti.saved
-                ? ti.savedState!.bookmarkIndex
-                : undefined;
-            return [openIndex, savedIndex] as [MbIndex, MbIndex];
-        })
-        .toArray();
+    const indices = tabWindow.tabItems.map((ti) => {
+        const openIndex = ti.open ? ti.openState!.openTabIndex : undefined;
+        const savedIndex = ti.saved ? ti.savedState!.bookmarkIndex : undefined;
+        return [openIndex, savedIndex] as [MbIndex, MbIndex];
+    });
     return indices;
 };
 

@@ -10,15 +10,15 @@ import { mkRef, utils as oneRefUtils, StateRef, update } from 'oneref';
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin: any) {
     // eslint-disable-line no-unused-vars
-    const decItems = jsWin.tabItems.map(
-        (tiFields: any[]) => new TabWindow.TabItem(tiFields),
+    const decItems = jsWin.tabItems.map((tiFields: any) =>
+        TabWindow.TabItem.create(tiFields),
     );
 
     const itemWin = Object.assign({}, jsWin, {
         tabItems: Immutable.Seq(decItems),
     });
 
-    const decWin = new TabWindow.TabWindow(itemWin);
+    const decWin = TabWindow.TabWindow.create(itemWin);
     return decWin;
 }
 

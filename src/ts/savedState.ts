@@ -52,7 +52,7 @@ const saveState = () => {
     prevBookmarkIdMap = latestBookmarkIdMap;
     // never persist a chrome session id -- we'll set during startup from sessions API
     const serBookmarkIdMap = latestBookmarkIdMap!.map((tw) =>
-        tw.remove('chromeSessionId'),
+        tw.clearChromeSessionId(),
     );
     const savedWindowState = JSON.stringify(serBookmarkIdMap, null, 2);
     const savedState = { savedWindowStateVersion, savedWindowState };

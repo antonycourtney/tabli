@@ -113,7 +113,7 @@ export default class TabManagerState extends Immutable.Record(
     }
 
     handleTabWindowClosed(tabWindow: TabWindow) {
-        log.debug('handleTabWindowClosed: ', tabWindow.toJS());
+        log.debug('handleTabWindowClosed: ', tabWindow);
         /*
          * We remove window from map of open windows (windowIdMap) but then we re-register
          * closed window to ensure that a version of saved window stays in
@@ -130,7 +130,7 @@ export default class TabManagerState extends Immutable.Record(
     }
 
     handleTabWindowExpand(tabWindow: TabWindow, expand: boolean) {
-        var updWindow = tabWindow.set('expanded', expand);
+        var updWindow = TabWindow.update(tabWindow, { expanded: expand });
         return this.registerTabWindow(updWindow);
     }
 
@@ -240,7 +240,7 @@ export default class TabManagerState extends Immutable.Record(
             : this;
         const attachedTabWindow = tabWindowUtils
             .updateWindow(tabWindow, chromeWindow)
-            .remove('expanded'); // log.debug('attachChromeWindow: attachedTabWindow: ', attachedtabWindowUtils.toJS())
+            .clearExpanded();
 
         return rmStore.registerTabWindow(attachedTabWindow);
     }
@@ -515,24 +515,30 @@ export default class TabManagerState extends Immutable.Record(
      */
 
     findURL(url: string): [TabWindow, TabItem][] {
-        if (url === 'chrome://newtab/' || url.startsWith('chrome-extension://')) {
+        if (
+            url === 'chrome://newtab/' ||
+            url.startsWith('chrome-extension://')
+        ) {
             return [];
         }
 
         const openWindows = this.getOpen().toArray();
         const matches: [TabWindow, TabItem][] = [];
         const isGoogleDoc = utils.isGoogleDocURL(url);
-        const shouldNormalize = isGoogleDoc && this.preferences.dedupeGoogleDocs;
+        const shouldNormalize =
+            isGoogleDoc && this.preferences.dedupeGoogleDocs;
 
-        const targetUrl = shouldNormalize ? utils.normalizeGoogleDocURL(url) : url;
+        const targetUrl = shouldNormalize
+            ? utils.normalizeGoogleDocURL(url)
+            : url;
 
         for (const tabWindow of openWindows) {
             for (const tabItem of tabWindow.tabItems) {
                 if (tabItem.open) {
-                    const itemUrl = shouldNormalize 
-                        ? utils.normalizeGoogleDocURL(tabItem.url) 
+                    const itemUrl = shouldNormalize
+                        ? utils.normalizeGoogleDocURL(tabItem.url)
                         : tabItem.url;
-                    
+
                     if (itemUrl === targetUrl) {
                         matches.push([tabWindow, tabItem]);
                     }
@@ -553,6 +559,9 @@ export default class TabManagerState extends Immutable.Record(
         const preferences = prefs.Preferences.deserializeJS(
             snapshot.preferences,
         );
+
+        log.debug('*** deserialize: openWindows: ', openWindows);
+        log.debug('*** deserialize: bookmarkWindows: ', bookmarkWindows);
 
         const {
             folderId,

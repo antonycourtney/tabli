@@ -159,12 +159,12 @@ const restoreFromAppState = (
                 // limits what's opened to what was previously open and
                 // explicitly saved, to minimize the number of tabs we load.
                 targetItems = targetItems.filter((ti) => ti.saved);
-                if (targetItems.count() === 0) {
+                if (targetItems.length === 0) {
                     // No saved items open, full revert:
                     targetItems = tabItems.filter((ti) => ti.saved);
                 }
             }
-            urls = targetItems.map((ti) => ti.url).toArray();
+            urls = targetItems.map((ti) => ti.url);
         }
         if (
             currentChromeWindow.tabs &&
@@ -416,12 +416,10 @@ export function revertWindow(tabWindow: TabWindow, storeRef: TMSRef) {
      */
     const unsavedOpenTabIds = tabWindow.tabItems
         .filter((ti) => ti.open && !ti.saved)
-        .map((ti) => ti.safeOpenState.openTabId)
-        .toArray();
+        .map((ti) => ti.safeOpenState.openTabId);
     const savedClosedUrls = tabWindow.tabItems
         .filter((ti) => !ti.open && ti.saved)
-        .map((ti) => ti.safeSavedState.url)
-        .toArray();
+        .map((ti) => ti.safeSavedState.url);
 
     // re-open saved URLs:
     // We need to do this before removing tab ids or window could close if all unsaved
@@ -462,12 +460,16 @@ export function manageWindow(
         // log.debug( "succesfully created bookmarks folder ", windowFolderNode )
         // log.debug( "for window: ", tabWindow )
 
-        // We'll groupBy and then take the first item of each element of the sequence:
-        const uniqTabItems = tabWindow.tabItems
-            .groupBy((ti) => ti.url)
-            .toIndexedSeq()
-            .map((vs) => vs.get(0))
-            .toArray() as TabItem[];
+        const uniqTabItems = Array.from(
+            tabWindow.tabItems
+                .reduce((map, item) => {
+                    if (!map.has(item.url)) {
+                        map.set(item.url, item);
+                    }
+                    return map;
+                }, new Map<string, TabItem>())
+                .values(),
+        );
 
         var bookmarkActions = uniqTabItems.map((tabItem) => {
             function makeBookmarkAction(
@@ -587,7 +589,7 @@ export const showPopout = async (stateRef: StateRef<TabManagerState>) => {
                 left: oldWindow.left,
                 top: oldWindow.top,
                 width: oldWindow.width,
-                height: oldWindow.height
+                height: oldWindow.height,
             };
         } catch (e) {
             // Old window doesn't exist, ignore
@@ -601,15 +603,13 @@ export const showPopout = async (stateRef: StateRef<TabManagerState>) => {
         left: oldState ? oldState.left : 0,
         top: oldState ? oldState.top : 0,
         width: oldState ? oldState.width : Constants.POPOUT_DEFAULT_WIDTH,
-        height: oldState ? oldState.height : Constants.POPOUT_DEFAULT_HEIGHT
+        height: oldState ? oldState.height : Constants.POPOUT_DEFAULT_HEIGHT,
     };
 
     const newPopoutWindow = await chromep.windows.create(createData);
 
     if (newPopoutWindow.id) {
-        update(stateRef, (st) =>
-            st.set('popoutWindowId', newPopoutWindow.id!)
-        );
+        update(stateRef, (st) => st.set('popoutWindowId', newPopoutWindow.id!));
 
         // Close the old window after a short delay
         if (oldPopoutId !== chrome.windows.WINDOW_ID_NONE) {
@@ -617,12 +617,14 @@ export const showPopout = async (stateRef: StateRef<TabManagerState>) => {
                 chromep.windows.remove(oldPopoutId).catch(() => {
                     // Ignore errors if window doesn't exist
                 });
-            }, 500);  // 500ms delay
+            }, 500); // 500ms delay
         }
     }
 };
 
-export const hidePopout = async (storeRef: TMSRef): Promise<TabManagerState> => {
+export const hidePopout = async (
+    storeRef: TMSRef,
+): Promise<TabManagerState> => {
     const winStore = mutableGet(storeRef);
     const popoutId = winStore.popoutWindowId;
     if (popoutId !== chrome.windows.WINDOW_ID_NONE) {
@@ -635,14 +637,14 @@ export const hidePopout = async (storeRef: TMSRef): Promise<TabManagerState> => 
         log.debug('hidePopout: old popout window closed.');
     }
     return awaitableUpdate_(storeRef, (state) =>
-        state.set('popoutWindowId', chrome.windows.WINDOW_ID_NONE)
+        state.set('popoutWindowId', chrome.windows.WINDOW_ID_NONE),
     );
 };
 
 export function toggleExpandAll(storeRef: TMSRef) {
     update(storeRef, (st) => {
         const allWindows = st.getAll();
-        const updWindows = allWindows.map((w) => w.remove('expanded'));
+        const updWindows = allWindows.map((w) => w.clearExpanded());
         const nextSt = st
             .registerTabWindows(updWindows)
             .set('expandAll', !st.expandAll);
@@ -874,12 +876,12 @@ export const oldMoveTabItem = async (
             const srcTabWindow = st.getSavedWindowByTabBookmarkId(bookmarkId);
             const updSt = srcTabWindow
                 ? st.handleSavedTabMoved(
-                    srcTabWindow,
-                    targetTabWindow,
-                    movedTabItem,
-                    chromeTab!,
-                    bmNode,
-                )
+                      srcTabWindow,
+                      targetTabWindow,
+                      movedTabItem,
+                      chromeTab!,
+                      bmNode,
+                  )
                 : st;
             return updSt;
         });
