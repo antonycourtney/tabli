@@ -3,11 +3,18 @@ import ChromePromise from 'chrome-promise';
 import diff from 'deep-diff';
 import { initGlobalLogger, log } from './globals';
 import { initState, loadSnapState, readSnapStateStr } from './state';
+import { enablePatches, Patch } from 'immer';
 import * as actions from './actions';
 import { addStateChangeListener, mutableGet, StateRef } from 'oneref';
 import * as utils from './utils';
 import _ from 'lodash';
-import TabManagerState from './tabManagerState';
+import TabManagerState, {
+    addPatchListener,
+    PatchListenerId,
+    removePatchListener,
+} from './tabManagerState';
+import { patch } from 'semver';
+import { serializePatches } from './patchUtils';
 
 const chromep = ChromePromise;
 
@@ -53,32 +60,42 @@ async function showPopout() {
 }
 */
 
-function mkStateUpdater(
+function registerPatchListener(
     stateRef: StateRef<TabManagerState>,
     port: chrome.runtime.Port,
-) {
-    const prevState = mutableGet(stateRef);
-    let prevSnap = prevState.toJS();
+): PatchListenerId {
+    const appState = mutableGet(stateRef);
+
+    // First: Let's send the initial state:
+    const stateSnapshot = JSON.stringify(appState, null, 2);
+    port.postMessage({ type: 'initialState', value: stateSnapshot });
+
+    let batchedPatches: Patch[] = [];
 
     const stateUpdater = () => {
-        const appState = mutableGet(stateRef);
-        const snap = appState.toJS();
-        const stateSnapshot = JSON.stringify(snap, null, 2);
-        const diffs = diff(prevSnap, snap);
-        log.debug('bgHelper: state change diffs: ', diffs);
-        prevSnap = snap;
         try {
-            port.postMessage({ type: 'stateChange', stateSnapshot });
+            log.debug('sending batched patches: ', batchedPatches);
+            const value = serializePatches(batchedPatches);
+            port.postMessage({ type: 'statePatches', value });
+            batchedPatches = [];
         } catch (e) {
-            log.debug('bgHelper: error sending state change (ignoring) ', e);
+            log.debug('error sending state change: ', e);
+            removePatchListener(listenerId);
         }
     };
     const throttledStateUpdater = _.throttle(stateUpdater, 100);
-    return throttledStateUpdater;
+
+    const listenerId = addPatchListener((patches) => {
+        batchedPatches.push(...patches);
+        throttledStateUpdater();
+    });
+
+    return listenerId;
 }
 
 async function main() {
     console.log('*** bgHelper: started at ', new Date().toString());
+    enablePatches();
     initGlobalLogger('bgHelper');
     utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
@@ -131,15 +148,13 @@ async function main() {
     chrome.runtime.onConnect.addListener((port) => {
         log.debug('bgHelper: onConnect: ', port, ' name: ', port.name);
 
-        const throttledStateUpdater = mkStateUpdater(stateRef, port);
-        addStateChangeListener(stateRef, (_appState) => {
-            throttledStateUpdater();
-        });
+        const listenerId = registerPatchListener(stateRef, port);
         port.onMessage.addListener((message, port) => {
             return true;
         });
         port.onDisconnect.addListener(() => {
-            log.debug('bgHelper: port disconnected: ');
+            log.debug('bgHelper: port disconnected: ', port);
+            removePatchListener(listenerId);
         });
     });
 }

@@ -11,9 +11,11 @@ import TabManagerState from './tabManagerState';
 import * as actions from './actions';
 import * as oneref from 'oneref';
 import { update, refContainer } from 'oneref';
+import { applyPatches, enablePatches } from 'immer';
 import { utimesSync } from 'fs';
 import { init, saveSnapshot } from './savedState';
 import { initState, loadSnapState } from './state';
+import { deserializePatches } from './patchUtils';
 
 // full state update no more than 5 times a second:
 const DEBOUNCE_WAIT = 200;
@@ -65,6 +67,7 @@ export async function getFocusedAndRender(
     doSync: boolean = true,
 ) {
     initGlobalLogger(isPopout ? 'popout' : 'popup');
+    enablePatches();
     // const storeRef = await initState(true);
     const storeRef = await loadSnapState();
 
@@ -81,13 +84,19 @@ export async function getFocusedAndRender(
 
     port.onMessage.addListener((msg) => {
         log.debug('renderPopup: received message: ', msg);
-        const { type } = msg;
-        if (type === 'stateChange') {
-            const { stateSnapshot } = msg;
-            log.debug('renderPopup: received state change: ', stateSnapshot);
-            const stateJS = JSON.parse(stateSnapshot);
+        const { type, value } = msg;
+        if (type === 'initialState') {
+            log.debug('renderPopup: received initial state: ', value);
+            const stateJS = JSON.parse(value);
             const nextAppState = TabManagerState.deserialize(stateJS);
             update(storeRef, (st) => nextAppState);
+        } else if (type === 'statePatches') {
+            log.debug('renderPopup: received state patches: ', value);
+            const patches = deserializePatches(value);
+            update(storeRef, (st) => {
+                const nextState = applyPatches(st, patches);
+                return nextState;
+            });
         }
     });
 

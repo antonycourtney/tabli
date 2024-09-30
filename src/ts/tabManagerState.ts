@@ -1,4 +1,4 @@
-import { produce, immerable } from 'immer';
+import { produce, immerable, Patch } from 'immer';
 import * as prefs from './preferences';
 import * as tabWindowUtils from './tabWindowUtils';
 import { TabWindow, TabItem } from './tabWindow';
@@ -27,6 +27,27 @@ const initialState: TabManagerStateProps = {
     expandAll: true,
     preferences: prefs.Preferences.create(),
 };
+
+export type PatchListner = (patches: Patch[]) => void;
+
+export type PatchListenerId = number;
+
+let nextListenerId = 100;
+const listeners: Map<PatchListenerId, PatchListner> = new Map();
+
+export function addPatchListener(listener: PatchListner): PatchListenerId {
+    const id = nextListenerId++;
+    listeners.set(id, listener);
+    return id;
+}
+
+export function removePatchListener(id: PatchListenerId): boolean {
+    return listeners.delete(id);
+}
+
+function notifyListeners(patches: Patch[]): void {
+    listeners.forEach((listener) => listener(patches));
+}
 
 export default class TabManagerState {
     [immerable] = true;
@@ -63,7 +84,9 @@ export default class TabManagerState {
         state: TabManagerState,
         updater: (draft: TabManagerState) => void,
     ): TabManagerState {
-        return produce(state, updater);
+        return produce(state, updater, (patches, inversePatches) => {
+            notifyListeners(patches);
+        });
     }
 
     registerTabWindow(tabWindow: TabWindow): TabManagerState {

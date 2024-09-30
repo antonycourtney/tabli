@@ -3,6 +3,7 @@ import * as tabWindowUtils from '../src/ts/tabWindowUtils';
 import difflet from 'difflet';
 import * as rawTestData from '../test-data/testData';
 import log from 'loglevel';
+import { enablePatches } from 'immer';
 
 const testData = rawTestData as any;
 
@@ -11,6 +12,10 @@ function dumpDiffs(objA, objB) {
     console.log('diffs:');
     console.log(s);
 }
+
+beforeAll(() => {
+    enablePatches();
+});
 
 test('basic test', () => {});
 
