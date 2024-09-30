@@ -15,6 +15,7 @@ import TabManagerState, {
 } from './tabManagerState';
 import { patch } from 'semver';
 import { serializePatches } from './patchUtils';
+import * as actionsServer from './actionsServer';
 
 const chromep = ChromePromise;
 
@@ -149,9 +150,7 @@ async function main() {
         log.debug('bgHelper: onConnect: ', port, ' name: ', port.name);
 
         const listenerId = registerPatchListener(stateRef, port);
-        port.onMessage.addListener((message, port) => {
-            return true;
-        });
+        actionsServer.startServer(stateRef, port);
         port.onDisconnect.addListener(() => {
             log.debug('bgHelper: port disconnected: ', port);
             removePatchListener(listenerId);

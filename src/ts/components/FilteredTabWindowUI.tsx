@@ -4,6 +4,7 @@ import { StateRef } from 'oneref';
 import { cx, css } from '@emotion/css';
 import * as styles from './cssStyles';
 import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import * as Constants from './constants';
 import WindowHeader from './WindowHeader';
 import TabItemUI from './TabItemUI';
@@ -96,7 +97,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     }
 
     const handleOpen = async () => {
-        await actions.openWindow(tabWindow, stateRef);
+        await actionsClient.openWindow(tabWindow, stateRef);
         if (onItemSelected) {
             onItemSelected();
         }

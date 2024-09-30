@@ -16,6 +16,7 @@ import { utimesSync } from 'fs';
 import { init, saveSnapshot } from './savedState';
 import { initState, loadSnapState } from './state';
 import { deserializePatches } from './patchUtils';
+import { initClient } from './actionsClient';
 
 // full state update no more than 5 times a second:
 const DEBOUNCE_WAIT = 200;
@@ -81,6 +82,8 @@ export async function getFocusedAndRender(
     const portName = isPopout ? 'popout' : 'popup';
     const port = chrome.runtime.connect({ name: portName });
     log.debug('renderPopup: connected to service worker');
+
+    initClient(port);
 
     port.onMessage.addListener((msg) => {
         log.debug('renderPopup: received message: ', msg);
