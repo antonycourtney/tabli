@@ -17,6 +17,7 @@ import { init, saveSnapshot } from './savedState';
 import { initState, loadSnapState } from './state';
 import { deserializePatches } from './patchUtils';
 import { initClient } from './actionsClient';
+import { WorkerConnection } from './workerConnection';
 
 // full state update no more than 5 times a second:
 const DEBOUNCE_WAIT = 200;
@@ -80,12 +81,8 @@ export async function getFocusedAndRender(
     (window as any)._tabliIsPopout = isPopout;
 
     const portName = isPopout ? 'popout' : 'popup';
-    const port = chrome.runtime.connect({ name: portName });
-    log.debug('renderPopup: connected to service worker');
 
-    initClient(port);
-
-    port.onMessage.addListener((msg) => {
+    const msgHandler = (msg: any) => {
         log.debug('renderPopup: received message: ', msg);
         const { type, value } = msg;
         if (type === 'initialState') {
@@ -94,14 +91,17 @@ export async function getFocusedAndRender(
             const nextAppState = TabManagerState.deserialize(stateJS);
             update(storeRef, (st) => nextAppState);
         } else if (type === 'statePatches') {
-            log.debug('renderPopup: received state patches: ', value);
+            // log.debug('renderPopup: received state patches: ', value);
             const patches = deserializePatches(value);
             update(storeRef, (st) => {
                 const nextState = applyPatches(st, patches);
                 return nextState;
             });
         }
-    });
+    };
+
+    const conn = new WorkerConnection(portName, msgHandler);
+    initClient(conn);
 
     renderPopup(storeRef, isPopout);
 }

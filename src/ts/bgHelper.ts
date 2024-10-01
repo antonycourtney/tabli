@@ -75,6 +75,10 @@ function registerPatchListener(
 
     const stateUpdater = () => {
         try {
+            if (batchedPatches.length === 0) {
+                log.debug('stateUpdater: no patches to send');
+                return;
+            }
             log.debug('sending batched patches: ', batchedPatches);
             const value = serializePatches(batchedPatches);
             port.postMessage({ type: 'statePatches', value });

@@ -13,20 +13,21 @@ import {
 } from 'oneref';
 import TabManagerState from './tabManagerState';
 import { log } from './globals';
+import { WorkerConnection } from './workerConnection';
 
 type WindowId = number;
 type TMSRef = StateRef<TabManagerState>;
 
-let targetPort: chrome.runtime.Port | null = null;
+let conn: WorkerConnection;
 
-export function initClient(port: chrome.runtime.Port) {
+export function initClient(wc: WorkerConnection) {
     log.debug('actionsClient: init');
-    targetPort = port;
+    conn = wc;
 }
 
 export async function openWindow(targetTabWindow: TabWindow, storeRef: TMSRef) {
     const { open, openWindowId, savedFolderId } = targetTabWindow;
     const args = { open, openWindowId, savedFolderId };
-    log.debug('actionsClient: openWindow: ', targetPort, args);
-    targetPort?.postMessage({ action: 'openWindow', args });
+    log.debug('actionsClient: openWindow: ', args);
+    conn.send({ action: 'openWindow', args });
 }
