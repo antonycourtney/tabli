@@ -45,7 +45,7 @@ function matchingTabsCount(
     searchStr: string | null,
     filteredTabWindow: FilteredTabWindow,
 ) {
-    return matchingTabs(searchStr, filteredTabWindow).count();
+    return matchingTabs(searchStr, filteredTabWindow).length;
 }
 
 function selectedTab(
@@ -55,10 +55,10 @@ function selectedTab(
 ): TabItem {
     if (!searchStr || searchStr.length === 0) {
         const tabWindow = filteredTabWindow.tabWindow;
-        const tabItem = tabWindow.tabItems.get(tabIndex);
+        const tabItem = tabWindow.tabItems[tabIndex];
         return tabItem!;
     }
-    const filteredItem = filteredTabWindow.itemMatches.get(tabIndex);
+    const filteredItem = filteredTabWindow.itemMatches[tabIndex];
     return filteredItem!.tabItem;
 }
 
@@ -297,10 +297,10 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
 
             const selectedTabs = matchingTabs(searchStr, selectedWindow);
 
-            const activeEntry = selectedTabs.findEntry(
+            const activeEntry = selectedTabs.find(
                 (t) => t.open && t.openState!.active,
             );
-            const activeTabIndex = activeEntry ? activeEntry[0] : 0;
+            const activeTabIndex = activeEntry ? activeEntry : 0;
             const activeTabId = appState.getActiveTabId();
 
             /*             log.debug('updateScrollPos: updating state: ', {
@@ -343,8 +343,8 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
             const prevWindow = filteredWindows[prevWindowIndex];
             const prevTabCount =
                 searchStr && searchStr.length > 0
-                    ? prevWindow.itemMatches.count()
-                    : prevWindow.tabWindow.tabItems.count();
+                    ? prevWindow.itemMatches.length
+                    : prevWindow.tabWindow.tabItems.length;
 
             setSelectedWindowIndex(prevWindowIndex);
             setSelectedTabIndex(prevTabCount - 1);
@@ -358,8 +358,8 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         const selectedWindow = filteredWindows[selectedWindowIndex];
         const tabCount =
             searchStr && searchStr.length > 0
-                ? selectedWindow.itemMatches.count()
-                : selectedWindow.tabWindow.tabItems.count();
+                ? selectedWindow.itemMatches.length
+                : selectedWindow.tabWindow.tabItems.length;
 
         const isExpanded = selectedWindow.tabWindow.isExpanded(expandAll);
 

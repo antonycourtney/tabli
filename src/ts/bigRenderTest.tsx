@@ -1,7 +1,6 @@
 import { log } from './globals';
-import * as Immutable from 'immutable';
-import * as RenderCommon from './renderCommon';
 
+import * as RenderCommon from './renderCommon';
 import { TabWindow, TabItem, OpenTabState } from './tabWindow';
 import TabManagerState from './tabManagerState';
 import rawDomains from '../../test-data/top500Domains.json';
@@ -22,9 +21,9 @@ function makeTabItem(active: boolean) {
 
     const openTabId = tabIdCounter++;
 
-    const openState = new OpenTabState({ url, title, openTabId, active });
+    const openState = OpenTabState.create({ url, title, openTabId, active });
 
-    const item = new TabItem({ open: true, openState });
+    const item = TabItem.create({ open: true, openState });
 
     return item;
 }
@@ -33,15 +32,13 @@ let windowIdCounter = 9000;
 const TABS_PER_WINDOW = 10;
 
 function makeTabWindow() {
-    let tabItemsArr = [];
+    let tabItems: TabItem[] = [];
     for (let i = 0; i < TABS_PER_WINDOW; i++) {
-        tabItemsArr.push(makeTabItem(i == 0));
+        tabItems.push(makeTabItem(i == 0));
     }
     const openWindowId = windowIdCounter++;
 
-    const tabItems: Immutable.List<TabItem> = Immutable.List(tabItemsArr);
-
-    const tabWindow = new TabWindow({
+    const tabWindow = TabWindow.create({
         open: true,
         windowType: 'normal',
         openWindowId,
@@ -67,7 +64,7 @@ function renderPage() {
 
     // log.info('renderPage: testData: ', testData)
 
-    const emptyWinStore = new TabManagerState();
+    const emptyWinStore = TabManagerState.create();
     const mockWinStore = emptyWinStore
         .registerTabWindows(tabWindows)
         .set('showRelNotes', false);
@@ -83,7 +80,7 @@ function renderPage() {
     var tPreRender = performance.now();
 
     // N.B. false last arg to prevent sync'ing current chrome windows
-    RenderCommon.renderPopup(storeRef, null, false, false, true);
+    RenderCommon.renderPopup(storeRef, false, true);
 
     var tPostRender = performance.now();
     log.info(

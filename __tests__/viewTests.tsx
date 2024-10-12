@@ -23,6 +23,7 @@ import {
     getByTestId,
     waitForDomChange,
 } from '@testing-library/react';
+import { enablePatches } from 'immer';
 
 // Mock the IntersectionObserver, see https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
 
@@ -51,6 +52,7 @@ window.IntersectionObserver = IntersectionObserver;
 global.IntersectionObserver = IntersectionObserver;
 
 beforeAll(() => {
+    enablePatches();
     if (window.document)
         (document as any).createRange = () => {
             let ret = {
@@ -78,7 +80,7 @@ function getWindowSnap() {
 function initialWinStore() {
     const folderId = 6666;
     const archiveFolderId = 7777;
-    const baseWinStore = new TabManagerState({
+    const baseWinStore = TabManagerState.create({
         folderId,
         archiveFolderId,
     } as any);

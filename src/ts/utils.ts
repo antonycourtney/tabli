@@ -1,4 +1,3 @@
-import * as Immutable from 'immutable';
 import { log } from './globals';
 import * as BC from './browserConstants';
 import { TabWindow } from './tabWindow';
@@ -143,11 +142,12 @@ export function baseURL(url: string): string {
 
 /**
  * Normalize a Google Doc URL to the base URL without any parameters
- * @param url 
- * @returns 
+ * @param url
+ * @returns
  */
 export function normalizeGoogleDocURL(url: string): string {
-    const googleDocsRegex = /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
+    const googleDocsRegex =
+        /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
     const match = url.match(googleDocsRegex);
     if (match) {
         return `${match[0]}`; // Return the base URL without any parameters
@@ -156,7 +156,8 @@ export function normalizeGoogleDocURL(url: string): string {
 }
 
 export function isGoogleDocURL(url: string): boolean {
-    const googleDocsRegex = /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
+    const googleDocsRegex =
+        /^https:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9-_]+)/;
     return googleDocsRegex.test(url);
 }
 
@@ -186,31 +187,25 @@ export function seqActions(actions: any, seed: any, onCompleted: any) {
     invokeNext(seed);
 }
 /**
- * Given an Immutable.Map<K,Num> of candidate matches over a space of key values K,
+ * Given a Map<K, number> of candidate matches over a space of key values K,
  * return the unambiguous best match (if any) otherwise null
- *
  */
-
-export function bestMatch<K>(matchMap: Immutable.Map<K, number>): K | null {
+export function bestMatch<K>(matchMap: Map<K, number>): K | null {
     if (matchMap.size === 0) {
         return null;
     }
 
-    const matchSeq = matchMap
-        .entrySeq()
-        .sortBy(([k, count]) => count)
-        .cacheResult();
+    const entries = Array.from(matchMap.entries());
+    entries.sort((a, b) => a[1] - b[1]); // Sort by count (ascending)
 
-    const seqCount = matchSeq.count();
-
-    if (seqCount === 1) {
-        return matchSeq.get(0)![0];
+    if (entries.length === 1) {
+        return entries[0][0];
     }
 
-    const topMatch = matchSeq.get(seqCount - 1);
-    const runnerUp = matchSeq.get(seqCount - 2);
+    const topMatch = entries[entries.length - 1];
+    const runnerUp = entries[entries.length - 2];
 
-    if (topMatch && runnerUp && topMatch[1] > runnerUp[1]) {
+    if (topMatch[1] > runnerUp[1]) {
         return topMatch[0];
     }
 
@@ -296,15 +291,11 @@ export const inExtension = (): boolean => {
 type MbIndex = number | undefined;
 
 export const getTabIndices = (tabWindow: TabWindow): [MbIndex, MbIndex][] => {
-    const indices = tabWindow.tabItems
-        .map((ti) => {
-            const openIndex = ti.open ? ti.openState!.openTabIndex : undefined;
-            const savedIndex = ti.saved
-                ? ti.savedState!.bookmarkIndex
-                : undefined;
-            return [openIndex, savedIndex] as [MbIndex, MbIndex];
-        })
-        .toArray();
+    const indices = tabWindow.tabItems.map((ti) => {
+        const openIndex = ti.open ? ti.openState!.openTabIndex : undefined;
+        const savedIndex = ti.saved ? ti.savedState!.bookmarkIndex : undefined;
+        return [openIndex, savedIndex] as [MbIndex, MbIndex];
+    });
     return indices;
 };
 
@@ -346,3 +337,20 @@ export const getSavedTabIndex = (
 };
 
 export const windowIsPopout = (): boolean => (window as any)._tabliIsPopout;
+
+export function validChromeWindow(
+    cw: chrome.windows.Window | null,
+    normalOnly: boolean,
+): boolean {
+    if (!cw) {
+        return false;
+    }
+
+    const cwTabs = cw.tabs || [];
+
+    const isNormal = cw.type === 'normal' && cwTabs.length > 0;
+    const isPopout =
+        cw.type === 'popup' && cwTabs.length > 0 && cwTabs[0].title === 'Tabli';
+
+    return isNormal || (!normalOnly && isPopout);
+}

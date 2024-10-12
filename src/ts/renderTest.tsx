@@ -1,5 +1,4 @@
 import { log } from './globals';
-import * as Immutable from 'immutable';
 import * as RenderCommon from './renderCommon';
 
 import * as TabWindow from './tabWindow';
@@ -10,15 +9,15 @@ import { mkRef, utils as oneRefUtils, StateRef, update } from 'oneref';
 // make a TabWindow from its JSON
 function makeTabWindow(jsWin: any) {
     // eslint-disable-line no-unused-vars
-    const decItems = jsWin.tabItems.map(
-        (tiFields: any[]) => new TabWindow.TabItem(tiFields),
+    const decItems = jsWin.tabItems.map((tiFields: any) =>
+        TabWindow.TabItem.create(tiFields),
     );
 
     const itemWin = Object.assign({}, jsWin, {
-        tabItems: Immutable.Seq(decItems),
+        tabItems: decItems,
     });
 
-    const decWin = new TabWindow.TabWindow(itemWin);
+    const decWin = TabWindow.TabWindow.create(itemWin);
     return decWin;
 }
 
@@ -73,7 +72,7 @@ function renderPage(testData: any) {
 
     // log.info('renderPage: testData: ', testData)
 
-    const emptyWinStore = new TabManagerState();
+    const emptyWinStore = TabManagerState.create();
     const mockWinStore = emptyWinStore
         .syncWindowList(testChromeWindows)
         .set('showRelNotes', false);
@@ -91,7 +90,7 @@ function renderPage(testData: any) {
     var tPreRender = performance.now();
 
     // N.B. false last arg to prevent sync'ing current chrome windows
-    RenderCommon.renderPopup(storeRef, currentChromeWindow, false, false, true);
+    RenderCommon.renderPopup(storeRef, false, true);
 
     var tPostRender = performance.now();
     log.info(
