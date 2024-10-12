@@ -454,9 +454,10 @@ export default class TabManagerState {
     }
 
     findURL(url: string): [TabWindow, TabItem][] {
+        const normalizedTargetUrl = utils.normalizeGoogleDocURL(url);
         if (
-            url === 'chrome://newtab/' ||
-            url.startsWith('chrome-extension://')
+            normalizedTargetUrl == 'chrome://newtab/' ||
+            normalizedTargetUrl.startsWith('chrome-extension://')
         ) {
             return [];
         }
@@ -466,7 +467,8 @@ export default class TabManagerState {
 
         for (const tabWindow of openWindows) {
             for (const tabItem of tabWindow.tabItems) {
-                if (tabItem.open && tabItem.url === url) {
+                const normalizedItemUrl = utils.normalizeGoogleDocURL(tabItem.url);
+                if (tabItem.open && normalizedItemUrl === normalizedTargetUrl) {
                     matches.push([tabWindow, tabItem]);
                 }
             }
