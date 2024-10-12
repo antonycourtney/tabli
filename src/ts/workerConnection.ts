@@ -66,9 +66,24 @@ export class WorkerConnection {
         try {
             log.debug('WorkerConnection: connecting...');
             this.port = chrome.runtime.connect({ name: this.portName });
+            if (chrome.runtime.lastError) {
+                this.port = null;
+                console.log(
+                    'WorkerConnection: connect failed: ',
+                    chrome.runtime.lastError,
+                );
+                this.reconnect();
+                return;
+            }
             log.debug('WorkerConnection: connected');
             this.port.onDisconnect.addListener(() => {
                 console.log('WorkerConnection: port disconnected');
+                if (chrome.runtime.lastError) {
+                    console.log(
+                        'WorkerConnection: port disconnected lastError: ',
+                        chrome.runtime.lastError,
+                    );
+                }
                 this.port = null;
                 this.reconnect();
             });
