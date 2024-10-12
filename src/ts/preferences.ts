@@ -17,7 +17,6 @@ export const USER_PREFS_KEY = 'UserPreferences';
 interface PreferencesProps {
     popoutOnStart: boolean;
     dedupeTabs: boolean;
-    dedupeGoogleDocs: boolean;
     revertOnOpen: boolean;
     theme: string;
     layout: string;
@@ -27,7 +26,6 @@ interface PreferencesProps {
 const defaultPreferencesProps: PreferencesProps = {
     popoutOnStart: false,
     dedupeTabs: false,
-    dedupeGoogleDocs: false,
     revertOnOpen: true,
     theme: 'light',
     layout: 'normal',
@@ -39,7 +37,6 @@ export class Preferences {
 
     popoutOnStart: boolean;
     dedupeTabs: boolean;
-    dedupeGoogleDocs: boolean;
     revertOnOpen: boolean;
     theme: string;
     layout: string;
@@ -48,7 +45,6 @@ export class Preferences {
     private constructor() {
         this.popoutOnStart = defaultPreferencesProps.popoutOnStart;
         this.dedupeTabs = defaultPreferencesProps.dedupeTabs;
-        this.dedupeGoogleDocs = defaultPreferencesProps.dedupeGoogleDocs;
         this.revertOnOpen = defaultPreferencesProps.revertOnOpen;
         this.theme = defaultPreferencesProps.theme;
         this.layout = defaultPreferencesProps.layout;

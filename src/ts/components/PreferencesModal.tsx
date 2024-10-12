@@ -106,12 +106,6 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         updatePrefs({ dedupeTabs: !prefs.dedupeTabs });
     };
 
-    const handleDedupeGoogleDocsChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        updatePrefs({ dedupeGoogleDocs: !prefs.dedupeGoogleDocs });
-    };
-
     const handleRevertOnOpenChange = (
         e: React.ChangeEvent<HTMLInputElement>,
     ) => {
@@ -228,25 +222,6 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 />
                                 <label className={checkLabelStyle}>
                                     Automatically close duplicate tabs
-                                </label>
-                            </div>
-                            <div
-                                className={cx(
-                                    'checkbox',
-                                    rightCol,
-                                    prefsLabeledCheckbox,
-                                )}
-                            >
-                                <input
-                                    type="checkbox"
-                                    className={prefsCheckbox}
-                                    checked={prefs.dedupeGoogleDocs}
-                                    onChange={handleDedupeGoogleDocsChange}
-                                />
-                                <label className={checkLabelStyle}>
-                                    Automatically close duplicate Google Docs
-                                    (requires "Automatically close duplicate
-                                    tabs")
                                 </label>
                             </div>
                             <div
