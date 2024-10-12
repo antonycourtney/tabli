@@ -1,6 +1,7 @@
 import { log } from './globals';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { enablePatches } from 'immer';
 import PreferencesModal from './components/PreferencesModal';
 
 import * as actions from './actions';
@@ -66,6 +67,7 @@ const renderPrefs = async () => {
 };
 
 function main() {
+    enablePatches();
     window.onload = () => renderPrefs();
 }
 
