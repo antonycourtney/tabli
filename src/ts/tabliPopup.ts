@@ -21,7 +21,6 @@ async function getPopoutWindowId(): Promise<number> {
 }
 
 async function main() {
-    /*
     const popoutWindowId = await getPopoutWindowId();
     log.debug('renderPopup: popoutWindowId: ', popoutWindowId);
     if (popoutWindowId !== chrome.windows.WINDOW_ID_NONE) {
@@ -31,7 +30,6 @@ async function main() {
     }
 
     RenderCommon.getFocusedAndRender(false, true);
-    */
     /*
      * 14Sep24: Admission of defeat. Popout windows can be closed at any time, and
      * many of Tabli's actions, such as opening saved windows, require a sequence of
@@ -41,8 +39,13 @@ async function main() {
      * to the service worker. This is a huge amount of work, and would require a complete
      * re-architecture of Tabli.
      */
+    /* 12Oct24: Now that we moved to Immer.JS and all state management to background thread,
+     * let's bring back the popup window and not do this anymore.
+     */
+    /*
     chrome.runtime.sendMessage({ action: 'showPopout' });
     window.close();
+    */
 }
 
 main();
