@@ -8,7 +8,7 @@ import { Theme } from './themeContext';
 import * as svg from './svg';
 import { inExtension } from '../utils';
 import { initSimpleImg, SimpleImg } from 'react-simple-img';
-
+import { log } from '../globals';
 const nodeEnv = process.env.NODE_ENV;
 
 if (nodeEnv === 'development') {
@@ -72,7 +72,12 @@ export const mkFavIcon = (tab: TabItem): JSX.Element => {
         // fiSrc = 'chrome://favicon/size/16/' + utils.baseURL(tab.url);
         const extensionId = chrome.runtime.id;
         const tabUrl = utils.baseURL(tab.url);
-        fiSrc = `chrome-extension://${extensionId}/_favicon/?pageUrl=${tabUrl}&size=16`;
+        if (tabUrl.length === 0) {
+            log.debug('mkFavIcon: empty baseURL for tab Url: ', tab.url);
+            fiSrc = '';
+        } else {
+            fiSrc = `chrome-extension://${extensionId}/_favicon/?pageUrl=${tabUrl}&size=16`;
+        }
     }
 
     // Skip the chrome FAVICONs; they just throw when accessed.

@@ -106,7 +106,9 @@ export class TabItem {
     static create(props: Partial<TabItemProps> = {}): TabItem {
         return produce(new TabItem(), (draft: Draft<TabItem>) => {
             Object.assign(draft, props);
-            draft.key = genTabItemKey();
+            if (!draft.key) {
+                draft.key = genTabItemKey();
+            }
             if (props.savedState) {
                 draft.savedState = SavedTabState.create(props.savedState);
             }

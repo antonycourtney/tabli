@@ -85,7 +85,6 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         log.debug('unamange: ', tabWindow);
         event.preventDefault();
         modalActions.openUnmanageModal(tabWindow);
-        // actions.unmanageWindow(tabWindow, stateRef);
         event.stopPropagation();
     };
 

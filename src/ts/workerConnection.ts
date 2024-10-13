@@ -24,13 +24,13 @@ export class WorkerConnection {
     public rawSend(msg: any): boolean {
         try {
             if (!this.port) {
-                console.log('WorkerConnection: rawSend: no port');
+                log.log('WorkerConnection: rawSend: no port');
                 return false;
             }
             this.port.postMessage(msg);
             return true;
         } catch (e) {
-            console.log('WorkerConnection: send failed: ', e);
+            log.log('WorkerConnection: send failed: ', e);
             return false;
         }
     }
@@ -68,7 +68,7 @@ export class WorkerConnection {
             this.port = chrome.runtime.connect({ name: this.portName });
             if (chrome.runtime.lastError) {
                 this.port = null;
-                console.log(
+                log.log(
                     'WorkerConnection: connect failed: ',
                     chrome.runtime.lastError,
                 );
@@ -77,9 +77,9 @@ export class WorkerConnection {
             }
             log.debug('WorkerConnection: connected');
             this.port.onDisconnect.addListener(() => {
-                console.log('WorkerConnection: port disconnected');
+                log.log('WorkerConnection: port disconnected');
                 if (chrome.runtime.lastError) {
-                    console.log(
+                    log.log(
                         'WorkerConnection: port disconnected lastError: ',
                         chrome.runtime.lastError,
                     );
@@ -92,7 +92,7 @@ export class WorkerConnection {
             });
             this.emptySendQueue();
         } catch (e) {
-            console.log('WorkerConnection: connect failed: ', e);
+            log.log('WorkerConnection: connect failed: ', e);
             this.reconnect();
         }
     }

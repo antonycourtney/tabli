@@ -1,6 +1,6 @@
 import { log } from '../globals';
 import * as React from 'react';
-import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import * as searchOps from '../searchOps';
 import * as oneref from 'oneref';
 import { css } from '@emotion/css';
@@ -102,7 +102,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
 
     // handler for save modal
     const doSave = (titleStr: string) => {
-        actions.manageWindow(saveTabWindow!, titleStr, stateRef);
+        actionsClient.manageWindow(saveTabWindow!, titleStr, stateRef);
         closeSaveModal();
     };
 
@@ -120,7 +120,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     };
 
     const doRevert = (tabWindow: TabWindow) => {
-        actions.revertWindow(revertTabWindow!, stateRef);
+        actionsClient.revertWindow(revertTabWindow!, stateRef);
         closeRevertModal();
     };
 
@@ -138,7 +138,7 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     };
 
     const doUnmanage = (tabWindow: TabWindow) => {
-        actions.unmanageWindow(unmanageTabWindow!, stateRef);
+        actionsClient.unmanageWindow(unmanageTabWindow!, stateRef);
         closeUnmanageModal();
     };
 

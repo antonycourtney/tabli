@@ -47,11 +47,170 @@ async function handleOpenWindow(
 
     return actions.openWindow(tabWindow, stateRef);
 }
+async function handleCloseWindow(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+    },
+) {
+    log.debug('actionsServer: handleCloseWindow: ', args);
+    const { open, openWindowId, savedFolderId } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleCloseWindow: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.closeWindow(tabWindow, stateRef);
+}
+
+async function handleExpandWindow(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        expand: boolean;
+    },
+) {
+    log.debug('actionsServer: handleExpandWindow: ', args);
+    const { open, openWindowId, savedFolderId, expand } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleExpandWindow: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.expandWindow(tabWindow, expand, stateRef);
+}
+
+async function handleRevertWindow(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+    },
+) {
+    log.debug('actionsServer: handleRevertWindow: ', args);
+    const { open, openWindowId, savedFolderId } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleRevertWindow: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.revertWindow(tabWindow, stateRef);
+}
+
+async function handleUnmanageWindow(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+    },
+) {
+    log.debug('actionsServer: handleUnmanageWindow: ', args);
+    const { open, openWindowId, savedFolderId } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleUnmanageWindow: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.unmanageWindow(tabWindow, stateRef);
+}
+
+async function handleManageWindow(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        title: string;
+    },
+) {
+    log.debug('actionsServer: handleManageWindow: ', args);
+    const { open, openWindowId, savedFolderId, title } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleManageWindow: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.manageWindow(tabWindow, title, stateRef);
+}
+
+async function handleActivateOrRestoreTab(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        tabKey: string;
+        tabIndex: number;
+    },
+) {
+    log.debug('actionsServer: activateOrRestoreTab: ', args);
+    const { open, openWindowId, savedFolderId, tabKey, tabIndex } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: activateOrRestoreTab: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+    const entry = tabWindow.findTabByKey(tabKey);
+    if (entry == null) {
+        log.debug('actionsServer: activateOrRestoreTab: tab not found: ', args);
+        return;
+    }
+    const [_index, tab] = entry;
+
+    return actions.activateOrRestoreTab(tabWindow, tab, tabIndex, stateRef);
+}
 
 type ActionHandler = (stateRef: StateRef<TabManagerState>, args: any) => void;
 
 const actionHandlers: { [key: string]: ActionHandler } = {
     openWindow: handleOpenWindow,
+    closeWindow: handleCloseWindow,
+    expandWindow: handleExpandWindow,
+    manageWindow: handleManageWindow,
+    unmanageWindow: handleUnmanageWindow,
+    revertWindow: handleRevertWindow,
+    activateOrRestoreTab: handleActivateOrRestoreTab,
 };
 
 function handleMessage(

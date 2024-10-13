@@ -5,6 +5,7 @@ import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx, css } from '@emotion/css';
 import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import { DragItemTypes } from './constants';
 import { HeaderButton } from './HeaderButton';
 import HeaderCheckbox from './HeaderCheckbox';
@@ -77,7 +78,12 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
         // log.debug("TabItem: handleClick: tab: ", tab)
 
-        await actions.activateOrRestoreTab(tabWindow, tab, tabIndex, stateRef);
+        await actionsClient.activateOrRestoreTab(
+            tabWindow,
+            tab,
+            tabIndex,
+            stateRef,
+        );
 
         if (onItemSelected) {
             await onItemSelected(tab);

@@ -13,7 +13,7 @@ exports[`attachChromeWindow 1`] = `
   "snapshot": false,
   "tabItems": [
     {
-      "key": "_tabItem-562",
+      "key": "_tabItem-528",
       "open": false,
       "openState": null,
       "saved": true,
@@ -25,7 +25,7 @@ exports[`attachChromeWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-563",
+      "key": "_tabItem-529",
       "open": false,
       "openState": null,
       "saved": true,
@@ -37,7 +37,7 @@ exports[`attachChromeWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-564",
+      "key": "_tabItem-530",
       "open": false,
       "openState": null,
       "saved": true,
@@ -49,7 +49,7 @@ exports[`attachChromeWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-565",
+      "key": "_tabItem-531",
       "open": false,
       "openState": null,
       "saved": true,
@@ -61,7 +61,7 @@ exports[`attachChromeWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-566",
+      "key": "_tabItem-532",
       "open": false,
       "openState": null,
       "saved": true,
@@ -73,7 +73,7 @@ exports[`attachChromeWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-567",
+      "key": "_tabItem-533",
       "open": false,
       "openState": null,
       "saved": true,
@@ -103,7 +103,7 @@ exports[`attachChromeWindow 2`] = `
   "snapshot": false,
   "tabItems": [
     {
-      "key": "_tabItem-580",
+      "key": "_tabItem-540",
       "open": true,
       "openState": {
         "active": true,
@@ -126,7 +126,7 @@ exports[`attachChromeWindow 2`] = `
       },
     },
     {
-      "key": "_tabItem-581",
+      "key": "_tabItem-541",
       "open": true,
       "openState": {
         "active": false,
@@ -143,7 +143,7 @@ exports[`attachChromeWindow 2`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-582",
+      "key": "_tabItem-542",
       "open": true,
       "openState": {
         "active": false,
@@ -166,7 +166,7 @@ exports[`attachChromeWindow 2`] = `
       },
     },
     {
-      "key": "_tabItem-583",
+      "key": "_tabItem-543",
       "open": true,
       "openState": {
         "active": false,
@@ -189,7 +189,7 @@ exports[`attachChromeWindow 2`] = `
       },
     },
     {
-      "key": "_tabItem-584",
+      "key": "_tabItem-544",
       "open": true,
       "openState": {
         "active": false,
@@ -212,7 +212,7 @@ exports[`attachChromeWindow 2`] = `
       },
     },
     {
-      "key": "_tabItem-585",
+      "key": "_tabItem-545",
       "open": true,
       "openState": {
         "active": false,
@@ -235,7 +235,7 @@ exports[`attachChromeWindow 2`] = `
       },
     },
     {
-      "key": "_tabItem-586",
+      "key": "_tabItem-535",
       "open": false,
       "openState": null,
       "saved": true,
@@ -265,7 +265,7 @@ exports[`chromeTabWindow 1`] = `
   "snapshot": false,
   "tabItems": [
     {
-      "key": "_tabItem-519",
+      "key": "_tabItem-506",
       "open": true,
       "openState": {
         "active": false,
@@ -283,7 +283,7 @@ exports[`chromeTabWindow 1`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-520",
+      "key": "_tabItem-507",
       "open": true,
       "openState": {
         "active": false,
@@ -301,7 +301,7 @@ exports[`chromeTabWindow 1`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-521",
+      "key": "_tabItem-508",
       "open": true,
       "openState": {
         "active": false,
@@ -319,7 +319,7 @@ exports[`chromeTabWindow 1`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-522",
+      "key": "_tabItem-509",
       "open": true,
       "openState": {
         "active": false,
@@ -336,7 +336,7 @@ exports[`chromeTabWindow 1`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-523",
+      "key": "_tabItem-510",
       "open": true,
       "openState": {
         "active": false,
@@ -354,7 +354,7 @@ exports[`chromeTabWindow 1`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-524",
+      "key": "_tabItem-511",
       "open": true,
       "openState": {
         "active": false,
@@ -372,7 +372,7 @@ exports[`chromeTabWindow 1`] = `
       "savedState": null,
     },
     {
-      "key": "_tabItem-525",
+      "key": "_tabItem-512",
       "open": true,
       "openState": {
         "active": true,
@@ -409,7 +409,7 @@ exports[`makeFolderTabWindow 1`] = `
   "snapshot": false,
   "tabItems": [
     {
-      "key": "_tabItem-506",
+      "key": "_tabItem-500",
       "open": false,
       "openState": null,
       "saved": true,
@@ -421,7 +421,7 @@ exports[`makeFolderTabWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-507",
+      "key": "_tabItem-501",
       "open": false,
       "openState": null,
       "saved": true,
@@ -433,7 +433,7 @@ exports[`makeFolderTabWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-508",
+      "key": "_tabItem-502",
       "open": false,
       "openState": null,
       "saved": true,
@@ -445,7 +445,7 @@ exports[`makeFolderTabWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-509",
+      "key": "_tabItem-503",
       "open": false,
       "openState": null,
       "saved": true,
@@ -457,7 +457,7 @@ exports[`makeFolderTabWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-510",
+      "key": "_tabItem-504",
       "open": false,
       "openState": null,
       "saved": true,
@@ -469,7 +469,7 @@ exports[`makeFolderTabWindow 1`] = `
       },
     },
     {
-      "key": "_tabItem-511",
+      "key": "_tabItem-505",
       "open": false,
       "openState": null,
       "saved": true,

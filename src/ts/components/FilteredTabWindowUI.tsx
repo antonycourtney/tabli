@@ -109,7 +109,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     const handleClose = () => {
         // eslint-disable-line no-unused-consts
         // log.log("handleClose")
-        actions.closeWindow(tabWindow, stateRef);
+        actionsClient.closeWindow(tabWindow, stateRef);
     };
 
     const handleRevert = () => {
@@ -152,7 +152,7 @@ const FilteredTabWindowUI: React.FunctionComponent<
     };
 
     const handleExpand = (expand: boolean) => {
-        actions.expandWindow(tabWindow, expand, stateRef);
+        actionsClient.expandWindow(tabWindow, expand, stateRef);
     };
 
     let tabs;
