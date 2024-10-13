@@ -4,6 +4,24 @@ import { log } from './globals';
 import TabManagerState from './tabManagerState';
 import { TabWindow } from './tabWindow';
 
+async function handleShowRelNotes(
+    stateRef: StateRef<TabManagerState>,
+    args: {},
+) {
+    log.debug('actionsServer: handleShowRelNotes: ', args);
+
+    return actions.showRelNotes(stateRef);
+}
+
+async function handleHideRelNotes(
+    stateRef: StateRef<TabManagerState>,
+    args: {},
+) {
+    log.debug('actionsServer: handleHideRelNotes: ', args);
+
+    return actions.hideRelNotes(stateRef);
+}
+
 function findTabWindow(
     stateRef: StateRef<TabManagerState>,
     {
@@ -269,6 +287,8 @@ const actionHandlers: { [key: string]: ActionHandler } = {
     activateOrRestoreTab: handleActivateOrRestoreTab,
     saveTab: handleSaveTab,
     unsaveTab: handleUnsaveTab,
+    showRelNotes: handleShowRelNotes,
+    hideRelNotes: handleHideRelNotes,
 };
 
 function handleMessage(

@@ -25,6 +25,16 @@ export function initClient(wc: WorkerConnection) {
     conn = wc;
 }
 
+export async function showRelNotes(storeRef: TMSRef) {
+    log.debug('actionsClient: showRelNotes ');
+    conn.send({ action: 'showRelNotes', args: [] });
+}
+
+export async function hideRelNotes(storeRef: TMSRef) {
+    log.debug('actionsClient: hideRelNotes ');
+    conn.send({ action: 'hideRelNotes', args: [] });
+}
+
 export async function openWindow(targetTabWindow: TabWindow, storeRef: TMSRef) {
     const { open, openWindowId, savedFolderId } = targetTabWindow;
     const args = { open, openWindowId, savedFolderId };

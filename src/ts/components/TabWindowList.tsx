@@ -4,9 +4,7 @@ import { log } from '../globals'; // eslint-disable-line no-unused-vars
 import FilteredTabWindowUI from './FilteredTabWindowUI';
 import WindowListSection from './WindowListSection';
 import MessageCard from './MessageCard';
-
-import * as actions from '../actions';
-
+import * as actionsClient from '../actionsClient';
 import { isNode } from '../utils';
 import TabManagerState from '../tabManagerState';
 import ModalActions from './modalActions';
@@ -67,7 +65,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
 }) => {
     /* acknowledge release notes (and hide them) */
     const ackRelNotes = () => {
-        actions.hideRelNotes(stateRef);
+        actionsClient.hideRelNotes(stateRef);
     };
 
     const relNotesStr = relNotesModule ? relNotesModule.default : '';

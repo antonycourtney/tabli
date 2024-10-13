@@ -7,6 +7,7 @@ import { Manager, Reference, Popper } from 'react-popper';
 import { css, cx } from '@emotion/css';
 import { mkUrl } from '../utils';
 import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useState, useContext } from 'react';
@@ -108,7 +109,7 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
     };
     const handleRelNotesClick: ClickHandler = (e) => {
         e.preventDefault();
-        actions.showRelNotes(stateRef);
+        actionsClient.showRelNotes(stateRef);
     };
 
     const renderMenuItem = (handler: ClickHandler, label: string) => {
