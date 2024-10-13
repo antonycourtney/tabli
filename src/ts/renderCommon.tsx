@@ -31,7 +31,6 @@ export async function renderPopup(
     renderTest: boolean = false,
 ) {
     try {
-        utils.setLogLevel(log);
         log.debug('renderPopup: isPopout: ', isPopout);
 
         var tPreRender = performance.now();
@@ -69,6 +68,8 @@ export async function getFocusedAndRender(
     doSync: boolean = true,
 ) {
     initGlobalLogger(isPopout ? 'popout' : 'popup');
+    utils.setLogLevel(log);
+
     enablePatches();
     // const storeRef = await initState(true);
     const storeRef = await loadSnapState();

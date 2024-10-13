@@ -19,48 +19,6 @@ import * as actionsServer from './actionsServer';
 
 const chromep = ChromePromise;
 
-/*
- * show the popout window in response to a show popout command
- *
- * Reads the latest snapshot of window state, and either sends focus to existing
- * popout or opens a new one.
- */
-/*
- * This was a weird, bad dup of actions.showPopout.
- * We should no longer need this now that 
-async function showPopout() {
-    // first, check for existence of session state -- if it exists, we're already running
-    const stateRef = await loadSnapState();
-    if (stateRef == null) {
-        console.log(
-            'showPopout: no snap state found, creating popout window...',
-        );
-        chromep.windows.create({
-            url: 'popout.html',
-            type: 'popup',
-            left: 0,
-            top: 0,
-            width: Constants.POPOUT_DEFAULT_WIDTH,
-            height: Constants.POPOUT_DEFAULT_HEIGHT,
-        });
-        return;
-    }
-    const st = mutableGet(stateRef);
-    console.log(
-        'bgHelper: showPopout: before syncChromeWindows: st.popoutWindowId: ',
-        st.popoutWindowId,
-    );
-    await actions.syncChromeWindows(stateRef);
-    const st2 = mutableGet(stateRef);
-    console.log(
-        'bgHelper: showPopout: after syncChromeWindows: st.popoutWindowId: ',
-        st2.popoutWindowId,
-    );
-
-    actions.showPopout(stateRef);
-}
-*/
-
 function registerPatchListener(
     stateRef: StateRef<TabManagerState>,
     port: chrome.runtime.Port,
@@ -104,7 +62,7 @@ async function main() {
     initGlobalLogger('bgHelper');
     utils.setLogLevel(log);
     const userPrefs = await actions.readPreferences();
-    console.log('bgHelper: Read userPrefs: ', userPrefs);
+    log.debug('bgHelper: Read userPrefs: ', userPrefs);
 
     // Check for existence of snap state -- if it exists, we're already running
     const snapStateStr = await readSnapStateStr();
