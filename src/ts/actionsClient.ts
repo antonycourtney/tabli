@@ -96,3 +96,27 @@ export async function activateOrRestoreTab(
     log.debug('actionsClient: activateOrRestoreTab: ', args);
     conn.send({ action: 'activateOrRestoreTab', args });
 }
+
+export async function saveTab(
+    targetTabWindow: TabWindow,
+    tab: TabItem,
+    storeRef: TMSRef,
+) {
+    const { open, openWindowId, savedFolderId } = targetTabWindow;
+    const tabKey = tab.key;
+    const args = { open, openWindowId, savedFolderId, tabKey };
+    log.debug('actionsClient: saveTab: ', args);
+    conn.send({ action: 'saveTab', args });
+}
+
+export async function unsaveTab(
+    targetTabWindow: TabWindow,
+    tab: TabItem,
+    storeRef: TMSRef,
+) {
+    const { open, openWindowId, savedFolderId } = targetTabWindow;
+    const tabKey = tab.key;
+    const args = { open, openWindowId, savedFolderId, tabKey };
+    log.debug('actionsClient: unsaveTab: ', args);
+    conn.send({ action: 'unsaveTab', args });
+}

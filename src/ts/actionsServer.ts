@@ -201,6 +201,62 @@ async function handleActivateOrRestoreTab(
     return actions.activateOrRestoreTab(tabWindow, tab, tabIndex, stateRef);
 }
 
+async function handleSaveTab(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        tabKey: string;
+    },
+) {
+    log.debug('actionsServer: saveTab: ', args);
+    const { open, openWindowId, savedFolderId, tabKey } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug('actionsServer: saveTab: tabWindow not found: ', args);
+        return;
+    }
+    const entry = tabWindow.findTabByKey(tabKey);
+    if (entry == null) {
+        log.debug('actionsServer: saveTab: tab not found: ', args);
+        return;
+    }
+    const [_index, tab] = entry;
+
+    return actions.saveTab(tabWindow, tab, stateRef);
+}
+
+async function handleUnsaveTab(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        tabKey: string;
+    },
+) {
+    log.debug('actionsServer: unsaveTab: ', args);
+    const { open, openWindowId, savedFolderId, tabKey } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug('actionsServer: unsaveTab: tabWindow not found: ', args);
+        return;
+    }
+    const entry = tabWindow.findTabByKey(tabKey);
+    if (entry == null) {
+        log.debug('actionsServer: unsaveTab: tab not found: ', args);
+        return;
+    }
+    const [_index, tab] = entry;
+
+    return actions.unsaveTab(tabWindow, tab, stateRef);
+}
+
 type ActionHandler = (stateRef: StateRef<TabManagerState>, args: any) => void;
 
 const actionHandlers: { [key: string]: ActionHandler } = {
@@ -211,6 +267,8 @@ const actionHandlers: { [key: string]: ActionHandler } = {
     unmanageWindow: handleUnmanageWindow,
     revertWindow: handleRevertWindow,
     activateOrRestoreTab: handleActivateOrRestoreTab,
+    saveTab: handleSaveTab,
+    unsaveTab: handleUnsaveTab,
 };
 
 function handleMessage(

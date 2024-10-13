@@ -119,13 +119,13 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     const handleBookmarkTabItem = (event: React.MouseEvent) => {
         event.stopPropagation();
         log.debug('bookmark tab: ', tab.toJS());
-        actions.saveTab(tabWindow, tab, stateRef);
+        actionsClient.saveTab(tabWindow, tab, stateRef);
     };
 
     const handleUnbookmarkTabItem = (event: React.MouseEvent) => {
         event.stopPropagation();
         log.debug('unbookmark tab: ', tab.toJS());
-        actions.unsaveTab(tabWindow, tab, stateRef);
+        actionsClient.unsaveTab(tabWindow, tab, stateRef);
     };
 
     const managed = tabWindow.saved;
