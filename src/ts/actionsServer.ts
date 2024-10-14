@@ -2,7 +2,7 @@ import { mutableGet, StateRef } from 'oneref';
 import * as actions from './actions';
 import { log } from './globals';
 import TabManagerState from './tabManagerState';
-import { TabWindow } from './tabWindow';
+import { TabItemId, TabWindow } from './tabWindow';
 
 async function handleShowRelNotes(
     stateRef: StateRef<TabManagerState>,
@@ -193,12 +193,12 @@ async function handleActivateOrRestoreTab(
         open: boolean;
         openWindowId: number;
         savedFolderId: string;
-        tabKey: string;
+        tabItemId: TabItemId;
         tabIndex: number;
     },
 ) {
     log.debug('actionsServer: activateOrRestoreTab: ', args);
-    const { open, openWindowId, savedFolderId, tabKey, tabIndex } = args;
+    const { open, openWindowId, savedFolderId, tabItemId, tabIndex } = args;
 
     const tabWindow = findTabWindow(stateRef, args);
 
@@ -209,9 +209,15 @@ async function handleActivateOrRestoreTab(
         );
         return;
     }
-    const entry = tabWindow.findTabByKey(tabKey);
+    const entry = tabWindow.findTabByTabItemId(tabItemId);
     if (entry == null) {
         log.debug('actionsServer: activateOrRestoreTab: tab not found: ', args);
+        log.debug(
+            'actionsServer: was looking for tabItemId: ',
+            tabItemId,
+            ' in tabWindow: ',
+            tabWindow,
+        );
         return;
     }
     const [_index, tab] = entry;

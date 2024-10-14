@@ -101,8 +101,8 @@ export async function activateOrRestoreTab(
     storeRef: TMSRef,
 ) {
     const { open, openWindowId, savedFolderId } = targetTabWindow;
-    const tabKey = tab.key;
-    const args = { open, openWindowId, savedFolderId, tabKey, tabIndex };
+    const tabItemId = tab.tabItemId;
+    const args = { open, openWindowId, savedFolderId, tabItemId, tabIndex };
     log.debug('actionsClient: activateOrRestoreTab: ', args);
     conn.send({ action: 'activateOrRestoreTab', args });
 }

@@ -10,7 +10,7 @@ import { PopupBaseProps, Popup } from './components/Popup';
 import TabManagerState from './tabManagerState';
 import * as actions from './actions';
 import * as oneref from 'oneref';
-import { update, refContainer } from 'oneref';
+import { update, refContainer, mkRef } from 'oneref';
 import { applyPatches, enablePatches } from 'immer';
 import { utimesSync } from 'fs';
 import { init, saveSnapshot } from './savedState';
@@ -69,16 +69,10 @@ export async function getFocusedAndRender(
 ) {
     initGlobalLogger(isPopout ? 'popout' : 'popup');
     utils.setLogLevel(log);
-
     enablePatches();
-    // const storeRef = await initState(true);
-    const storeRef = await loadSnapState();
 
-    if (storeRef == null) {
-        throw new Error(
-            'getFocusedAndRender: failed to load state snapshot from session storage',
-        );
-    }
+    let storeRef: oneref.StateRef<TabManagerState> | null = null;
+
     (window as any)._tabliIsPopout = isPopout;
 
     const portName = isPopout ? 'popout' : 'popup';
@@ -87,13 +81,28 @@ export async function getFocusedAndRender(
         log.debug('renderPopup: received message: ', msg);
         const { type, value } = msg;
         if (type === 'initialState') {
-            log.debug('renderPopup: received initial state: ', value);
             const stateJS = JSON.parse(value);
+            log.debug(
+                'renderPopup: received initial state (deserialized): ',
+                stateJS,
+            );
             const nextAppState = TabManagerState.deserialize(stateJS);
-            update(storeRef, (st) => nextAppState);
+            log.debug('renderPopup: deserialized state: ', nextAppState);
+            if (storeRef == null) {
+                storeRef = mkRef(nextAppState);
+                renderPopup(storeRef, isPopout);
+            } else {
+                update(storeRef, (st) => nextAppState);
+            }
         } else if (type === 'statePatches') {
-            // log.debug('renderPopup: received state patches: ', value);
             const patches = deserializePatches(value);
+            log.debug('renderPopup: received state patches: ', patches);
+            if (storeRef == null) {
+                log.error(
+                    'renderPopup: received patches before initial state -- ignoring',
+                );
+                return;
+            }
             update(storeRef, (st) => {
                 const nextState = applyPatches(st, patches);
                 return nextState;
@@ -103,6 +112,4 @@ export async function getFocusedAndRender(
 
     const conn = new WorkerConnection(portName, msgHandler);
     initClient(conn);
-
-    renderPopup(storeRef, isPopout);
 }

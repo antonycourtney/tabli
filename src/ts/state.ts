@@ -170,6 +170,10 @@ const initWinStore = async () => {
         archiveFolderId,
     });
     const loadedWinStore = loadManagedWindows(baseWinStore, subTreeNodes[0]);
+    log.debug(
+        'initWinStore: after loadManagedWindows: loadedWinStore: ',
+        loadedWinStore,
+    );
     const items = await chromep.storage.local.get({
         readRelNotesVersion: '',
     });
@@ -669,6 +673,11 @@ async function onStorageChanged(
     // We only check for state changes on storage if we are not the main
     // writer. Otherwise we would be reverting state changes since
     // the last write!
+    /*
+     * 10/13/24: Now that we sync directly with the service worker using
+     * the patch mechanism, we don't need to do this anymore.
+     */
+    /*
     if (!writer) {
         const maybeState = stateSnapshotStorageChange(changes, namespace);
         if (maybeState != null) {
@@ -678,6 +687,7 @@ async function onStorageChanged(
             });
         }
     }
+    */
 }
 
 function registerEventHandlers(
@@ -1048,6 +1058,8 @@ async function loadSavedState(
         return bmStore;
     }
 
+    log.debug('loadSavedState: read saved window state: ', savedWindowState);
+    log.debug('loadSavedState: before merging with saved state: ', bmStore);
     const closedWindowsMap = Object.fromEntries(
         Object.entries(bmStore.bookmarkIdMap).filter(
             ([_, bmWin]) => !bmWin.open,
@@ -1113,6 +1125,8 @@ async function loadSavedState(
     */
 
     const nextStore = bmStore.set('bookmarkIdMap', updBookmarkMap);
+
+    log.debug('loadSavedState: after merging with saved state: ', nextStore);
     return nextStore;
 }
 
@@ -1174,13 +1188,18 @@ export async function initState(
     log.debug('initState: initializing state...');
     const snapStateRef = await loadSnapState();
 
+    log.debug('initState: loaded snapshot state: ', snapStateRef);
     const stateRef =
         snapStateRef == null ? await initNoSnapshot() : snapStateRef;
 
+    log.debug(
+        'initState: after initNoSnapshot: stateRef: ',
+        mutableGet(stateRef),
+    );
     await actions.loadPreferences(stateRef);
     await actions.syncChromeWindows(stateRef);
     log.debug('initial sync of chrome windows complete.');
-    log.debug('before sync: stateRef: ', stateRef);
+    log.debug('before syncCurrent: stateRef: ', stateRef);
     const syncedStore = await actions.syncCurrent(stateRef);
 
     if (writer) {
@@ -1201,61 +1220,3 @@ export async function initState(
 
     return stateRef;
 }
-
-/**
- * old main from bgHelper.  Now subsumed into initStoreRef / getStoreRef
- */
-/*
-async function oldMain() {
-    try {
-        console.log('*** bgHelper started ***');
-        utils.setLogLevel(log);
-        utils.setLogLevel(chromeEventLog);
-        // Can also do:
-        // chromeEventLog.setLevel('debug');
-
-        log.info('bgHelper started, env: ', process.env.NODE_ENV);
-        actions.setReloadHandler(oldMain);
-        const rawBMStore = await initWinStore();
-        const attachBMStore = await reattachWindows(rawBMStore);
-        const bmStore = await loadSavedState(attachBMStore);
-
-        const stateRef = mkRef(bmStore);
-        await actions.loadPreferences(stateRef);
-        await actions.syncChromeWindows(stateRef);
-        log.debug('initial sync of chrome windows complete.');
-        log.debug('before sync: stateRef: ', stateRef);
-        const syncedStore = await actions.syncCurrent(stateRef);
-        // dumpAll(syncedStore)
-        // dumpChromeWindows()
-
-        setupConnectionListener(stateRef);
-        setupMessageListener(stateRef);
-        registerEventHandlers(stateRef);
-
-        // In case of restart: hide any previously open popout that
-        // might be hanging around...
-        // log.debug('store before hiding popout: ', syncedStore.toJS())
-
-        cleanOldPopouts(stateRef);
-
-        const noPopStore = await actions.hidePopout(stateRef); // log.debug('noPopStore: ', noPopStore)
-
-        log.info('main: popoutOnStart: ', noPopStore.preferences.popoutOnStart);
-        if (noPopStore.preferences.popoutOnStart) {
-            actions.showPopout(stateRef);
-        }
-
-        chrome.commands.onCommand.addListener((command) => {
-            chromeEventLog.debug('Chrome Event: onCommand: ', command);
-
-            if (command === 'show_popout') {
-                actions.showPopout(stateRef);
-            }
-        });
-        savedState.init(stateRef);
-    } catch (e) {
-        log.error('*** caught top level exception: ', e);
-    }
-}
-*/

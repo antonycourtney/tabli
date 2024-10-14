@@ -25,6 +25,7 @@ function registerPatchListener(
 ): PatchListenerId {
     const appState = mutableGet(stateRef);
 
+    log.debug('registerPatchListener: sending initial state: ', appState);
     // First: Let's send the initial state:
     const stateSnapshot = JSON.stringify(appState, null, 2);
     port.postMessage({ type: 'initialState', value: stateSnapshot });
@@ -71,8 +72,6 @@ async function main() {
     const initialLoad = snapStateStr == null;
     log.debug('bgHelper: initialLoad: ', initialLoad);
 
-    // 8/23/24: Passing false for now to avoid horrid race condition when opening saved windows.
-    // Means that popout window Id will often be wrong.
     const stateRef = await initState(true);
 
     log.debug('bgHelper: initialized stateRef');

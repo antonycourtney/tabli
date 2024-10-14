@@ -3,6 +3,7 @@ import * as prefs from './preferences';
 import * as tabWindowUtils from './tabWindowUtils';
 import { TabWindow, TabItem } from './tabWindow';
 import * as utils from './utils';
+import { log } from './globals';
 
 export interface TabManagerStateProps {
     windowIdMap: { [id: number]: TabWindow };
@@ -467,7 +468,9 @@ export default class TabManagerState {
 
         for (const tabWindow of openWindows) {
             for (const tabItem of tabWindow.tabItems) {
-                const normalizedItemUrl = utils.normalizeGoogleDocURL(tabItem.url);
+                const normalizedItemUrl = utils.normalizeGoogleDocURL(
+                    tabItem.url,
+                );
                 if (tabItem.open && normalizedItemUrl === normalizedTargetUrl) {
                     matches.push([tabWindow, tabItem]);
                 }
@@ -478,9 +481,11 @@ export default class TabManagerState {
     }
 
     static deserialize(snapshot: any): TabManagerState {
+        log.debug('TabManagerState.deserialize: ', snapshot);
         const openWindows = Object.values(snapshot.windowIdMap).map((w: any) =>
             TabWindow.create(w),
         );
+        log.debug('TabManagerState.deserialize: openWindows: ', openWindows);
         const bookmarkWindows = Object.values(snapshot.bookmarkIdMap).map(
             (w: any) => TabWindow.create(w),
         );
@@ -505,9 +510,12 @@ export default class TabManagerState {
             expandAll,
         });
 
-        return openWindows
+        const nextSt = openWindows
             .concat(bookmarkWindows)
             .reduce((acc, w) => acc.registerTabWindow(w), st);
+
+        log.debug('TabManagerState.deserialize: returning: ', nextSt);
+        return nextSt;
     }
 
     // migration aid (ideally we should get rid of this)

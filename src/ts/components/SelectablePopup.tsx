@@ -173,6 +173,9 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         filteredWindowsLength,
     });
 
+    log.debug('SelectablePopup: appState: ', appState);
+    log.debug('SelectablePopup: filteredWindows: ', filteredWindows);
+
     // truly just for debugging:
     // const windowTitles = filteredWindows.map(ftw => ftw.tabWindow.title);
     // log.trace('SelectablePopup: window titles: ', windowTitles);

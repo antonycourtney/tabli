@@ -76,11 +76,13 @@ const FilteredTabWindowUI: React.FunctionComponent<
 }: FilteredTabWindowUIProps) => {
     const layout = useContext(LayoutContext);
 
+    /*
     log.trace(
         '  FilteredTabWindowUI: rendering ',
         tabWindow.key,
         tabWindow.title,
     );
+    */
     const theme = useContext(ThemeContext);
     const [prevIsSelected, setPrevIsSelected] = useState(false);
     const windowDivRef = useRef<HTMLDivElement | null>(null);
@@ -129,6 +131,13 @@ const FilteredTabWindowUI: React.FunctionComponent<
         for (let i = 0; i < tabs.length; i++) {
             const tab = tabs[i];
             const isSelected = i === selectedTabIndex;
+            /*
+            log.debug(
+                '  FilteredTabWindowUI: renderTabItems: ',
+                tab.title,
+                tab,
+            );
+            */
             const tabItem = (
                 <TabItemUI
                     stateRef={stateRef}
@@ -173,6 +182,8 @@ const FilteredTabWindowUI: React.FunctionComponent<
         // render empty list of tab items to get -ve margin rollup layout right...
         tabItems = renderTabItems(tabWindow, []);
     }
+
+    // log.debug('FilteredTabWindowUI: rendering: ', tabWindow.title, tabWindow);
 
     const windowHeader = (
         <WindowHeader

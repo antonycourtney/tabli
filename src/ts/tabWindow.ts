@@ -1,4 +1,5 @@
 import { produce, immerable, Draft } from 'immer';
+import { log } from './globals';
 
 export interface SavedTabStateProps {
     bookmarkId: string;
@@ -89,6 +90,14 @@ export interface TabItemProps {
     openState: OpenTabState | null;
 }
 
+// props for uniquely identifying a TabItem in a TabWindow
+export interface TabItemId {
+    open: boolean;
+    saved: boolean;
+    openTabId?: number;
+    bookmarkId?: string;
+}
+
 let tabItemKeyCounter = 500;
 const genTabItemKey = () => '_tabItem-' + tabItemKeyCounter++;
 
@@ -106,8 +115,18 @@ export class TabItem {
     static create(props: Partial<TabItemProps> = {}): TabItem {
         return produce(new TabItem(), (draft: Draft<TabItem>) => {
             Object.assign(draft, props);
+            /* This is gross -- we should have two distinct entry points -- one for deserialization
+             * where we expect keys, and one for fresh creation where we generate keys.
+             */
             if (!draft.key) {
                 draft.key = genTabItemKey();
+                /*
+                log.debug(
+                    'TabItem.create: no key passed in create props, generated new key: ',
+                    draft.key,
+                    props,
+                );
+                */
             }
             if (props.savedState) {
                 draft.savedState = SavedTabState.create(props.savedState);
@@ -168,6 +187,17 @@ export class TabItem {
         throw new Error('Unexpected access of openState on non-open tab');
     }
 
+    get tabItemId(): TabItemId {
+        let tabIdProps: TabItemId = { open: this.open, saved: this.saved };
+        if (this.open && this.openState) {
+            tabIdProps.openTabId = this.openState.openTabId;
+        }
+        if (this.saved && this.savedState) {
+            tabIdProps.bookmarkId = this.savedState.bookmarkId;
+        }
+        return tabIdProps;
+    }
+
     // helper for migration from immutable:
     toJS() {
         return this;
@@ -210,6 +240,14 @@ export class TabWindow {
     static create(props: Partial<TabWindowProps> = {}): TabWindow {
         return produce(new TabWindow(), (draft: Draft<TabWindow>) => {
             Object.assign(draft, props);
+            /* voluminous:
+            log.debug(
+                'TabWindow.create: ',
+                props.open,
+                props.openWindowId,
+                props.tabItems,
+            );
+            */
             draft.tabItems = (props.tabItems || []).map(TabItem.create);
         });
     }
@@ -317,6 +355,27 @@ export class TabWindow {
 
     findTabByKey(key: string): [number, TabItem] | null {
         const index = this.tabItems.findIndex((ti) => ti.key === key);
+        return index !== -1 ? [index, this.tabItems[index]] : null;
+    }
+
+    findTabByTabItemId(tabItemId: TabItemId): [number, TabItem] | null {
+        // predicate comparison function for findIndex:
+        const isTarget = (ti: TabItem): boolean => {
+            if (tabItemId.open && ti.open && ti.openState) {
+                return (
+                    ti.openState &&
+                    ti.openState.openTabId === tabItemId.openTabId
+                );
+            }
+            if (tabItemId.saved && ti.saved && ti.savedState) {
+                return (
+                    ti.savedState &&
+                    ti.savedState.bookmarkId === tabItemId.bookmarkId
+                );
+            }
+            return false;
+        };
+        const index = this.tabItems.findIndex(isTarget);
         return index !== -1 ? [index, this.tabItems[index]] : null;
     }
 
