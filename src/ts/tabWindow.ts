@@ -361,17 +361,17 @@ export class TabWindow {
     findTabByTabItemId(tabItemId: TabItemId): [number, TabItem] | null {
         // predicate comparison function for findIndex:
         const isTarget = (ti: TabItem): boolean => {
+            /* Note that fallthrough is intentional here: we try to match the openTabId
+             * first, then the bookmarkId if that fails.
+             */
             if (tabItemId.open && ti.open && ti.openState) {
-                return (
-                    ti.openState &&
-                    ti.openState.openTabId === tabItemId.openTabId
-                );
+                if (ti.openState.openTabId === tabItemId.openTabId) {
+                    return true;
+                }
             }
             if (tabItemId.saved && ti.saved && ti.savedState) {
-                return (
-                    ti.savedState &&
-                    ti.savedState.bookmarkId === tabItemId.bookmarkId
-                );
+                if (ti.savedState.bookmarkId === tabItemId.bookmarkId)
+                    return true;
             }
             return false;
         };

@@ -113,8 +113,8 @@ export async function saveTab(
     storeRef: TMSRef,
 ) {
     const { open, openWindowId, savedFolderId } = targetTabWindow;
-    const tabKey = tab.key;
-    const args = { open, openWindowId, savedFolderId, tabKey };
+    const tabItemId = tab.tabItemId;
+    const args = { open, openWindowId, savedFolderId, tabItemId };
     log.debug('actionsClient: saveTab: ', args);
     conn.send({ action: 'saveTab', args });
 }
@@ -125,8 +125,8 @@ export async function unsaveTab(
     storeRef: TMSRef,
 ) {
     const { open, openWindowId, savedFolderId } = targetTabWindow;
-    const tabKey = tab.key;
-    const args = { open, openWindowId, savedFolderId, tabKey };
+    const tabItemId = tab.tabItemId;
+    const args = { open, openWindowId, savedFolderId, tabItemId };
     log.debug('actionsClient: unsaveTab: ', args);
     conn.send({ action: 'unsaveTab', args });
 }

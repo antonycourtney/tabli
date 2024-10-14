@@ -231,11 +231,11 @@ async function handleSaveTab(
         open: boolean;
         openWindowId: number;
         savedFolderId: string;
-        tabKey: string;
+        tabItemId: TabItemId;
     },
 ) {
     log.debug('actionsServer: saveTab: ', args);
-    const { open, openWindowId, savedFolderId, tabKey } = args;
+    const { open, openWindowId, savedFolderId, tabItemId } = args;
 
     const tabWindow = findTabWindow(stateRef, args);
 
@@ -243,7 +243,7 @@ async function handleSaveTab(
         log.debug('actionsServer: saveTab: tabWindow not found: ', args);
         return;
     }
-    const entry = tabWindow.findTabByKey(tabKey);
+    const entry = tabWindow.findTabByTabItemId(tabItemId);
     if (entry == null) {
         log.debug('actionsServer: saveTab: tab not found: ', args);
         return;
@@ -259,11 +259,11 @@ async function handleUnsaveTab(
         open: boolean;
         openWindowId: number;
         savedFolderId: string;
-        tabKey: string;
+        tabItemId: TabItemId;
     },
 ) {
     log.debug('actionsServer: unsaveTab: ', args);
-    const { open, openWindowId, savedFolderId, tabKey } = args;
+    const { open, openWindowId, savedFolderId, tabItemId } = args;
 
     const tabWindow = findTabWindow(stateRef, args);
 
@@ -271,7 +271,7 @@ async function handleUnsaveTab(
         log.debug('actionsServer: unsaveTab: tabWindow not found: ', args);
         return;
     }
-    const entry = tabWindow.findTabByKey(tabKey);
+    const entry = tabWindow.findTabByTabItemId(tabItemId);
     if (entry == null) {
         log.debug('actionsServer: unsaveTab: tab not found: ', args);
         return;
