@@ -269,6 +269,41 @@ export function mergeTabWindowTabItems(
     return TabWindow.update(tabWindow, { tabItems: mergedItems });
 }
 
+/* Splice in updated tab item at index
+ * Based on mergeTabWindowTabItems, but we don't assume that we have
+ * the original Chrome tab.
+ */
+function spliceUpdatedTabItem(
+    tabWindow: TabWindow,
+    index: number,
+    prevTabItem: TabItem,
+    updatedOpenState: OpenTabState,
+): TabWindow {
+    const clearActive = updatedOpenState.active;
+
+    let baseSavedItems = tabWindow.tabItems
+        .filter((ti) => ti.saved)
+        .map(resetSavedItem);
+    let baseOpenItems = tabWindow.tabItems
+        .filter((ti) => ti.open)
+        .map((ti) => resetOpenItem(ti, clearActive));
+
+    baseOpenItems = baseOpenItems.filter(
+        (ti) => ti.openState!.openTabId !== updatedOpenState.openTabId,
+    );
+
+    const updOpenItems = [
+        ...baseOpenItems.slice(0, index),
+        TabItem.create({ open: true, openState: updatedOpenState }),
+        ...baseOpenItems.slice(index),
+    ];
+
+    const updSavedItems = baseSavedItems;
+
+    const mergedItems = mergeSavedOpenTabs(updSavedItems, updOpenItems);
+    return TabWindow.update(tabWindow, { tabItems: mergedItems });
+}
+
 export function createTab(
     tabWindow: TabWindow,
     tab: chrome.tabs.Tab,
@@ -424,15 +459,25 @@ export function updateTabItem(
         updatedOpenState.muted = changeInfo.mutedInfo.muted;
     }
 
-    const updatedTabItem = TabItem.update(prevTabItem, {
-        openState: OpenTabState.create(updatedOpenState),
-    });
+    if (changeInfo.url) {
+        return spliceUpdatedTabItem(
+            tabWindow,
+            index,
+            prevTabItem,
+            updatedOpenState,
+        );
+    } else {
+        // URL did not change, so this is fairly minor state update:
+        const updatedTabItem = TabItem.update(prevTabItem, {
+            openState: OpenTabState.create(updatedOpenState),
+        });
 
-    return TabWindow.update(tabWindow, {
-        tabItems: tabWindow.tabItems.map((ti, i) =>
-            i === index ? updatedTabItem : ti,
-        ),
-    });
+        return TabWindow.update(tabWindow, {
+            tabItems: tabWindow.tabItems.map((ti, i) =>
+                i === index ? updatedTabItem : ti,
+            ),
+        });
+    }
 }
 
 export function updateTabBookmark(
