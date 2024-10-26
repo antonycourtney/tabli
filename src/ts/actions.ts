@@ -687,8 +687,9 @@ const optimisticReorderTab = (
     sourceIndex: number,
     targetIndex: number,
 ): TabManagerState => {
+    log.debug('optimisticReorderTab: ', { tabItem, sourceIndex, targetIndex });
     // reorder tab items within this single window:
-    const tabItems = tabWindow.tabItems;
+    const tabItems = [...tabWindow.tabItems];
     const nextTabItems = tabItems
         .splice(sourceIndex, 1)
         .splice(targetIndex, 0, tabItem);
@@ -706,11 +707,11 @@ const optimisticMoveTab = (
     sourceIndex: number,
     targetIndex: number,
 ): TabManagerState => {
-    const sourceTabItems = sourceTabWindow.tabItems;
+    const sourceTabItems = [...sourceTabWindow.tabItems];
     const nextSourceTabItems = sourceTabItems.splice(sourceIndex, 1);
     const nextSourceTabWindow = sourceTabWindow.setTabItems(nextSourceTabItems);
 
-    const targetTabItems = targetTabWindow.tabItems;
+    const targetTabItems = [...targetTabWindow.tabItems];
     const nextTargetTabItems = targetTabItems.splice(targetIndex, 0, tabItem);
     const nextTargetTabWindow = targetTabWindow.setTabItems(nextTargetTabItems);
 
