@@ -2,7 +2,7 @@ import { log } from '../globals';
 import * as React from 'react';
 import * as oneref from 'oneref';
 import { mkUrl } from '../utils';
-import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import * as Constants from './constants';
 import { ThemeContext, Theme } from './themeContext';
 
@@ -113,7 +113,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         if (ic) {
             const titleStr = ic.value;
             if (titleStr !== tabWindow.title) {
-                actions.setWindowTitle(titleStr, tabWindow, stateRef);
+                actionsClient.setWindowTitle(titleStr, tabWindow, stateRef);
             }
         }
         event.stopPropagation();

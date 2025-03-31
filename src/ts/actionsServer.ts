@@ -281,6 +281,31 @@ async function handleUnsaveTab(
     return actions.unsaveTab(tabWindow, tab, stateRef);
 }
 
+async function handleSetWindowTitle(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        title: string;
+    },
+) {
+    log.debug('actionsServer: handleSetWindowTitle: ', args);
+    const { open, openWindowId, savedFolderId, title } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleSetWindowTitle: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.setWindowTitle(title, tabWindow, stateRef);
+}
+
 type ActionHandler = (stateRef: StateRef<TabManagerState>, args: any) => void;
 
 const actionHandlers: { [key: string]: ActionHandler } = {
@@ -293,6 +318,7 @@ const actionHandlers: { [key: string]: ActionHandler } = {
     activateOrRestoreTab: handleActivateOrRestoreTab,
     saveTab: handleSaveTab,
     unsaveTab: handleUnsaveTab,
+    setWindowTitle: handleSetWindowTitle,
     showRelNotes: handleShowRelNotes,
     hideRelNotes: handleHideRelNotes,
 };

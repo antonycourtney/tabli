@@ -130,3 +130,14 @@ export async function unsaveTab(
     log.debug('actionsClient: unsaveTab: ', args);
     conn.send({ action: 'unsaveTab', args });
 }
+
+export async function setWindowTitle(
+    title: string,
+    targetTabWindow: TabWindow,
+    storeRef: TMSRef,
+) {
+    const { open, openWindowId, savedFolderId } = targetTabWindow;
+    const args = { open, openWindowId, savedFolderId, title };
+    log.debug('actionsClient: setWindowTitle: ', args);
+    conn.send({ action: 'setWindowTitle', args });
+}
