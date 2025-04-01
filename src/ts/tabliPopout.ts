@@ -1,3 +1,4 @@
+import { log } from './globals';
 import * as RenderCommon from './renderCommon';
 
 /*
@@ -13,13 +14,19 @@ import * as RenderCommon from './renderCommon';
  *
  */
 function main() {
-    window.onfocus = (e: any) => {
-        const elem = document.getElementById('searchBox');
-        if (elem) {
-            elem.focus();
-        }
-    };
-    RenderCommon.getFocusedAndRender(true, true);
+    try {
+        window.onfocus = (e: any) => {
+            const elem = document.getElementById('searchBox');
+            if (elem) {
+                elem.focus();
+            }
+        };
+        RenderCommon.getFocusedAndRender(true, true);
+    } catch (e) {
+        log.error('tabliPopout: caught exception invoking function: ', e);
+        log.error((e as Error).stack);
+        throw e;
+    }
 }
 
 main();

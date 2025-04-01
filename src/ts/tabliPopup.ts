@@ -13,14 +13,29 @@ import * as RenderCommon from './renderCommon';
  */
 
 async function getPopoutWindowId(): Promise<number> {
-    const response = await chrome.runtime.sendMessage({
-        action: 'getPopoutWindowId',
-    });
-    log.debug('getPopoutWindowId: got response: ', response);
-    return response.windowId;
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: 'getPopoutWindowId',
+        });
+        log.debug('getPopoutWindowId: got response: ', response);
+        return response.windowId;
+    } catch (e) {
+        log.error(
+            'getPopoutWindowId: error getting popout window Id from service worker: ',
+            e,
+        );
+        return chrome.windows.WINDOW_ID_NONE;
+    }
 }
 
-async function main() {
+/**
+ * Check if the popout window is open, and if so, transfer focus and close this popup.
+ *
+ * Note that if the service worker is not running, getting the popout window ID will
+ * fail.  We don't want to block the popup window from rendering while we wait for the service
+ * worker to start. So even though this is an async function, we don't await it.
+ */
+async function checkPopoutWindow() {
     const popoutWindowId = await getPopoutWindowId();
     log.debug('renderPopup: popoutWindowId: ', popoutWindowId);
     if (popoutWindowId !== chrome.windows.WINDOW_ID_NONE) {
@@ -28,8 +43,16 @@ async function main() {
         window.close();
         chrome.windows.update(popoutWindowId, { focused: true });
     }
+}
+async function main() {
+    try {
+        checkPopoutWindow(); // don't await this, we don't want to block the popup window from rendering
+        RenderCommon.getFocusedAndRender(false, true);
+    } catch (e) {
+        log.error('tabliPopup: caught exception invoking function: ', e);
+        log.error((e as Error).stack);
+    }
 
-    RenderCommon.getFocusedAndRender(false, true);
     /*
      * 14Sep24: Admission of defeat. Popout windows can be closed at any time, and
      * many of Tabli's actions, such as opening saved windows, require a sequence of

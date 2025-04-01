@@ -110,6 +110,16 @@ export async function getFocusedAndRender(
         }
     };
 
+    /**
+     * 31Mar25: We really want the service worker to own the app state, but it
+     * can take a noticeable amount of time for the service worker to start if it
+     * is not already running.  So we'll create the initial state and render the
+     * popup directly first, and update the app state when we get the initial state
+     * message from the service worker.
+     */
+    storeRef = await initState(false);
+    renderPopup(storeRef, isPopout);
+
     const conn = new WorkerConnection(portName, msgHandler);
     initClient(conn);
 }
