@@ -423,15 +423,25 @@ export function unsaveTab(tabWindow: TabWindow, tabItem: TabItem): TabWindow {
 
 export function setActiveTab(tabWindow: TabWindow, tabId: number): TabWindow {
     return TabWindow.update(tabWindow, {
-        tabItems: tabWindow.tabItems.map((ti) =>
-            TabItem.update(ti, {
+        tabItems: tabWindow.tabItems.map((ti) => {
+            const isActive = ti.open && ti.openState?.openTabId === tabId;
+            const updSt = isActive
+                ? { active: true, lastFocused: Date.now() }
+                : { active: false };
+            if (isActive) {
+                log.debug(
+                    '*** setActiveTab: found active tab: ',
+                    ti,
+                    ', lastFocused: ',
+                    updSt.lastFocused,
+                );
+            }
+            return TabItem.update(ti, {
                 openState: ti.openState
-                    ? OpenTabState.update(ti.openState, {
-                          active: ti.openState.openTabId === tabId,
-                      })
+                    ? OpenTabState.update(ti.openState, updSt)
                     : null,
-            }),
-        ),
+            });
+        }),
     });
 }
 

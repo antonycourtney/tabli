@@ -132,7 +132,12 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const tabTitle = tab.title;
 
-    const tooltipContent = tabTitle + '\n' + tab.url;
+    const lastActiveContent =
+        tab.open && tab.openState!.lastFocused
+            ? `\nLast Active: ${new Date(tab.openState!.lastFocused).toLocaleString()}`
+            : null;
+
+    const tooltipContent = tabTitle + '\n' + tab.url + lastActiveContent;
 
     // span style depending on whether open or closed window
     let tabOpenStateStyle: string | null = null;
