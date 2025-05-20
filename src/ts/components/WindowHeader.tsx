@@ -133,7 +133,7 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     const lastActiveContent =
         tabWindow.open && tabWindow.lastActive
             ? `\nLast Active: ${new Date(tabWindow.lastActive).toLocaleString()}`
-            : null;
+            : '';
 
     const tooltipContent = windowTitle + lastActiveContent;
 
