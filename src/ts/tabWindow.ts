@@ -47,6 +47,7 @@ export interface OpenTabStateProps {
     isSuspended: boolean;
     openerTabId?: number;
     openerUrl?: string;
+    lastFocused?: number;
 }
 
 export class OpenTabState {
@@ -64,6 +65,7 @@ export class OpenTabState {
     isSuspended: boolean = false;
     openerTabId?: number;
     openerUrl?: string;
+    lastFocused?: number;
 
     private constructor() {}
 

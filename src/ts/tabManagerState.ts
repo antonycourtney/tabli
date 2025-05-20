@@ -50,6 +50,26 @@ function notifyListeners(patches: Patch[]): void {
     listeners.forEach((listener) => listener(patches));
 }
 
+/*
+ * Create a draft TabWindow => void update function for registering a TabWindow. Usually
+ * not called directly (user TabManagerState.registerTabWindow() instead); provided for
+ * composition in case we need to do something else with the draft.
+ * @param tabWindow TabWindow to register
+ * @returns function that takes a draft TabManagerState and registers the TabWindow
+ */
+function registerTabWindowUpdater(
+    tabWindow: TabWindow,
+): (draft: TabManagerState) => void {
+    return (draft: TabManagerState) => {
+        if (tabWindow.open) {
+            draft.windowIdMap[tabWindow.openWindowId] = tabWindow;
+        }
+        if (tabWindow.saved) {
+            draft.bookmarkIdMap[tabWindow.savedFolderId] = tabWindow;
+        }
+    };
+}
+
 export default class TabManagerState {
     [immerable] = true;
 
@@ -91,14 +111,10 @@ export default class TabManagerState {
     }
 
     registerTabWindow(tabWindow: TabWindow): TabManagerState {
-        return TabManagerState.update(this, (draft) => {
-            if (tabWindow.open) {
-                draft.windowIdMap[tabWindow.openWindowId] = tabWindow;
-            }
-            if (tabWindow.saved) {
-                draft.bookmarkIdMap[tabWindow.savedFolderId] = tabWindow;
-            }
-        });
+        return TabManagerState.update(
+            this,
+            registerTabWindowUpdater(tabWindow),
+        );
     }
 
     registerTabWindows(tabWindows: TabWindow[]): TabManagerState {
@@ -306,14 +322,25 @@ export default class TabManagerState {
     }
 
     setCurrentWindowId(windowId: number): TabManagerState {
-        return TabManagerState.update(this, (draft) => {
-            const tabWindow = this.getTabWindowByChromeId(windowId);
-            if (tabWindow && tabWindow.windowType !== 'popup') {
-                draft.currentWindowId = windowId;
-            }
-        });
-    }
+        const tabWindow = this.getTabWindowByChromeId(windowId);
 
+        if (tabWindow && tabWindow.windowType !== 'popup') {
+            const activeTabId = tabWindow.getActiveTabId();
+            return TabManagerState.update(this, (draft) => {
+                if (activeTabId) {
+                    // Call setActiveTab to update the lastFocusTime of the tab
+                    const nextTabWindow = tabWindowUtils.setActiveTab(
+                        tabWindow,
+                        activeTabId,
+                    );
+                    // Call registerTabWindowUpdater to update the draft state with updated tabWindow
+                    registerTabWindowUpdater(nextTabWindow)(draft);
+                }
+                draft.currentWindowId = windowId;
+            });
+        }
+        return this;
+    }
     setCurrentWindow(chromeWindow: chrome.windows.Window): TabManagerState {
         return utils.validChromeWindow(chromeWindow, true)
             ? this.setCurrentWindowId(chromeWindow.id!)
