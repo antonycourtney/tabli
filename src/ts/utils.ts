@@ -52,6 +52,22 @@ export function windowCmp(currentWindowId: number) {
             return 1;
         }
 
+        // timestamps first:
+        if (tabWindowA.open && tabWindowB.open) {
+            const tsA = tabWindowA.lastActive;
+            const tsB = tabWindowB.lastActive;
+            if (tsA && tsB) {
+                const ret = tsB - tsA;
+                return ret;
+            }
+            if (tsA) {
+                return -1;
+            }
+            if (tsB) {
+                return 1;
+            }
+        }
+
         var tA = tabWindowA.title;
         var tB = tabWindowB.title;
         const ret = tA.localeCompare(tB, navigator.language, {

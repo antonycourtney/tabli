@@ -135,7 +135,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     const lastActiveContent =
         tab.open && tab.openState!.lastActive
             ? `\nLast Active: ${new Date(tab.openState!.lastActive).toLocaleString()}`
-            : null;
+            : '';
 
     const tooltipContent = tabTitle + '\n' + tab.url + lastActiveContent;
 
