@@ -34,6 +34,15 @@ export class SavedTabState {
     }
 }
 
+/**
+ * A quick note on `lastActive`:
+ * This is a property of both open tabs and open windows.  It is currently set for both the tab and window every time
+ * either the current active tab is set or the window gets focus. Note that this is a fairly crude proxy for whether or
+ * not a tab or window is active, but it's hard to do much better without content scripts.
+ * We should give more thought to how this interacts with state updates from the service worker, and also about whether
+ * or not we should update lastActive either when the tab is created or receives other updates
+ */
+
 export interface OpenTabStateProps {
     url: string;
     openTabId: number;
@@ -47,7 +56,7 @@ export interface OpenTabStateProps {
     isSuspended: boolean;
     openerTabId?: number;
     openerUrl?: string;
-    lastFocused?: number;
+    lastActive?: number;
 }
 
 export class OpenTabState {
@@ -65,7 +74,7 @@ export class OpenTabState {
     isSuspended: boolean = false;
     openerTabId?: number;
     openerUrl?: string;
-    lastFocused?: number;
+    lastActive?: number;
 
     private constructor() {}
 
@@ -219,6 +228,7 @@ export interface TabWindowProps {
     snapshot: boolean;
     chromeSessionId: string | null;
     expanded: boolean | null;
+    lastActive?: number;
 }
 
 export class TabWindow {
@@ -236,6 +246,7 @@ export class TabWindow {
     snapshot: boolean = false;
     chromeSessionId: string | null = null;
     expanded: boolean | null = null;
+    lastActive?: number;
 
     private constructor() {}
 

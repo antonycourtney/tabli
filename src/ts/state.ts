@@ -400,7 +400,10 @@ const dedupeTab = async (
             }
         }
     } catch (e) {
-        log.warn('caught error during tab de-dup (ignoring...): ', e);
+        log.warn(
+            'caught error during tab de-dup (ignoring...): ',
+            (e as any).message,
+        );
     }
 };
 
