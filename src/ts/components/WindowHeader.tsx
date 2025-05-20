@@ -130,6 +130,13 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
     const managed = tabWindow.saved;
     const windowTitle = tabWindow.title;
 
+    const lastActiveContent =
+        tabWindow.open && tabWindow.lastActive
+            ? `\nLast Active: ${new Date(tabWindow.lastActive).toLocaleString()}`
+            : null;
+
+    const tooltipContent = windowTitle + lastActiveContent;
+
     const checkTitle = managed
         ? 'Stop managing this window'
         : 'Save all tabs in this window';
@@ -202,7 +209,11 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
             </form>
         );
     } else {
-        titleComponent = <span className={styles.noWrap}>{windowTitle}</span>;
+        titleComponent = (
+            <span className={styles.noWrap} title={tooltipContent}>
+                {windowTitle}
+            </span>
+        );
     }
 
     const titleContainerStyle = css({

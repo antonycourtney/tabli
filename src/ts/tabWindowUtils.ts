@@ -426,14 +426,14 @@ export function setActiveTab(tabWindow: TabWindow, tabId: number): TabWindow {
         tabItems: tabWindow.tabItems.map((ti) => {
             const isActive = ti.open && ti.openState?.openTabId === tabId;
             const updSt = isActive
-                ? { active: true, lastFocused: Date.now() }
+                ? { active: true, lastActive: Date.now() }
                 : { active: false };
             if (isActive) {
                 log.debug(
                     '*** setActiveTab: found active tab: ',
                     ti,
-                    ', lastFocused: ',
-                    updSt.lastFocused,
+                    ', lastActive: ',
+                    updSt.lastActive,
                 );
             }
             return TabItem.update(ti, {
@@ -442,6 +442,7 @@ export function setActiveTab(tabWindow: TabWindow, tabId: number): TabWindow {
                     : null,
             });
         }),
+        lastActive: Date.now(),
     });
 }
 
