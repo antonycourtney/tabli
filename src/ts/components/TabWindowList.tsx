@@ -11,6 +11,7 @@ import ModalActions from './modalActions';
 import { FilteredTabWindow } from '../searchOps';
 import { StateRef } from 'oneref';
 import { TabWindow } from '../tabWindow';
+import SortOrderSelect from './SortOrderSelect';
 
 let relNotesModule: any = null;
 if (!isNode) {
@@ -47,6 +48,7 @@ interface TabWindowListProps {
     expandAll: boolean;
     showRelNotes: boolean;
     currentWindowId: number;
+    sortOrder: 'alpha' | 'recent';
 }
 
 const TabWindowList: React.FC<TabWindowListProps> = ({
@@ -62,6 +64,7 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
     expandAll,
     showRelNotes,
     currentWindowId,
+    sortOrder,
 }) => {
     /* acknowledge release notes (and hide them) */
     const ackRelNotes = () => {
@@ -129,8 +132,14 @@ const TabWindowList: React.FC<TabWindowListProps> = ({
 
     var otherOpenSection = null;
     if (openWindows.length > 0) {
+        const sortOrderSelect = (
+            <SortOrderSelect stateRef={stateRef} sortOrder={sortOrder} />
+        );
         otherOpenSection = (
-            <WindowListSection title="Other Open Windows">
+            <WindowListSection
+                title="Other Open Windows"
+                extraElements={sortOrderSelect}
+            >
                 {openWindows}
             </WindowListSection>
         );

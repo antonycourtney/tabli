@@ -932,6 +932,22 @@ export const savePreferences = async (
     return awaitableUpdate_(storeRef, (st) => st.set('preferences', userPrefs));
 };
 
+export const updatePreferences = async (
+    stRef: TMSRef,
+    updates: Partial<prefs.PreferencesProps>,
+): Promise<TabManagerState> => {
+    const st = mutableGet(stRef);
+    const userPrefs = st.preferences;
+    const newPrefs = prefs.Preferences.update(userPrefs, updates);
+    log.debug(
+        'updatePreferences: new prefs: ',
+        newPrefs,
+        ' original: ',
+        userPrefs,
+    );
+    return await savePreferences(newPrefs, stRef);
+};
+
 let reloadHandler: (() => void) | null = null;
 
 export const setReloadHandler = (reloadFn: () => void) => {

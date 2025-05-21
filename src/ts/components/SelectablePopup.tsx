@@ -516,6 +516,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                         expandAll={expandAll}
                         showRelNotes={appState.showRelNotes}
                         currentWindowId={appState.currentWindowId}
+                        sortOrder={appState.preferences.sortOrder}
                     />
                 </div>
                 <div className={popupFooterStyle(theme)}>
