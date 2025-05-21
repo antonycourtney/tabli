@@ -29,10 +29,18 @@ const windowListChildrenContainerStyle = css({
     marginLeft: 8,
 });
 
+const headerRowStyle = css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+});
+
 interface WindowListSectionProps {
     title?: string;
     focusedRef?: React.MutableRefObject<HTMLDivElement | null>;
     children: React.ReactNode;
+    extraElements?: React.ReactNode;
 }
 
 interface SectionDivProps {
@@ -44,6 +52,7 @@ const WindowListSection: React.FC<WindowListSectionProps> = ({
     title,
     focusedRef,
     children,
+    extraElements,
 }: WindowListSectionProps) => {
     const layout = useContext(LayoutContext);
 
@@ -51,7 +60,10 @@ const WindowListSection: React.FC<WindowListSectionProps> = ({
     if (title) {
         header = (
             <div className={windowListSectionHeaderStyle(layout)}>
-                <span>{title}</span>
+                <div className={headerRowStyle}>
+                    <span>{title}</span>
+                    {extraElements}
+                </div>
             </div>
         );
     }

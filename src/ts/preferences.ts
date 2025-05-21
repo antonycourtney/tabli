@@ -14,7 +14,7 @@ type VersionedObject = {
 export const PREFS_VERSION = 7;
 export const USER_PREFS_KEY = 'UserPreferences';
 
-interface PreferencesProps {
+export interface PreferencesProps {
     popoutOnStart: boolean;
     dedupeTabs: boolean;
     revertOnOpen: boolean;
