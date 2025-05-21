@@ -126,6 +126,10 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         );
         updatePrefs({ fontScaleFactor: nextScaleFactor });
     };
+    
+    const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        updatePrefs({ sortOrder: e.target.value as 'alpha' | 'recent' });
+    };
 
     const themeNames = Object.keys(themes);
     const themeOpts = themeNames.map((nm) => (
@@ -175,6 +179,21 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             onChange={handleFontSizeChange}
         >
             {fontSizeOpts}
+        </select>
+    );
+    
+    const sortOrderOpts = [
+        <option key="alpha" value="alpha">Alphabetical</option>,
+        <option key="recent" value="recent">Recent</option>
+    ];
+    const sortOrderSelect = (
+        <select
+            className={themeSelectStyle}
+            name="sortOrder"
+            value={prefs.sortOrder}
+            onChange={handleSortOrderChange}
+        >
+            {sortOrderOpts}
         </select>
     );
 
@@ -262,6 +281,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 </label>
                             </div>
                             {fontSizeSelect}
+                            <div className={styles.prefsGridLabel}>
+                                <label className={selectLabelStyle}>
+                                    Sort Order
+                                </label>
+                            </div>
+                            {sortOrderSelect}
                         </div>
                     </form>
                     <hr />
