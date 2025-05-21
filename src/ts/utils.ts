@@ -31,9 +31,14 @@ export function merge() {
 /*
  * sort criteria for window list:
  *   open windows first, then alpha by title
+ *
+ * If sortOrder is 'recent', then sort open windows by lastActive timestamp
  */
 
-export function windowCmp(currentWindowId: number) {
+export function windowCmp(
+    sortOrder: 'alpha' | 'recent',
+    currentWindowId: number,
+) {
     const cf = (tabWindowA: TabWindow, tabWindowB: TabWindow) => {
         // current window always very first:
         if (tabWindowA.open && tabWindowA.openWindowId === currentWindowId) {
@@ -52,22 +57,24 @@ export function windowCmp(currentWindowId: number) {
             return 1;
         }
 
-        // timestamps first:
-        if (tabWindowA.open && tabWindowB.open) {
-            const tsA = tabWindowA.lastActive;
-            const tsB = tabWindowB.lastActive;
-            if (tsA && tsB) {
-                const ret = tsB - tsA;
-                return ret;
-            }
-            if (tsA) {
-                return -1;
-            }
-            if (tsB) {
-                return 1;
+        if (sortOrder === 'recent') {
+            // sort open windows by lastActive timestamp:
+            // timestamps first:
+            if (tabWindowA.open && tabWindowB.open) {
+                const tsA = tabWindowA.lastActive;
+                const tsB = tabWindowB.lastActive;
+                if (tsA && tsB) {
+                    const ret = tsB - tsA;
+                    return ret;
+                }
+                if (tsA) {
+                    return -1;
+                }
+                if (tsB) {
+                    return 1;
+                }
             }
         }
-
         var tA = tabWindowA.title;
         var tB = tabWindowB.title;
         const ret = tA.localeCompare(tB, navigator.language, {

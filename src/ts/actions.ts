@@ -668,7 +668,10 @@ export function copyWindowsToClipboard(stateRef: TMSRef) {
     const appState = mutableGet(stateRef);
     const openWindows = appState.getTabWindowsByType('normal');
 
-    var cmpFn = utils.windowCmp(appState.currentWindowId);
+    var cmpFn = utils.windowCmp(
+        appState.preferences.sortOrder,
+        appState.currentWindowId,
+    );
     var sortedWindows = openWindows.sort(cmpFn);
 
     const s = sortedWindows.reduce(
