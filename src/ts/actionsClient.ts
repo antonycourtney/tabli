@@ -14,6 +14,7 @@ import {
 import TabManagerState from './tabManagerState';
 import { log } from './globals';
 import { WorkerConnection } from './workerConnection';
+import { Preferences } from './preferences';
 
 type WindowId = number;
 type TMSRef = StateRef<TabManagerState>;
@@ -140,4 +141,18 @@ export async function setWindowTitle(
     const args = { open, openWindowId, savedFolderId, title };
     log.debug('actionsClient: setWindowTitle: ', args);
     conn.send({ action: 'setWindowTitle', args });
+}
+
+export async function savePreferences(
+    preferences: Preferences,
+    storeRef: TMSRef,
+) {
+    const preferencesStr = preferences.serialize();
+    log.debug('actionsClient: savePreferences');
+    conn.send({ action: 'savePreferences', args: { preferencesStr } });
+}
+
+export async function updatePreferences(storeRef: TMSRef, updates: any) {
+    log.debug('actionsClient: updatePreferences: ', updates);
+    conn.send({ action: 'updatePreferences', args: { updates } });
 }

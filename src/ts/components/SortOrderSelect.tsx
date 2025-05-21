@@ -2,7 +2,7 @@ import * as React from 'react';
 import { css } from '@emotion/css';
 import { Preferences } from '../preferences';
 import { ArrowDownWideNarrow } from 'lucide-react';
-import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 
@@ -39,7 +39,7 @@ const SortOrderSelect: React.FC<SortOrderSelectProps> = ({
 }) => {
     const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSortOrder = e.target.value as 'alpha' | 'recent';
-        actions.updatePreferences(stateRef, { sortOrder: newSortOrder });
+        actionsClient.updatePreferences(stateRef, { sortOrder: newSortOrder });
     };
 
     return (

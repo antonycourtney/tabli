@@ -4,7 +4,7 @@ import * as ReactDOM from 'react-dom';
 import { enablePatches } from 'immer';
 import PreferencesModal from './components/PreferencesModal';
 
-import * as actions from './actions';
+import * as actionsClient from './actionsClient';
 
 import ChromePromise from 'chrome-promise';
 import { StateRef, mutableGet } from 'oneref';
@@ -12,6 +12,7 @@ import TabManagerState from './tabManagerState';
 import { Preferences } from './preferences';
 import { loadSnapState } from './state';
 import { createRoot } from 'react-dom/client';
+import { WorkerConnection } from './workerConnection';
 const chromep = ChromePromise;
 
 const onClose = async () => {
@@ -27,7 +28,7 @@ const onApplyPreferences = async (
     stateRef: StateRef<TabManagerState>,
     newPrefs: Preferences,
 ) => {
-    await actions.savePreferences(newPrefs, stateRef);
+    await actionsClient.savePreferences(newPrefs, stateRef);
 };
 
 const onUpdatePreferences = async (
@@ -50,6 +51,11 @@ const renderPrefs = async () => {
         const stateRef = maybeStateRef as StateRef<TabManagerState>;
         const st = mutableGet(stateRef);
         const parentNode = document.getElementById('prefsContent');
+
+        // Initialize connection to service worker
+        const conn = new WorkerConnection('prefsPage');
+        actionsClient.initClient(conn);
+
         const modal = (
             <PreferencesModal
                 onClose={onClose}
