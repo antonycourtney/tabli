@@ -3,6 +3,7 @@ import * as actions from './actions';
 import { log } from './globals';
 import TabManagerState from './tabManagerState';
 import { TabItemId, TabWindow } from './tabWindow';
+import { Preferences } from './preferences';
 
 async function handleShowRelNotes(
     stateRef: StateRef<TabManagerState>,
@@ -308,6 +309,32 @@ async function handleSetWindowTitle(
 
 type ActionHandler = (stateRef: StateRef<TabManagerState>, args: any) => void;
 
+async function handleSavePreferences(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        preferencesStr: string;
+    },
+) {
+    log.debug('actionsServer: handleSavePreferences: ', args);
+    const { preferencesStr } = args;
+
+    const preferences = Preferences.deserialize(preferencesStr);
+
+    return actions.savePreferences(preferences, stateRef);
+}
+
+async function handleUpdatePreferences(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        updates: any;
+    },
+) {
+    log.debug('actionsServer: handleUpdatePreferences: ', args);
+    const { updates } = args;
+
+    return actions.updatePreferences(stateRef, updates);
+}
+
 const actionHandlers: { [key: string]: ActionHandler } = {
     openWindow: handleOpenWindow,
     closeWindow: handleCloseWindow,
@@ -321,6 +348,8 @@ const actionHandlers: { [key: string]: ActionHandler } = {
     setWindowTitle: handleSetWindowTitle,
     showRelNotes: handleShowRelNotes,
     hideRelNotes: handleHideRelNotes,
+    savePreferences: handleSavePreferences,
+    updatePreferences: handleUpdatePreferences,
 };
 
 function handleMessage(

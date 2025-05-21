@@ -9,12 +9,12 @@ export class WorkerConnection {
     private port: chrome.runtime.Port | null;
 
     private sendQueue: any[] = [];
-    private messageHandler: (msg: any) => void;
+    private messageHandler?: (msg: any) => void;
     private receiveQueue: any[] = [];
 
     private reconnectTimeout: number = 1000;
 
-    constructor(portName: string, messageHandler: (msg: any) => void) {
+    constructor(portName: string, messageHandler?: (msg: any) => void) {
         this.portName = portName;
         this.port = null;
         this.messageHandler = messageHandler;
@@ -87,9 +87,11 @@ export class WorkerConnection {
                 this.port = null;
                 this.reconnect();
             });
-            this.port.onMessage.addListener((msg) => {
-                this.messageHandler(msg);
-            });
+            if (this.messageHandler !== null) {
+                this.port.onMessage.addListener((msg) => {
+                    this.messageHandler?.(msg);
+                });
+            }
             this.emptySendQueue();
         } catch (e) {
             log.log('WorkerConnection: connect failed: ', e);
