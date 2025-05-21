@@ -3,10 +3,10 @@ import * as React from 'react';
 import * as styles from './cssStyles';
 import * as Constants from './constants';
 import * as Modal from './Modal';
-import { themes } from './themeContext';
+import { ThemeContext, themes } from './themeContext';
 import { css, cx } from '@emotion/css';
 import { Preferences } from '../preferences';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { layouts } from './LayoutContext';
 import {
     fontScaleFactorToSize,
@@ -16,14 +16,22 @@ import {
 
 const SELECT_WIDTH = 120;
 
-const themeSelectStyle = css({
+const themeSelectStyle = (color: string) => css({
     width: SELECT_WIDTH,
     marginLeft: 5,
+    color: color,
+    border: '1px solid ' + color,
+    borderRadius: '3px',
+    background: 'transparent',
 });
 
-const fontSizeSelectStyle = css({
+const fontSizeSelectStyle = (color: string) => css({
     width: SELECT_WIDTH,
     marginLeft: 5,
+    color: color,
+    border: '1px solid ' + color,
+    borderRadius: '3px',
+    background: 'transparent',
 });
 
 const selectLabelStyle = css({
@@ -67,6 +75,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 }) => {
     log.debug('PreferencesModal: initialPrefs: ', initialPrefs);
     const [prefs, setPrefs] = useState(initialPrefs);
+    const theme = useContext(ThemeContext);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
         if (e.keyCode === Constants.KEY_ESC) {
@@ -139,7 +148,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     ));
     const themeSelect = (
         <select
-            className={themeSelectStyle}
+            className={themeSelectStyle(theme.foreground)}
             name="theme"
             value={prefs.theme}
             onChange={handleThemeChange}
@@ -156,7 +165,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     ));
     const layoutSelect = (
         <select
-            className={themeSelectStyle}
+            className={themeSelectStyle(theme.foreground)}
             name="layout"
             value={prefs.layout}
             onChange={handleLayoutChange}
@@ -173,7 +182,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     ));
     const fontSizeSelect = (
         <select
-            className={fontSizeSelectStyle}
+            className={fontSizeSelectStyle(theme.foreground)}
             name="fontSize"
             value={currentFontSize}
             onChange={handleFontSizeChange}
@@ -188,7 +197,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     ];
     const sortOrderSelect = (
         <select
-            className={themeSelectStyle}
+            className={themeSelectStyle(theme.foreground)}
             name="sortOrder"
             value={prefs.sortOrder}
             onChange={handleSortOrderChange}
