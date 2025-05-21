@@ -57,7 +57,10 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     }, [appState.preferences.fontScaleFactor]);
 
     const tabWindows = appState.getAll();
-    var cmpFn = utils.windowCmp(appState.currentWindowId);
+    var cmpFn = utils.windowCmp(
+        appState.preferences.sortOrder,
+        appState.currentWindowId,
+    );
     const sortedWindows = tabWindows.sort(cmpFn);
 
     const [prefsModalIsOpen, setPrefsModalIsOpen] = useState(false);

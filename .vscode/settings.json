@@ -1,4 +1,13 @@
 {
     "editor.formatOnSave": true,
-    "editor.find.globalFindClipboard": true
+    "editor.find.globalFindClipboard": true,
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "**/archive": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/out": true
+    }
 }

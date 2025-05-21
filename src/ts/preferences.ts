@@ -11,7 +11,7 @@ type VersionedObject = {
     contents: any;
 };
 
-export const PREFS_VERSION = 6;
+export const PREFS_VERSION = 7;
 export const USER_PREFS_KEY = 'UserPreferences';
 
 interface PreferencesProps {
@@ -21,6 +21,7 @@ interface PreferencesProps {
     theme: string;
     layout: string;
     fontScaleFactor: number;
+    sortOrder: 'alpha' | 'recent';
 }
 
 const defaultPreferencesProps: PreferencesProps = {
@@ -30,6 +31,7 @@ const defaultPreferencesProps: PreferencesProps = {
     theme: 'light',
     layout: 'normal',
     fontScaleFactor: 0.75,
+    sortOrder: 'recent',
 };
 
 export class Preferences {
@@ -41,6 +43,7 @@ export class Preferences {
     theme: string;
     layout: string;
     fontScaleFactor: number;
+    sortOrder: 'alpha' | 'recent';
 
     private constructor() {
         this.popoutOnStart = defaultPreferencesProps.popoutOnStart;
@@ -49,6 +52,7 @@ export class Preferences {
         this.theme = defaultPreferencesProps.theme;
         this.layout = defaultPreferencesProps.layout;
         this.fontScaleFactor = defaultPreferencesProps.fontScaleFactor;
+        this.sortOrder = defaultPreferencesProps.sortOrder;
     }
 
     static create(props: Partial<PreferencesProps> = {}): Preferences {

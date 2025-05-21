@@ -21,6 +21,7 @@
         "lodash": "^4.17.21",
         "loglevel": "^1.9.1",
         "loglevel-plugin-prefix": "^0.8.4",
+        "lucide-react": "^0.511.0",
         "object-assign": "^4.1.1",
         "oneref": "^0.9.0",
         "popper": "^1.0.1",
