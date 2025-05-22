@@ -8,12 +8,14 @@ interface TabTooltipProps {
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
+  showArrow?: boolean;
 }
 
 /**
  * A specialized tooltip component for displaying tab information with a formatted layout
  * - Shows title, URL, and optional last active time in a structured format
  * - Provides consistent styling for tab tooltips across the application
+ * - Includes an arrow pointing to the triggering element
  */
 export const TabTooltip: React.FC<TabTooltipProps> = ({
   title,
@@ -22,6 +24,7 @@ export const TabTooltip: React.FC<TabTooltipProps> = ({
   children,
   side = "right",
   align = "start",
+  showArrow = true
 }) => {
   const lastActiveStr = lastActive 
     ? `\nLast Active: ${new Date(lastActive).toLocaleString()}`
@@ -35,6 +38,7 @@ export const TabTooltip: React.FC<TabTooltipProps> = ({
       isTabTooltip={true}
       side={side}
       align={align}
+      showArrow={showArrow}
     >
       {children}
     </TooltipWrapper>
