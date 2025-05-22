@@ -39,13 +39,6 @@ const SortOrderSelect: React.FC<SortOrderSelectProps> = ({
         actionsClient.updatePreferences(stateRef, { sortOrder: newSortOrder });
     };
 
-    // Determine theme colors for dropdown
-    const isDarkTheme = theme.background === '#1e1e1e';
-    const dropdownBg = isDarkTheme ? '#2d2d2d' : '#fff';
-    const dropdownText = isDarkTheme ? '#fff' : '#222';
-    const hoverColor = isDarkTheme ? '#404040' : '#f5f5f5';
-    const highlightColor = isDarkTheme ? '#505050' : '#f0f0f0';
-
     return (
         <div className={selectContainerStyle}>
             <ArrowDownWideNarrow className={selectIconStyle(theme.foreground)} />
@@ -55,25 +48,9 @@ const SortOrderSelect: React.FC<SortOrderSelectProps> = ({
                         <SelectValue placeholder="Sort" />
                     </SelectTrigger>
                 </TooltipWrapper>
-                <SelectContent 
-                    color={theme.foreground}
-                    backgroundColor={dropdownBg}
-                    textColor={dropdownText}
-                >
-                    <SelectItem 
-                        value="alpha" 
-                        hoverColor={hoverColor}
-                        highlightColor={highlightColor}
-                    >
-                        A-Z
-                    </SelectItem>
-                    <SelectItem 
-                        value="recent"
-                        hoverColor={hoverColor}
-                        highlightColor={highlightColor}
-                    >
-                        Recent
-                    </SelectItem>
+                <SelectContent>
+                    <SelectItem value="alpha">A-Z</SelectItem>
+                    <SelectItem value="recent">Recent</SelectItem>
                 </SelectContent>
             </Select>
         </div>

@@ -2,6 +2,7 @@ import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { css } from "@emotion/css";
 import { cn } from "./utils";
+import { ThemeContext } from "../themeContext";
 
 const triggerStyle = (color: string) => css({
   display: "flex",
@@ -19,7 +20,7 @@ const triggerStyle = (color: string) => css({
   outline: "none",
 });
 
-const contentStyle = (color: string, backgroundColor: string, textColor: string) => css({
+const contentStyle = (borderColor: string, backgroundColor: string, textColor: string) => css({
   overflow: "hidden",
   backgroundColor: backgroundColor,
   borderRadius: "3px",
@@ -27,7 +28,7 @@ const contentStyle = (color: string, backgroundColor: string, textColor: string)
   zIndex: 50,
   fontSize: "0.75rem",
   color: textColor,
-  border: `1px solid ${color}`,
+  border: `1px solid ${borderColor}`,
 });
 
 const itemStyle = (hoverColor: string, highlightColor: string) => css({
@@ -76,40 +77,41 @@ SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 export const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & { 
-    color: string;
-    backgroundColor?: string;
-    textColor?: string;
-  }
->(({ className, children, color, backgroundColor = "#fff", textColor = "#222", ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(contentStyle(color, backgroundColor, textColor), className)}
-      position="popper"
-      {...props}
-    >
-      <SelectPrimitive.Viewport>
-        {children}
-      </SelectPrimitive.Viewport>
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-));
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, ...props }, ref) => {
+  const theme = React.useContext(ThemeContext);
+  
+  return (
+    <SelectPrimitive.Portal>
+      <SelectPrimitive.Content
+        ref={ref}
+        className={cn(contentStyle(theme.windowBorder, theme.buttonBackground, theme.foreground), className)}
+        position="popper"
+        {...props}
+      >
+        <SelectPrimitive.Viewport>
+          {children}
+        </SelectPrimitive.Viewport>
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  );
+});
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 export const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
-    hoverColor?: string;
-    highlightColor?: string;
-  }
->(({ className, children, hoverColor = "#f5f5f5", highlightColor = "#f0f0f0", ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(itemStyle(hoverColor, highlightColor), className)}
-    {...props}
-  >
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-));
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => {
+  const theme = React.useContext(ThemeContext);
+  
+  return (
+    <SelectPrimitive.Item
+      ref={ref}
+      className={cn(itemStyle(theme.tabItemHover, theme.menuItemHover), className)}
+      {...props}
+    >
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  );
+});
 SelectItem.displayName = SelectPrimitive.Item.displayName;
