@@ -7,17 +7,43 @@ import { cn } from './utils';
 const tooltipContentStyle = (backgroundColor: string, textColor: string) =>
     css({
         zIndex: 50,
-        overflow: 'hidden',
-        borderRadius: '3px',
-        padding: '6px 10px',
-        fontSize: '1rem',
-        lineHeight: '1',
+        overflow: 'visible',
+        borderRadius: '4px',
+        padding: '8px 12px',
+        fontSize: '0.85rem',
+        lineHeight: '1.4',
         color: textColor,
         backgroundColor: backgroundColor,
-        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
-        maxWidth: '200px',
-        textAlign: 'center',
+        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)',
+        maxWidth: '500px',
+        maxHeight: '400px',
+        width: 'auto',
+        textAlign: 'left',
+        wordBreak: 'break-word',
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
     });
+
+// Style specifically for tab tooltips with title, URL, and last active time
+const tabTooltipStyle = css({
+    '& strong': {
+        display: 'block',
+        marginBottom: '4px',
+        fontSize: '0.9rem',
+    },
+    '& .url': {
+        display: 'block',
+        marginBottom: '4px',
+        fontFamily: 'monospace',
+        fontSize: '0.8rem',
+    },
+    '& .meta': {
+        display: 'block',
+        marginTop: '4px',
+        fontSize: '0.9rem',
+        opacity: 0.8,
+    },
+});
 
 const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -30,6 +56,7 @@ const TooltipContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> & {
         backgroundColor?: string;
         textColor?: string;
+        tabTooltip?: boolean;
     }
 >(
     (
@@ -37,6 +64,7 @@ const TooltipContent = React.forwardRef<
             className,
             backgroundColor = '#333',
             textColor = '#fff',
+            tabTooltip = false,
             sideOffset = 4,
             ...props
         },
@@ -47,6 +75,7 @@ const TooltipContent = React.forwardRef<
             sideOffset={sideOffset}
             className={cn(
                 tooltipContentStyle(backgroundColor, textColor),
+                tabTooltip ? tabTooltipStyle : null,
                 className,
             )}
             {...props}

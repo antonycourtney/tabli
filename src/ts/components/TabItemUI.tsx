@@ -25,7 +25,7 @@ import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
 import { LayoutContext } from './LayoutContext';
 import { Tooltip } from '@radix-ui/react-tooltip';
-import { TooltipWrapper } from './ui/TooltipWrapper';
+import { TabTooltip } from './ui/TabTooltip';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -134,12 +134,11 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const tabTitle = tab.title;
 
-    const lastActiveContent =
+    // Get last active timestamp if available
+    const lastActive =
         tab.open && tab.openState!.lastActive
-            ? `\nLast Active: ${new Date(tab.openState!.lastActive).toLocaleString()}`
-            : '';
-
-    const tooltipContent = tabTitle + '\n' + tab.url + lastActiveContent;
+            ? tab.openState!.lastActive
+            : null;
 
     // span style depending on whether open or closed window
     let tabOpenStateStyle: string | null = null;
@@ -284,7 +283,13 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 {tabCheckItem}
                                 {tabFavIcon}
                             </div>
-                            <TooltipWrapper tip={tooltipContent}>
+                            <TabTooltip
+                                title={tabTitle}
+                                url={tab.url}
+                                lastActive={lastActive}
+                                side="bottom"
+                                align="center"
+                            >
                                 <a
                                     href={tab.url}
                                     className={tabTitleStyle}
@@ -292,7 +297,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 >
                                     {tabTitle}
                                 </a>
-                            </TooltipWrapper>
+                            </TabTooltip>
                             <div className={styles.rowItemsFixedWidth}>
                                 {suspendedIcon}
                                 {audibleIcon}
