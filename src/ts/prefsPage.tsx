@@ -13,6 +13,8 @@ import { Preferences } from './preferences';
 import { loadSnapState } from './state';
 import { createRoot } from 'react-dom/client';
 import { WorkerConnection } from './workerConnection';
+import { Tooltip } from '@radix-ui/react-tooltip';
+import { TooltipProvider } from './components/ui/tooltip';
 const chromep = ChromePromise;
 
 const onClose = async () => {
@@ -57,12 +59,14 @@ const renderPrefs = async () => {
         actionsClient.initClient(conn);
 
         const modal = (
-            <PreferencesModal
-                onClose={onClose}
-                initialPrefs={st.preferences}
-                onApply={(prefs) => onApplyPreferences(stateRef, prefs)}
-                onSubmit={(prefs) => onUpdatePreferences(stateRef, prefs)}
-            />
+            <TooltipProvider>
+                <PreferencesModal
+                    onClose={onClose}
+                    initialPrefs={st.preferences}
+                    onApply={(prefs) => onApplyPreferences(stateRef, prefs)}
+                    onSubmit={(prefs) => onUpdatePreferences(stateRef, prefs)}
+                />
+            </TooltipProvider>
         );
         createRoot(parentNode!).render(modal);
     } catch (e) {
