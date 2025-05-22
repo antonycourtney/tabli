@@ -45,11 +45,46 @@ const tabTooltipStyle = css({
     },
 });
 
+// Style for the tooltip arrow
+const tooltipArrowStyle = (backgroundColor: string) =>
+    css({
+        fill: backgroundColor,
+        height: 6,
+        width: 12,
+    });
+
 const TooltipProvider = TooltipPrimitive.Provider;
 
 const Tooltip = TooltipPrimitive.Root;
 
 const TooltipTrigger = TooltipPrimitive.Trigger;
+
+const TooltipArrow = React.forwardRef<
+    React.ElementRef<typeof TooltipPrimitive.Arrow>,
+    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Arrow> & {
+        backgroundColor?: string;
+    }
+>(
+    (
+        {
+            className,
+            backgroundColor = '#333',
+            width = 12,
+            height = 6,
+            ...props
+        },
+        ref,
+    ) => (
+        <TooltipPrimitive.Arrow
+            ref={ref}
+            width={width}
+            height={height}
+            className={cn(tooltipArrowStyle(backgroundColor), className)}
+            {...props}
+        />
+    ),
+);
+TooltipArrow.displayName = TooltipPrimitive.Arrow.displayName;
 
 const TooltipContent = React.forwardRef<
     React.ElementRef<typeof TooltipPrimitive.Content>,
@@ -57,6 +92,7 @@ const TooltipContent = React.forwardRef<
         backgroundColor?: string;
         textColor?: string;
         tabTooltip?: boolean;
+        showArrow?: boolean;
     }
 >(
     (
@@ -65,7 +101,9 @@ const TooltipContent = React.forwardRef<
             backgroundColor = '#333',
             textColor = '#fff',
             tabTooltip = false,
+            showArrow = true,
             sideOffset = 4,
+            children,
             ...props
         },
         ref,
@@ -79,9 +117,12 @@ const TooltipContent = React.forwardRef<
                 className,
             )}
             {...props}
-        />
+        >
+            {children}
+            {showArrow && <TooltipArrow backgroundColor={backgroundColor} />}
+        </TooltipPrimitive.Content>
     ),
 );
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow };

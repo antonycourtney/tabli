@@ -9,6 +9,7 @@ interface TooltipWrapperProps {
     side?: 'top' | 'right' | 'bottom' | 'left';
     align?: 'start' | 'center' | 'end';
     isTabTooltip?: boolean;
+    showArrow?: boolean;
 }
 
 // Helper function to format tab tooltip content
@@ -40,6 +41,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
     side = 'top',
     align = 'center',
     isTabTooltip = false,
+    showArrow = true,
 }) => {
     const theme = React.useContext(ThemeContext);
 
@@ -74,6 +76,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
                 backgroundColor={backgroundColor}
                 textColor={textColor}
                 tabTooltip={isFormattedTabTooltip}
+                showArrow={showArrow}
             >
                 {tooltipContent}
             </TooltipContent>
