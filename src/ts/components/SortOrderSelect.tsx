@@ -42,17 +42,17 @@ const SortOrderSelect: React.FC<SortOrderSelectProps> = ({
     return (
         <div className={selectContainerStyle}>
             <ArrowDownWideNarrow className={selectIconStyle(theme.foreground)} />
-            <TooltipWrapper tip="Sort windows by name or recent activity">
-                <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+            <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+                <TooltipWrapper tip="Sort windows by name or recent activity">
                     <SelectTrigger color={theme.foreground}>
                         <SelectValue placeholder="Sort" />
                     </SelectTrigger>
-                    <SelectContent color={theme.foreground}>
-                        <SelectItem value="alpha">A-Z</SelectItem>
-                        <SelectItem value="recent">Recent</SelectItem>
-                    </SelectContent>
-                </Select>
-            </TooltipWrapper>
+                </TooltipWrapper>
+                <SelectContent color={theme.foreground}>
+                    <SelectItem value="alpha">A-Z</SelectItem>
+                    <SelectItem value="recent">Recent</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
     );
 };
