@@ -19,18 +19,18 @@ const triggerStyle = (color: string) => css({
   outline: "none",
 });
 
-const contentStyle = (color: string) => css({
+const contentStyle = (color: string, backgroundColor: string, textColor: string) => css({
   overflow: "hidden",
-  backgroundColor: "#fff",
+  backgroundColor: backgroundColor,
   borderRadius: "3px",
   boxShadow: "0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)",
   zIndex: 50,
   fontSize: "0.75rem",
-  color: "#222",
+  color: textColor,
   border: `1px solid ${color}`,
 });
 
-const itemStyle = css({
+const itemStyle = (hoverColor: string, highlightColor: string) => css({
   fontSize: "0.75rem",
   padding: "4px 8px",
   position: "relative",
@@ -39,10 +39,10 @@ const itemStyle = css({
   alignItems: "center",
   userSelect: "none",
   "&:hover": {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: hoverColor,
   },
   "&[data-highlighted]": {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: highlightColor,
     outline: "none",
   },
 });
@@ -76,12 +76,16 @@ SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 export const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & { color: string }
->(({ className, children, color, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & { 
+    color: string;
+    backgroundColor?: string;
+    textColor?: string;
+  }
+>(({ className, children, color, backgroundColor = "#fff", textColor = "#222", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
-      className={cn(contentStyle(color), className)}
+      className={cn(contentStyle(color, backgroundColor, textColor), className)}
       position="popper"
       {...props}
     >
@@ -95,11 +99,14 @@ SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 export const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+    hoverColor?: string;
+    highlightColor?: string;
+  }
+>(({ className, children, hoverColor = "#f5f5f5", highlightColor = "#f0f0f0", ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
-    className={cn(itemStyle, className)}
+    className={cn(itemStyle(hoverColor, highlightColor), className)}
     {...props}
   >
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
