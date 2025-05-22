@@ -15,7 +15,7 @@ const tooltipContentStyle = (backgroundColor: string, textColor: string) =>
         color: textColor,
         backgroundColor: backgroundColor,
         boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)',
-        maxWidth: '500px',
+        maxWidth: '250px',
         maxHeight: '400px',
         width: 'auto',
         textAlign: 'left',
@@ -24,26 +24,6 @@ const tooltipContentStyle = (backgroundColor: string, textColor: string) =>
         overflowWrap: 'break-word',
     });
 
-// Style specifically for tab tooltips with title, URL, and last active time
-const tabTooltipStyle = css({
-    '& strong': {
-        display: 'block',
-        marginBottom: '4px',
-        fontSize: '0.9rem',
-    },
-    '& .url': {
-        display: 'block',
-        marginBottom: '4px',
-        fontFamily: 'monospace',
-        fontSize: '0.8rem',
-    },
-    '& .meta': {
-        display: 'block',
-        marginTop: '4px',
-        fontSize: '0.9rem',
-        opacity: 0.8,
-    },
-});
 
 // Style for the tooltip arrow
 const tooltipArrowStyle = (backgroundColor: string) =>
@@ -91,7 +71,6 @@ const TooltipContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> & {
         backgroundColor?: string;
         textColor?: string;
-        tabTooltip?: boolean;
         showArrow?: boolean;
     }
 >(
@@ -100,7 +79,6 @@ const TooltipContent = React.forwardRef<
             className,
             backgroundColor = '#333',
             textColor = '#fff',
-            tabTooltip = false,
             showArrow = true,
             sideOffset = 4,
             children,
@@ -113,7 +91,6 @@ const TooltipContent = React.forwardRef<
             sideOffset={sideOffset}
             className={cn(
                 tooltipContentStyle(backgroundColor, textColor),
-                tabTooltip ? tabTooltipStyle : null,
                 className,
             )}
             {...props}
@@ -125,4 +102,10 @@ const TooltipContent = React.forwardRef<
 );
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow };
+export {
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
+    TooltipProvider,
+    TooltipArrow,
+};
