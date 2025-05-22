@@ -7,6 +7,7 @@ import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { ThemeContext } from './themeContext';
 import { useContext } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const selectContainerStyle = css({
     display: 'flex',
@@ -21,18 +22,6 @@ const selectIconStyle = (color: string) => css({
     color: color, // Use theme color for the icon
 });
 
-const selectStyle = (color: string) => css({
-    border: '1px solid ' + color,
-    borderRadius: '3px',
-    background: 'transparent',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-    padding: '2px 4px',
-    appearance: 'none',
-    width: 90,
-    color: color, // Use theme color for the text
-});
-
 interface SortOrderSelectProps {
     stateRef: StateRef<TabManagerState>;
     sortOrder: 'alpha' | 'recent';
@@ -44,23 +33,26 @@ const SortOrderSelect: React.FC<SortOrderSelectProps> = ({
 }) => {
     const theme = useContext(ThemeContext);
     
-    const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newSortOrder = e.target.value as 'alpha' | 'recent';
+    const handleSortOrderChange = (value: string) => {
+        const newSortOrder = value as 'alpha' | 'recent';
         actionsClient.updatePreferences(stateRef, { sortOrder: newSortOrder });
     };
 
     return (
         <div className={selectContainerStyle}>
             <ArrowDownWideNarrow className={selectIconStyle(theme.foreground)} />
-            <select
-                className={selectStyle(theme.foreground)}
-                value={sortOrder}
-                onChange={handleSortOrderChange}
-                title="Sort windows by name or recent activity"
-            >
-                <option value="alpha">A-Z</option>
-                <option value="recent">Recent</option>
-            </select>
+            <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+                <SelectTrigger 
+                    color={theme.foreground}
+                    title="Sort windows by name or recent activity"
+                >
+                    <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent color={theme.foreground}>
+                    <SelectItem value="alpha">A-Z</SelectItem>
+                    <SelectItem value="recent">Recent</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
     );
 };
