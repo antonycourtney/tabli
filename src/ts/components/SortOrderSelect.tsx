@@ -8,6 +8,7 @@ import TabManagerState from '../tabManagerState';
 import { ThemeContext } from './themeContext';
 import { useContext } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 const selectContainerStyle = css({
     display: 'flex',
@@ -41,18 +42,17 @@ const SortOrderSelect: React.FC<SortOrderSelectProps> = ({
     return (
         <div className={selectContainerStyle}>
             <ArrowDownWideNarrow className={selectIconStyle(theme.foreground)} />
-            <Select value={sortOrder} onValueChange={handleSortOrderChange}>
-                <SelectTrigger 
-                    color={theme.foreground}
-                    title="Sort windows by name or recent activity"
-                >
-                    <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent color={theme.foreground}>
-                    <SelectItem value="alpha">A-Z</SelectItem>
-                    <SelectItem value="recent">Recent</SelectItem>
-                </SelectContent>
-            </Select>
+            <TooltipWrapper tip="Sort windows by name or recent activity">
+                <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+                    <SelectTrigger color={theme.foreground}>
+                        <SelectValue placeholder="Sort" />
+                    </SelectTrigger>
+                    <SelectContent color={theme.foreground}>
+                        <SelectItem value="alpha">A-Z</SelectItem>
+                        <SelectItem value="recent">Recent</SelectItem>
+                    </SelectContent>
+                </Select>
+            </TooltipWrapper>
         </div>
     );
 };

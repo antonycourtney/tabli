@@ -24,6 +24,8 @@ import { areEqualShallow, windowIsPopout } from '../utils';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
 import * as svg from './svg';
 import { LayoutContext } from './LayoutContext';
+import { Tooltip } from '@radix-ui/react-tooltip';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -282,14 +284,15 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 {tabCheckItem}
                                 {tabFavIcon}
                             </div>
-                            <a
-                                href={tab.url}
-                                className={tabTitleStyle}
-                                title={tooltipContent}
-                                onClick={handleClick}
-                            >
-                                {tabTitle}
-                            </a>
+                            <TooltipWrapper tip={tooltipContent}>
+                                <a
+                                    href={tab.url}
+                                    className={tabTitleStyle}
+                                    onClick={handleClick}
+                                >
+                                    {tabTitle}
+                                </a>
+                            </TooltipWrapper>
                             <div className={styles.rowItemsFixedWidth}>
                                 {suspendedIcon}
                                 {audibleIcon}

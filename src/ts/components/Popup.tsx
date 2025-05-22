@@ -18,6 +18,7 @@ import { FilteredTabWindow } from '../searchOps';
 import ModalActions from './modalActions';
 import { setRootFontSize } from '../renderUtils';
 import UnmanageModal from './UnmanageModal';
+import { TooltipProvider } from './ui/TooltipProvider';
 
 const _ = { debounce };
 
@@ -188,21 +189,23 @@ export const Popup: React.FunctionComponent<PopupProps> = ({
     return (
         <LayoutContext.Provider value={layout}>
             <ThemeContext.Provider value={theme}>
-                <div className={popupOuterStyle(theme)}>
-                    <SelectablePopup
-                        onSearchInput={handleSearchInput}
-                        appState={appState}
-                        stateRef={stateRef}
-                        filteredWindows={filteredWindows}
-                        modalActions={modalActions}
-                        searchStr={searchStr}
-                        searchRE={searchRE}
-                        isPopout={isPopout}
-                    />
-                    {revertModal}
-                    {saveModal}
-                    {unmanageModal}
-                </div>
+                <TooltipProvider>
+                    <div className={popupOuterStyle(theme)}>
+                        <SelectablePopup
+                            onSearchInput={handleSearchInput}
+                            appState={appState}
+                            stateRef={stateRef}
+                            filteredWindows={filteredWindows}
+                            modalActions={modalActions}
+                            searchStr={searchStr}
+                            searchRE={searchRE}
+                            isPopout={isPopout}
+                        />
+                        {revertModal}
+                        {saveModal}
+                        {unmanageModal}
+                    </div>
+                </TooltipProvider>
             </ThemeContext.Provider>
         </LayoutContext.Provider>
     );
