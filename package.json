@@ -10,9 +10,12 @@
         "@babel/plugin-proposal-class-properties": "^7.12.1",
         "@emotion/css": "^11.11.2",
         "@hello-pangea/dnd": "^16.6.0",
+        "@radix-ui/react-select": "^2.2.5",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "chrome-promise": "^3.0.5",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
         "deep-diff": "^1.0.2",
         "escape-string-regexp": "4.0.0",
         "events": "^3.3.0",
@@ -32,7 +35,8 @@
         "react-dom": "18.3.1",
         "react-popper": "^2.3.0",
         "react-simple-img": "^3.0.0",
-        "semver": "^7.6.2"
+        "semver": "^7.6.2",
+        "tailwind-merge": "^3.3.0"
     },
     "devDependencies": {
         "@babel/core": "^7.24.7",
