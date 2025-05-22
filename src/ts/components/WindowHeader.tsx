@@ -20,6 +20,7 @@ import ModalActions from './modalActions';
 import { useContext, useState, useCallback } from 'react';
 import { StateRef } from 'oneref';
 import { LayoutContext } from './LayoutContext';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 const titleInputStyle = cx(styles.text, styles.noWrap, styles.windowTitleInput);
 
@@ -210,9 +211,11 @@ const WindowHeader: React.FunctionComponent<WindowHeaderProps> = ({
         );
     } else {
         titleComponent = (
-            <span className={styles.noWrap} title={tooltipContent}>
-                {windowTitle}
-            </span>
+            <TooltipWrapper tip={tooltipContent}>
+                <span className={styles.noWrap}>
+                    {windowTitle}
+                </span>
+            </TooltipWrapper>
         );
     }
 

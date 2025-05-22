@@ -11,6 +11,7 @@ import * as actionsClient from '../actionsClient';
 import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useState, useContext } from 'react';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 const modalOverlayStyle = css({
     position: 'fixed',
@@ -176,21 +177,22 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
         <Manager>
             <Reference>
                 {({ ref }) => (
-                    <button
-                        type="button"
-                        className={styles.toolbarButton(theme)}
-                        ref={ref}
-                        title="Tabli Menu"
-                        onClick={(e) => toggleDropDown()}
-                    >
-                        <div
-                            className={cx(
-                                styles.toolbarButtonSVGIconContainer(theme),
-                            )}
+                    <TooltipWrapper tip="Tabli Menu">
+                        <button
+                            type="button"
+                            className={styles.toolbarButton(theme)}
+                            ref={ref}
+                            onClick={(e) => toggleDropDown()}
+                        >
+                            <div
+                                className={cx(
+                                    styles.toolbarButtonSVGIconContainer(theme),
+                                )}
                         >
                             {svg.menu}
                         </div>
                     </button>
+                    </TooltipWrapper>
                 )}
             </Reference>
             <Popper placement="bottom-end">

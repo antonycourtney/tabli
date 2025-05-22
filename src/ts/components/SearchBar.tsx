@@ -11,6 +11,7 @@ import { StateRef } from 'oneref';
 import TabManagerState from '../tabManagerState';
 import { useRef, useContext, Ref, MutableRefObject, ReactNode } from 'react';
 import { mkUrl } from '../utils';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 const toolbarOuterContainerStyle = css`
     display: flex;
@@ -235,15 +236,16 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     const popDesc = popVerb + ' Tabli Popout Window';
 
     const popoutButton = (
-        <button
-            className={styles.toolbarButton(theme)}
-            title={popDesc}
-            onClick={handlePopoutClick}
-        >
-            <div className={cx(styles.toolbarButtonSVGIconContainer(theme))}>
-                {popSVG}
-            </div>
-        </button>
+        <TooltipWrapper tip={popDesc}>
+            <button
+                className={styles.toolbarButton(theme)}
+                onClick={handlePopoutClick}
+            >
+                <div className={cx(styles.toolbarButtonSVGIconContainer(theme))}>
+                    {popSVG}
+                </div>
+            </button>
+        </TooltipWrapper>
     );
 
     const expandAllButton = (
@@ -272,18 +274,19 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
                 <Centered>
                     <GrowRight>
                         <MenuButton stateRef={stateRef} />
-                        <input
-                            className={searchInputClass}
-                            type="search"
-                            tabIndex={1}
-                            ref={searchInputRef}
-                            id="searchBox"
-                            data-testid="searchBox"
-                            placeholder="Search..."
-                            onChange={handleChange}
-                            onKeyDown={handleKeyDown}
-                            title="Search Page Titles and URLs"
-                        />
+                        <TooltipWrapper tip="Search Page Titles and URLs">
+                            <input
+                                className={searchInputClass}
+                                type="search"
+                                tabIndex={1}
+                                ref={searchInputRef}
+                                id="searchBox"
+                                data-testid="searchBox"
+                                placeholder="Search..."
+                                onChange={handleChange}
+                                onKeyDown={handleKeyDown}
+                            />
+                        </TooltipWrapper>
                     </GrowRight>
                 </Centered>
                 {devLabel}
