@@ -9,6 +9,7 @@ import { HEADER_BUTTON_SIZE } from './constants';
 import { ThemeContext, Theme } from './themeContext';
 import { css, cx } from '@emotion/css';
 import * as styles from './cssStyles';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 export interface HeaderButtonSVGProps {
     className?: string;
@@ -85,11 +86,10 @@ export const HeaderButtonSVG = ({
 
     const clickProps = handleClick ? { onClick: handleClick } : {};
 
-    return (
+    const button = (
         <div
             role="button"
             className={buttonStyle(theme, className)}
-            title={title}
             {...clickProps}
         >
             <SVGIcon
@@ -99,4 +99,11 @@ export const HeaderButtonSVG = ({
             />
         </div>
     );
+
+    // Only wrap with tooltip if title is provided
+    if (title) {
+        return <TooltipWrapper tip={title}>{button}</TooltipWrapper>;
+    }
+
+    return button;
 };

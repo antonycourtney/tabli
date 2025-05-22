@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx } from '@emotion/css';
+import { TooltipWrapper } from './ui/TooltipWrapper';
 
 export const headerButtonSpacer = (
     <button className={cx(styles.headerButton, styles.hidden)} />
@@ -33,5 +34,9 @@ export const HeaderButton: React.FunctionComponent<HeaderButtonProps> = ({
         return headerButtonSpacer;
     }
 
-    return <button className={className} title={title} onClick={handleClick} />;
+    return (
+        <TooltipWrapper tip={title}>
+            <button className={className} onClick={handleClick} />
+        </TooltipWrapper>
+    );
 };
