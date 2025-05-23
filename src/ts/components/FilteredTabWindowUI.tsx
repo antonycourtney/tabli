@@ -7,7 +7,7 @@ import * as actions from '../actions';
 import * as actionsClient from '../actionsClient';
 import * as Constants from './constants';
 import WindowHeader from './WindowHeader';
-import TabItemUI from './TabItemUI';
+import TabItemList from './TabItemList';
 import { TabWindow, TabItem } from '../tabWindow';
 import { FilteredTabItem } from '../searchOps';
 import TabManagerState from '../tabManagerState';
@@ -23,12 +23,6 @@ import {
 import { Theme, ThemeContext } from './themeContext';
 import { LayoutContext } from './LayoutContext';
 
-const expandablePanelContentOpenStyle = css({
-    marginTop: 4,
-});
-const expandablePanelContentClosedStyle = css({
-    marginTop: '-999px',
-});
 const tabWindowSelectedStyle = (theme: Theme) =>
     css({
         border: '2px solid ' + theme.windowSelectedBorder,
@@ -126,39 +120,6 @@ const FilteredTabWindowUI: React.FunctionComponent<
         return tabWindow.isExpanded(expandAll);
     };
 
-    const renderTabItems = (tabWindow: TabWindow, tabs: TabItem[]) => {
-        const items = [];
-        for (let i = 0; i < tabs.length; i++) {
-            const tab = tabs[i];
-            const isSelected = i === selectedTabIndex;
-            /*
-            log.debug(
-                '  FilteredTabWindowUI: renderTabItems: ',
-                tab.title,
-                tab,
-            );
-            */
-            const tabItem = (
-                <TabItemUI
-                    stateRef={stateRef}
-                    tabWindow={tabWindow}
-                    tab={tab}
-                    key={tab.key}
-                    tabIndex={i}
-                    isSelected={isSelected}
-                    onItemSelected={onItemSelected}
-                />
-            );
-            items.push(tabItem);
-        }
-
-        const expanded = getExpandedState();
-        const expandableContentStyle = expanded
-            ? expandablePanelContentOpenStyle
-            : expandablePanelContentClosedStyle;
-        const tabListStyle = cx(styles.tabList, expandableContentStyle);
-        return <div className={tabListStyle}>{items}</div>;
-    };
 
     const handleExpand = (expand: boolean) => {
         actionsClient.expandWindow(tabWindow, expand, stateRef);
@@ -175,13 +136,18 @@ const FilteredTabWindowUI: React.FunctionComponent<
      * optimization:  Let's only render tabItems if expanded
      */
     const expanded = getExpandedState();
-    let tabItems: JSX.Element | null = null;
-    if (expanded) {
-        tabItems = renderTabItems(tabWindow, tabs);
-    } else {
-        // render empty list of tab items to get -ve margin rollup layout right...
-        tabItems = renderTabItems(tabWindow, []);
-    }
+    const tabItemsToRender = expanded ? tabs : [];
+    
+    const tabItems = (
+        <TabItemList
+            stateRef={stateRef}
+            tabWindow={tabWindow}
+            tabs={tabItemsToRender}
+            selectedTabIndex={selectedTabIndex}
+            expanded={expanded}
+            onItemSelected={onItemSelected}
+        />
+    );
 
     // log.debug('FilteredTabWindowUI: rendering: ', tabWindow.title, tabWindow);
 
