@@ -18,7 +18,7 @@ import {
 } from '@hello-pangea/dnd';
 import TabManagerState from '../tabManagerState';
 import { TabWindow, TabItem } from '../tabWindow';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { StateRef, mutableGet } from 'oneref';
 import { areEqualShallow, windowIsPopout } from '../utils';
 import { HeaderButtonSVG } from './HeaderButtonSVG';
@@ -26,6 +26,8 @@ import * as svg from './svg';
 import { LayoutContext } from './LayoutContext';
 import { Tooltip } from '@radix-ui/react-tooltip';
 import { TabTooltip } from './ui/TabTooltip';
+import { TabPreview } from './TabPreview';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -39,6 +41,32 @@ const tabItemHoverVisible = css`
 
 const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon);
 
+// Style for the preview expand/collapse button - match size of other icon buttons
+const previewButtonStyle = (theme: any) =>
+    css({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '32px', // Increased to match other icon buttons
+        height: '32px', // Increased to match other icon buttons
+        borderRadius: '3px', // Changed from circle to match other buttons
+        border: 'none',
+        background: 'transparent',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        marginRight: '2px',
+
+        '&:hover': {
+            backgroundColor: theme.tabItemHover,
+        },
+
+        '& svg': {
+            width: '32px', // Increased from 10px   // has no effect!
+            height: '32px', // Increased from 10px
+            color: theme.foreground,
+        },
+    });
+
 const getDragContainerStyle = (
     isDragging: boolean,
     draggableStyle: any,
@@ -47,6 +75,7 @@ const getDragContainerStyle = (
     return {
         // styles we need to apply on draggables
         ...draggableStyle,
+        cursor: snapshot.isDragging ? 'grabbing' : 'pointer',
     };
 };
 
@@ -73,6 +102,15 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     // log.debug('  --TabItemUI: rendering: ', tab.title);
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
+
+    // State for preview expand/collapse
+    const [isPreviewExpanded, setIsPreviewExpanded] = useState<boolean>(false);
+
+    const handlePreviewToggle = (event: React.MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsPreviewExpanded(!isPreviewExpanded);
+    };
 
     const handleClick = async (event: React.MouseEvent) => {
         event.preventDefault();
@@ -179,6 +217,18 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const tabFavIcon = tabItemUtil.mkFavIcon(tab);
 
+    // Create preview expand/collapse button (only visible on hover)
+    const previewButton = (
+        <button
+            className={cx(previewButtonStyle(theme), tabItemHoverVisible)}
+            onClick={handlePreviewToggle}
+            title={isPreviewExpanded ? 'Collapse preview' : 'Expand preview'}
+            type="button"
+        >
+            {isPreviewExpanded ? <ChevronUp /> : <ChevronDown />}
+        </button>
+    );
+
     const tabActiveTextStyle =
         tab.open && tab.openState!.active ? styles.activeSpan : null;
 
@@ -200,7 +250,9 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     // Due to limitation of nested class selectors with composition;
     // see https://emotion.sh/docs/nested for more info.
     const getTabItemStyle = (isDragging: boolean): string => {
-        const dragStyle = isDragging ? styles.tabItemDragging(theme) : null;
+        const dragStyle = isDragging
+            ? styles.tabItemDragging(theme)
+            : styles.tabItemNotDragging;
         const tabItemStyle = cx(
             styles.noWrap,
             styles.tabItem(theme, layout),
@@ -252,12 +304,34 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const draggableId = tab.key;
 
+    const tabLink = (
+        <a href={tab.url} className={tabTitleStyle} onClick={handleClick}>
+            {tabTitle}
+        </a>
+    );
+    const useTooltip = false;
+    const tabTitleElement = useTooltip ? (
+        <TabTooltip
+            title={tabTitle}
+            url={tab.url}
+            lastActive={lastActive}
+            side="bottom"
+            align="center"
+        >
+            {tabLink}
+        </TabTooltip>
+    ) : (
+        tabLink
+    );
+
     return (
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
             {(
                 dragProvided: DraggableProvided,
                 dragSnapshot: DraggableStateSnapshot,
             ) => {
+                const draggableStyle = dragProvided.draggableProps.style;
+                log.debug('TabItemUI: draggableStyle: ', draggableStyle);
                 // console.log({ dragProvided, dragSnapshot });
                 // for debugging: const blueBorder = css({ border: '1px solid #0000ff' });
                 return (
@@ -281,29 +355,22 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                         >
                             <div className={styles.rowItemsFixedWidth}>
                                 {tabCheckItem}
+                                {previewButton}
                                 {tabFavIcon}
                             </div>
-                            <TabTooltip
-                                title={tabTitle}
-                                url={tab.url}
-                                lastActive={lastActive}
-                                side="bottom"
-                                align="center"
-                            >
-                                <a
-                                    href={tab.url}
-                                    className={tabTitleStyle}
-                                    onClick={handleClick}
-                                >
-                                    {tabTitle}
-                                </a>
-                            </TabTooltip>
+                            {tabTitleElement}
                             <div className={styles.rowItemsFixedWidth}>
                                 {suspendedIcon}
                                 {audibleIcon}
                                 {closeButton}
                             </div>
                         </div>
+                        <TabPreview
+                            url={tab.url}
+                            title={tabTitle}
+                            lastActive={lastActive}
+                            isVisible={isPreviewExpanded}
+                        />
                     </div>
                 );
             }}

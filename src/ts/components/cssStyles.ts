@@ -28,7 +28,7 @@ export const tabTitle = css({
         color: 'inherit',
         textDecoration: 'none',
     },
-    cursor: 'default',
+    cursor: 'pointer',
 });
 export const simpleTabTitle = css({
     width: Constants.SIMPLE_TAB_TITLE_WIDTH,
@@ -52,8 +52,7 @@ export const tabItem = (theme: Theme, layout: Layout) =>
         marginBottom: layout.tabMarginBottom,
         display: 'flex',
         alignItems: 'center',
-        border:
-            '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
+        border: '1px solid #cacaca00' /* transparent to avoid jitter on hover */,
         '&:hover': {
             backgroundColor: theme.tabItemHover,
         },
@@ -75,6 +74,10 @@ export const tabItemDragging = (theme: Theme) =>
         border: '1px solid #cacaca',
         backgroundColor: theme.tabItemHover,
     });
+
+export const tabItemNotDragging = css({
+    cursor: 'pointer',
+});
 
 export const tabItemDropOver = css({
     borderBottom: '2px solid #333333',
@@ -99,7 +102,7 @@ export const headerCheckboxContainer = cx(
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-    })
+    }),
 );
 
 export const noWrap = css({
@@ -254,7 +257,8 @@ export const closeButtonBaseStyle = (theme: Theme) => css`
         -webkit-mask-image: url('../images/Interface-74.png');
         background-color: ${theme.headerButtonHover};
         border-radius: 50%;
-        box-shadow: 0 0 0 5px ${theme.tabCloseHoverBackground} inset,
+        box-shadow:
+            0 0 0 5px ${theme.tabCloseHoverBackground} inset,
             0 0 0 2px ${theme.tabCloseHoverBackground};
     }
 `;
@@ -307,7 +311,7 @@ export const toolbarButtonIconMaskImage = (theme: Theme, path: string) =>
         css({
             margin: '1px 5px',
             WebkitMaskImage: mkUrl(path),
-        })
+        }),
     );
 
 export const expandAllIconStyle = (theme: Theme) =>

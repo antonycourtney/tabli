@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smooth Fisheye List Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .list-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px 12px;
+            width: 280px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .fisheye-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            position: relative;
+        }
+
+        .list-item {
+            position: relative;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-origin: left center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 32px;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .item-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .item-subtitle {
+            font-size: 10px;
+            color: #718096;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
+            margin-top: 1px;
+        }
+
+        /* Enhanced fisheye effect with smooth transitions and dynamic spacing */
+        .list-item {
+            transform: scale(1);
+            opacity: 1;
+            margin-bottom: 2px;
+        }
+
+        .list-item.active {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            opacity: 1;
+            margin-bottom: 4px;
+            margin-top: 4px;
+        }
+
+        .list-item.adjacent-1 {
+            transform: scale(1.08);
+            opacity: 0.98;
+            z-index: 5;
+            margin-bottom: 3px;
+            margin-top: 2px;
+        }
+
+        .list-item.adjacent-2 {
+            transform: scale(1.03);
+            opacity: 0.94;
+            margin-bottom: 2px;
+            margin-top: 1px;
+        }
+
+        .list-item.distant {
+            transform: scale(0.98);
+            opacity: 0.85;
+            margin-bottom: 1px;
+        }
+
+        /* Detail card */
+        .detail-card {
+            position: fixed;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            transform-origin: left center;
+        }
+
+        .detail-card.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) scale(1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .card-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .card-info p {
+            color: #718096;
+            font-size: 12px;
+        }
+
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        .detail-value {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #667eea);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Color themes for icons */
+        .theme-blue { background: linear-gradient(135deg, #4299e1, #667eea); }
+        .theme-green { background: linear-gradient(135deg, #48bb78, #68d391); }
+        .theme-purple { background: linear-gradient(135deg, #9f7aea, #b794f6); }
+        .theme-red { background: linear-gradient(135deg, #f56565, #fc8181); }
+        .theme-orange { background: linear-gradient(135deg, #ed8936, #f6ad55); }
+        .theme-teal { background: linear-gradient(135deg, #38b2ac, #4fd1c7); }
+        .theme-pink { background: linear-gradient(135deg, #ed64a6, #f687b3); }
+        .theme-cyan { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="list-container">
+            <ul class="fisheye-list" id="fisheyeList">
+                <li class="list-item" data-details='{"title": "Web Development Sprint", "category": "Frontend", "progress": 85, "tasks": 12, "completed": 10, "deadline": "Mar 15"}'>
+                    <div class="item-icon theme-blue">🌐</div>
+                    <div class="item-content">
+                        <div class="item-title">Web Development Sprint</div>
+                        <div class="item-subtitle">Frontend Project</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "Mobile App Design System", "category": "UI/UX", "progress": 60, "tasks": 8, "completed": 5, "deadline": "Apr 2"}'>
+                    <div class="item-icon theme-purple">📱</div>
+                    <div class="item-content">
+                        <div class="item-title">Mobile App Design System</div>
+                        <div class="item-subtitle">UI/UX Design</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "Database Migration Task", "category": "Backend", "progress": 40, "tasks": 15, "completed": 6, "deadline": "Mar 30"}'>
+                    <div class="item-icon theme-green">🗄️</div>
+                    <div class="item-content">
+                        <div class="item-title">Database Migration Task</div>
+                        <div class="item-subtitle">Backend Infrastructure</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "API Documentation Review", "category": "Documentation", "progress": 90, "tasks": 6, "completed": 5, "deadline": "Mar 20"}'>
+                    <div class="item-icon theme-teal">📚</div>
+                    <div class="item-content">
+                        <div class="item-title">API Documentation Review</div>
+                        <div class="item-subtitle">Technical Writing</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "Security Audit Process", "category": "Security", "progress": 25, "tasks": 20, "completed": 5, "deadline": "Apr 10"}'>
+                    <div class="item-icon theme-red">🔒</div>
+                    <div class="item-content">
+                        <div class="item-title">Security Audit Process</div>
+                        <div class="item-subtitle">Penetration Testing</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "Performance Optimization", "category": "Backend", "progress": 70, "tasks": 10, "completed": 7, "deadline": "Mar 25"}'>
+                    <div class="item-icon theme-orange">⚡</div>
+                    <div class="item-content">
+                        <div class="item-title">Performance Optimization</div>
+                        <div class="item-subtitle">System Enhancement</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "Client Feedback Integration", "category": "Product", "progress": 55, "tasks": 9, "completed": 5, "deadline": "Apr 5"}'>
+                    <div class="item-icon theme-pink">💬</div>
+                    <div class="item-content">
+                        <div class="item-title">Client Feedback Integration</div>
+                        <div class="item-subtitle">Product Development</div>
+                    </div>
+                </li>
+                
+                <li class="list-item" data-details='{"title": "Code Quality Analysis", "category": "DevOps", "progress": 35, "tasks": 14, "completed": 5, "deadline": "Mar 28"}'>
+                    <div class="item-icon theme-cyan">🔍</div>
+                    <div class="item-content">
+                        <div class="item-title">Code Quality Analysis</div>
+                        <div class="item-subtitle">Static Analysis</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="detail-card" id="detailCard">
+            <div class="card-header">
+                <div class="card-icon" id="cardIcon">🌐</div>
+                <div class="card-info">
+                    <h3 id="cardTitle">Project Title</h3>
+                    <p id="cardCategory">Category</p>
+                </div>
+            </div>
+            
+            <div class="card-details">
+                <div class="detail-row">
+                    <span class="detail-label">Progress</span>
+                    <span class="detail-value" id="cardProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Tasks</span>
+                    <span class="detail-value" id="cardTasks">0/0</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Deadline</span>
+                    <span class="detail-value" id="cardDeadline">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SmoothFisheyeList {
+            constructor() {
+                this.listContainer = document.querySelector('.list-container');
+                this.listItems = Array.from(document.querySelectorAll('.list-item'));
+                this.detailCard = document.getElementById('detailCard');
+                this.currentActiveIndex = -1;
+                this.isMouseInList = false;
+                this.updateTimer = null;
+                this.hideTimer = null;
+                
+                this.cardElements = {
+                    icon: document.getElementById('cardIcon'),
+                    title: document.getElementById('cardTitle'),
+                    category: document.getElementById('cardCategory'),
+                    progress: document.getElementById('cardProgress'),
+                    tasks: document.getElementById('cardTasks'),
+                    deadline: document.getElementById('cardDeadline'),
+                    progressFill: document.getElementById('progressFill')
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.listContainer.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                this.listContainer.addEventListener('mouseenter', this.handleMouseEnter.bind(this));
+                this.listContainer.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+            }
+            
+            handleMouseMove(e) {
+                if (this.updateTimer) {
+                    clearTimeout(this.updateTimer);
+                }
+                
+                this.updateTimer = setTimeout(() => {
+                    this.updateFisheyeEffect(e);
+                }, 5); // Faster updates for smoother movement
+            }
+            
+            handleMouseEnter() {
+                this.isMouseInList = true;
+                if (this.hideTimer) {
+                    clearTimeout(this.hideTimer);
+                    this.hideTimer = null;
+                }
+            }
+            
+            handleMouseLeave() {
+                this.isMouseInList = false;
+                this.clearAllEffects();
+                
+                // Delay hiding the card slightly
+                this.hideTimer = setTimeout(() => {
+                    if (!this.isMouseInList) {
+                        this.detailCard.classList.remove('show');
+                    }
+                }, 150);
+            }
+            
+            updateFisheyeEffect(e) {
+                const containerRect = this.listContainer.getBoundingClientRect();
+                const mouseY = e.clientY - containerRect.top - 20; // Account for container padding
+                
+                let closestIndex = -1;
+                let minDistance = Infinity;
+                
+                // Find the closest item to the mouse with improved sensitivity
+                this.listItems.forEach((item, index) => {
+                    const itemRect = item.getBoundingClientRect();
+                    const itemContainerRect = this.listContainer.getBoundingClientRect();
+                    const itemY = itemRect.top - itemContainerRect.top - 20; // Relative to container
+                    const itemCenter = itemY + (itemRect.height / 2);
+                    const distance = Math.abs(mouseY - itemCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+                
+                // Use a threshold to prevent micro-movements from triggering changes
+                const threshold = 8; // pixels
+                if (closestIndex !== this.currentActiveIndex && closestIndex >= 0 && minDistance < threshold * 3) {
+                    this.currentActiveIndex = closestIndex;
+                    this.applyFisheyeEffect(closestIndex);
+                    this.updateDetailCard(closestIndex);
+                }
+            }
+            
+            applyFisheyeEffect(activeIndex) {
+                this.listItems.forEach((item, index) => {
+                    // Remove all classes
+                    item.classList.remove('active', 'adjacent-1', 'adjacent-2', 'distant');
+                    
+                    const distance = Math.abs(index - activeIndex);
+                    
+                    if (distance === 0) {
+                        item.classList.add('active');
+                    } else if (distance === 1) {
+                        item.classList.add('adjacent-1');
+                    } else if (distance === 2) {
+                        item.classList.add('adjacent-2');
+                    } else {
+                        item.classList.add('distant');
+                    }
+                });
+            }
+            
+            updateDetailCard(index) {
+                const item = this.listItems[index];
+                const details = JSON.parse(item.dataset.details);
+                const icon = item.querySelector('.item-icon');
+                
+                // Update card content
+                this.cardElements.icon.textContent = icon.textContent;
+                this.cardElements.icon.className = 'card-icon ' + icon.classList[1];
+                this.cardElements.title.textContent = details.title;
+                this.cardElements.category.textContent = details.category;
+                this.cardElements.progress.textContent = details.progress + '%';
+                this.cardElements.tasks.textContent = `${details.completed}/${details.tasks}`;
+                this.cardElements.deadline.textContent = details.deadline;
+                this.cardElements.progressFill.style.width = details.progress + '%';
+                
+                // Show card
+                this.detailCard.classList.add('show');
+            }
+            
+            clearAllEffects() {
+                this.currentActiveIndex = -1;
+                this.listItems.forEach(item => {
+                    item.classList.remove('active', 'adjacent-1', 'adjacent-2', 'distant');
+                    // Reset to default spacing
+                    item.style.marginTop = '';
+                    item.style.marginBottom = '';
+                });
+            }
+        }
+        
+        // Initialize the smooth fisheye effect
+        document.addEventListener('DOMContentLoaded', () => {
+            new SmoothFisheyeList();
+        });
+    </script>
+</body>
+</html>

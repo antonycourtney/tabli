@@ -14,7 +14,6 @@ body {
     font-family: sans-serif;
     /* max-width: 400px; */
     /* overflow-x: hidden; */
-    cursor: default;
     overflow: hidden;
     margin: 0px;
     height: 100%;
@@ -32,7 +31,7 @@ p {
     margin-top: 4px;
     margin-bottom: 4px;
 }
-// For dialogs:
+/* For dialogs: */
 label,
 input {
     display: block;

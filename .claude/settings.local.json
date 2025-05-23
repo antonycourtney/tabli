@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(npm run build-dev:*)",
+      "Bash(npm test)"
     ],
     "deny": []
   }
