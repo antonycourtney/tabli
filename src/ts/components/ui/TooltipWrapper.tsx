@@ -11,11 +11,10 @@ interface TooltipWrapperProps {
     showArrow?: boolean;
 }
 
-
 export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
     tip,
     children,
-    delayDuration = 300,
+    delayDuration = 500,
     side = 'top',
     align = 'center',
     showArrow = true,
