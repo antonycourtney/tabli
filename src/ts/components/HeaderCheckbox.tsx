@@ -1,28 +1,29 @@
 /*
- * A Component wrapper around checkbox for use in WindowHeader and
- * TabItem. Wraps checkbox input in a div since the input component
- * doesn't obey proper css props like width and height, and swaps
- * input for an image when checked.
+ * A Component wrapper around bookmark icon for use in WindowHeader and
+ * TabItem. Shows filled bookmark when saved/checked, outline bookmark when unsaved/unchecked.
  */
 import * as React from 'react';
 
 import { cx, css } from '@emotion/css';
 import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
-import get from 'lodash/get';
 import { useContext } from 'react';
-import { HeaderButtonSVG } from './HeaderButtonSVG';
-import * as svg from './svg';
+import { Bookmark } from 'lucide-react';
 
-const containerStyle = css({
+const bookmarkButtonStyle = css({
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     outline: 'none',
-    border: '1px solid #0000ff', // 'none',
+    border: 'none',
+    background: 'transparent',
     height: 16,
+    width: 16,
     marginLeft: 4,
     marginRight: 4,
     flex: 'none',
+    cursor: 'pointer',
+    padding: 0,
 });
 
 interface HeaderCheckboxProps {
@@ -46,36 +47,26 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
     // defaults to rendering in open state:
     const isOpen = open === undefined ? true : open;
 
-    let checkboxComponent;
+    // Determine colors based on checked state and theme
+    const iconColor = checked ? theme.revertColor : theme.foreground;
+    const fill = checked ? iconColor : 'none';
+    const strokeWidth = checked ? 0 : 1;
 
-    if (checked) {
-        const openStateStyle = isOpen ? null : styles.imageButtonClosed(theme);
-        checkboxComponent = (
-            <HeaderButtonSVG
-                svgElem={svg.check}
-                title={title}
-                onClick={onClick}
-                visible={true}
-                svgClassName={styles.checkStyle(theme)}
+    return (
+        <button
+            className={cx(bookmarkButtonStyle, !checked && extraUncheckedStyle)}
+            title={title}
+            onClick={onClick}
+            type="button"
+        >
+            <Bookmark
+                size={14}
+                color={iconColor}
+                fill={fill}
+                strokeWidth={strokeWidth}
             />
-        );
-    } else {
-        checkboxComponent = (
-            <div className={styles.headerCheckboxContainer}>
-                <input
-                    className={cx(
-                        styles.headerCheckBoxInput,
-                        extraUncheckedStyle
-                    )}
-                    type="checkbox"
-                    title={title}
-                    onClick={onClick}
-                    value={0}
-                />
-            </div>
-        );
-    }
-    return checkboxComponent;
+        </button>
+    );
 };
 
 export default HeaderCheckbox;
