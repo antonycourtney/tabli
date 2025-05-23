@@ -9,6 +9,10 @@ import * as styles from './cssStyles';
 import { ThemeContext, Theme } from './themeContext';
 import { useContext } from 'react';
 import { Bookmark } from 'lucide-react';
+import { TooltipWrapper } from './ui/TooltipWrapper';
+
+// Configurable scale factor for bookmark icon height - increase to make taller
+const BOOKMARK_HEIGHT_SCALE = 1.2; // 20% taller than square
 
 const bookmarkButtonStyle = css({
     display: 'flex',
@@ -25,6 +29,49 @@ const bookmarkButtonStyle = css({
     cursor: 'pointer',
     padding: 0,
 });
+
+const bookmarkIconStyle = css({
+    transform: `scaleY(${BOOKMARK_HEIGHT_SCALE})`,
+});
+
+const bookmarkButtonWithHoverStyle = (theme: any, checked: boolean) =>
+    css({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        outline: 'none',
+        border: 'none',
+        background: 'transparent',
+        height: 16,
+        width: 16,
+        marginLeft: 4,
+        marginRight: 4,
+        flex: 'none',
+        cursor: 'pointer',
+        padding: 0,
+        '& svg': {
+            transform: `scaleY(${BOOKMARK_HEIGHT_SCALE})`,
+            color: checked ? theme.revertColor : theme.foreground,
+            fill: checked ? theme.revertColor : 'none',
+            stroke: checked ? 'none' : 'currentColor',
+            strokeWidth: checked ? 0 : 1,
+        },
+        ...(checked
+            ? {
+                  '&:hover svg': {
+                      color: theme.revertHover,
+                      fill: theme.revertHover,
+                      stroke: theme.revertHover,
+                  },
+              }
+            : {
+                  '&:hover svg': {
+                      color: theme.headerButtonHover,
+                      fill: theme.headerButtonHover,
+                      stroke: theme.headerButtonHover,
+                  },
+              }),
+    });
 
 interface HeaderCheckboxProps {
     title: string;
@@ -47,25 +94,19 @@ const HeaderCheckbox: React.FunctionComponent<HeaderCheckboxProps> = ({
     // defaults to rendering in open state:
     const isOpen = open === undefined ? true : open;
 
-    // Determine colors based on checked state and theme
-    const iconColor = checked ? theme.revertColor : theme.foreground;
-    const fill = checked ? iconColor : 'none';
-    const strokeWidth = checked ? 0 : 1;
-
     return (
-        <button
-            className={cx(bookmarkButtonStyle, !checked && extraUncheckedStyle)}
-            title={title}
-            onClick={onClick}
-            type="button"
-        >
-            <Bookmark
-                size={14}
-                color={iconColor}
-                fill={fill}
-                strokeWidth={strokeWidth}
-            />
-        </button>
+        <TooltipWrapper tip={title}>
+            <button
+                className={cx(
+                    bookmarkButtonWithHoverStyle(theme, checked),
+                    !checked && extraUncheckedStyle,
+                )}
+                onClick={onClick}
+                type="button"
+            >
+                <Bookmark size={14} />
+            </button>
+        </TooltipWrapper>
     );
 };
 
