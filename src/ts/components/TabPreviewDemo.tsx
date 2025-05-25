@@ -3,8 +3,8 @@
  * 
  * Features implemented:
  * 
- * 1. Properly sized chevron button (20x20px) appears to the left of FavIcon when hovering on TabItem
- * 2. Clicking the icon toggles between expanded/collapsed states
+ * 1. ExpanderButton component appears to the left of FavIcon when hovering on TabItem
+ * 2. Clicking the button toggles between expanded/collapsed states  
  * 3. TabPreview component shows below the TabItem when expanded
  * 4. Smooth animation for expand/collapse transition (0.25s cubic-bezier)
  * 5. Compact spacing - no extra space between items when collapsed
@@ -16,7 +16,7 @@
  *    - Last access time (formatted as "2m ago", "5h ago", etc.)
  * 
  * UI Improvements:
- * - Button size matches other icon buttons (bookmark, close)
+ * - Uses same ExpanderButton as WindowHeader for visual consistency
  * - No extra spacing when preview is collapsed
  * - Font sizes increased for better readability:
  *   - Main font: 0.85rem
@@ -24,25 +24,28 @@
  *   - Meta info: 0.75rem
  * - Padding and margins only applied when expanded
  * 
- * Mock API provides sample data for common domains:
- * - github.com, stackoverflow.com, youtube.com, reddit.com, twitter.com, etc.
- * - Falls back to placeholder for unknown domains
- * - Simulates API delay (300-800ms) for realistic UX
+ * Backend Integration:
+ * - Real OpenGraph backend (og-backend/) fetches metadata
+ * - Dual-layer caching (server + client) for performance
+ * - Graceful fallbacks when backend unavailable
+ * - Development server on localhost:3001
  * 
  * Usage:
  * The feature is automatically available in all TabItemUI components.
- * When hovering over a tab item, you'll see a chevron button appear
+ * When hovering over a tab item, you'll see an expand/collapse button appear
  * between the bookmark icon and the favicon. Click it to expand/collapse
  * the preview.
  * 
  * Implementation files:
  * - TabPreview.tsx: The compact preview component
- * - mockPreviewAPI.ts: Mock API with sample data
+ * - ogClient.ts: OpenGraph client with caching
+ * - og-backend/: Express.js backend server
  * - TabItemUI.tsx: Modified to include expand/collapse functionality
  * 
- * To replace with real API:
- * Replace the fetchPreviewData function in mockPreviewAPI.ts with your
- * actual OpenGraph API implementation.
+ * Development setup:
+ * 1. Start backend: cd og-backend && ./start-dev.sh
+ * 2. Build extension: npm run build-dev
+ * 3. Load extension and enjoy real previews!
  */
 
 export default null; // This is just documentation

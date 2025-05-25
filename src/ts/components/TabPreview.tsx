@@ -2,7 +2,7 @@ import * as React from 'react';
 import { css } from '@emotion/css';
 import { ThemeContext } from './themeContext';
 import { useContext, useState, useEffect } from 'react';
-import { fetchPreviewData, PreviewData } from '../mockPreviewAPI';
+import ogClient, { OpenGraphData } from '../ogClient';
 
 interface TabPreviewProps {
     url: string;
@@ -94,7 +94,7 @@ export const TabPreview: React.FC<TabPreviewProps> = ({
     isVisible,
 }) => {
     const theme = useContext(ThemeContext);
-    const [previewData, setPreviewData] = useState<PreviewData | null>(null);
+    const [previewData, setPreviewData] = useState<OpenGraphData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -103,7 +103,7 @@ export const TabPreview: React.FC<TabPreviewProps> = ({
             setLoading(true);
             setError(null);
             
-            fetchPreviewData(url)
+            ogClient.fetchOpenGraphData(url)
                 .then(data => {
                     setPreviewData(data);
                     setLoading(false);

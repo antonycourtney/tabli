@@ -27,7 +27,7 @@ import { LayoutContext } from './LayoutContext';
 import { Tooltip } from '@radix-ui/react-tooltip';
 import { TabTooltip } from './ui/TabTooltip';
 import { TabPreview } from './TabPreview';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import ExpanderButton from './ExpanderButton';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -40,32 +40,6 @@ const tabItemHoverVisible = css`
 `;
 
 const audibleIconStyle = cx(styles.headerButton, styles.audibleIcon);
-
-// Style for the preview expand/collapse button - match size of other icon buttons
-const previewButtonStyle = (theme: any) =>
-    css({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '32px', // Increased to match other icon buttons
-        height: '32px', // Increased to match other icon buttons
-        borderRadius: '3px', // Changed from circle to match other buttons
-        border: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        marginRight: '2px',
-
-        '&:hover': {
-            backgroundColor: theme.tabItemHover,
-        },
-
-        '& svg': {
-            width: '32px', // Increased from 10px   // has no effect!
-            height: '32px', // Increased from 10px
-            color: theme.foreground,
-        },
-    });
 
 const getDragContainerStyle = (
     isDragging: boolean,
@@ -106,10 +80,8 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     // State for preview expand/collapse
     const [isPreviewExpanded, setIsPreviewExpanded] = useState<boolean>(false);
 
-    const handlePreviewToggle = (event: React.MouseEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsPreviewExpanded(!isPreviewExpanded);
+    const handlePreviewToggle = (expanded: boolean) => {
+        setIsPreviewExpanded(expanded);
     };
 
     const handleClick = async (event: React.MouseEvent) => {
@@ -219,14 +191,12 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     // Create preview expand/collapse button (only visible on hover)
     const previewButton = (
-        <button
-            className={cx(previewButtonStyle(theme), tabItemHoverVisible)}
-            onClick={handlePreviewToggle}
-            title={isPreviewExpanded ? 'Collapse preview' : 'Expand preview'}
-            type="button"
-        >
-            {isPreviewExpanded ? <ChevronUp /> : <ChevronDown />}
-        </button>
+        <div className={tabItemHoverVisible}>
+            <ExpanderButton 
+                expanded={isPreviewExpanded}
+                onClick={handlePreviewToggle}
+            />
+        </div>
     );
 
     const tabActiveTextStyle =
