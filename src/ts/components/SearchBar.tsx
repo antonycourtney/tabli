@@ -241,7 +241,9 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
                 className={styles.toolbarButton(theme)}
                 onClick={handlePopoutClick}
             >
-                <div className={cx(styles.toolbarButtonSVGIconContainer(theme))}>
+                <div
+                    className={cx(styles.toolbarButtonSVGIconContainer(theme))}
+                >
                     {popSVG}
                 </div>
             </button>
@@ -274,19 +276,18 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
                 <Centered>
                     <GrowRight>
                         <MenuButton stateRef={stateRef} />
-                        <TooltipWrapper tip="Search Page Titles and URLs">
-                            <input
-                                className={searchInputClass}
-                                type="search"
-                                tabIndex={1}
-                                ref={searchInputRef}
-                                id="searchBox"
-                                data-testid="searchBox"
-                                placeholder="Search..."
-                                onChange={handleChange}
-                                onKeyDown={handleKeyDown}
-                            />
-                        </TooltipWrapper>
+                        <input
+                            className={searchInputClass}
+                            type="search"
+                            tabIndex={1}
+                            ref={searchInputRef}
+                            id="searchBox"
+                            data-testid="searchBox"
+                            placeholder="Search..."
+                            title="Search Page Titles and URLs"
+                            onChange={handleChange}
+                            onKeyDown={handleKeyDown}
+                        />
                     </GrowRight>
                 </Centered>
                 {devLabel}
