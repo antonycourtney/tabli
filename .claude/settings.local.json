@@ -4,7 +4,8 @@
       "Bash(rg:*)",
       "Bash(npm run build-dev:*)",
       "Bash(npm test)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

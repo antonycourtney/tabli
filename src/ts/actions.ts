@@ -15,6 +15,7 @@ import {
 import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
 import { getTabIndices, getOpenTabIndex, getSavedTabIndex } from './utils';
+import { saveSnapshot } from './savedState';
 const chromep = ChromePromise;
 
 type TabId = number;
@@ -927,9 +928,16 @@ export const savePreferences = async (
     let saveObj: any = {};
     saveObj[prefs.USER_PREFS_KEY] = userPrefs.serialize();
     await chromep.storage.local.set(saveObj);
-    log.debug('wrote preferences to local storage: ', saveObj);
-    // and update application state:
-    return awaitableUpdate_(storeRef, (st) => st.set('preferences', userPrefs));
+    log.debug('wrote preferences to local storage: ', userPrefs, saveObj);
+
+    // update application state:
+    const st = await awaitableUpdate_(storeRef, (st) =>
+        st.set('preferences', userPrefs),
+    );
+
+    // and update saved state snapshot:
+    saveSnapshot(storeRef);
+    return st;
 };
 
 export const updatePreferences = async (

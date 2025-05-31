@@ -22,6 +22,7 @@ export interface PreferencesProps {
     layout: string;
     fontScaleFactor: number;
     sortOrder: 'alpha' | 'recent';
+    enableTabPreviews: boolean;
 }
 
 const defaultPreferencesProps: PreferencesProps = {
@@ -32,6 +33,7 @@ const defaultPreferencesProps: PreferencesProps = {
     layout: 'normal',
     fontScaleFactor: 0.75,
     sortOrder: 'recent',
+    enableTabPreviews: false,
 };
 
 export class Preferences {
@@ -44,6 +46,7 @@ export class Preferences {
     layout: string;
     fontScaleFactor: number;
     sortOrder: 'alpha' | 'recent';
+    enableTabPreviews: boolean;
 
     private constructor() {
         this.popoutOnStart = defaultPreferencesProps.popoutOnStart;
@@ -53,6 +56,7 @@ export class Preferences {
         this.layout = defaultPreferencesProps.layout;
         this.fontScaleFactor = defaultPreferencesProps.fontScaleFactor;
         this.sortOrder = defaultPreferencesProps.sortOrder;
+        this.enableTabPreviews = defaultPreferencesProps.enableTabPreviews;
     }
 
     static create(props: Partial<PreferencesProps> = {}): Preferences {

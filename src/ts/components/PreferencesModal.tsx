@@ -16,23 +16,25 @@ import {
 
 const SELECT_WIDTH = 120;
 
-const themeSelectStyle = (color: string) => css({
-    width: SELECT_WIDTH,
-    marginLeft: 5,
-    color: color,
-    border: '1px solid ' + color,
-    borderRadius: '3px',
-    background: 'transparent',
-});
+const themeSelectStyle = (color: string) =>
+    css({
+        width: SELECT_WIDTH,
+        marginLeft: 5,
+        color: color,
+        border: '1px solid ' + color,
+        borderRadius: '3px',
+        background: 'transparent',
+    });
 
-const fontSizeSelectStyle = (color: string) => css({
-    width: SELECT_WIDTH,
-    marginLeft: 5,
-    color: color,
-    border: '1px solid ' + color,
-    borderRadius: '3px',
-    background: 'transparent',
-});
+const fontSizeSelectStyle = (color: string) =>
+    css({
+        width: SELECT_WIDTH,
+        marginLeft: 5,
+        color: color,
+        border: '1px solid ' + color,
+        borderRadius: '3px',
+        background: 'transparent',
+    });
 
 const selectLabelStyle = css({
     marginTop: 0,
@@ -135,9 +137,17 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         );
         updatePrefs({ fontScaleFactor: nextScaleFactor });
     };
-    
+
     const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         updatePrefs({ sortOrder: e.target.value as 'alpha' | 'recent' });
+    };
+
+    const handleTabPreviewsChange = async (
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const enableTabPreviews = !prefs.enableTabPreviews;
+
+        updatePrefs({ enableTabPreviews });
     };
 
     const themeNames = Object.keys(themes);
@@ -190,10 +200,14 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             {fontSizeOpts}
         </select>
     );
-    
+
     const sortOrderOpts = [
-        <option key="alpha" value="alpha">Alphabetical</option>,
-        <option key="recent" value="recent">Recent</option>
+        <option key="alpha" value="alpha">
+            Alphabetical
+        </option>,
+        <option key="recent" value="recent">
+            Recent
+        </option>,
     ];
     const sortOrderSelect = (
         <select
@@ -268,6 +282,23 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                                 <label className={checkLabelStyle}>
                                     Only re-open saved tabs when re-opening
                                     saved windows
+                                </label>
+                            </div>
+                            <div
+                                className={cx(
+                                    'checkbox',
+                                    rightCol,
+                                    prefsLabeledCheckbox,
+                                )}
+                            >
+                                <input
+                                    type="checkbox"
+                                    className={prefsCheckbox}
+                                    checked={prefs.enableTabPreviews}
+                                    onChange={handleTabPreviewsChange}
+                                />
+                                <label className={checkLabelStyle}>
+                                    Enable Tab Previews
                                 </label>
                             </div>
                             <div />

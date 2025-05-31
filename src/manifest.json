@@ -12,6 +12,7 @@
         "service_worker": "js/service-worker.js"
     },
     "permissions": ["storage", "tabs", "bookmarks", "favicon"],
+    "optional_permissions": ["activeTab", "scripting", "tabCapture"],
     "icons": {
         "16": "images/glyphicons_154_more_windows.png",
         "48": "images/Multimedia-12-48.png",

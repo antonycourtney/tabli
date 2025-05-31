@@ -315,10 +315,14 @@ async function handleSavePreferences(
         preferencesStr: string;
     },
 ) {
-    log.debug('actionsServer: handleSavePreferences: ', args);
     const { preferencesStr } = args;
 
     const preferences = Preferences.deserialize(preferencesStr);
+
+    log.debug(
+        'actionsServer: handleSavePreferences: preferences: ',
+        preferences,
+    );
 
     return actions.savePreferences(preferences, stateRef);
 }
