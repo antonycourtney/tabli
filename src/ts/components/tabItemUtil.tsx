@@ -70,13 +70,21 @@ export const mkFavIcon = (tab: TabItem): JSX.Element => {
 
         // 3Jul24: New URL format for Manifest V3:
         // fiSrc = 'chrome://favicon/size/16/' + utils.baseURL(tab.url);
-        const extensionId = chrome.runtime.id;
-        const tabUrl = utils.baseURL(tab.url);
-        if (tabUrl.length === 0) {
-            log.debug('mkFavIcon: empty baseURL for tab Url: ', tab.url);
-            fiSrc = '';
+
+        // 1Aug25: tab.favIconUrl for a Chrome tab now seems to work
+        // in extensions and work well, so let's try and use that:
+        const favIconUrl = tab.open ? tab.openState!.favIconUrl : null;
+        if (favIconUrl) {
+            fiSrc = favIconUrl;
         } else {
-            fiSrc = `chrome-extension://${extensionId}/_favicon/?pageUrl=${tabUrl}&size=16`;
+            const extensionId = chrome.runtime.id;
+            const tabUrl = utils.baseURL(tab.url);
+            if (tabUrl.length === 0) {
+                log.debug('mkFavIcon: empty baseURL for tab Url: ', tab.url);
+                fiSrc = '';
+            } else {
+                fiSrc = `chrome-extension://${extensionId}/_favicon/?pageUrl=${tabUrl}&size=16`;
+            }
         }
     }
 
