@@ -26,6 +26,7 @@ import * as svg from './svg';
 import { LayoutContext } from './LayoutContext';
 import { Tooltip } from '@radix-ui/react-tooltip';
 import { TabTooltip } from './ui/TabTooltip';
+import { last } from 'lodash';
 
 // Note explicit global css class name tabItemHoverContainer
 // Due to limitation of nested class selectors with composition;
@@ -140,6 +141,12 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
             ? tab.openState!.lastActive
             : null;
 
+    const lastActiveContent = lastActive
+        ? `\nLast Active: ${new Date(lastActive).toLocaleString()}`
+        : '';
+
+    const tooltipContent = tabTitle + '\n' + tab.url + lastActiveContent;
+
     // span style depending on whether open or closed window
     let tabOpenStateStyle: string | null = null;
 
@@ -252,6 +259,35 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const draggableId = tab.key;
 
+    // fancy tooltips aren't ready for prime time -- too slow to dismiss
+    const fancyTooltips = false;
+
+    // Note that we only set title (old school native tooltip) if fancyTooltips is false.
+    const titleLink = (
+        <a
+            title={fancyTooltips ? undefined : tooltipContent}
+            href={tab.url}
+            className={tabTitleStyle}
+            onClick={handleClick}
+        >
+            {tabTitle}
+        </a>
+    );
+
+    const titleElement = fancyTooltips ? (
+        <TabTooltip
+            title={tabTitle}
+            url={tab.url}
+            lastActive={lastActive}
+            side="bottom"
+            align="center"
+        >
+            {titleLink}
+        </TabTooltip>
+    ) : (
+        titleLink
+    );
+
     return (
         <Draggable draggableId={draggableId} key={draggableId} index={tabIndex}>
             {(
@@ -283,21 +319,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                                 {tabCheckItem}
                                 {tabFavIcon}
                             </div>
-                            <TabTooltip
-                                title={tabTitle}
-                                url={tab.url}
-                                lastActive={lastActive}
-                                side="bottom"
-                                align="center"
-                            >
-                                <a
-                                    href={tab.url}
-                                    className={tabTitleStyle}
-                                    onClick={handleClick}
-                                >
-                                    {tabTitle}
-                                </a>
-                            </TabTooltip>
+                            {titleElement}
                             <div className={styles.rowItemsFixedWidth}>
                                 {suspendedIcon}
                                 {audibleIcon}
