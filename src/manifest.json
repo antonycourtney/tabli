@@ -11,6 +11,7 @@
     "background": {
         "service_worker": "js/service-worker.js"
     },
+    "host_permissions": ["<all_urls>"],
     "permissions": ["storage", "tabs", "bookmarks", "favicon"],
     "optional_permissions": ["activeTab", "scripting", "tabCapture"],
     "icons": {

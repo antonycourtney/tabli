@@ -76,6 +76,9 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
     // log.debug('  --TabItemUI: rendering: ', tab.title);
     const theme = useContext(ThemeContext);
     const layout = useContext(LayoutContext);
+    
+    // Get current app state for preferences
+    const currentState = mutableGet(stateRef);
 
     // State for preview expand/collapse
     const [isPreviewExpanded, setIsPreviewExpanded] = useState<boolean>(false);
@@ -189,13 +192,14 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
 
     const tabFavIcon = tabItemUtil.mkFavIcon(tab);
 
-    // Create preview expand/collapse button (only visible on hover)
-    // N.B.: Was in a div with className={tabItemHoverVisible} but that was too hidden/undiscoverable
-    const previewButton = (
+    // Create preview expand/collapse button (only visible when enableTabPreviews is set)
+    const previewButton = currentState.preferences.enableTabPreviews ? (
         <ExpanderButton
             expanded={isPreviewExpanded}
             onClick={handlePreviewToggle}
         />
+    ) : (
+        <div className={styles.headerButton} />
     );
 
     const tabActiveTextStyle =
@@ -339,6 +343,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
                             title={tabTitle}
                             lastActive={lastActive}
                             isVisible={isPreviewExpanded}
+                            enableTabPreviews={currentState.preferences.enableTabPreviews}
                         />
                     </div>
                 );

@@ -2,13 +2,14 @@ import * as React from 'react';
 import { css } from '@emotion/css';
 import { ThemeContext } from './themeContext';
 import { useContext, useState, useEffect } from 'react';
-import ogClient, { OpenGraphData } from '../ogClient';
+import { getOpenGraphClient, OpenGraphData } from '../ogClient';
 
 interface TabPreviewProps {
     url: string;
     title: string;
     lastActive?: number | null;
     isVisible: boolean;
+    enableTabPreviews: boolean;
 }
 
 const previewContainerStyle = (theme: any, isVisible: boolean) => css({
@@ -92,6 +93,7 @@ export const TabPreview: React.FC<TabPreviewProps> = ({
     title,
     lastActive,
     isVisible,
+    enableTabPreviews,
 }) => {
     const theme = useContext(ThemeContext);
     const [previewData, setPreviewData] = useState<OpenGraphData | null>(null);
@@ -103,6 +105,7 @@ export const TabPreview: React.FC<TabPreviewProps> = ({
             setLoading(true);
             setError(null);
             
+            const ogClient = getOpenGraphClient(enableTabPreviews);
             ogClient.fetchOpenGraphData(url)
                 .then(data => {
                     setPreviewData(data);
@@ -113,7 +116,7 @@ export const TabPreview: React.FC<TabPreviewProps> = ({
                     setLoading(false);
                 });
         }
-    }, [isVisible, url, previewData, loading]);
+    }, [isVisible, url, previewData, loading, enableTabPreviews]);
 
     // Format last active time
     const formatLastActive = (timestamp: number | null | undefined): string => {
