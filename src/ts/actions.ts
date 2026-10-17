@@ -15,6 +15,7 @@ import {
 import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
 import { getTabIndices, getOpenTabIndex, getSavedTabIndex } from './utils';
+import { createWindowSafe } from './windowBounds';
 const chromep = ChromePromise;
 
 type TabId = number;
@@ -205,12 +206,25 @@ const restoreFromAppState = (
                 width: Constants.BROWSER_DEFAULT_WIDTH,
                 height: Constants.BROWSER_DEFAULT_HEIGHT,
             };
-            if (lastFocusedTabWindow) {
+            // width / height can be 0 if never captured; keep defaults then
+            if (
+                lastFocusedTabWindow &&
+                lastFocusedTabWindow.width > 0 &&
+                lastFocusedTabWindow.height > 0
+            ) {
                 createData.width = lastFocusedTabWindow.width;
                 createData.height = lastFocusedTabWindow.height;
             }
             log.debug('restoreFromAppState: creating windows: ', createData);
-            chrome.windows.create(createData, attachWindow);
+            createWindowSafe(createData)
+                .then(attachWindow)
+                .catch((e) => {
+                    log.error(
+                        'restoreFromAppState: chrome.windows.create failed: ',
+                        e,
+                        { createData },
+                    );
+                });
         }
     });
 };
@@ -606,7 +620,7 @@ export const showPopout = async (stateRef: StateRef<TabManagerState>) => {
         height: oldState ? oldState.height : Constants.POPOUT_DEFAULT_HEIGHT,
     };
 
-    const newPopoutWindow = await chromep.windows.create(createData);
+    const newPopoutWindow = await createWindowSafe(createData);
 
     if (newPopoutWindow.id) {
         update(stateRef, (st) => st.set('popoutWindowId', newPopoutWindow.id!));

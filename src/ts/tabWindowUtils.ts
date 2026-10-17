@@ -171,18 +171,34 @@ export function makeFolderTabWindow(
     });
 }
 
+/**
+ * Size of a Chrome window worth remembering for re-use, or null if the
+ * window isn't in the 'normal' state (minimized / maximized / fullscreen
+ * windows report sizes that are misleading to replay) or has no size.
+ */
+export function rememberableSize(
+    chromeWindow: chrome.windows.Window,
+): { width: number; height: number } | null {
+    const { state, width, height } = chromeWindow;
+    if (state !== 'normal' || !width || !height) {
+        return null;
+    }
+    return { width, height };
+}
+
 export function makeChromeTabWindow(
     chromeWindow: chrome.windows.Window,
 ): TabWindow {
     const tabItems = (chromeWindow.tabs || []).map((tab: chrome.tabs.Tab) =>
         makeOpenTabItem(tab),
     );
+    const size = rememberableSize(chromeWindow);
     return TabWindow.create({
         open: true,
         openWindowId: chromeWindow.id!,
         windowType: chromeWindow.type || '',
-        width: chromeWindow.width || 0,
-        height: chromeWindow.height || 0,
+        width: size ? size.width : 0,
+        height: size ? size.height : 0,
         tabItems: tabItems.sort(tabItemCompare),
     });
 }
@@ -335,10 +351,13 @@ export function updateWindow(
         tabWindow.tabItems,
         chromeWindow.tabs || [],
     );
+    // Only overwrite remembered size with a trustworthy one:
+    const size = rememberableSize(chromeWindow);
     return TabWindow.update(tabWindow, {
         windowType: chromeWindow.type || '',
         open: true,
         openWindowId: chromeWindow.id!,
+        ...(size ?? {}),
         snapshot: false,
         chromeSessionId: null,
         tabItems: mergedTabItems,

@@ -94,7 +94,7 @@ exports[`attachChromeWindow 2`] = `
 {
   "chromeSessionId": null,
   "expanded": null,
-  "height": 0,
+  "height": 768,
   "open": true,
   "openWindowId": 19,
   "saved": true,
@@ -247,7 +247,7 @@ exports[`attachChromeWindow 2`] = `
       },
     },
   ],
-  "width": 0,
+  "width": 1024,
   "windowType": "normal",
 }
 `;
