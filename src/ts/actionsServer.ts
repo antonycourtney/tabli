@@ -307,6 +307,127 @@ async function handleSetWindowTitle(
     return actions.setWindowTitle(title, tabWindow, stateRef);
 }
 
+async function handleCloseTab(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        tabId: number;
+    },
+) {
+    log.debug('actionsServer: handleCloseTab: ', args);
+    const { tabId } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug('actionsServer: handleCloseTab: tabWindow not found: ', args);
+        return;
+    }
+
+    return actions.closeTab(tabWindow, tabId, stateRef);
+}
+
+async function handleTabSetMute(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        open: boolean;
+        openWindowId: number;
+        savedFolderId: string;
+        tabId: number;
+        muted: boolean;
+    },
+) {
+    log.debug('actionsServer: handleTabSetMute: ', args);
+    const { tabId, muted } = args;
+
+    const tabWindow = findTabWindow(stateRef, args);
+
+    if (tabWindow == null) {
+        log.debug(
+            'actionsServer: handleTabSetMute: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+
+    return actions.tabSetMute(tabWindow, tabId, muted, stateRef);
+}
+
+type WindowArgs = {
+    open: boolean;
+    openWindowId: number;
+    savedFolderId: string;
+};
+
+async function handleMoveTabItem(
+    stateRef: StateRef<TabManagerState>,
+    args: {
+        source: WindowArgs;
+        target: WindowArgs;
+        sourceIndex: number;
+        dropIndex: number;
+        tabItemId: TabItemId;
+    },
+) {
+    log.debug('actionsServer: handleMoveTabItem: ', args);
+    const { source, target, sourceIndex, dropIndex, tabItemId } = args;
+
+    const sourceTabWindow = findTabWindow(stateRef, source);
+    const targetTabWindow = findTabWindow(stateRef, target);
+
+    if (sourceTabWindow == null || targetTabWindow == null) {
+        log.debug(
+            'actionsServer: handleMoveTabItem: tabWindow not found: ',
+            args,
+        );
+        return;
+    }
+    const entry = sourceTabWindow.findTabByTabItemId(tabItemId);
+    if (entry == null) {
+        log.debug('actionsServer: handleMoveTabItem: tab not found: ', args);
+        return;
+    }
+    const [_index, tab] = entry;
+
+    return actions.moveTabItem(
+        sourceTabWindow,
+        targetTabWindow,
+        sourceIndex,
+        dropIndex,
+        tab,
+        stateRef,
+    );
+}
+
+async function handleToggleExpandAll(
+    stateRef: StateRef<TabManagerState>,
+    args: {},
+) {
+    log.debug('actionsServer: handleToggleExpandAll: ', args);
+
+    return actions.toggleExpandAll(stateRef);
+}
+
+async function handleTidyWindows(
+    stateRef: StateRef<TabManagerState>,
+    args: {},
+) {
+    log.debug('actionsServer: handleTidyWindows: ', args);
+
+    return actions.tidyWindows(stateRef);
+}
+
+async function handleUntidyWindows(
+    stateRef: StateRef<TabManagerState>,
+    args: {},
+) {
+    log.debug('actionsServer: handleUntidyWindows: ', args);
+
+    return actions.untidyWindows(stateRef);
+}
+
 type ActionHandler = (stateRef: StateRef<TabManagerState>, args: any) => void;
 
 async function handleSavePreferences(
@@ -350,6 +471,12 @@ const actionHandlers: { [key: string]: ActionHandler } = {
     hideRelNotes: handleHideRelNotes,
     savePreferences: handleSavePreferences,
     updatePreferences: handleUpdatePreferences,
+    closeTab: handleCloseTab,
+    tabSetMute: handleTabSetMute,
+    moveTabItem: handleMoveTabItem,
+    toggleExpandAll: handleToggleExpandAll,
+    tidyWindows: handleTidyWindows,
+    untidyWindows: handleUntidyWindows,
 };
 
 function handleMessage(

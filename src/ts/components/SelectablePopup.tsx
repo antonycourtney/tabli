@@ -4,7 +4,7 @@ import * as styles from './cssStyles';
 import { cx, css } from '@emotion/css';
 import * as Constants from './constants';
 
-import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import SearchBar from './SearchBar';
 import TabWindowList from './TabWindowList';
 import { ThemeContext, Theme } from './themeContext';
@@ -393,7 +393,10 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (selectedTabIndex === -1) {
             if (currentWindow) {
                 // no specific tab, but still active / open window
-                await actions.openWindow(selectedWindow.tabWindow, stateRef);
+                await actionsClient.openWindow(
+                    selectedWindow.tabWindow,
+                    stateRef,
+                );
             }
         } else {
             const selectedTabItem = selectedTab(
@@ -401,7 +404,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 searchStr,
                 selectedTabIndex,
             );
-            await actions.activateOrRestoreTab(
+            await actionsClient.activateOrRestoreTab(
                 selectedWindow.tabWindow,
                 selectedTabItem,
                 selectedTabIndex,
@@ -425,7 +428,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         // technically the logical negation here isn't right, but it'll do.
         const expanded = tabWindow.isExpanded(expandAll);
 
-        actions.expandWindow(tabWindow, !expanded, stateRef);
+        actionsClient.expandWindow(tabWindow, !expanded, stateRef);
     };
 
     const handleSearchExit = () => {
@@ -434,7 +437,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (!curWindow) {
             return;
         }
-        actions.openWindow(curWindow, stateRef);
+        actionsClient.openWindow(curWindow, stateRef);
     };
 
     const handleItemSelected = useCallback(() => {
@@ -471,7 +474,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         if (!mbSourceTab) return;
         const [_, sourceTab] = mbSourceTab;
         log.debug('onDragEnd: sourceTab: ', sourceTab.title);
-        actions.moveTabItem(
+        actionsClient.moveTabItem(
             sourceWindow,
             dstWindow,
             source.index,

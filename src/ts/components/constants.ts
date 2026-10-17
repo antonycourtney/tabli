@@ -15,6 +15,8 @@ export const POPOUT_DEFAULT_WIDTH = 450;
 export const POPOUT_DEFAULT_HEIGHT = 750;
 export const BROWSER_DEFAULT_WIDTH = 1024;
 export const BROWSER_DEFAULT_HEIGHT = 768;
+// offset from the last focused window's position when opening a new window:
+export const NEW_WINDOW_OFFSET = 20;
 
 export const KEY_F1 = 112;
 export const KEY_UP = 38;

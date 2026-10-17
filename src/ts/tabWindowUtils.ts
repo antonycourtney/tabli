@@ -186,6 +186,29 @@ export function rememberableSize(
     return { width, height };
 }
 
+export type WindowBounds = {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+};
+
+/**
+ * Bounds of a Chrome window worth using as the starting point for new windows,
+ * or null unless it's an ordinary browser window ('normal' type, so not the
+ * Tabli popout or devtools) in the 'normal' state.
+ */
+export function rememberableBounds(
+    chromeWindow: chrome.windows.Window,
+): WindowBounds | null {
+    const { type, left, top } = chromeWindow;
+    const size = rememberableSize(chromeWindow);
+    if (type !== 'normal' || left === undefined || top === undefined || !size) {
+        return null;
+    }
+    return { left, top, ...size };
+}
+
 export function makeChromeTabWindow(
     chromeWindow: chrome.windows.Window,
 ): TabWindow {

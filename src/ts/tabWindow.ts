@@ -109,8 +109,20 @@ export interface TabItemId {
     bookmarkId?: string;
 }
 
+const TAB_ITEM_KEY_PREFIX = '_tabItem-';
 let tabItemKeyCounter = 500;
-const genTabItemKey = () => '_tabItem-' + tabItemKeyCounter++;
+const genTabItemKey = () => TAB_ITEM_KEY_PREFIX + tabItemKeyCounter++;
+
+// Keys restored from a snapshot (e.g. after a service worker restart) came from
+// an earlier counter; advance past them so newly generated keys can't collide.
+const noteTabItemKey = (key: string) => {
+    if (key.startsWith(TAB_ITEM_KEY_PREFIX)) {
+        const n = Number(key.slice(TAB_ITEM_KEY_PREFIX.length));
+        if (Number.isInteger(n) && n >= tabItemKeyCounter) {
+            tabItemKeyCounter = n + 1;
+        }
+    }
+};
 
 export class TabItem {
     [immerable] = true;
@@ -138,6 +150,8 @@ export class TabItem {
                     props,
                 );
                 */
+            } else {
+                noteTabItemKey(draft.key);
             }
             if (props.savedState) {
                 draft.savedState = SavedTabState.create(props.savedState);

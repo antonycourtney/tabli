@@ -2,6 +2,7 @@ import { log } from '../globals'; // eslint-disable-line no-unused-vars
 import * as React from 'react';
 import * as Constants from './constants';
 import * as actions from '../actions';
+import * as actionsClient from '../actionsClient';
 import * as styles from './cssStyles';
 import { ThemeContext } from './themeContext';
 import { css, cx } from '@emotion/css';
@@ -227,7 +228,7 @@ const SearchBar: React.FunctionComponent<SearchBarProps> = ({
     };
 
     const handleExpandToggleClick = () => {
-        actions.toggleExpandAll(stateRef);
+        actionsClient.toggleExpandAll(stateRef);
     };
 
     const popSVG = isPopout ? svg.popin : svg.popout;

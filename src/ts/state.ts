@@ -35,8 +35,6 @@ const chromeEventLog = getLogger('chrome-events');
 utils.setLogLevel(chromeEventLog);
 const tabliFolderTitle = 'Tabli Saved Windows';
 const archiveFolderTitle = '_Archive';
-let tabliFolderId: string | null = null;
-let archiveFolderId: string | null = null;
 
 const isValidWindowFolder = (
     bookmarkNode: chrome.bookmarks.BookmarkTreeNode,
@@ -156,13 +154,13 @@ const initWinStore = async () => {
         tabliFolderTitle,
     ); // log.debug('tab manager folder acquired.')
 
-    tabliFolderId = tabliFolder.id;
+    const tabliFolderId = tabliFolder.id;
     const archiveFolder = await ensureChildFolder(
         tabliFolder,
         archiveFolderTitle,
     ); // log.debug('archive folder acquired.')
 
-    archiveFolderId = archiveFolder.id;
+    const archiveFolderId = archiveFolder.id;
     const subTreeNodes = await chromep.bookmarks.getSubTree(tabliFolder.id); // log.debug("bookmarks.getSubTree for tabliFolder: ", subTreeNodes)
 
     const baseWinStore = TabManagerState.create({
@@ -464,7 +462,7 @@ const onBookmarkCreated = (
         } else {
             // folder (window) bookmark
             // Is this a Tabli window folder (parent is Tabli folder?)
-            if (bookmark.parentId === tabliFolderId) {
+            if (bookmark.parentId === state.folderId) {
                 const tabWindow = state.getSavedWindowByBookmarkId(bookmark.id);
 
                 if (!tabWindow) {
@@ -523,7 +521,7 @@ const handleBookmarkUpdate = (
         } else {
             // folder (window) bookmark
             // Is this a Tabli window folder (parent is Tabli folder?)
-            if (parentId === tabliFolderId) {
+            if (parentId === state.folderId) {
                 const tabWindow = state.getSavedWindowByBookmarkId(bookmark.id);
 
                 if (tabWindow) {
@@ -588,10 +586,11 @@ const onBookmarkMoved = (
     moveInfo: chrome.bookmarks.BookmarkMoveInfo,
 ) => {
     chromeEventLog.debug('Chrome Event: bookmarks.onMoved: ', id, moveInfo);
+    const st = mutableGet(stateRef);
 
     if (
-        moveInfo.oldParentId === tabliFolderId &&
-        moveInfo.parentId === archiveFolderId
+        moveInfo.oldParentId === st.folderId &&
+        moveInfo.parentId === st.archiveFolderId
     ) {
         // looks like window was unmanaged:
         update(stateRef, (state) => {
@@ -693,6 +692,23 @@ async function onStorageChanged(
     */
 }
 
+/*
+ * Fetch current bounds of a newly focused window (our stored size may be stale)
+ * and remember them as the starting point for new windows.
+ */
+async function recordLastNormalBounds(
+    stateRef: StateRef<TabManagerState>,
+    windowId: number,
+) {
+    try {
+        const chromeWindow = await chromep.windows.get(windowId);
+        update(stateRef, (state) => state.updateLastNormalBounds(chromeWindow));
+    } catch (e) {
+        // window may have closed before we could get it; nothing to record
+        log.debug('recordLastNormalBounds: windows.get failed: ', e);
+    }
+}
+
 function registerEventHandlers(
     stateRef: StateRef<TabManagerState>,
     writer: boolean,
@@ -745,6 +761,18 @@ function registerEventHandlers(
         update(stateRef, (state) => {
             return state.setCurrentWindowId(windowId);
         });
+        recordLastNormalBounds(stateRef, windowId);
+    });
+    chrome.windows.onBoundsChanged.addListener((chromeWindow) => {
+        chromeEventLog.debug(
+            'Chrome Event:: windows.onBoundsChanged: ',
+            chromeWindow,
+        );
+        if (chromeWindow.focused) {
+            update(stateRef, (state) =>
+                state.updateLastNormalBounds(chromeWindow),
+            );
+        }
     });
     /*      
         {
@@ -1080,8 +1108,10 @@ async function loadSavedState(
             );
 
             if (openTabItems.length > 0) {
+                // Drop keys from the previous browser session so they're
+                // regenerated and can't collide with keys made in this one:
                 const convTabItems = openTabItems.map((ti: any) =>
-                    tabWindowUtils.tabItemFromJS(ti),
+                    tabWindowUtils.tabItemFromJS({ ...ti, key: undefined }),
                 );
                 const tiList = convTabItems;
                 savedOpenTabsMap[id] = tiList;
@@ -1208,9 +1238,10 @@ export async function initState(
     if (writer) {
         log.debug('initState: writer mode, setting up saved state listener...');
         savedState.init(stateRef);
+        // Only the service worker handles Chrome events; UI pages are replicas
+        // kept up to date by state patches from the worker.
+        registerEventHandlers(stateRef, writer);
     }
-
-    registerEventHandlers(stateRef, writer);
 
     // (This is something we had in place from Manifest V2 era; doesn't seem
     // to be necessary anymore, but leaving commented out for now, just in case
@@ -1219,7 +1250,9 @@ export async function initState(
     // might be hanging around...
     /* cleanOldPopouts(stateRef); */
 
-    savedState.saveSnapshot(stateRef);
+    if (writer) {
+        savedState.saveSnapshot(stateRef);
+    }
 
     return stateRef;
 }

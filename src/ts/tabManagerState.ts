@@ -4,6 +4,8 @@ import * as tabWindowUtils from './tabWindowUtils';
 import { TabWindow, TabItem } from './tabWindow';
 import * as utils from './utils';
 import { log } from './globals';
+import isEqual from 'lodash/isEqual';
+const _ = { isEqual };
 
 export interface TabManagerStateProps {
     windowIdMap: { [id: number]: TabWindow };
@@ -15,6 +17,7 @@ export interface TabManagerStateProps {
     showRelNotes: boolean;
     expandAll: boolean;
     preferences: prefs.Preferences;
+    lastNormalBounds: tabWindowUtils.WindowBounds | null;
 }
 
 const initialState: TabManagerStateProps = {
@@ -27,6 +30,7 @@ const initialState: TabManagerStateProps = {
     showRelNotes: true,
     expandAll: true,
     preferences: prefs.Preferences.create(),
+    lastNormalBounds: null,
 };
 
 export type PatchListner = (patches: Patch[]) => void;
@@ -82,6 +86,8 @@ export default class TabManagerState {
     showRelNotes: boolean;
     expandAll: boolean;
     preferences: prefs.Preferences;
+    // bounds of the most recently focused normal window (kept after it closes):
+    lastNormalBounds: tabWindowUtils.WindowBounds | null;
 
     private constructor() {
         this.windowIdMap = {};
@@ -93,6 +99,7 @@ export default class TabManagerState {
         this.showRelNotes = true;
         this.expandAll = true;
         this.preferences = prefs.Preferences.create();
+        this.lastNormalBounds = null;
     }
 
     static create(props: Partial<TabManagerStateProps> = {}): TabManagerState {
@@ -347,6 +354,20 @@ export default class TabManagerState {
             : this;
     }
 
+    /*
+     * Remember chromeWindow's bounds as the starting point for new windows, if
+     * it's an ordinary browser window in the normal state.
+     */
+    updateLastNormalBounds(
+        chromeWindow: chrome.windows.Window,
+    ): TabManagerState {
+        const bounds = tabWindowUtils.rememberableBounds(chromeWindow);
+        if (bounds === null || _.isEqual(bounds, this.lastNormalBounds)) {
+            return this;
+        }
+        return this.set('lastNormalBounds', bounds);
+    }
+
     getCurrentWindow(): TabWindow | null {
         return this.getTabWindowByChromeId(this.currentWindowId);
     }
@@ -525,6 +546,7 @@ export default class TabManagerState {
             popoutWindowId,
             showRelNotes,
             expandAll,
+            lastNormalBounds,
         } = snapshot;
 
         const st = TabManagerState.create({
@@ -535,6 +557,7 @@ export default class TabManagerState {
             popoutWindowId,
             showRelNotes,
             expandAll,
+            lastNormalBounds: lastNormalBounds ?? null,
         });
 
         const nextSt = openWindows
@@ -568,6 +591,7 @@ export default class TabManagerState {
             showRelNotes: this.showRelNotes,
             expandAll: this.expandAll,
             preferences: this.preferences,
+            lastNormalBounds: this.lastNormalBounds,
         };
     }
 }

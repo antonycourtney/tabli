@@ -15,6 +15,7 @@ import TabManagerState from './tabManagerState';
 import { log } from './globals';
 import { WorkerConnection } from './workerConnection';
 import { Preferences } from './preferences';
+import * as actions from './actions';
 
 type WindowId = number;
 type TMSRef = StateRef<TabManagerState>;
@@ -155,4 +156,76 @@ export async function savePreferences(
 export async function updatePreferences(storeRef: TMSRef, updates: any) {
     log.debug('actionsClient: updatePreferences: ', updates);
     conn.send({ action: 'updatePreferences', args: { updates } });
+}
+
+export async function closeTab(
+    targetTabWindow: TabWindow,
+    tabId: number,
+    storeRef: TMSRef,
+) {
+    const { open, openWindowId, savedFolderId } = targetTabWindow;
+    const args = { open, openWindowId, savedFolderId, tabId };
+    log.debug('actionsClient: closeTab: ', args);
+    conn.send({ action: 'closeTab', args });
+}
+
+export async function tabSetMute(
+    targetTabWindow: TabWindow,
+    tabId: number,
+    muted: boolean,
+    storeRef: TMSRef,
+) {
+    const { open, openWindowId, savedFolderId } = targetTabWindow;
+    const args = { open, openWindowId, savedFolderId, tabId, muted };
+    log.debug('actionsClient: tabSetMute: ', args);
+    conn.send({ action: 'tabSetMute', args });
+}
+
+export async function moveTabItem(
+    sourceTabWindow: TabWindow,
+    targetTabWindow: TabWindow,
+    sourceIndex: number,
+    dropIndex: number,
+    movedTabItem: TabItem,
+    storeRef: TMSRef,
+) {
+    // Update local state right away so the drop animates without flashing;
+    // the worker's state patches will follow once the move is done.
+    actions.optimisticMoveTabItem(
+        sourceTabWindow,
+        targetTabWindow,
+        sourceIndex,
+        dropIndex,
+        movedTabItem,
+        storeRef,
+    );
+    const source = {
+        open: sourceTabWindow.open,
+        openWindowId: sourceTabWindow.openWindowId,
+        savedFolderId: sourceTabWindow.savedFolderId,
+    };
+    const target = {
+        open: targetTabWindow.open,
+        openWindowId: targetTabWindow.openWindowId,
+        savedFolderId: targetTabWindow.savedFolderId,
+    };
+    const tabItemId = movedTabItem.tabItemId;
+    const args = { source, target, sourceIndex, dropIndex, tabItemId };
+    log.debug('actionsClient: moveTabItem: ', args);
+    conn.send({ action: 'moveTabItem', args });
+}
+
+export async function toggleExpandAll(storeRef: TMSRef) {
+    log.debug('actionsClient: toggleExpandAll');
+    conn.send({ action: 'toggleExpandAll', args: {} });
+}
+
+export async function tidyWindows(storeRef: TMSRef) {
+    log.debug('actionsClient: tidyWindows');
+    conn.send({ action: 'tidyWindows', args: {} });
+}
+
+export async function untidyWindows(storeRef: TMSRef) {
+    log.debug('actionsClient: untidyWindows');
+    conn.send({ action: 'untidyWindows', args: {} });
 }

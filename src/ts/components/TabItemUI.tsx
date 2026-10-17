@@ -4,7 +4,6 @@ import * as oneref from 'oneref';
 import * as React from 'react';
 import * as styles from './cssStyles';
 import { cx, css } from '@emotion/css';
-import * as actions from '../actions';
 import * as actionsClient from '../actionsClient';
 import { DragItemTypes } from './constants';
 import { HeaderButton } from './HeaderButton';
@@ -105,7 +104,12 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
         }
         const openState = tab.openState!;
         const mute = !openState.muted;
-        actions.tabSetMute(tabWindow, openState.openTabId, mute, stateRef);
+        actionsClient.tabSetMute(
+            tabWindow,
+            openState.openTabId,
+            mute,
+            stateRef,
+        );
     };
 
     const handleClose = () => {
@@ -116,7 +120,7 @@ const TabItemUI: React.FunctionComponent<TabItemUIProps> = ({
             return;
         }
         var tabId = tab.openState!.openTabId;
-        actions.closeTab(tabWindow, tabId, stateRef);
+        actionsClient.closeTab(tabWindow, tabId, stateRef);
     };
 
     const handleBookmarkTabItem = (event: React.MouseEvent) => {

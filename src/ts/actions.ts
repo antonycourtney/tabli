@@ -16,6 +16,7 @@ import TabManagerState from './tabManagerState';
 import ChromePromise from 'chrome-promise';
 import { getTabIndices, getOpenTabIndex, getSavedTabIndex } from './utils';
 import { createWindowSafe } from './windowBounds';
+import { WindowBounds } from './tabWindowUtils';
 const chromep = ChromePromise;
 
 type TabId = number;
@@ -94,7 +95,9 @@ export const syncCurrent = async (
             populate: true,
         });
         const nextSt = await awaitableUpdate_(storeRef, (st) =>
-            st.setCurrentWindow(currentChromeWindow),
+            st
+                .setCurrentWindow(currentChromeWindow)
+                .updateLastNormalBounds(currentChromeWindow),
         );
         return nextSt;
     } catch (e) {
@@ -110,7 +113,7 @@ export const syncCurrent = async (
  * Fallback for when no session id available or session restore fails
  */
 const restoreFromAppState = (
-    lastFocusedTabWindow: TabWindow | null,
+    lastNormalBounds: WindowBounds | null,
     tabWindow: TabWindow,
     revertOnOpen: boolean,
     mbTab: TabItem | null,
@@ -206,14 +209,15 @@ const restoreFromAppState = (
                 width: Constants.BROWSER_DEFAULT_WIDTH,
                 height: Constants.BROWSER_DEFAULT_HEIGHT,
             };
-            // width / height can be 0 if never captured; keep defaults then
-            if (
-                lastFocusedTabWindow &&
-                lastFocusedTabWindow.width > 0 &&
-                lastFocusedTabWindow.height > 0
-            ) {
-                createData.width = lastFocusedTabWindow.width;
-                createData.height = lastFocusedTabWindow.height;
+            // Start from the most recently focused normal window, offset so the
+            // new window doesn't exactly cover it. (createWindowSafe retries
+            // without bounds if these are no longer on screen.)
+            if (lastNormalBounds) {
+                const { left, top, width, height } = lastNormalBounds;
+                createData.left = left + Constants.NEW_WINDOW_OFFSET;
+                createData.top = top + Constants.NEW_WINDOW_OFFSET;
+                createData.width = width;
+                createData.height = height;
             }
             log.debug('restoreFromAppState: creating windows: ', createData);
             createWindowSafe(createData)
@@ -242,7 +246,7 @@ async function restoreBookmarkWindow(
     log.debug('restoreBookmarkWindow: restoring "' + tabWindow.title + '"');
     const st = mutableGet(storeRef);
     restoreFromAppState(
-        st.getCurrentWindow(),
+        st.lastNormalBounds,
         tabWindow,
         st.preferences.revertOnOpen,
         mbTab,
@@ -739,8 +743,10 @@ const optimisticMoveTab = (
     return nextSt;
 };
 
-// Test of dnd animation by moving tab immediately:
-export const moveTabItem = async (
+// optimistic visual update, essential to get desired
+// DnD drop animation behavior without flashing.
+// Applied in the UI only; the worker performs the move via moveTabItem.
+export const optimisticMoveTabItem = (
     sourceTabWindow: TabWindow,
     targetTabWindow: TabWindow,
     sourceIndex: number,
@@ -748,17 +754,6 @@ export const moveTabItem = async (
     movedTabItem: TabItem,
     storeRef: TMSRef,
 ) => {
-    log.debug(
-        'stubMoveTabItem: targetTabWindow: ',
-        targetTabWindow.toJS(),
-        'dropIndex: ',
-        dropIndex,
-    );
-    log.debug('moveTabItem: movedTabItem: ', movedTabItem.toJS());
-
-    // optimistic visual update, essential to get desired
-    // DnD drop animation behavior without flashing:
-
     update(storeRef, (st: TabManagerState): TabManagerState => {
         let nextSt = st;
         if (sourceTabWindow === targetTabWindow) {
@@ -781,6 +776,25 @@ export const moveTabItem = async (
         }
         return nextSt;
     });
+};
+
+// Perform a tab move (from DnD) in Chrome; state follows from the resync /
+// Chrome events:
+export const moveTabItem = async (
+    sourceTabWindow: TabWindow,
+    targetTabWindow: TabWindow,
+    sourceIndex: number,
+    dropIndex: number,
+    movedTabItem: TabItem,
+    storeRef: TMSRef,
+) => {
+    log.debug(
+        'moveTabItem: targetTabWindow: ',
+        targetTabWindow.toJS(),
+        'dropIndex: ',
+        dropIndex,
+    );
+    log.debug('moveTabItem: movedTabItem: ', movedTabItem.toJS());
 
     const targetIndices = getTabIndices(targetTabWindow);
     log.debug('moveItem target window tab indices: ', targetIndices);

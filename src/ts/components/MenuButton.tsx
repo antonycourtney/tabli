@@ -137,11 +137,11 @@ const MenuButton: React.FunctionComponent<MenuButtonProps> = ({
 
     const handleTidyClick: ClickHandler = (e) => {
         e.preventDefault();
-        actions.tidyWindows(stateRef);
+        actionsClient.tidyWindows(stateRef);
     };
     const handleUntidyClick: ClickHandler = (e) => {
         e.preventDefault();
-        actions.untidyWindows(stateRef);
+        actionsClient.untidyWindows(stateRef);
     };
 
     const menu = (
