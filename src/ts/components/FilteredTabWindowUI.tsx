@@ -42,7 +42,7 @@ export interface FilteredTabWindowUIBaseProps {
     isFocused: boolean;
     modalActions: ModalActions;
     selectedTabIndex: number;
-    onItemSelected: () => void; // N.B. just clears selection; tab or window selected both trigger this
+    onItemSelected: () => void; // Called after tab/window activation; filter stays sticky
     expandAll: boolean;
 }
 

@@ -382,7 +382,7 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
     };
 
     const handleSelectionEnter = async (
-        inputRef: MutableRefObject<HTMLInputElement | null>,
+        _inputRef: MutableRefObject<HTMLInputElement | null>,
     ) => {
         if (filteredWindows.length === 0) {
             return;
@@ -411,9 +411,8 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
                 stateRef,
             );
         }
-        // And reset the search field:
-        inputRef!.current!.value = '';
-        onSearchInput('');
+        // Keep the filter sticky after activation; only clear it explicitly
+        // via the search input (native clear control or manual edit).
         if (!windowIsPopout()) {
             window.close();
         }
@@ -440,13 +439,9 @@ const SelectablePopup: React.FunctionComponent<SelectablePopupProps> = ({
         actionsClient.openWindow(curWindow, stateRef);
     };
 
-    const handleItemSelected = useCallback(() => {
-        if (searchInputRef.current) {
-            // And reset the search field:
-            searchInputRef.current.value = '';
-            onSearchInput('');
-        }
-    }, [searchInputRef]);
+    // Keep filter text sticky across tab/window clicks. Clearing is explicit only
+    // (native search clear control or the user editing/deleting the query).
+    const handleItemSelected = useCallback(() => {}, []);
 
     const openTabCount = appState.countOpenTabs();
     const openWinCount = appState.countOpenWindows();

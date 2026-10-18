@@ -313,3 +313,45 @@ test('search and open test', async () => {
     */
     actionsMock.verify();
 });
+
+test('search filter stays sticky after tab click in popout', async () => {
+    const actionsClient = require('../src/ts/actionsClient');
+    const activateStub = sinon
+        .stub(actionsClient, 'activateOrRestoreTab')
+        .resolves();
+    (window as any)._tabliIsPopout = true;
+
+    try {
+        const winStore = initialWinStore();
+        const App = appContainer<TabManagerState, PopupBaseProps>(
+            winStore,
+            Popup,
+        );
+        resetServerContext();
+        const { getAllByTestId, getByTestId } = render(
+            <ClassWrapper>
+                <App isPopout={true} noListener={true} />
+            </ClassWrapper>,
+        );
+
+        const searchInput = getByTestId('searchBox') as HTMLInputElement;
+        searchInput.value = 'git';
+        act(() => {
+            ReactTestUtils.Simulate.change(searchInput);
+        });
+
+        const filteredTabItems = getAllByTestId('tabItem-container');
+        expect(filteredTabItems.length).toBe(8);
+
+        await act(async () => {
+            ReactTestUtils.Simulate.click(filteredTabItems[0]);
+        });
+
+        expect(activateStub.calledOnce).toBe(true);
+        expect(searchInput.value).toBe('git');
+        expect(getAllByTestId('tabItem-container').length).toBe(8);
+    } finally {
+        activateStub.restore();
+        delete (window as any)._tabliIsPopout;
+    }
+});
